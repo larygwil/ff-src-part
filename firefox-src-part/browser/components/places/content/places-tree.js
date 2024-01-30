@@ -164,7 +164,9 @@
     }
     /**
      * overriding
-     * @param {object} val
+     *
+     * @param {PlacesTreeView} val
+     *   The parent view
      */
     set view(val) {
       // We save the view so that we can avoid expensive get calls when
@@ -221,8 +223,12 @@
       return this.getAttribute("place");
     }
 
+    get selectedCount() {
+      return this.view?.selection?.count || 0;
+    }
+
     get hasSelection() {
-      return this.view && this.view.selection.count >= 1;
+      return this.selectedCount >= 1;
     }
 
     get selectedNodes() {
@@ -306,12 +312,11 @@
     }
 
     get selectedNode() {
-      var view = this.view;
-      if (!view || view.selection.count != 1) {
+      if (this.selectedCount != 1) {
         return null;
       }
 
-      var selection = view.selection;
+      var selection = this.view.selection;
       var min = {},
         max = {};
       selection.getRangeAt(0, min, max);
@@ -474,6 +479,7 @@
      * will be opened, so that the node is visible.
      *
      * @param {string} placeURI
+     *   The URI that should be selected
      */
     selectPlaceURI(placeURI) {
       // Do nothing if a node matching the given uri is already selected
@@ -542,6 +548,7 @@
      * node is visible.
      *
      * @param {object} node
+     *   The node that should be selected
      */
     selectNode(node) {
       var view = this.view;
@@ -658,7 +665,6 @@
         : null;
 
       return new PlacesInsertionPoint({
-        parentId: PlacesUtils.getConcreteItemId(container),
         parentGuid: PlacesUtils.getConcreteItemGuid(container),
         index,
         orientation,
@@ -676,7 +682,7 @@
      * each given item guid. It will open any folder nodes that it needs
      * to in order to show the selected items.
      *
-     * @param {array} aGuids
+     * @param {Array} aGuids
      *   Guids to select.
      * @param {boolean} aOpenContainers
      *   Whether or not to open containers.
@@ -716,6 +722,7 @@
        * in its subtree.
        *
        * @param {object} node
+       *   The node to search.
        * @returns {boolean}
        *   Returns true if at least one item was found.
        */

@@ -77,7 +77,6 @@ var SidebarUI = {
     return (this.__title = document.getElementById("sidebar-title"));
   },
   _splitter: null,
-  _icon: null,
   _reversePositionButton: null,
   _switcherPanel: null,
   _switcherTarget: null,
@@ -102,7 +101,6 @@ var SidebarUI = {
   init() {
     this._box = document.getElementById("sidebar-box");
     this._splitter = document.getElementById("sidebar-splitter");
-    this._icon = document.getElementById("sidebar-icon");
     this._reversePositionButton = document.getElementById(
       "sidebar-reverse-position"
     );
@@ -144,7 +142,7 @@ var SidebarUI = {
         xulStore.removeValue(document.documentURI, "sidebar-box", "checked");
       }
 
-      xulStore.persist(this._box, "width");
+      xulStore.persist(this._box, "style");
       xulStore.persist(this._title, "value");
     }
 
@@ -167,7 +165,7 @@ var SidebarUI = {
           // support live switching the app locale. Reload the entire sidebar to
           // invalidate any old text.
           this.hide();
-          this._show(this.lastOpenedId);
+          this.showInitially(this.lastOpenedId);
           break;
         }
       }
@@ -235,7 +233,7 @@ var SidebarUI = {
     this._reversePositionButton.setAttribute("label", label);
 
     this._switcherPanel.hidden = false;
-    this._switcherPanel.openPopup(this._icon);
+    this._switcherPanel.openPopup(this._switcherTarget);
     this._switcherTarget.classList.add("active");
   },
 
@@ -286,7 +284,7 @@ var SidebarUI = {
     // First reset all ordinals to match DOM ordering.
     let browser = document.getElementById("browser");
     [...browser.children].forEach((node, i) => {
-      node.style.MozBoxOrdinalGroup = i + 1;
+      node.style.order = i + 1;
     });
 
     if (!this._positionStart) {
@@ -294,9 +292,9 @@ var SidebarUI = {
       // Want to display as:  |   appcontent  | splitter |  sidebar-box  |
       // So we just swap box and appcontent ordering
       let appcontent = document.getElementById("appcontent");
-      let boxOrdinal = this._box.style.MozBoxOrdinalGroup;
-      this._box.style.MozBoxOrdinalGroup = appcontent.style.MozBoxOrdinalGroup;
-      appcontent.style.MozBoxOrdinalGroup = boxOrdinal;
+      let boxOrdinal = this._box.style.order;
+      this._box.style.order = appcontent.style.order;
+      appcontent.style.order = boxOrdinal;
       // Indicate we've switched ordering to the box
       this._box.setAttribute("positionend", true);
     } else {
@@ -345,10 +343,7 @@ var SidebarUI = {
       return true;
     }
 
-    this._box.setAttribute(
-      "width",
-      sourceUI._box.getBoundingClientRect().width
-    );
+    this._box.style.width = sourceUI._box.getBoundingClientRect().width + "px";
     this.showInitially(commandID);
 
     return true;

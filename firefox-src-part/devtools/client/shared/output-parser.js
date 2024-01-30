@@ -4,16 +4,19 @@
 
 "use strict";
 
-const Services = require("Services");
-const { angleUtils } = require("devtools/client/shared/css-angle");
-const { colorUtils } = require("devtools/shared/css/color");
-const { getCSSLexer } = require("devtools/shared/css/lexer");
-const EventEmitter = require("devtools/shared/event-emitter");
-const { appendText } = require("devtools/client/inspector/shared/utils");
+const {
+  angleUtils,
+} = require("resource://devtools/client/shared/css-angle.js");
+const { colorUtils } = require("resource://devtools/shared/css/color.js");
+const { getCSSLexer } = require("resource://devtools/shared/css/lexer.js");
+const EventEmitter = require("resource://devtools/shared/event-emitter.js");
+const {
+  appendText,
+} = require("resource://devtools/client/inspector/shared/utils.js");
 
 const STYLE_INSPECTOR_PROPERTIES =
   "devtools/shared/locales/styleinspector.properties";
-const { LocalizationHelper } = require("devtools/shared/l10n");
+const { LocalizationHelper } = require("resource://devtools/shared/l10n.js");
 const STYLE_INSPECTOR_L10N = new LocalizationHelper(STYLE_INSPECTOR_PROPERTIES);
 
 // Functions that accept an angle argument.
@@ -55,6 +58,7 @@ const COLOR_TAKING_FUNCTIONS = [
   "conic-gradient",
   "repeating-conic-gradient",
   "drop-shadow",
+  "color-mix",
 ];
 // Functions that accept a shape argument.
 const BASIC_SHAPE_FUNCTIONS = ["polygon", "circle", "ellipse", "inset"];
@@ -63,6 +67,13 @@ const BACKDROP_FILTER_ENABLED = Services.prefs.getBoolPref(
   "layout.css.backdrop-filter.enabled"
 );
 const HTML_NS = "http://www.w3.org/1999/xhtml";
+
+// Very long text properties should be truncated using CSS to avoid creating
+// extremely tall propertyvalue containers. 5000 characters is an arbitrary
+// limit. Assuming an average ruleview can hold 50 characters per line, this
+// should start truncating properties which would otherwise be 100 lines long.
+const TRUNCATE_LENGTH_THRESHOLD = 5000;
+const TRUNCATE_NODE_CLASSNAME = "propertyvalue-long-text";
 
 /**
  * This module is used to process CSS text declarations and output DOM fragments (to be
@@ -89,13 +100,8 @@ const HTML_NS = "http://www.w3.org/1999/xhtml";
  *        - supportsTypes - A function that returns a boolean when asked if a css
  *          property name supports a given css type.  The function is
  *          executed like supportsType("color", "timing-function")
- *        - supportsCssColor4ColorFunction - A function for checking
- *          the supporting of css-color-4 color function.
  */
-function OutputParser(
-  document,
-  { supportsType, supportsCssColor4ColorFunction }
-) {
+function OutputParser(document, { supportsType }) {
   this.parsed = [];
   this.doc = document;
   this.supportsType = supportsType;
@@ -103,8 +109,6 @@ function OutputParser(
   this.angleSwatches = new WeakMap();
   this._onColorSwatchMouseDown = this._onColorSwatchMouseDown.bind(this);
   this._onAngleSwatchMouseDown = this._onAngleSwatchMouseDown.bind(this);
-
-  this.cssColor4 = supportsCssColor4ColorFunction();
 }
 
 OutputParser.prototype = {
@@ -121,10 +125,11 @@ OutputParser.prototype = {
    * @return {DocumentFragment}
    *         A document fragment containing color swatches etc.
    */
-  parseCssProperty: function(name, value, options = {}) {
+  parseCssProperty(name, value, options = {}) {
     options = this._mergeOptions(options);
 
     options.expectCubicBezier = this.supportsType(name, "timing-function");
+    options.expectLinearEasing = this.supportsType(name, "timing-function");
     options.expectDisplay = name === "display";
     options.expectFilter =
       name === "filter" ||
@@ -134,7 +139,7 @@ OutputParser.prototype = {
     options.supportsColor =
       this.supportsType(name, "color") ||
       this.supportsType(name, "gradient") ||
-      (name.startsWith("--") && colorUtils.isValidCSSColor(value));
+      (name.startsWith("--") && InspectorUtils.isValidCSSColor(value));
 
     // The filter property is special in that we want to show the
     // swatch even if the value is invalid, because this way the user
@@ -173,7 +178,7 @@ OutputParser.prototype = {
    *         |sawComma| is true if the stop was due to a comma, or false otherwise.
    *         |sawVariable| is true if a variable was seen while parsing the text.
    */
-  _parseMatchingParens: function(text, tokenStream, options, stopAtComma) {
+  _parseMatchingParens(text, tokenStream, options, stopAtComma) {
     let depth = 1;
     const functionData = [];
     const tokens = [];
@@ -247,7 +252,7 @@ OutputParser.prototype = {
    *           "--var1 is not set".
    *         - value: The value for the variable.
    */
-  _parseVariable: function(initialToken, text, tokenStream, options) {
+  _parseVariable(initialToken, text, tokenStream, options) {
     // Handle the "var(".
     const varText = text.substring(
       initialToken.startOffset,
@@ -256,12 +261,8 @@ OutputParser.prototype = {
     const variableNode = this._createNode("span", {}, varText);
 
     // Parse the first variable name within the parens of var().
-    const {
-      tokens,
-      functionData,
-      sawComma,
-      sawVariable,
-    } = this._parseMatchingParens(text, tokenStream, options, true);
+    const { tokens, functionData, sawComma, sawVariable } =
+      this._parseMatchingParens(text, tokenStream, options, true);
 
     const result = sawVariable ? "" : functionData.join("");
 
@@ -340,13 +341,14 @@ OutputParser.prototype = {
    *         A document fragment.
    */
   // eslint-disable-next-line complexity
-  _doParse: function(text, options, tokenStream, stopAtCloseParen) {
+  _doParse(text, options, tokenStream, stopAtCloseParen) {
     let parenDepth = stopAtCloseParen ? 1 : 0;
     let outerMostFunctionTakesColor = false;
+    const colorFunctions = [];
     let fontFamilyNameParts = [];
     let previousWasBang = false;
 
-    const colorOK = function() {
+    const colorOK = function () {
       return (
         options.supportsColor ||
         (options.expectFilter &&
@@ -355,7 +357,7 @@ OutputParser.prototype = {
       );
     };
 
-    const angleOK = function(angle) {
+    const angleOK = function (angle) {
       return new angleUtils.CssAngle(angle).valid;
     };
 
@@ -379,8 +381,11 @@ OutputParser.prototype = {
 
       switch (token.tokenType) {
         case "function": {
+          const isColorTakingFunction = COLOR_TAKING_FUNCTIONS.includes(
+            token.text
+          );
           if (
-            COLOR_TAKING_FUNCTIONS.includes(token.text) ||
+            isColorTakingFunction ||
             ANGLE_TAKING_FUNCTIONS.includes(token.text)
           ) {
             // The function can accept a color or an angle argument, and we know
@@ -391,9 +396,10 @@ OutputParser.prototype = {
               text.substring(token.startOffset, token.endOffset)
             );
             if (parenDepth === 0) {
-              outerMostFunctionTakesColor = COLOR_TAKING_FUNCTIONS.includes(
-                token.text
-              );
+              outerMostFunctionTakesColor = isColorTakingFunction;
+            }
+            if (isColorTakingFunction) {
+              colorFunctions.push({ parenDepth, functionName: token.text });
             }
             ++parenDepth;
           } else if (token.text === "var" && options.getVariableValue) {
@@ -403,14 +409,11 @@ OutputParser.prototype = {
               tokenStream,
               options
             );
-            if (
-              value &&
-              colorOK() &&
-              colorUtils.isValidCSSColor(value, this.cssColor4)
-            ) {
+            if (value && colorOK() && InspectorUtils.isValidCSSColor(value)) {
               this._appendColor(value, {
                 ...options,
                 variableContainer: variableNode,
+                colorFunction: colorFunctions.at(-1)?.functionName,
               });
             } else {
               this.parsed.push(variableNode);
@@ -447,10 +450,18 @@ OutputParser.prototype = {
               if (options.expectCubicBezier && token.text === "cubic-bezier") {
                 this._appendCubicBezier(functionText, options);
               } else if (
-                colorOK() &&
-                colorUtils.isValidCSSColor(functionText, this.cssColor4)
+                options.expectLinearEasing &&
+                token.text === "linear"
               ) {
-                this._appendColor(functionText, options);
+                this._appendLinear(functionText, options);
+              } else if (
+                colorOK() &&
+                InspectorUtils.isValidCSSColor(functionText)
+              ) {
+                this._appendColor(functionText, {
+                  ...options,
+                  colorFunction: colorFunctions.at(-1)?.functionName,
+                });
               } else if (
                 options.expectShape &&
                 BASIC_SHAPE_FUNCTIONS.includes(token.text)
@@ -470,15 +481,17 @@ OutputParser.prototype = {
             BEZIER_KEYWORDS.includes(token.text)
           ) {
             this._appendCubicBezier(token.text, options);
+          } else if (options.expectLinearEasing && token.text == "linear") {
+            this._appendLinear(token.text, options);
           } else if (this._isDisplayFlex(text, token, options)) {
             this._appendHighlighterToggle(token.text, options.flexClass);
           } else if (this._isDisplayGrid(text, token, options)) {
             this._appendHighlighterToggle(token.text, options.gridClass);
-          } else if (
-            colorOK() &&
-            colorUtils.isValidCSSColor(token.text, this.cssColor4)
-          ) {
-            this._appendColor(token.text, options);
+          } else if (colorOK() && InspectorUtils.isValidCSSColor(token.text)) {
+            this._appendColor(token.text, {
+              ...options,
+              colorFunction: colorFunctions.at(-1)?.functionName,
+            });
           } else if (angleOK(token.text)) {
             this._appendAngle(token.text, options);
           } else if (options.expectFont && !previousWasBang) {
@@ -496,16 +509,16 @@ OutputParser.prototype = {
         case "id":
         case "hash": {
           const original = text.substring(token.startOffset, token.endOffset);
-          if (
-            colorOK() &&
-            colorUtils.isValidCSSColor(original, this.cssColor4)
-          ) {
+          if (colorOK() && InspectorUtils.isValidCSSColor(original)) {
             if (spaceNeeded) {
               // Insert a space to prevent token pasting when a #xxx
               // color is changed to something like rgb(...).
               this._appendTextNode(" ");
             }
-            this._appendColor(original, options);
+            this._appendColor(original, {
+              ...options,
+              colorFunction: colorFunctions.at(-1)?.functionName,
+            });
           } else {
             this._appendTextNode(original);
           }
@@ -555,6 +568,10 @@ OutputParser.prototype = {
             ++parenDepth;
           } else if (token.text === ")") {
             --parenDepth;
+
+            if (colorFunctions.at(-1)?.parenDepth == parenDepth) {
+              colorFunctions.pop();
+            }
 
             if (stopAtCloseParen && parenDepth === 0) {
               done = true;
@@ -614,7 +631,7 @@ OutputParser.prototype = {
    * @return {DocumentFragment}
    *         A document fragment.
    */
-  _parse: function(text, options = {}) {
+  _parse(text, options = {}) {
     text = text.trim();
     this.parsed.length = 0;
 
@@ -632,7 +649,7 @@ OutputParser.prototype = {
    * @param  {Object} options
    *         The options given to _parse.
    */
-  _isDisplayFlex: function(text, token, options) {
+  _isDisplayFlex(text, token, options) {
     return (
       options.expectDisplay &&
       (token.text === "flex" || token.text === "inline-flex")
@@ -649,7 +666,7 @@ OutputParser.prototype = {
    * @param  {Object} options
    *         The options given to _parse.
    */
-  _isDisplayGrid: function(text, token, options) {
+  _isDisplayGrid(text, token, options) {
     return (
       options.expectDisplay &&
       (token.text === "grid" || token.text === "inline-grid")
@@ -665,7 +682,7 @@ OutputParser.prototype = {
    *        Options object. For valid options and default values see
    *        _mergeOptions()
    */
-  _appendCubicBezier: function(bezier, options) {
+  _appendCubicBezier(bezier, options) {
     const container = this._createNode("span", {
       "data-bezier": bezier,
     });
@@ -691,6 +708,33 @@ OutputParser.prototype = {
     this.parsed.push(container);
   },
 
+  _appendLinear(text, options) {
+    const container = this._createNode("span", {
+      "data-linear": text,
+    });
+
+    if (options.linearEasingSwatchClass) {
+      const swatch = this._createNode("span", {
+        class: options.linearEasingSwatchClass,
+        tabindex: "0",
+        role: "button",
+        "data-linear": text,
+      });
+      container.appendChild(swatch);
+    }
+
+    const value = this._createNode(
+      "span",
+      {
+        class: options.linearEasingClass,
+      },
+      text
+    );
+
+    container.appendChild(value);
+    this.parsed.push(container);
+  },
+
   /**
    * Append a Flexbox|Grid highlighter toggle icon next to the value in a
    * "display: [inline-]flex" or "display: [inline-]grid" declaration.
@@ -700,7 +744,7 @@ OutputParser.prototype = {
    * @param {String} className
    *        The class name for the toggle span
    */
-  _appendHighlighterToggle: function(text, className) {
+  _appendHighlighterToggle(text, className) {
     const container = this._createNode("span", {});
 
     const toggle = this._createNode("span", {
@@ -725,7 +769,7 @@ OutputParser.prototype = {
    *        Options object. For valid options and default values see
    *        _mergeOptions()
    */
-  _appendShape: function(shape, options) {
+  _appendShape(shape, options) {
     const shapeTypes = [
       {
         prefix: "polygon(",
@@ -787,7 +831,7 @@ OutputParser.prototype = {
    * @returns {Node} The container to which spans have been added.
    */
   // eslint-disable-next-line complexity
-  _addPolygonPointNodes: function(coords, container) {
+  _addPolygonPointNodes(coords, container) {
     const tokenStream = getCSSLexer(coords);
     let token = tokenStream.nextToken();
     let coord = "";
@@ -937,7 +981,7 @@ OutputParser.prototype = {
    * @returns {Node} The container to which the definition has been added.
    */
   // eslint-disable-next-line complexity
-  _addCirclePointNodes: function(coords, container) {
+  _addCirclePointNodes(coords, container) {
     const tokenStream = getCSSLexer(coords);
     let token = tokenStream.nextToken();
     let depth = 0;
@@ -1098,7 +1142,7 @@ OutputParser.prototype = {
    * @returns {Node} The container to which the definition has been added.
    */
   // eslint-disable-next-line complexity
-  _addEllipsePointNodes: function(coords, container) {
+  _addEllipsePointNodes(coords, container) {
     const tokenStream = getCSSLexer(coords);
     let token = tokenStream.nextToken();
     let depth = 0;
@@ -1268,7 +1312,7 @@ OutputParser.prototype = {
    * @returns {Node} The container to which the definition has been added.
    */
   // eslint-disable-next-line complexity
-  _addInsetPointNodes: function(coords, container) {
+  _addInsetPointNodes(coords, container) {
     const insetPoints = ["top", "right", "bottom", "left"];
     const tokenStream = getCSSLexer(coords);
     let token = tokenStream.nextToken();
@@ -1412,7 +1456,7 @@ OutputParser.prototype = {
    *        Options object. For valid options and default values see
    *        _mergeOptions()
    */
-  _appendAngle: function(angle, options) {
+  _appendAngle(angle, options) {
     const angleObj = new angleUtils.CssAngle(angle);
     const container = this._createNode("span", {
       "data-angle": angle,
@@ -1431,7 +1475,7 @@ OutputParser.prototype = {
       // in order to prevent the value input to be focused.
       // Bug 711942 will add a tooltip to edit angle values and we should
       // be able to move this listener to Tooltip.js when it'll be implemented.
-      swatch.addEventListener("click", function(event) {
+      swatch.addEventListener("click", function (event) {
         if (event.shiftKey) {
           event.stopPropagation();
         }
@@ -1460,7 +1504,7 @@ OutputParser.prototype = {
    * @param  {String} value
    *         CSS Property value to check
    */
-  _cssPropertySupportsValue: function(name, value) {
+  _cssPropertySupportsValue(name, value) {
     // Checking pair as a CSS declaration string to account for "!important" in value.
     const declaration = `${name}:${value}`;
     return this.doc.defaultView.CSS.supports(declaration);
@@ -1471,7 +1515,7 @@ OutputParser.prototype = {
    * Valid means it's really a color, not any of the CssColor SPECIAL_VALUES
    * except transparent
    */
-  _isValidColor: function(colorObj) {
+  _isValidColor(colorObj) {
     return (
       colorObj.valid &&
       (!colorObj.specialValue || colorObj.specialValue === "transparent")
@@ -1487,8 +1531,8 @@ OutputParser.prototype = {
    *         Options object. For valid options and default values see
    *         _mergeOptions().
    */
-  _appendColor: function(color, options = {}) {
-    const colorObj = new colorUtils.CssColor(color, this.cssColor4);
+  _appendColor(color, options = {}) {
+    const colorObj = new colorUtils.CssColor(color);
 
     if (this._isValidColor(colorObj)) {
       const container = this._createNode("span", {
@@ -1512,6 +1556,9 @@ OutputParser.prototype = {
         // attached for pressing SPACE and RETURN in SwatchBasedEditorTooltip.js
         const swatch = this._createNode("span", attributes);
         this.colorSwatches.set(swatch, colorObj);
+        if (options.colorFunction) {
+          swatch.dataset.colorFunction = options.colorFunction;
+        }
         swatch.addEventListener("mousedown", this._onColorSwatchMouseDown);
         EventEmitter.decorate(swatch);
 
@@ -1568,7 +1615,7 @@ OutputParser.prototype = {
    * @returns {object}
    *        A new node that supplies a filter swatch and that wraps |nodes|.
    */
-  _wrapFilter: function(filters, options, nodes) {
+  _wrapFilter(filters, options, nodes) {
     const container = this._createNode("span", {
       "data-filters": filters,
     });
@@ -1591,7 +1638,7 @@ OutputParser.prototype = {
     return container;
   },
 
-  _onColorSwatchMouseDown: function(event) {
+  _onColorSwatchMouseDown(event) {
     if (!event.shiftKey) {
       return;
     }
@@ -1608,7 +1655,7 @@ OutputParser.prototype = {
     swatch.emit("unit-change", val);
   },
 
-  _onAngleSwatchMouseDown: function(event) {
+  _onAngleSwatchMouseDown(event) {
     if (!event.shiftKey) {
       return;
     }
@@ -1626,7 +1673,7 @@ OutputParser.prototype = {
   /**
    * A helper function that sanitizes a possibly-unterminated URL.
    */
-  _sanitizeURL: function(url) {
+  _sanitizeURL(url) {
     // Re-lex the URL and add any needed termination characters.
     const urlTokenizer = getCSSLexer(url);
     // Just read until EOF; there will only be a single token.
@@ -1648,7 +1695,7 @@ OutputParser.prototype = {
    *         Options object. For valid options and default values see
    *         _mergeOptions().
    */
-  _appendURL: function(match, url, options) {
+  _appendURL(match, url, options) {
     if (options.urlClass) {
       // Sanitize the URL.  Note that if we modify the URL, we just
       // leave the termination characters.  This isn't strictly
@@ -1660,9 +1707,8 @@ OutputParser.prototype = {
       // whitespace, and the ")" into |trailer|.  We considered adding
       // functionality for this to CSSLexer, in some way, but this
       // seemed simpler on the whole.
-      const urlParts = /^(url\([ \t\r\n\f]*(["']?))(.*?)(\2[ \t\r\n\f]*\))$/i.exec(
-        match
-      );
+      const urlParts =
+        /^(url\([ \t\r\n\f]*(["']?))(.*?)(\2[ \t\r\n\f]*\))$/i.exec(match);
 
       // Bail out if that didn't match anything.
       if (!urlParts) {
@@ -1688,7 +1734,7 @@ OutputParser.prototype = {
         {
           target: "_blank",
           class: options.urlClass,
-          href: href,
+          href,
         },
         body
       );
@@ -1708,7 +1754,7 @@ OutputParser.prototype = {
    *         Options object. For valid options and default values see
    *         _mergeOptions().
    */
-  _appendFontFamily: function(fontFamily, options) {
+  _appendFontFamily(fontFamily, options) {
     let spanContents = fontFamily;
     let quoteChar = null;
     let trailingWhitespace = false;
@@ -1767,7 +1813,7 @@ OutputParser.prototype = {
    *         the tag. This is useful e.g. for span tags.
    * @return {Node} Newly created Node.
    */
-  _createNode: function(tagName, attributes, value = "") {
+  _createNode(tagName, attributes, value = "") {
     const node = this.doc.createElementNS(HTML_NS, tagName);
     const attrs = Object.getOwnPropertyNames(attributes);
 
@@ -1796,8 +1842,12 @@ OutputParser.prototype = {
    *         If a value is included it will be appended as a text node inside
    *         the tag. This is useful e.g. for span tags.
    */
-  _appendNode: function(tagName, attributes, value = "") {
+  _appendNode(tagName, attributes, value = "") {
     const node = this._createNode(tagName, attributes, value);
+    if (value.length > TRUNCATE_LENGTH_THRESHOLD) {
+      node.classList.add(TRUNCATE_NODE_CLASSNAME);
+    }
+
     this.parsed.push(node);
   },
 
@@ -1808,9 +1858,13 @@ OutputParser.prototype = {
    * @param  {String} text
    *         Text to append
    */
-  _appendTextNode: function(text) {
+  _appendTextNode(text) {
     const lastItem = this.parsed[this.parsed.length - 1];
-    if (typeof lastItem === "string") {
+    if (text.length > TRUNCATE_LENGTH_THRESHOLD) {
+      // If the text is too long, force creating a node, which will add the
+      // necessary classname to truncate the property correctly.
+      this._appendNode("span", {}, text);
+    } else if (typeof lastItem === "string") {
       this.parsed[this.parsed.length - 1] = lastItem + text;
     } else {
       this.parsed.push(text);
@@ -1823,7 +1877,7 @@ OutputParser.prototype = {
    * @return {DocumentFragment}
    *         Document Fragment
    */
-  _toDOM: function() {
+  _toDOM() {
     const frag = this.doc.createDocumentFragment();
 
     for (const item of this.parsed) {
@@ -1882,7 +1936,7 @@ OutputParser.prototype = {
    * @return {Object}
    *         Overridden options object
    */
-  _mergeOptions: function(overrides) {
+  _mergeOptions(overrides) {
     const defaults = {
       defaultColorType: true,
       angleClass: "",

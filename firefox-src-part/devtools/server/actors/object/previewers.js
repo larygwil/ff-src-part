@@ -4,19 +4,17 @@
 
 "use strict";
 
-const { Cu, Ci } = require("chrome");
-const Services = require("Services");
-const { DevToolsServer } = require("devtools/server/devtools-server");
-const DevToolsUtils = require("devtools/shared/DevToolsUtils");
+const { DevToolsServer } = require("resource://devtools/server/devtools-server.js");
+const DevToolsUtils = require("resource://devtools/shared/DevToolsUtils.js");
 loader.lazyRequireGetter(
   this,
   "ObjectUtils",
-  "devtools/server/actors/object/utils"
+  "resource://devtools/server/actors/object/utils.js"
 );
 loader.lazyRequireGetter(
   this,
   "PropertyIterators",
-  "devtools/server/actors/object/property-iterator"
+  "resource://devtools/server/actors/object/property-iterator.js"
 );
 
 // Number of items to preview in objects, arrays, maps, sets, lists,
@@ -37,6 +35,7 @@ const ERROR_CLASSNAMES = new Set([
   "DebuggeeWouldRun",
   "LinkError",
   "RuntimeError",
+  "Exception", // This related to Components.Exception()
 ]);
 const ARRAY_LIKE_CLASSNAMES = new Set([
   "DOMStringList",
@@ -226,7 +225,18 @@ const previewers = {
           } else if (!desc) {
             items.push(null);
           } else {
-            items.push(hooks.createValueGrip(undefined));
+            const item = {};
+            if (desc.get) {
+              let getter = Cu.unwaiveXrays(desc.get);
+              getter = ObjectUtils.makeDebuggeeValueIfNeeded(obj, getter);
+              item.get = hooks.createValueGrip(getter);
+            }
+            if (desc.set) {
+              let setter = Cu.unwaiveXrays(desc.set);
+              setter = ObjectUtils.makeDebuggeeValueIfNeeded(obj, setter);
+              item.set = hooks.createValueGrip(setter);
+            }
+            items.push(item);
           }
         } else if (raw && !Object.getOwnPropertyDescriptor(raw, i)) {
           items.push(null);
@@ -331,6 +341,135 @@ const previewers = {
   WeakMap: [
     function(objectActor, grip) {
       const enumEntries = PropertyIterators.enumWeakMapEntries(objectActor);
+
+      grip.preview = {
+        kind: "MapLike",
+        size: enumEntries.size,
+      };
+
+      if (objectActor.hooks.getGripDepth() > 1) {
+        return true;
+      }
+
+      const entries = (grip.preview.entries = []);
+      for (const entry of enumEntries) {
+        entries.push(entry);
+        if (entries.length == OBJECT_PREVIEW_MAX_ITEMS) {
+          break;
+        }
+      }
+
+      return true;
+    },
+  ],
+
+  URLSearchParams: [
+    function(objectActor, grip) {
+      const enumEntries = PropertyIterators.enumURLSearchParamsEntries(objectActor);
+
+      grip.preview = {
+        kind: "MapLike",
+        size: enumEntries.size,
+      };
+
+      if (objectActor.hooks.getGripDepth() > 1) {
+        return true;
+      }
+
+      const entries = (grip.preview.entries = []);
+      for (const entry of enumEntries) {
+        entries.push(entry);
+        if (entries.length == OBJECT_PREVIEW_MAX_ITEMS) {
+          break;
+        }
+      }
+
+      return true;
+    },
+  ],
+
+  FormData: [
+    function(objectActor, grip) {
+      const enumEntries = PropertyIterators.enumFormDataEntries(objectActor);
+
+      grip.preview = {
+        kind: "MapLike",
+        size: enumEntries.size,
+      };
+
+      if (objectActor.hooks.getGripDepth() > 1) {
+        return true;
+      }
+
+      const entries = (grip.preview.entries = []);
+      for (const entry of enumEntries) {
+        entries.push(entry);
+        if (entries.length == OBJECT_PREVIEW_MAX_ITEMS) {
+          break;
+        }
+      }
+
+      return true;
+    },
+  ],
+
+  Headers: [
+    function(objectActor, grip) {
+      const enumEntries = PropertyIterators.enumHeadersEntries(objectActor);
+
+      grip.preview = {
+        kind: "MapLike",
+        size: enumEntries.size,
+      };
+
+      if (objectActor.hooks.getGripDepth() > 1) {
+        return true;
+      }
+
+      const entries = (grip.preview.entries = []);
+      for (const entry of enumEntries) {
+        entries.push(entry);
+        if (entries.length == OBJECT_PREVIEW_MAX_ITEMS) {
+          break;
+        }
+      }
+
+      return true;
+    },
+  ],
+
+  MIDIInputMap: [
+    function(objectActor, grip) {
+      const enumEntries = PropertyIterators.enumMidiInputMapEntries(
+        objectActor
+      );
+
+      grip.preview = {
+        kind: "MapLike",
+        size: enumEntries.size,
+      };
+
+      if (objectActor.hooks.getGripDepth() > 1) {
+        return true;
+      }
+
+      const entries = (grip.preview.entries = []);
+      for (const entry of enumEntries) {
+        entries.push(entry);
+        if (entries.length == OBJECT_PREVIEW_MAX_ITEMS) {
+          break;
+        }
+      }
+
+      return true;
+    },
+  ],
+
+  MIDIOutputMap: [
+    function(objectActor, grip) {
+      const enumEntries = PropertyIterators.enumMidiOutputMapEntries(
+        objectActor
+      );
 
       grip.preview = {
         kind: "MapLike",
@@ -518,21 +657,6 @@ function GenericObject(objectActor, grip, rawObj, className) {
     if (typeof length != "number") {
       specialStringBehavior = false;
     }
-  }
-
-  // ToDo: This preference can be removed once the custom formatters feature is stable enough
-  const customFormattersExperimentallyEnabled = isWorker
-    ? false
-    : Services.prefs.getBoolPref("devtools.custom-formatters");
-
-  if (customFormattersExperimentallyEnabled) {
-    const useCustomFormatters = Services.prefs.getBoolPref(
-      "devtools.custom-formatters.enabled"
-    );
-
-    grip.useCustomFormatter = useCustomFormatters;
-    grip.header = null;
-    grip.hasBody = false;
   }
 
   for (const name of names) {
@@ -962,6 +1086,7 @@ previewers.Object = [
       filename: hooks.createValueGrip(rawObj.filename),
       lineNumber: hooks.createValueGrip(rawObj.lineNumber),
       columnNumber: hooks.createValueGrip(rawObj.columnNumber),
+      stack: hooks.createValueGrip(rawObj.stack),
     };
 
     return true;

@@ -5,6 +5,9 @@
 "use strict";
 
 class PictureInPictureVideoWrapper {
+  isLive(video) {
+    return !!document.querySelector(".ytp-live");
+  }
   setMuted(video, shouldMute) {
     let muteButton = document.querySelector("#player .ytp-mute-button");
 
@@ -14,12 +17,18 @@ class PictureInPictureVideoWrapper {
       video.muted = shouldMute;
     }
   }
+  getDuration(video) {
+    if (this.isLive(video)) {
+      return Infinity;
+    }
+    return video.duration;
+  }
   setCaptionContainerObserver(video, updateCaptionsFunction) {
     let container = document.getElementById("ytp-caption-window-container");
 
     if (container) {
       updateCaptionsFunction("");
-      const callback = function(mutationsList, observer) {
+      const callback = function (mutationsList, observer) {
         // eslint-disable-next-line no-unused-vars
         for (const mutation of mutationsList) {
           let textNodeList = container

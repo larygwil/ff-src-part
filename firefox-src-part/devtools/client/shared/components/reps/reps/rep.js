@@ -5,7 +5,7 @@
 "use strict";
 
 // Make this available to both AMD and CJS environments
-define(function(require, exports, module) {
+define(function (require, exports, module) {
   // Load all existing rep templates
   const Undefined = require("devtools/client/shared/components/reps/reps/undefined");
   const Null = require("devtools/client/shared/components/reps/reps/null");
@@ -38,8 +38,8 @@ define(function(require, exports, module) {
   const ObjectWithText = require("devtools/client/shared/components/reps/reps/object-with-text");
   const ObjectWithURL = require("devtools/client/shared/components/reps/reps/object-with-url");
   const GripArray = require("devtools/client/shared/components/reps/reps/grip-array");
+  const GripEntry = require("devtools/client/shared/components/reps/reps/grip-entry");
   const GripMap = require("devtools/client/shared/components/reps/reps/grip-map");
-  const GripMapEntry = require("devtools/client/shared/components/reps/reps/grip-map-entry");
   const Grip = require("devtools/client/shared/components/reps/reps/grip");
 
   // List of all registered template.
@@ -65,7 +65,7 @@ define(function(require, exports, module) {
     ErrorRep,
     GripArray,
     GripMap,
-    GripMapEntry,
+    GripEntry,
     Grip,
     Undefined,
     Null,
@@ -87,7 +87,7 @@ define(function(require, exports, module) {
    * to the current value type. The value must be passed in as the 'object'
    * property.
    */
-  const Rep = function(props) {
+  const Rep = function (props) {
     const { object, defaultRep } = props;
     const rep = getRep(
       object,
@@ -115,7 +115,7 @@ define(function(require, exports, module) {
     Grip,
     GripArray,
     GripMap,
-    GripMapEntry,
+    GripEntry,
     InfinityRep,
     NaNRep,
     Null,
@@ -136,10 +136,9 @@ define(function(require, exports, module) {
 
   // Custom Formatters
   // ToDo: This preference can be removed once the custom formatters feature is stable enough
-  const Services = require("Services");
   // Services.prefs isn't available in jsonviewer. It doesn't matter as we don't want to use
   // custom formatters there
-  if (Services?.prefs) {
+  if (typeof Services == "object" && Services?.prefs) {
     const customFormattersExperimentallyEnabled = Services.prefs.getBoolPref(
       "devtools.custom-formatters",
       false
@@ -150,9 +149,9 @@ define(function(require, exports, module) {
       Services.prefs.getBoolPref("devtools.custom-formatters.enabled", false);
 
     if (useCustomFormatters) {
-      const JsonMl = require("devtools/client/shared/components/reps/reps/jsonml");
-      reps.unshift(JsonMl);
-      exportedReps.JsonMl = JsonMl;
+      const CustomFormatter = require("devtools/client/shared/components/reps/reps/custom-formatter");
+      reps.unshift(CustomFormatter);
+      exportedReps.CustomFormatter = CustomFormatter;
     }
   }
 
@@ -183,7 +182,7 @@ define(function(require, exports, module) {
   ) {
     const repsList = noGrip ? noGripReps : reps;
     for (const rep of repsList) {
-      if (rep === exportedReps.JsonMl && !mayUseCustomFormatter) {
+      if (rep === exportedReps.CustomFormatter && !mayUseCustomFormatter) {
         continue;
       }
 

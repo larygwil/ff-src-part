@@ -3,30 +3,27 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 "use strict";
 
-const { XPCOMUtils } = ChromeUtils.import(
-  "resource://gre/modules/XPCOMUtils.jsm"
+const { XPCOMUtils } = ChromeUtils.importESModule(
+  "resource://gre/modules/XPCOMUtils.sys.mjs"
 );
 
-XPCOMUtils.defineLazyModuleGetters(this, {
+const lazy = {};
+
+XPCOMUtils.defineLazyModuleGetters(lazy, {
   AboutWelcomeTelemetry:
     "resource://activity-stream/aboutwelcome/lib/AboutWelcomeTelemetry.jsm",
-  RemoteImages: "resource://activity-stream/lib/RemoteImages.jsm",
-  SpecialMessageActions:
-    "resource://messaging-system/lib/SpecialMessageActions.jsm",
 });
 
 XPCOMUtils.defineLazyGetter(
-  this,
+  lazy,
   "AWTelemetry",
-  () => new AboutWelcomeTelemetry()
+  () => new lazy.AboutWelcomeTelemetry()
 );
 
 const Spotlight = {
   sendUserEventTelemetry(event, message, dispatch) {
-    const message_id =
-      message.template === "multistage" ? message.content.id : message.id;
     const ping = {
-      message_id,
+      message_id: message.content.id,
       event,
     };
     dispatch({
@@ -38,7 +35,7 @@ const Spotlight = {
   defaultDispatch(message) {
     if (message.type === "SPOTLIGHT_TELEMETRY") {
       const { message_id, event } = message.data;
-      AWTelemetry.sendTelemetry({ message_id, event });
+      lazy.AWTelemetry.sendTelemetry({ message_id, event });
     }
   },
 
@@ -50,8 +47,8 @@ const Spotlight = {
    * @return                    boolean value capturing if spotlight was displayed
    */
   async showSpotlightDialog(browser, message, dispatch = this.defaultDispatch) {
-    const win = browser.ownerGlobal;
-    if (win.gDialogBox.isOpen) {
+    const win = browser?.ownerGlobal;
+    if (!win || win.gDialogBox.isOpen) {
       return false;
     }
     const spotlight_url = "chrome://browser/content/spotlight.html";
@@ -59,14 +56,11 @@ const Spotlight = {
     const dispatchCFRAction =
       // This also blocks CFR impressions, which is fine for current use cases.
       message.content?.metrics === "block" ? () => {} : dispatch;
-    let params = { primaryBtn: false, secondaryBtn: false };
 
-    // There are two events named `IMPRESSION` the first one refers to telemetry
-    // while the other refers to ASRouter impressions used for the frequency cap
+    // This handles `IMPRESSION` events used by ASRouter for frequency caps.
+    // AboutWelcome handles `IMPRESSION` events for telemetry.
     this.sendUserEventTelemetry("IMPRESSION", message, dispatchCFRAction);
     dispatchCFRAction({ type: "IMPRESSION", data: message });
-
-    const unload = await RemoteImages.patchMessage(message.content.logo);
 
     if (message.content?.modal === "tab") {
       let { closedPromise } = win.gBrowser.getTabDialogBox(browser).open(
@@ -75,43 +69,17 @@ const Spotlight = {
           features: "resizable=no",
           allowDuplicateDialogs: false,
         },
-        [message.content, params]
+        message.content
       );
       await closedPromise;
     } else {
-      await win.gDialogBox.open(spotlight_url, [message.content, params]);
-    }
-
-    if (unload) {
-      unload();
+      await win.gDialogBox.open(spotlight_url, message.content);
     }
 
     // If dismissed report telemetry and exit
-    if (!params.secondaryBtn && !params.primaryBtn) {
-      this.sendUserEventTelemetry("DISMISS", message, dispatchCFRAction);
-      return true;
-    }
-
-    if (params.secondaryBtn) {
-      this.sendUserEventTelemetry("DISMISS", message, dispatchCFRAction);
-      SpecialMessageActions.handleAction(
-        message.content.body.secondary.action,
-        browser
-      );
-    }
-
-    if (params.primaryBtn) {
-      this.sendUserEventTelemetry("CLICK", message, dispatchCFRAction);
-      SpecialMessageActions.handleAction(
-        message.content.body.primary.action,
-        browser
-      );
-    }
-
+    this.sendUserEventTelemetry("DISMISS", message, dispatchCFRAction);
     return true;
   },
 };
-
-this.Spotlight = Spotlight;
 
 const EXPORTED_SYMBOLS = ["Spotlight"];

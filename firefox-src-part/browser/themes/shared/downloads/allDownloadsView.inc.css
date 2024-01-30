@@ -8,15 +8,13 @@
 /*** View and outer controls ***/
 
 #downloadsListBox {
-  /** The default listbox appearance comes with an unwanted margin. **/
-  appearance: none;
   margin: 0;
 }
 
 /*** List items ***/
 
 #downloadsListBox > richlistitem {
-  height: var(--downloads-item-height);
+  min-height: 4.5em;
 }
 
 .downloadTypeIcon {
@@ -44,7 +42,7 @@
 
 .downloadButton {
   appearance: none;
-  -moz-box-align: center;
+  align-items: center;
   background: transparent;
   min-width: 0;
   min-height: 0;

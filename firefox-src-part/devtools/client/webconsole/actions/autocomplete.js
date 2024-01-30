@@ -9,12 +9,19 @@ const {
   AUTOCOMPLETE_DATA_RECEIVE,
   AUTOCOMPLETE_PENDING_REQUEST,
   AUTOCOMPLETE_RETRIEVE_FROM_CACHE,
-} = require("devtools/client/webconsole/constants");
+} = require("resource://devtools/client/webconsole/constants.js");
 
 const {
   analyzeInputString,
   shouldInputBeAutocompleted,
-} = require("devtools/shared/webconsole/analyze-input-string");
+} = require("resource://devtools/shared/webconsole/analyze-input-string.js");
+
+loader.lazyRequireGetter(
+  this,
+  "getSelectedTarget",
+  "resource://devtools/shared/commands/target/selectors/targets.js",
+  true
+);
 
 /**
  * Update the data used for the autocomplete popup in the console input (JsTerm).
@@ -99,14 +106,11 @@ function updateAuthorizedEvaluations(
   getterPath,
   mappedVars
 ) {
-  if (
-    !Array.isArray(authorizedEvaluations) ||
-    authorizedEvaluations.length == 0
-  ) {
+  if (!Array.isArray(authorizedEvaluations) || !authorizedEvaluations.length) {
     authorizedEvaluations = [];
   }
 
-  if (Array.isArray(getterPath) && getterPath.length > 0) {
+  if (Array.isArray(getterPath) && getterPath.length) {
     // We need to check for any previous authorizations. For example, here if getterPath
     // is ["a", "b", "c", "d"], we want to see if there was any other path that was
     // authorized in a previous request. For that, we only add the previous
@@ -147,7 +151,7 @@ function updateAuthorizedEvaluations(
  * @returns {String} The source-mapped expression to autocomplete.
  */
 async function getMappedInput(rawInput, mappedVars, hud) {
-  if (!mappedVars || Object.keys(mappedVars).length == 0) {
+  if (!mappedVars || !Object.keys(mappedVars).length) {
     return { input: rawInput, originalExpression: undefined };
   }
 
@@ -247,10 +251,9 @@ function autocompleteDataFetch({
 
     let targetFront = commands.targetCommand.selectedTargetFront;
     // Note that getSelectedTargetFront will return null if we default to the top level target.
-    // For now, in the browser console (without a toolbox), we don't support the context selector.
-    const contextSelectorTargetFront = hud.toolbox
-      ? hud.toolbox.getSelectedTargetFront()
-      : null;
+    const contextSelectorTargetFront = getSelectedTarget(
+      hud.commands.targetCommand.store.getState()
+    );
     const selectedActorId = selectedNodeActorId || frameActorId;
     if (contextSelectorTargetFront) {
       targetFront = contextSelectorTargetFront;

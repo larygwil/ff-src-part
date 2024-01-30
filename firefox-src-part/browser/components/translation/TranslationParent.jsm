@@ -13,8 +13,6 @@ var EXPORTED_SYMBOLS = [
 const TRANSLATION_PREF_SHOWUI = "browser.translation.ui.show";
 const TRANSLATION_PREF_DETECT_LANG = "browser.translation.detectLanguage";
 
-const { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm");
-
 var Translation = {
   STATE_OFFER: 0,
   STATE_TRANSLATING: 1,
@@ -70,9 +68,8 @@ var Translation = {
   _defaultTargetLanguage: "",
   get defaultTargetLanguage() {
     if (!this._defaultTargetLanguage) {
-      this._defaultTargetLanguage = Services.locale.appLocaleAsBCP47.split(
-        "-"
-      )[0];
+      this._defaultTargetLanguage =
+        Services.locale.appLocaleAsBCP47.split("-")[0];
     }
     return this._defaultTargetLanguage;
   },
@@ -177,10 +174,6 @@ class TranslationParent extends JSWindowActorParent {
     this.originalShown = aData.originalShown;
 
     this.showURLBarIcon();
-
-    if (this.shouldShowInfoBar(this.browser.contentPrincipal)) {
-      this.showTranslationInfoBar();
-    }
   }
 
   translate(aFrom, aTo) {
@@ -236,25 +229,16 @@ class TranslationParent extends JSWindowActorParent {
 
     let callback = (aTopic, aNewBrowser) => {
       if (aTopic == "swapping") {
-        let infoBarVisible = this.notificationBox.getNotificationWithValue(
-          "translation"
-        );
-        if (infoBarVisible) {
-          this.showTranslationInfoBar();
-        }
         return true;
       }
 
       if (aTopic != "showing") {
         return false;
       }
-      let translationNotification = this.notificationBox.getNotificationWithValue(
-        "translation"
-      );
+      let translationNotification =
+        this.notificationBox.getNotificationWithValue("translation");
       if (translationNotification) {
         translationNotification.close();
-      } else {
-        this.showTranslationInfoBar();
       }
       return true;
     };
@@ -298,45 +282,6 @@ class TranslationParent extends JSWindowActorParent {
 
   get notificationBox() {
     return this.browser.ownerGlobal.gBrowser.getNotificationBox(this.browser);
-  }
-
-  showTranslationInfoBar() {
-    let notificationBox = this.notificationBox;
-    let notif = notificationBox.appendNotification("translation", {
-      priority: notificationBox.PRIORITY_INFO_HIGH,
-      notificationIs: "translation-notification",
-    });
-    notif.init(this);
-    return notif;
-  }
-
-  shouldShowInfoBar(aPrincipal) {
-    // Never show the infobar automatically while the translation
-    // service is temporarily unavailable.
-    if (Translation.serviceUnavailable) {
-      return false;
-    }
-
-    // Check if we should never show the infobar for this language.
-    let neverForLangs = Services.prefs.getCharPref(
-      "browser.translation.neverForLanguages"
-    );
-    if (neverForLangs.split(",").includes(this.detectedLanguage)) {
-      TranslationTelemetry.recordAutoRejectedTranslationOffer();
-      return false;
-    }
-
-    // or if we should never show the infobar for this domain.
-    let perms = Services.perms;
-    if (
-      perms.testExactPermissionFromPrincipal(aPrincipal, "translate") ==
-      perms.DENY_ACTION
-    ) {
-      TranslationTelemetry.recordAutoRejectedTranslationOffer();
-      return false;
-    }
-
-    return true;
   }
 
   translationFinished(result) {

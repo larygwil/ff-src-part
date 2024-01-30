@@ -56,11 +56,9 @@ XPCOMUtils.defineLazyPreferenceGetter(
   false
 );
 
-ChromeUtils.defineModuleGetter(
-  this,
-  "PromptUtils",
-  "resource://gre/modules/SharedPromptUtils.jsm"
-);
+ChromeUtils.defineESModuleGetters(this, {
+  PromptUtils: "resource://gre/modules/PromptUtils.sys.mjs",
+});
 
 var PrintUtils = {
   SAVE_TO_PDF_PRINTER: "Mozilla Save to PDF",
@@ -74,13 +72,12 @@ var PrintUtils = {
 
   async checkForSelection(browsingContext) {
     try {
-      let sourceActor = browsingContext.currentWindowGlobal.getActor(
-        "PrintingSelection"
-      );
+      let sourceActor =
+        browsingContext.currentWindowGlobal.getActor("PrintingSelection");
       // Need the await for the try to trigger...
       return await sourceActor.sendQuery("PrintingSelection:HasSelection", {});
     } catch (e) {
-      Cu.reportError(e);
+      console.error(e);
     }
     return false;
   },
@@ -115,14 +112,9 @@ var PrintUtils = {
     );
     if (!PSSVC.lastUsedPrinterName) {
       if (printSettings.printerName) {
-        PSSVC.savePrintSettingsToPrefs(
+        PSSVC.maybeSaveLastUsedPrinterNameToPrefs(printSettings.printerName);
+        PSSVC.maybeSavePrintSettingsToPrefs(
           printSettings,
-          false,
-          Ci.nsIPrintSettings.kInitSavePrinterName
-        );
-        PSSVC.savePrintSettingsToPrefs(
-          printSettings,
-          true,
           Ci.nsIPrintSettings.kInitSaveAll
         );
       }
@@ -210,7 +202,7 @@ var PrintUtils = {
       args
     );
     closedPromise.catch(e => {
-      Cu.reportError(e);
+      console.error(e);
     });
 
     let settingsBrowser = dialog._frame;
@@ -318,11 +310,14 @@ var PrintUtils = {
         // (including using DownloadPaths.sanitize!).
         // For now, the following is for consistency with the behavior
         // prior to bug 1669149 part 3.
-        let dest = await OS.File.getCurrentDirectory();
+        let dest = undefined;
+        try {
+          dest = Services.dirsvc.get("CurWorkD", Ci.nsIFile).path;
+        } catch (e) {}
         if (!dest) {
-          dest = OS.Constants.Path.homeDir;
+          dest = Services.dirsvc.get("Home", Ci.nsIFile).path;
         }
-        settings.toFileName = OS.Path.join(dest || "", "mozilla.pdf");
+        settings.toFileName = PathUtils.join(dest, "mozilla.pdf");
       }
 
       if (useSystemDialog) {
@@ -461,7 +456,7 @@ var PrintUtils = {
     return "FAILURE";
   },
 
-  _displayPrintingError(nsresult, isPrinting) {
+  _displayPrintingError(nsresult, isPrinting, browser) {
     // The nsresults from a printing error are mapped to strings that have
     // similar names to the errors themselves. For example, for error
     // NS_ERROR_GFX_PRINTER_NO_PRINTER_AVAILABLE, the name of the string
@@ -494,7 +489,12 @@ var PrintUtils = {
         : "printpreview_error_dialog_title"
     );
 
-    Services.prompt.alert(window, title, msg);
+    Services.prompt.asyncAlert(
+      browser.browsingContext,
+      Services.prompt.MODAL_TYPE_TAB,
+      title,
+      msg
+    );
 
     Services.telemetry.keyedScalarAdd(
       "printing.error",
@@ -520,7 +520,7 @@ var PrintUtils = {
 
       // We must not try to print using an nsIPrintSettings without a printer
       // name set.
-      const printerName = (function() {
+      const printerName = (function () {
         if (isValidPrinterName(aPrinterName)) {
           return aPrinterName;
         }
@@ -553,7 +553,7 @@ var PrintUtils = {
         );
       }
     } catch (e) {
-      Cu.reportError("PrintUtils.getPrintSettings failed: " + e + "\n");
+      console.error("PrintUtils.getPrintSettings failed: ", e, "\n");
     }
     return printSettings;
   },
@@ -579,9 +579,9 @@ var PrintUtils = {
     var PSSVC = Cc["@mozilla.org/gfx/printsettings-service;1"].getService(
       Ci.nsIPrintSettingsService
     );
-    PSSVC.savePrintSettingsToPrefs(
+    PSSVC.maybeSaveLastUsedPrinterNameToPrefs(aSettings.printerName);
+    PSSVC.maybeSavePrintSettingsToPrefs(
       aSettings,
-      true,
       Ci.nsIPrintSettings.kPrintDialogPersistSettings
     );
     return true;
@@ -784,7 +784,7 @@ class PrintPreview extends MozElements.BaseControl {
     // nsDocumentViewer::OnDonePrinting, or by the print preview code.
     //
     // When that happens, we should remove us from the DOM if connected.
-    browser.addEventListener("DOMWindowClose", function(e) {
+    browser.addEventListener("DOMWindowClose", function (e) {
       if (this.isConnected) {
         this.remove();
       }
@@ -793,7 +793,7 @@ class PrintPreview extends MozElements.BaseControl {
     });
 
     if (this.settingsBrowser) {
-      browser.addEventListener("contextmenu", function(e) {
+      browser.addEventListener("contextmenu", function (e) {
         e.preventDefault();
       });
 

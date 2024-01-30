@@ -312,7 +312,7 @@ workerHelper.createTask(self, "getImmediatelyDominated", request => {
     // DominatorTree.getImmediatelyDominated will always return non-null here
     // because we got the id directly from the dominator tree.
     node.moreChildrenAvailable =
-      dominatorTree.getImmediatelyDominated(id).length > 0;
+      !!dominatorTree.getImmediatelyDominated(id).length;
     return node;
   });
 

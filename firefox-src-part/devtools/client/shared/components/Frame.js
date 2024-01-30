@@ -4,21 +4,25 @@
 
 "use strict";
 
-const { Component } = require("devtools/client/shared/vendor/react");
-const dom = require("devtools/client/shared/vendor/react-dom-factories");
-const PropTypes = require("devtools/client/shared/vendor/react-prop-types");
+const {
+  Component,
+} = require("resource://devtools/client/shared/vendor/react.js");
+const dom = require("resource://devtools/client/shared/vendor/react-dom-factories.js");
+const PropTypes = require("resource://devtools/client/shared/vendor/react-prop-types.js");
 const {
   getUnicodeUrl,
   getUnicodeUrlPath,
   getUnicodeHostname,
-} = require("devtools/client/shared/unicode-url");
+} = require("resource://devtools/client/shared/unicode-url.js");
 const {
   getSourceNames,
   parseURL,
   getSourceMappedFile,
-} = require("devtools/client/shared/source-utils");
-const { LocalizationHelper } = require("devtools/shared/l10n");
-const { MESSAGE_SOURCE } = require("devtools/client/webconsole/constants");
+} = require("resource://devtools/client/shared/source-utils.js");
+const { LocalizationHelper } = require("resource://devtools/shared/l10n.js");
+const {
+  MESSAGE_SOURCE,
+} = require("resource://devtools/client/webconsole/constants.js");
 
 const l10n = new LocalizationHelper(
   "devtools/client/locales/components.properties"
@@ -106,7 +110,8 @@ class Frame extends Component {
     this._locationChanged = this._locationChanged.bind(this);
   }
 
-  componentWillMount() {
+  // FIXME: https://bugzilla.mozilla.org/show_bug.cgi?id=1774507
+  UNSAFE_componentWillMount() {
     if (this.props.sourceMapURLService) {
       const location = savedFrameToLocation(this.props.frame);
       // Many things that make use of this component either:
@@ -116,16 +121,17 @@ class Frame extends Component {
       //
       // and due to that, we need to use subscribeByLocation in order to
       // handle both cases with an without an ID.
-      this.unsubscribeSourceMapService = this.props.sourceMapURLService.subscribeByLocation(
-        location,
-        this._locationChanged
-      );
+      this.unsubscribeSourceMapURLService =
+        this.props.sourceMapURLService.subscribeByLocation(
+          location,
+          this._locationChanged
+        );
     }
   }
 
   componentWillUnmount() {
-    if (this.unsubscribeSourceMapService) {
-      this.unsubscribeSourceMapService();
+    if (this.unsubscribeSourceMapURLService) {
+      this.unsubscribeSourceMapURLService();
     }
   }
 
@@ -317,6 +323,12 @@ class Frame extends Component {
     let displaySource = showFullSourceUrl ? unicodeLong : unicodeShort;
     if (originalLocation) {
       displaySource = getSourceMappedFile(displaySource);
+
+      // In case of pretty-printed HTML file, we would only get the formatted suffix; replace
+      // it with the full URL instead
+      if (showEmptyPathAsHost && displaySource == ":formatted") {
+        displaySource = host + displaySource;
+      }
     } else if (
       showEmptyPathAsHost &&
       (displaySource === "" || displaySource === "/")

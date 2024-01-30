@@ -9,33 +9,24 @@ import { connect } from "../../utils/connect";
 
 import AccessibleImage from "./AccessibleImage";
 
-import { getSourceClassnames, isPretty } from "../../utils/source";
-import { getFramework } from "../../utils/tabs";
-import { getSymbols, getTabs } from "../../selectors";
+import { getSourceClassnames } from "../../utils/source";
+import { getSymbols, isSourceBlackBoxed, hasPrettyTab } from "../../selectors";
 
 import "./SourceIcon.css";
 
 class SourceIcon extends PureComponent {
   static get propTypes() {
     return {
-      framework: PropTypes.string.isRequired,
       modifier: PropTypes.func.isRequired,
-      source: PropTypes.object.isRequired,
-      symbols: PropTypes.object,
+      location: PropTypes.object.isRequired,
+      iconClass: PropTypes.string,
+      forTab: PropTypes.bool,
     };
   }
 
   render() {
-    const { modifier, source, symbols, framework } = this.props;
-    let iconClass = "";
-
-    if (isPretty(source)) {
-      iconClass = "prettyPrint";
-    } else {
-      iconClass = framework
-        ? framework.toLowerCase()
-        : getSourceClassnames(source, symbols);
-    }
+    const { modifier } = this.props;
+    let { iconClass } = this.props;
 
     if (modifier) {
       const modified = modifier(iconClass);
@@ -49,7 +40,30 @@ class SourceIcon extends PureComponent {
   }
 }
 
-export default connect((state, props) => ({
-  symbols: getSymbols(state, props.source),
-  framework: getFramework(getTabs(state), props.source.url),
-}))(SourceIcon);
+export default connect((state, props) => {
+  const { forTab, location } = props;
+  // BreakpointHeading sometimes spawn locations without source actor for generated sources
+  // which disallows fetching symbols. In such race condition return the default icon.
+  // (this reproduces when running browser_dbg-breakpoints-popup.js)
+  if (!location.source.isOriginal && !location.sourceActor) {
+    return "file";
+  }
+  const symbols = getSymbols(state, location);
+  const isBlackBoxed = isSourceBlackBoxed(state, location.source);
+  // For the tab icon, we don't want to show the pretty icon for the non-pretty tab
+  const hasMatchingPrettyTab =
+    !forTab && hasPrettyTab(state, location.source.url);
+
+  // This is the key function that will compute the icon type,
+  // In addition to the "modifier" implemented by each callsite.
+  const iconClass = getSourceClassnames(
+    location.source,
+    symbols,
+    isBlackBoxed,
+    hasMatchingPrettyTab
+  );
+
+  return {
+    iconClass,
+  };
+})(SourceIcon);

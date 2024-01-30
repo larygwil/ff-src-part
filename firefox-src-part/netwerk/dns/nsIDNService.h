@@ -8,9 +8,8 @@
 
 #include "nsIIDNService.h"
 #include "nsCOMPtr.h"
-#include "nsWeakReference.h"
 
-#include "mozilla/Mutex.h"
+#include "mozilla/RWLock.h"
 #include "mozilla/intl/UnicodeScriptCodes.h"
 #include "mozilla/net/IDNBlocklistUtils.h"
 #include "mozilla/intl/IDNA.h"
@@ -24,16 +23,16 @@ class nsIPrefBranch;
 // nsIDNService
 //-----------------------------------------------------------------------------
 
-class nsIDNService final : public nsIIDNService,
-                           public nsSupportsWeakReference,
-                           public mozilla::SingleWriterLockOwner {
+namespace mozilla::net {
+enum ScriptCombo : int32_t;
+}
+
+class nsIDNService final : public nsIIDNService {
  public:
   NS_DECL_THREADSAFE_ISUPPORTS
   NS_DECL_NSIIDNSERVICE
 
   nsIDNService();
-
-  bool OnWritingThread() const override { return NS_IsMainThread(); }
 
   nsresult Init();
 
@@ -99,12 +98,10 @@ class nsIDNService final : public nsIIDNService,
   nsresult ACEtoUTF8(const nsACString& input, nsACString& _retval,
                      stringPrepFlag flag);
 
-  bool isInWhitelist(const nsACString& host);
   void prefsChanged(const char* pref);
 
   static void PrefChanged(const char* aPref, void* aSelf) {
     auto* self = static_cast<nsIDNService*>(aSelf);
-    mozilla::MutexSingleWriterAutoLock lock(self->mLock);
     self->prefsChanged(aPref);
   }
 
@@ -135,7 +132,7 @@ class nsIDNService final : public nsIIDNService,
    *  Both simplified-only and traditional-only Chinese characters
    *   XXX this test was disabled by bug 857481
    */
-  bool isLabelSafe(const nsAString& label);
+  bool isLabelSafe(const nsAString& label) MOZ_EXCLUDES(mLock);
 
   /**
    * Determine whether a combination of scripts in a single label is
@@ -151,7 +148,9 @@ class nsIDNService final : public nsIIDNService,
    * For the "Moderately restrictive" profile, Latin is also allowed
    *  with other scripts except Cyrillic and Greek
    */
-  bool illegalScriptCombo(mozilla::intl::Script script, int32_t& savedScript);
+  bool illegalScriptCombo(mozilla::intl::Script script,
+                          mozilla::net::ScriptCombo& savedScript)
+      MOZ_REQUIRES_SHARED(mLock);
 
   /**
    * Convert a DNS label from ASCII to Unicode using IDNA2008
@@ -164,28 +163,15 @@ class nsIDNService final : public nsIIDNService,
   nsresult IDNA2008StringPrep(const nsAString& input, nsAString& output,
                               stringPrepFlag flag);
 
+  // never mutated after initializing.
   mozilla::UniquePtr<mozilla::intl::IDNA> mIDNA;
 
-  // We use this mutex to guard access to:
-  // |mIDNBlocklist|, |mShowPunycode|, |mRestrictionProfile|,
-  // |mIDNUseWhitelist|, |mIDNWhitelistPrefBranch|.
-  //
-  // These members can only be updated on the main thread and
-  // read on any thread. Therefore, acquiring the mutex is required
-  // only for threads other than the main thread.
-  mozilla::MutexSingleWriter mLock;
+  // We use this rwlock to guard access to:
+  // |mIDNBlocklist|, |mRestrictionProfile|
+  mozilla::RWLock mLock{"nsIDNService"};
 
   // guarded by mLock
-  nsTArray<mozilla::net::BlocklistRange> mIDNBlocklist GUARDED_BY(mLock);
-
-  /**
-   * Flag set by the pref network.IDN_show_punycode. When it is true,
-   * IDNs containing non-ASCII characters are always displayed to the
-   * user in punycode
-   *
-   * guarded by mLock
-   */
-  bool mShowPunycode GUARDED_BY(mLock) = false;
+  nsTArray<mozilla::net::BlocklistRange> mIDNBlocklist MOZ_GUARDED_BY(mLock);
 
   /**
    * Restriction-level Detection profiles defined in UTR 39
@@ -198,11 +184,8 @@ class nsIDNService final : public nsIIDNService,
     eModeratelyRestrictiveProfile
   };
   // guarded by mLock;
-  restrictionProfile mRestrictionProfile GUARDED_BY(mLock){eASCIIOnlyProfile};
-  // guarded by mLock;
-  nsCOMPtr<nsIPrefBranch> mIDNWhitelistPrefBranch GUARDED_BY(mLock);
-  // guarded by mLock
-  bool mIDNUseWhitelist GUARDED_BY(mLock) = false;
+  restrictionProfile mRestrictionProfile MOZ_GUARDED_BY(mLock){
+      eASCIIOnlyProfile};
 };
 
 #endif  // nsIDNService_h__

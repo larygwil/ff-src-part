@@ -8,10 +8,12 @@ import {
   hasSource,
   hasSourceActor,
   getSourceActor,
-  getSourcesMap,
+  getSourceCount,
 } from "../../selectors";
 import { features } from "../../utils/prefs";
 import { isUrlExtension } from "../../utils/source";
+import { createLocation } from "../../utils/location";
+import { getDisplayURL } from "../../utils/sources-tree/getURL";
 
 let store;
 
@@ -38,11 +40,12 @@ export async function createFrame(thread, frame, index = 0) {
     frame.where.actor
   );
 
-  const location = {
-    sourceId: sourceActor.source,
+  const location = createLocation({
+    source: sourceActor.sourceObject,
+    sourceActor,
     line: frame.where.line,
     column: frame.where.column,
-  };
+  });
 
   return {
     id: frame.actorID,
@@ -72,7 +75,7 @@ async function waitForSourceActorToBeRegisteredInStore(sourceActorId) {
       let currentSize = null;
       function check() {
         const previousSize = currentSize;
-        currentSize = store.getState().sourceActors.size;
+        currentSize = store.getState().sourceActors.mutableSourceActors.size;
         // For perf reason, avoid any extra computation if sources did not change
         if (previousSize == currentSize) {
           return;
@@ -103,7 +106,7 @@ export async function waitForSourceToBeRegisteredInStore(sourceId) {
     let currentSize = null;
     function check() {
       const previousSize = currentSize;
-      currentSize = getSourcesMap(store.getState()).size;
+      currentSize = getSourceCount(store.getState());
       // For perf reason, avoid any extra computation if sources did not change
       if (previousSize == currentSize) {
         return;
@@ -154,14 +157,7 @@ export function makeSourceId(sourceResource) {
   //   For now, the debugger arbitrarily picks the first source actor's text content and never
   //   updates it. (See bug 1751063)
   if (sourceResource.url) {
-    // Simplify the top level target source ID's. But we could probably be using the same pattern
-    // and always include the thread actor ID.
-    if (sourceResource.targetFront.isTopLevel) {
-      return `source-${sourceResource.url}`;
-    }
-    const threadActorID = sourceResource.targetFront.getCachedFront("thread")
-      .actorID;
-    return `source-${threadActorID}-${sourceResource.url}`;
+    return `source-url-${sourceResource.url}`;
   }
 
   // Otherwise, we are processing a source without URL.
@@ -170,7 +166,7 @@ export function makeSourceId(sourceResource) {
   // The main way to interact with them is to use a debugger statement from them,
   // or have other panels ask the debugger to open them (like DOM event handlers from the inspector).
   // We can register transient breakpoints against them (i.e. they will only apply to the current source actor instance)
-  return `source-${sourceResource.actor}`;
+  return `source-actor-${sourceResource.actor}`;
 }
 
 /**
@@ -187,7 +183,6 @@ export function createGeneratedSource(sourceResource) {
   return createSourceObject({
     id: makeSourceId(sourceResource),
     url: sourceResource.url,
-    thread: sourceResource.targetFront.getCachedFront("thread").actorID,
     extensionName: sourceResource.extensionName,
     isWasm: !!features.wasm && sourceResource.introductionType === "wasm",
     isExtension:
@@ -205,7 +200,6 @@ export function createGeneratedSource(sourceResource) {
 function createSourceObject({
   id,
   url,
-  thread = null,
   extensionName = null,
   isWasm = false,
   isExtension = false,
@@ -222,14 +216,10 @@ function createSourceObject({
     // Absolute URL for the source. This may be a fake URL for pretty printed sources
     url,
 
-    // The thread actor id of the thread/target which this source belongs to
-    thread,
-
-    // By default refers to the absolute URL, but this will be updated
-    // if user defines a project root. In this case it will be crafted via `getRelativeUrl`
-    // to refer to the relative path based on project root.
-    // (Note that this will rather be a path than a URL)
-    relativeUrl: url,
+    // A (slightly tweaked) URL object to represent the source URL.
+    // The URL object is augmented of a "group" attribute and some other standard attributes
+    // are modified from their typical value. See getDisplayURL implementation.
+    displayURL: getDisplayURL(url, extensionName),
 
     // Only set for generated sources that are WebExtension sources.
     // This is especially useful to display the extension name for content scripts
@@ -244,7 +234,7 @@ function createSourceObject({
     // True if WASM is enabled *and* the generated source is a WASM source
     isWasm,
 
-    // True is this source is an HTML and relates to many sources actors,
+    // True if this source is an HTML and relates to many sources actors,
     // one for each of its inline <script>
     isHTML,
 
@@ -253,10 +243,6 @@ function createSourceObject({
 
     // True for source map original files, as well as pretty printed sources
     isOriginal,
-
-    // By default set to false for all sources, but may later be toggled to true
-    // if the whole source is blackboxed.
-    isBlackBoxed: false,
   };
 }
 
@@ -271,14 +257,11 @@ function createSourceObject({
  *        The ID of the source, computed by source map codebase.
  * @param {String} url
  *        The URL of the original source file.
- * @param {String} thread
- *        The thread actor id of the thread the related generated source belongs to
  */
-export function createSourceMapOriginalSource(id, url, thread) {
+export function createSourceMapOriginalSource(id, url) {
   return createSourceObject({
     id,
     url,
-    thread,
     isOriginal: true,
   });
 }
@@ -295,14 +278,11 @@ export function createSourceMapOriginalSource(id, url, thread) {
  * @param {String} url
  *        The URL of the pretty-printed source file.
  *        This URL doesn't work. It is the URL of the non-pretty-printed file with ":formated" suffix.
- * @param {String} thread
- *        The thread actor id of the thread the related generated source belongs to
  */
-export function createPrettyPrintOriginalSource(id, url, thread) {
+export function createPrettyPrintOriginalSource(id, url) {
   return createSourceObject({
     id,
     url,
-    thread,
     isOriginal: true,
     isPrettyPrinted: true,
   });
@@ -315,25 +295,28 @@ export function createPrettyPrintOriginalSource(id, url, thread) {
  * @param {SOURCE} sourceResource
  *        SOURCE resource coming from the ResourceCommand API.
  *        This represents the `SourceActor` from the server codebase.
+ * @param {Object} sourceObject
+ *        Source object stored in redux, i.e. created via createSourceObject.
  */
-export function createSourceActor(sourceResource) {
+export function createSourceActor(sourceResource, sourceObject) {
   const actorId = sourceResource.actor;
-
-  // As sourceResource is only SourceActor's form and not the SourceFront,
-  // we have to go through the target to retrieve the related ThreadActor's ID.
-  const threadActorID = sourceResource.targetFront.getCachedFront("thread")
-    .actorID;
 
   return {
     id: actorId,
     actor: actorId,
-    thread: threadActorID,
+    // As sourceResource is only SourceActor's form and not the SourceFront,
+    // we have to go through the target to retrieve the related ThreadActor's ID.
+    thread: sourceResource.targetFront.getCachedFront("thread").actorID,
     // `source` is the reducer source ID
     source: makeSourceId(sourceResource),
+    sourceObject,
     sourceMapBaseURL: sourceResource.sourceMapBaseURL,
     sourceMapURL: sourceResource.sourceMapURL,
     url: sourceResource.url,
     introductionType: sourceResource.introductionType,
+    sourceStartLine: sourceResource.sourceStartLine,
+    sourceStartColumn: sourceResource.sourceStartColumn,
+    sourceLength: sourceResource.sourceLength,
   };
 }
 
@@ -346,16 +329,20 @@ export async function createPause(thread, packet) {
   };
 }
 
-export function createThread(actor, target) {
-  const name = target.isTopLevel ? L10N.getStr("mainThread") : target.name;
+export function createThread(targetFront) {
+  const name = targetFront.isTopLevel
+    ? L10N.getStr("mainThread")
+    : targetFront.name;
 
   return {
-    actor,
-    url: target.url,
-    isTopLevel: target.isTopLevel,
-    targetType: target.targetType,
+    actor: targetFront.targetForm.threadActor,
+    url: targetFront.url,
+    isTopLevel: targetFront.isTopLevel,
+    targetType: targetFront.targetType,
     name,
-    serviceWorkerStatus: target.debuggerServiceWorkerStatus,
+    serviceWorkerStatus: targetFront.debuggerServiceWorkerStatus,
+    isWebExtension: targetFront.isWebExtension,
+    processID: targetFront.processID,
   };
 }
 
@@ -390,10 +377,10 @@ export function createBreakpoint({
     // }
     options,
 
-    // The location (object) information for the original source, for details on its format and structure See `makeBreakpointLocation`
+    // The location (object) information for the original source, for details on its format and structure See `createLocation`
     location,
 
-    // The location (object) information for the generated source, for details on its format and structure See `makeBreakpointLocation`
+    // The location (object) information for the generated source, for details on its format and structure See `createLocation`
     generatedLocation,
 
     // The text (string) on the line which the brekpoint is set in the generated source

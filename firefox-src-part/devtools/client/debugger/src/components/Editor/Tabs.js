@@ -8,11 +8,13 @@ import PropTypes from "prop-types";
 import { connect } from "../../utils/connect";
 
 import {
+  getSourceTabs,
   getSelectedSource,
   getSourcesForTabs,
   getIsPaused,
   getCurrentThread,
   getContext,
+  getBlackBoxRanges,
 } from "../../selectors";
 import { isVisible } from "../../utils/ui";
 
@@ -67,8 +69,10 @@ class Tabs extends PureComponent {
       moveTabBySourceId: PropTypes.func.isRequired,
       selectSource: PropTypes.func.isRequired,
       selectedSource: PropTypes.object,
+      blackBoxRanges: PropTypes.object.isRequired,
       startPanelCollapsed: PropTypes.bool.isRequired,
       tabSources: PropTypes.array.isRequired,
+      tabs: PropTypes.array.isRequired,
       togglePaneCollapse: PropTypes.func.isRequired,
     };
   }
@@ -132,7 +136,8 @@ class Tabs extends PureComponent {
       isVisible() &&
       hiddenTabs.find(tab => tab.id == selectedSource.id)
     ) {
-      return moveTab(selectedSource.url, 0);
+      moveTab(selectedSource.url, 0);
+      return;
     }
 
     this.setState({ hiddenTabs });
@@ -148,7 +153,7 @@ class Tabs extends PureComponent {
     if (isPretty(source)) {
       return "prettyPrint";
     }
-    if (source.isBlackBoxed) {
+    if (this.props.blackBoxRanges[source.url]) {
       return "blackBox";
     }
     return "file";
@@ -158,7 +163,7 @@ class Tabs extends PureComponent {
     const { cx, selectSource } = this.props;
     const filename = getFilename(source);
 
-    const onClick = () => selectSource(cx, source.id);
+    const onClick = () => selectSource(cx, source);
     return (
       <li key={source.id} onClick={onClick} title={getFileURL(source, false)}>
         <AccessibleImage
@@ -219,14 +224,14 @@ class Tabs extends PureComponent {
   };
 
   renderTabs() {
-    const { tabSources } = this.props;
-    if (!tabSources) {
-      return;
+    const { tabs } = this.props;
+    if (!tabs) {
+      return null;
     }
 
     return (
       <div className="source-tabs" ref="sourceTabs">
-        {tabSources.map((source, index) => {
+        {tabs.map(({ source, sourceActor }, index) => {
           return (
             <Tab
               onDragStart={_ => this.onTabDragStart(source, index)}
@@ -237,6 +242,7 @@ class Tabs extends PureComponent {
               onDragEnd={this.onTabDragEnd}
               key={index}
               source={source}
+              sourceActor={sourceActor}
               ref={`tab_${source.id}`}
             />
           );
@@ -247,7 +253,7 @@ class Tabs extends PureComponent {
 
   renderDropdown() {
     const { hiddenTabs } = this.state;
-    if (!hiddenTabs || hiddenTabs.length == 0) {
+    if (!hiddenTabs || !hiddenTabs.length) {
       return null;
     }
 
@@ -260,7 +266,7 @@ class Tabs extends PureComponent {
   renderCommandBar() {
     const { horizontal, endPanelCollapsed, isPaused } = this.props;
     if (!endPanelCollapsed || !isPaused) {
-      return;
+      return null;
     }
 
     return <CommandBar horizontal={horizontal} />;
@@ -279,7 +285,7 @@ class Tabs extends PureComponent {
   renderEndPanelToggleButton() {
     const { horizontal, endPanelCollapsed, togglePaneCollapse } = this.props;
     if (!horizontal) {
-      return;
+      return null;
     }
 
     return (
@@ -305,12 +311,16 @@ class Tabs extends PureComponent {
   }
 }
 
-const mapStateToProps = state => ({
-  cx: getContext(state),
-  selectedSource: getSelectedSource(state),
-  tabSources: getSourcesForTabs(state),
-  isPaused: getIsPaused(state, getCurrentThread(state)),
-});
+const mapStateToProps = state => {
+  return {
+    cx: getContext(state),
+    selectedSource: getSelectedSource(state),
+    tabSources: getSourcesForTabs(state),
+    tabs: getSourceTabs(state),
+    blackBoxRanges: getBlackBoxRanges(state),
+    isPaused: getIsPaused(state, getCurrentThread(state)),
+  };
+};
 
 export default connect(mapStateToProps, {
   selectSource: actions.selectSource,

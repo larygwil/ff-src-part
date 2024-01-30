@@ -4,14 +4,14 @@
 
 "use strict";
 
-const { LocalizationHelper } = require("devtools/shared/l10n");
+const { LocalizationHelper } = require("resource://devtools/shared/l10n.js");
 const L10N = new LocalizationHelper(
   "devtools/client/locales/inspector.properties"
 );
 
-const Editor = require("devtools/client/shared/sourceeditor/editor");
-const beautify = require("devtools/shared/jsbeautify/beautify");
-const EventEmitter = require("devtools/shared/event-emitter");
+const Editor = require("resource://devtools/client/shared/sourceeditor/editor.js");
+const beautify = require("resource://devtools/shared/jsbeautify/beautify.js");
+const EventEmitter = require("resource://devtools/shared/event-emitter.js");
 
 const XHTML_NS = "http://www.w3.org/1999/xhtml";
 const CONTAINER_WIDTH = 500;
@@ -44,9 +44,8 @@ class EventTooltip extends EventEmitter {
     this._tooltip.eventTooltip = this;
 
     this._headerClicked = this._headerClicked.bind(this);
-    this._eventToggleCheckboxChanged = this._eventToggleCheckboxChanged.bind(
-      this
-    );
+    this._eventToggleCheckboxChanged =
+      this._eventToggleCheckboxChanged.bind(this);
 
     this._subscriptions = [];
 
@@ -194,7 +193,7 @@ class EventTooltip extends EventEmitter {
       // Content
       const editor = new Editor(config);
       this._eventEditors.set(content, {
-        editor: editor,
+        editor,
         handler: listener.handler,
         native: listener.native,
         appended: false,

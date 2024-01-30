@@ -17,10 +17,9 @@
 #include "nsIStreamListener.h"
 #include "nsILoadGroup.h"
 #include "nsNetCID.h"
+#include "nsNetUtil.h"
 #include "nsStreamUtils.h"
 #include <algorithm>
-
-static NS_DEFINE_CID(kStreamTransportServiceCID, NS_STREAMTRANSPORTSERVICE_CID);
 
 //
 // MOZ_LOG=nsStreamPump:5
@@ -38,7 +37,7 @@ nsInputStreamPump::nsInputStreamPump() : mOffMainThread(!NS_IsMainThread()) {}
 nsresult nsInputStreamPump::Create(nsInputStreamPump** result,
                                    nsIInputStream* stream, uint32_t segsize,
                                    uint32_t segcount, bool closeWhenDone,
-                                   nsIEventTarget* mainThreadTarget) {
+                                   nsISerialEventTarget* mainThreadTarget) {
   nsresult rv = NS_ERROR_OUT_OF_MEMORY;
   RefPtr<nsInputStreamPump> pump = new nsInputStreamPump();
   if (pump) {
@@ -86,7 +85,8 @@ nsresult nsInputStreamPump::PeekStream(PeekSegmentFun callback, void* closure) {
 
   PeekData data(callback, closure);
   return mAsyncStream->ReadSegments(
-      CallPeekFunc, &data, net::nsIOService::gDefaultSegmentSize, &dummy);
+      CallPeekFunc, &data, mozilla::net::nsIOService::gDefaultSegmentSize,
+      &dummy);
 }
 
 nsresult nsInputStreamPump::EnsureWaiting() {
@@ -99,9 +99,10 @@ nsresult nsInputStreamPump::EnsureWaiting() {
     // Ensure OnStateStop is called on the main thread only when this pump is
     // created on main thread.
     if (mState == STATE_STOP && !mOffMainThread) {
-      nsCOMPtr<nsIEventTarget> mainThread =
-          mLabeledMainThreadTarget ? mLabeledMainThreadTarget
-                                   : do_AddRef(GetMainThreadEventTarget());
+      nsCOMPtr<nsISerialEventTarget> mainThread =
+          mLabeledMainThreadTarget
+              ? mLabeledMainThreadTarget
+              : do_AddRef(mozilla::GetMainThreadSerialEventTarget());
       if (mTargetThread != mainThread) {
         mTargetThread = mainThread;
       }
@@ -164,6 +165,19 @@ nsInputStreamPump::GetStatus(nsresult* status) {
 
   *status = mStatus;
   return NS_OK;
+}
+
+NS_IMETHODIMP nsInputStreamPump::SetCanceledReason(const nsACString& aReason) {
+  return SetCanceledReasonImpl(aReason);
+}
+
+NS_IMETHODIMP nsInputStreamPump::GetCanceledReason(nsACString& aReason) {
+  return GetCanceledReasonImpl(aReason);
+}
+
+NS_IMETHODIMP nsInputStreamPump::CancelWithReason(nsresult aStatus,
+                                                  const nsACString& aReason) {
+  return CancelWithReasonImpl(aStatus, aReason);
 }
 
 NS_IMETHODIMP
@@ -292,7 +306,7 @@ nsInputStreamPump::SetLoadGroup(nsILoadGroup* aLoadGroup) {
 NS_IMETHODIMP
 nsInputStreamPump::Init(nsIInputStream* stream, uint32_t segsize,
                         uint32_t segcount, bool closeWhenDone,
-                        nsIEventTarget* mainThreadTarget) {
+                        nsISerialEventTarget* mainThreadTarget) {
   // probably we can't be multithread-accessed yet
   RecursiveMutexAutoLock lock(mMutex);
   NS_ENSURE_TRUE(mState == STATE_IDLE, NS_ERROR_IN_PROGRESS);
@@ -340,7 +354,7 @@ nsInputStreamPump::AsyncRead(nsIStreamListener* listener) {
   if (NS_IsMainThread() && mLabeledMainThreadTarget) {
     mTargetThread = mLabeledMainThreadTarget;
   } else {
-    mTargetThread = GetCurrentEventTarget();
+    mTargetThread = mozilla::GetCurrentSerialEventTarget();
   }
   NS_ENSURE_STATE(mTargetThread);
 
@@ -566,10 +580,10 @@ uint32_t nsInputStreamPump::OnStateTransfer() {
       // mStreamOffset is only touched in OnStateTransfer, and AsyncRead
       // shouldn't be called during OnDataAvailable()
 
-      PUSH_IGNORE_THREAD_SAFETY
+      MOZ_PUSH_IGNORE_THREAD_SAFETY
       rv = listener->OnDataAvailable(this, mAsyncStream, mStreamOffset,
                                      odaAvail);
-      POP_THREAD_SAFETY
+      MOZ_POP_THREAD_SAFETY
     }
 
     // don't enter this code if ODA failed or called Cancel
@@ -637,8 +651,8 @@ uint32_t nsInputStreamPump::OnStateStop() {
     // This method can be called on a different thread if nsInputStreamPump
     // is used off the main-thread.
     nsresult rv = mLabeledMainThreadTarget->Dispatch(
-        NewRunnableMethod("nsInputStreamPump::CallOnStateStop", this,
-                          &nsInputStreamPump::CallOnStateStop));
+        mozilla::NewRunnableMethod("nsInputStreamPump::CallOnStateStop", this,
+                                   &nsInputStreamPump::CallOnStateStop));
     NS_ENSURE_SUCCESS(rv, STATE_DEAD);
     return STATE_DEAD;
   }
@@ -719,7 +733,7 @@ nsresult nsInputStreamPump::CreateBufferedStreamIfNeeded() {
 //-----------------------------------------------------------------------------
 
 NS_IMETHODIMP
-nsInputStreamPump::RetargetDeliveryTo(nsIEventTarget* aNewTarget) {
+nsInputStreamPump::RetargetDeliveryTo(nsISerialEventTarget* aNewTarget) {
   RecursiveMutexAutoLock lock(mMutex);
 
   NS_ENSURE_ARG(aNewTarget);
@@ -763,10 +777,10 @@ nsInputStreamPump::RetargetDeliveryTo(nsIEventTarget* aNewTarget) {
 }
 
 NS_IMETHODIMP
-nsInputStreamPump::GetDeliveryTarget(nsIEventTarget** aNewTarget) {
+nsInputStreamPump::GetDeliveryTarget(nsISerialEventTarget** aNewTarget) {
   RecursiveMutexAutoLock lock(mMutex);
 
-  nsCOMPtr<nsIEventTarget> target = mTargetThread;
+  nsCOMPtr<nsISerialEventTarget> target = mTargetThread;
   target.forget(aNewTarget);
   return NS_OK;
 }

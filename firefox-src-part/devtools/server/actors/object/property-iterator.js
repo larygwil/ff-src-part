@@ -4,17 +4,16 @@
 
 "use strict";
 
-const { Cu } = require("chrome");
-const DevToolsUtils = require("devtools/shared/DevToolsUtils");
-const protocol = require("devtools/shared/protocol");
+const { Actor } = require("resource://devtools/shared/protocol.js");
 const {
   propertyIteratorSpec,
-} = require("devtools/shared/specs/property-iterator");
-loader.lazyRequireGetter(this, "ChromeUtils");
+} = require("resource://devtools/shared/specs/property-iterator.js");
+
+const DevToolsUtils = require("resource://devtools/shared/DevToolsUtils.js");
 loader.lazyRequireGetter(
   this,
   "ObjectUtils",
-  "devtools/server/actors/object/utils"
+  "resource://devtools/server/actors/object/utils.js"
 );
 
 /**
@@ -43,11 +42,9 @@ loader.lazyRequireGetter(
  *          Regarding value filtering it just compare to the stringification
  *          of the property value.
  */
-const PropertyIteratorActor = protocol.ActorClassWithSpec(
-  propertyIteratorSpec,
-  {
-    initialize(objectActor, options, conn) {
-      protocol.Actor.prototype.initialize.call(this, conn);
+class PropertyIteratorActor extends Actor {
+    constructor(objectActor, options, conn) {
+      super(conn, propertyIteratorSpec);
       if (!DevToolsUtils.isSafeDebuggerObject(objectActor.obj)) {
         this.iterator = {
           size: 0,
@@ -66,6 +63,16 @@ const PropertyIteratorActor = protocol.ActorClassWithSpec(
           this.iterator = enumWeakSetEntries(objectActor);
         } else if (cls == "Storage") {
           this.iterator = enumStorageEntries(objectActor);
+        } else if (cls == "URLSearchParams") {
+          this.iterator = enumURLSearchParamsEntries(objectActor);
+        } else if (cls == "Headers") {
+          this.iterator = enumHeadersEntries(objectActor);
+        } else if (cls == "FormData") {
+          this.iterator = enumFormDataEntries(objectActor);
+        } else if (cls == "MIDIInputMap") {
+          this.iterator = enumMidiInputMapEntries(objectActor);
+        } else if (cls == "MIDIOutputMap") {
+          this.iterator = enumMidiOutputMapEntries(objectActor);
         } else {
           throw new Error(
             "Unsupported class to enumerate entries from: " + cls
@@ -80,7 +87,7 @@ const PropertyIteratorActor = protocol.ActorClassWithSpec(
       } else {
         this.iterator = enumObjectProperties(objectActor, options);
       }
-    },
+    }
 
     form() {
       return {
@@ -88,7 +95,7 @@ const PropertyIteratorActor = protocol.ActorClassWithSpec(
         actor: this.actorID,
         count: this.iterator.size,
       };
-    },
+    }
 
     names({ indexes }) {
       const list = [];
@@ -96,7 +103,7 @@ const PropertyIteratorActor = protocol.ActorClassWithSpec(
         list.push(this.iterator.propertyName(idx));
       }
       return indexes;
-    },
+    }
 
     slice({ start, count }) {
       const ownProperties = Object.create(null);
@@ -108,13 +115,12 @@ const PropertyIteratorActor = protocol.ActorClassWithSpec(
       return {
         ownProperties,
       };
-    },
+    }
 
     all() {
       return this.slice({ start: 0, count: this.iterator.size });
-    },
+    }
   }
-);
 
 function waiveXrays(obj) {
   return isWorker ? obj : Cu.waiveXrays(obj);
@@ -345,6 +351,151 @@ function enumStorageEntries(objectActor) {
   };
 }
 
+function enumURLSearchParamsEntries(objectActor) {
+  let obj = objectActor.obj;
+  let raw = obj.unsafeDereference();
+  const entries = [...waiveXrays(URLSearchParams.prototype.entries.call(raw))];
+
+  return {
+    [Symbol.iterator]: function*() {
+      for (const [key, value] of entries) {
+        yield [key, value];
+      }
+    },
+    size: entries.length,
+    propertyName(index) {
+      // UrlSearchParams entries can have the same key multiple times (e.g. `?a=1&a=2`),
+      // so let's return the index as a name to be able to display them properly in the client.
+      return index;
+    },
+    propertyDescription(index) {
+      const [key, value] = entries[index];
+
+      return {
+        enumerable: true,
+        value: {
+          type: "urlSearchParamsEntry",
+          preview: {
+            key: gripFromEntry(objectActor, key),
+            value: gripFromEntry(objectActor, value),
+          },
+        },
+      };
+    },
+  };
+}
+
+function enumFormDataEntries(objectActor) {
+  let obj = objectActor.obj;
+  let raw = obj.unsafeDereference();
+  const entries = [...waiveXrays(FormData.prototype.entries.call(raw))];
+
+  return {
+    [Symbol.iterator]: function*() {
+      for (const [key, value] of entries) {
+        yield [key, value];
+      }
+    },
+    size: entries.length,
+    propertyName(index) {
+      return index;
+    },
+    propertyDescription(index) {
+      const [key, value] = entries[index];
+
+      return {
+        enumerable: true,
+        value: {
+          type: "formDataEntry",
+          preview: {
+            key: gripFromEntry(objectActor, key),
+            value: gripFromEntry(objectActor, value),
+          },
+        },
+      };
+    },
+  };
+}
+
+function enumHeadersEntries(objectActor) {
+  let raw = objectActor.obj.unsafeDereference();
+  const entries = [...waiveXrays(Headers.prototype.entries.call(raw))];
+
+  return {
+    [Symbol.iterator]: function*() {
+      for (const [key, value] of entries) {
+        yield [key, value];
+      }
+    },
+    size: entries.length,
+    propertyName(index) {
+      return entries[index][0];
+    },
+    propertyDescription(index) {
+      return {
+        enumerable: true,
+        value: gripFromEntry(objectActor, entries[index][1]),
+      };
+    },
+  };
+}
+
+function enumMidiInputMapEntries(objectActor) {
+  let raw = objectActor.obj.unsafeDereference();
+  // We need to waive `raw` as we can't get the iterator from the Xray for MapLike (See Bug 1173651).
+  // We also need to waive Xrays on the result of the call to `entries` as we don't have
+  // Xrays to Iterator objects (see Bug 1023984)
+  const entries = Array.from(
+    waiveXrays(MIDIInputMap.prototype.entries.call(waiveXrays(raw)))
+  );
+
+  return {
+    [Symbol.iterator]: function*() {
+      for (const [key, value] of entries) {
+        yield [key, gripFromEntry(objectActor, value)];
+      }
+    },
+    size: entries.length,
+    propertyName(index) {
+      return entries[index][0];
+    },
+    propertyDescription(index) {
+      return {
+        enumerable: true,
+        value: gripFromEntry(objectActor, entries[index][1]),
+      };
+    },
+  };
+}
+
+function enumMidiOutputMapEntries(objectActor) {
+  let raw = objectActor.obj.unsafeDereference();
+  // We need to waive `raw` as we can't get the iterator from the Xray for MapLike (See Bug 1173651).
+  // We also need to waive Xrays on the result of the call to `entries` as we don't have
+  // Xrays to Iterator objects (see Bug 1023984)
+  const entries = Array.from(
+    waiveXrays(MIDIOutputMap.prototype.entries.call(waiveXrays(raw)))
+  );
+
+  return {
+    [Symbol.iterator]: function*() {
+      for (const [key, value] of entries) {
+        yield [key, gripFromEntry(objectActor, value)];
+      }
+    },
+    size: entries.length,
+    propertyName(index) {
+      return entries[index][0];
+    },
+    propertyDescription(index) {
+      return {
+        enumerable: true,
+        value: gripFromEntry(objectActor, entries[index][1]),
+      };
+    },
+  };
+}
+
 function getWeakMapEntries(obj) {
   // We currently lack XrayWrappers for WeakMap, so when we iterate over
   // the values, the temporary iterator objects get created in the target
@@ -487,7 +638,12 @@ function isUint32(num) {
 module.exports = {
   PropertyIteratorActor,
   enumMapEntries,
+  enumMidiInputMapEntries,
+  enumMidiOutputMapEntries,
   enumSetEntries,
+  enumURLSearchParamsEntries,
+  enumFormDataEntries,
+  enumHeadersEntries,
   enumWeakMapEntries,
   enumWeakSetEntries,
 };

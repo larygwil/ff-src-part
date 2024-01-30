@@ -23,39 +23,46 @@ var EXPORTED_SYMBOLS = [
   "verifyBundleSignedState",
 ];
 
-const { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm");
-const { XPCOMUtils } = ChromeUtils.import(
-  "resource://gre/modules/XPCOMUtils.jsm"
+const { XPCOMUtils } = ChromeUtils.importESModule(
+  "resource://gre/modules/XPCOMUtils.sys.mjs"
 );
-const { AddonManager, AddonManagerPrivate } = ChromeUtils.import(
-  "resource://gre/modules/AddonManager.jsm"
+const { computeSha256HashAsString, getHashStringForCrypto } =
+  ChromeUtils.importESModule(
+    "resource://gre/modules/addons/crypto-utils.sys.mjs"
+  );
+
+const { AppConstants } = ChromeUtils.importESModule(
+  "resource://gre/modules/AppConstants.sys.mjs"
+);
+const { AddonManager, AddonManagerPrivate } = ChromeUtils.importESModule(
+  "resource://gre/modules/AddonManager.sys.mjs"
 );
 
-XPCOMUtils.defineLazyGlobalGetters(this, [
-  "TextDecoder",
-  "TextEncoder",
-  "fetch",
-]);
+const lazy = {};
 
-XPCOMUtils.defineLazyModuleGetters(this, {
-  AddonRepository: "resource://gre/modules/addons/AddonRepository.jsm",
-  AddonSettings: "resource://gre/modules/addons/AddonSettings.jsm",
-  AppConstants: "resource://gre/modules/AppConstants.jsm",
-  CertUtils: "resource://gre/modules/CertUtils.jsm",
-  ExtensionData: "resource://gre/modules/Extension.jsm",
-  FileUtils: "resource://gre/modules/FileUtils.jsm",
+ChromeUtils.defineESModuleGetters(lazy, {
+  AddonRepository: "resource://gre/modules/addons/AddonRepository.sys.mjs",
+  AddonSettings: "resource://gre/modules/addons/AddonSettings.sys.mjs",
+  CertUtils: "resource://gre/modules/CertUtils.sys.mjs",
+  ExtensionData: "resource://gre/modules/Extension.sys.mjs",
+  FileUtils: "resource://gre/modules/FileUtils.sys.mjs",
+  ProductAddonChecker:
+    "resource://gre/modules/addons/ProductAddonChecker.sys.mjs",
+  UpdateUtils: "resource://gre/modules/UpdateUtils.sys.mjs",
+});
+
+XPCOMUtils.defineLazyModuleGetters(lazy, {
+  BuiltInThemesHelpers: "resource://gre/modules/addons/XPIDatabase.jsm",
   NetUtil: "resource://gre/modules/NetUtil.jsm",
-  ProductAddonChecker: "resource://gre/modules/addons/ProductAddonChecker.jsm",
-  UpdateUtils: "resource://gre/modules/UpdateUtils.jsm",
-
   AddonInternal: "resource://gre/modules/addons/XPIDatabase.jsm",
   XPIDatabase: "resource://gre/modules/addons/XPIDatabase.jsm",
   XPIInternal: "resource://gre/modules/addons/XPIProvider.jsm",
 });
 
-XPCOMUtils.defineLazyGetter(this, "IconDetails", () => {
-  return ChromeUtils.import("resource://gre/modules/ExtensionParent.jsm")
-    .ExtensionParent.IconDetails;
+XPCOMUtils.defineLazyGetter(lazy, "IconDetails", () => {
+  return ChromeUtils.importESModule(
+    "resource://gre/modules/ExtensionParent.sys.mjs"
+  ).ExtensionParent.IconDetails;
 });
 
 const { nsIBlocklistService } = Ci;
@@ -92,7 +99,7 @@ const ZipReader = Components.Constructor(
   "open"
 );
 
-XPCOMUtils.defineLazyServiceGetters(this, {
+XPCOMUtils.defineLazyServiceGetters(lazy, {
   gCertDB: ["@mozilla.org/security/x509certdb;1", "nsIX509CertDB"],
 });
 
@@ -108,30 +115,6 @@ const PREF_XPI_WHITELIST_REQUIRED = "xpinstall.whitelist.required";
 const PREF_SELECTED_THEME = "extensions.activeThemeID";
 
 const TOOLKIT_ID = "toolkit@mozilla.org";
-
-/* globals BOOTSTRAP_REASONS, DIR_STAGE, DIR_TRASH, KEY_APP_PROFILE, KEY_APP_SYSTEM_ADDONS, KEY_APP_SYSTEM_DEFAULTS,
-   KEY_APP_SYSTEM_PROFILE, PREF_BRANCH_INSTALLED_ADDON, PREF_SYSTEM_ADDON_SET, TEMPORARY_ADDON_SUFFIX,
-   XPI_PERMISSION, XPIStates, getURIForResourceInFile, iterDirectory */
-const XPI_INTERNAL_SYMBOLS = [
-  "BOOTSTRAP_REASONS",
-  "DIR_STAGE",
-  "DIR_TRASH",
-  "KEY_APP_PROFILE",
-  "KEY_APP_SYSTEM_ADDONS",
-  "KEY_APP_SYSTEM_DEFAULTS",
-  "KEY_APP_SYSTEM_PROFILE",
-  "PREF_BRANCH_INSTALLED_ADDON",
-  "PREF_SYSTEM_ADDON_SET",
-  "TEMPORARY_ADDON_SUFFIX",
-  "XPI_PERMISSION",
-  "XPIStates",
-  "getURIForResourceInFile",
-  "iterDirectory",
-];
-
-for (let name of XPI_INTERNAL_SYMBOLS) {
-  XPCOMUtils.defineLazyGetter(this, name, () => XPIInternal[name]);
-}
 
 /**
  * Returns a nsIFile instance for the given path, relative to the given
@@ -194,9 +177,12 @@ const MSG_JAR_FLUSH = "Extension:FlushJarCache";
 /**
  * Valid IDs fit this pattern.
  */
-var gIDTest = /^(\{[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\}|[a-z0-9-\._]*\@[a-z0-9-\._]+)$/i;
+var gIDTest =
+  /^(\{[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\}|[a-z0-9-\._]*\@[a-z0-9-\._]+)$/i;
 
-const { Log } = ChromeUtils.import("resource://gre/modules/Log.jsm");
+const { Log } = ChromeUtils.importESModule(
+  "resource://gre/modules/Log.sys.mjs"
+);
 const LOGGER_ID = "addons.xpi";
 
 // Create a new logger for use by all objects in this Addons XPI Provider module
@@ -362,7 +348,7 @@ XPIPackage = class XPIPackage extends Package {
       // test code can pass through objects that XPConnect would reject.
       callback.wrappedJSObject = callback;
 
-      gCertDB.openSignedAppFileAsync(root, this.file, callback);
+      lazy.gCertDB.openSignedAppFileAsync(root, this.file, callback);
     });
   }
 
@@ -413,8 +399,8 @@ function builtinPackage(baseURL) {
  */
 function newVersionReason(oldVersion, newVersion) {
   return Services.vc.compare(oldVersion, newVersion) <= 0
-    ? BOOTSTRAP_REASONS.ADDON_UPGRADE
-    : BOOTSTRAP_REASONS.ADDON_DOWNGRADE;
+    ? lazy.XPIInternal.BOOTSTRAP_REASONS.ADDON_UPGRADE
+    : lazy.XPIInternal.BOOTSTRAP_REASONS.ADDON_DOWNGRADE;
 }
 
 // Behaves like Promise.all except waits for all promises to resolve/reject
@@ -450,18 +436,20 @@ function waitForAllPromises(promises) {
  */
 async function loadManifestFromWebManifest(aPackage, aLocation) {
   let verifiedSignedState;
-  let extension = await ExtensionData.constructAsync({
-    rootURI: XPIInternal.maybeResolveURI(aPackage.rootURI),
+  const temporarilyInstalled = aLocation.isTemporary;
+  let extension = await lazy.ExtensionData.constructAsync({
+    rootURI: lazy.XPIInternal.maybeResolveURI(aPackage.rootURI),
+    temporarilyInstalled,
     async checkPrivileged(type, id) {
       verifiedSignedState = await aPackage.verifySignedState(
         id,
         type,
         aLocation
       );
-      return ExtensionData.getIsPrivileged({
+      return lazy.ExtensionData.getIsPrivileged({
         signedState: verifiedSignedState.signedState,
         builtIn: aLocation.isBuiltin,
-        temporarilyInstalled: aLocation.isTemporary,
+        temporarilyInstalled,
       });
     },
   });
@@ -482,6 +470,9 @@ async function loadManifestFromWebManifest(aPackage, aLocation) {
     throw error;
   }
 
+  // Internally, we use the `applications` key but it is because we assign the value
+  // of `browser_specific_settings` to `applications` in `ExtensionData.parseManifest()`.
+  // Yet, as of MV3, only `browser_specific_settings` is accepted in manifest.json files.
   let bss = manifest.applications?.gecko || {};
 
   // A * is illegal in strict_min_version
@@ -489,7 +480,7 @@ async function loadManifestFromWebManifest(aPackage, aLocation) {
     throw new Error("The use of '*' in strict_min_version is invalid");
   }
 
-  let addon = new AddonInternal();
+  let addon = new lazy.AddonInternal();
   addon.id = bss.id;
   addon.version = manifest.version;
   addon.manifestVersion = manifest.manifest_version;
@@ -512,7 +503,8 @@ async function loadManifestFromWebManifest(aPackage, aLocation) {
     addon.previewImage = "preview.png";
   }
 
-  if (addon.type == "sitepermission") {
+  // TODO(Bug 1789718): Remove after the deprecated XPIProvider-based implementation is also removed.
+  if (addon.type == "sitepermission-deprecated") {
     addon.sitePermissions = manifest.site_permissions;
     addon.siteOrigin = manifest.install_origins[0];
   }
@@ -658,12 +650,14 @@ function generateTemporaryInstallID(aFile) {
   const sess = TEMP_INSTALL_ID_GEN_SESSION;
   hasher.update(sess, sess.length);
   hasher.update(data, data.length);
-  let id = `${getHashStringForCrypto(hasher)}${TEMPORARY_ADDON_SUFFIX}`;
+  let id = `${getHashStringForCrypto(hasher)}${
+    lazy.XPIInternal.TEMPORARY_ADDON_SUFFIX
+  }`;
   logger.info(`Generated temp id ${id} (${sess.join("")}) for ${aFile.path}`);
   return id;
 }
 
-var loadManifest = async function(aPackage, aLocation, aOldAddon) {
+var loadManifest = async function (aPackage, aLocation, aOldAddon) {
   let addon;
   let verifiedSignedState;
   if (await aPackage.hasResource("manifest.json")) {
@@ -723,7 +717,7 @@ var loadManifest = async function(aPackage, aLocation, aOldAddon) {
     }
 
     await addon.updateBlocklistState();
-    addon.appDisabled = !XPIDatabase.isUsableAddon(addon);
+    addon.appDisabled = !lazy.XPIDatabase.isUsableAddon(addon);
 
     // Always report when there is an attempt to install a blocked add-on.
     // (transitions from STATE_BLOCKED to STATE_NOT_BLOCKED are checked
@@ -755,7 +749,7 @@ var loadManifest = async function(aPackage, aLocation, aOldAddon) {
  * @returns {AddonInternal}
  *        The parsed Addon object for the file's manifest.
  */
-var loadManifestFromFile = async function(aFile, aLocation, aOldAddon) {
+var loadManifestFromFile = async function (aFile, aLocation, aOldAddon) {
   let pkg = Package.get(aFile);
   try {
     let addon = await loadManifest(pkg, aLocation, aOldAddon);
@@ -772,16 +766,16 @@ var loadManifestFromFile = async function(aFile, aLocation, aOldAddon) {
 function syncLoadManifest(state, location, oldAddon) {
   if (location.name == "app-builtin") {
     let pkg = builtinPackage(Services.io.newURI(state.rootURI));
-    return XPIInternal.awaitPromise(loadManifest(pkg, location, oldAddon));
+    return lazy.XPIInternal.awaitPromise(loadManifest(pkg, location, oldAddon));
   }
 
   let file = new nsIFile(state.path);
   let pkg = Package.get(file);
-  return XPIInternal.awaitPromise(
+  return lazy.XPIInternal.awaitPromise(
     (async () => {
       try {
         let addon = await loadManifest(pkg, location, oldAddon);
-        addon.rootURI = getURIForResourceInFile(file, "").spec;
+        addon.rootURI = lazy.XPIInternal.getURIForResourceInFile(file, "").spec;
         return addon;
       } finally {
         pkg.close();
@@ -799,26 +793,11 @@ function syncLoadManifest(state, location, oldAddon) {
  *       the OS temporary files directory
  */
 function getTemporaryFile() {
-  let file = FileUtils.getDir(KEY_TEMPDIR, []);
+  let file = lazy.FileUtils.getDir(KEY_TEMPDIR, []);
   let random = Math.round(Math.random() * 36 ** 3).toString(36);
   file.append(`tmp-${random}.xpi`);
-  file.createUnique(Ci.nsIFile.NORMAL_FILE_TYPE, FileUtils.PERMS_FILE);
+  file.createUnique(Ci.nsIFile.NORMAL_FILE_TYPE, lazy.FileUtils.PERMS_FILE);
   return file;
-}
-
-/**
- * Returns the string representation (hex) of the SHA256 hash of `input`.
- *
- * @param {string} input
- *        The value to hash.
- * @returns {string}
- *          The hex representation of a SHA256 hash.
- */
-function computeSha256HashAsString(input) {
-  const data = new Uint8Array(new TextEncoder().encode(input));
-  const crypto = CryptoHash("sha256");
-  crypto.update(data, data.length);
-  return getHashStringForCrypto(crypto);
 }
 
 function getHashForFile(file, algorithm) {
@@ -897,7 +876,7 @@ function shouldVerifySignedState(aAddonType, aLocation) {
   //   return SIGNED_TYPES.has(type)
 
   // We don't care about signatures for default system add-ons
-  if (aLocation.name == KEY_APP_SYSTEM_DEFAULTS) {
+  if (aLocation.name == lazy.XPIInternal.KEY_APP_SYSTEM_DEFAULTS) {
     return false;
   }
 
@@ -915,7 +894,7 @@ function shouldVerifySignedState(aAddonType, aLocation) {
 
   // Otherwise only check signatures if the add-on is one of the signed
   // types.
-  return XPIDatabase.SIGNED_TYPES.has(aAddonType);
+  return lazy.XPIDatabase.SIGNED_TYPES.has(aAddonType);
 }
 
 /**
@@ -929,7 +908,7 @@ function shouldVerifySignedState(aAddonType, aLocation) {
  * @returns {Promise<number>}
  *        A Promise that resolves to an AddonManager.SIGNEDSTATE_* constant.
  */
-var verifyBundleSignedState = async function(aBundle, aAddon) {
+var verifyBundleSignedState = async function (aBundle, aAddon) {
   let pkg = Package.get(aBundle);
   try {
     let { signedState } = await pkg.verifySignedState(
@@ -1029,7 +1008,7 @@ function recursiveRemove(aFile) {
 
   setFilePermissions(
     aFile,
-    isDir ? FileUtils.PERMS_DIRECTORY : FileUtils.PERMS_FILE
+    isDir ? lazy.FileUtils.PERMS_DIRECTORY : lazy.FileUtils.PERMS_FILE
   );
 
   try {
@@ -1046,7 +1025,7 @@ function recursiveRemove(aFile) {
   // iterating over a directory while removing files from it (the YAFFS2
   // embedded filesystem has this issue, see bug 772238), and to remove
   // normal files before their resource forks on OSX (see bug 733436).
-  let entries = Array.from(iterDirectory(aFile));
+  let entries = Array.from(lazy.XPIInternal.iterDirectory(aFile));
   entries.forEach(recursiveRemove);
 
   try {
@@ -1090,8 +1069,10 @@ function setFilePermissions(aFile, aPermissions) {
 function writeStringToFile(file, string) {
   let fileStream = new FileOutputStream(
     file,
-    FileUtils.MODE_WRONLY | FileUtils.MODE_CREATE | FileUtils.MODE_TRUNCATE,
-    FileUtils.PERMS_FILE,
+    lazy.FileUtils.MODE_WRONLY |
+      lazy.FileUtils.MODE_CREATE |
+      lazy.FileUtils.MODE_TRUNCATE,
+    lazy.FileUtils.PERMS_FILE,
     0
   );
 
@@ -1223,7 +1204,10 @@ SafeInstallOperation.prototype = {
         move.newFile.moveTo(move.oldDir.parent, move.oldDir.leafName);
       } else if (move.newFile.isDirectory() && !move.newFile.isSymlink()) {
         let oldDir = getFile(move.oldFile.leafName, move.oldFile.parent);
-        oldDir.create(Ci.nsIFile.DIRECTORY_TYPE, FileUtils.PERMS_DIRECTORY);
+        oldDir.create(
+          Ci.nsIFile.DIRECTORY_TYPE,
+          lazy.FileUtils.PERMS_DIRECTORY
+        );
       } else if (!move.oldFile) {
         // No old file means this was a copied file
         move.newFile.remove(true);
@@ -1237,16 +1221,6 @@ SafeInstallOperation.prototype = {
     }
   },
 };
-
-function getHashStringForCrypto(aCrypto) {
-  // return the two-digit hexadecimal code for a byte
-  let toHexString = charCode => ("0" + charCode.toString(16)).slice(-2);
-
-  // convert the binary hash data to a hex string.
-  let binary = aCrypto.finish(/* base64 */ false);
-  let hash = Array.from(binary, c => toHexString(c.charCodeAt(0)));
-  return hash.join("").toLowerCase();
-}
 
 // A hash algorithm if the caller of AddonInstall did not specify one.
 const DEFAULT_HASH_ALGO = "sha256";
@@ -1480,7 +1454,7 @@ class AddonInstall {
    */
   addListener(aListener) {
     if (
-      !this.listeners.some(function(i) {
+      !this.listeners.some(function (i) {
         return i == aListener;
       })
     ) {
@@ -1495,7 +1469,7 @@ class AddonInstall {
    *        The InstallListener to remove
    */
   removeListener(aListener) {
-    this.listeners = this.listeners.filter(function(i) {
+    this.listeners = this.listeners.filter(function (i) {
       return i != aListener;
     });
   }
@@ -1623,7 +1597,7 @@ class AddonInstall {
         }
       }
 
-      if (XPIDatabase.mustSign(this.addon.type)) {
+      if (lazy.XPIDatabase.mustSign(this.addon.type)) {
         if (this.addon.signedState <= AddonManager.SIGNEDSTATE_MISSING) {
           // This add-on isn't properly signed by a signature that chains to the
           // trusted root.
@@ -1658,12 +1632,14 @@ class AddonInstall {
     // makes it impossible to delete on Windows.
 
     // Try to load from the existing cache first
-    let repoAddon = await AddonRepository.getCachedAddonByID(this.addon.id);
+    let repoAddon = await lazy.AddonRepository.getCachedAddonByID(
+      this.addon.id
+    );
 
     // It wasn't there so try to re-download it
     if (!repoAddon) {
       try {
-        [repoAddon] = await AddonRepository.cacheAddons([this.addon.id]);
+        [repoAddon] = await lazy.AddonRepository.cacheAddons([this.addon.id]);
       } catch (err) {
         logger.debug(
           `Error getting metadata for ${this.addon.id}: ${err.message}`
@@ -1673,7 +1649,7 @@ class AddonInstall {
 
     this.addon._repositoryAddon = repoAddon;
     this.name = this.name || this.addon._repositoryAddon.name;
-    this.addon.appDisabled = !XPIDatabase.isUsableAddon(this.addon);
+    this.addon.appDisabled = !lazy.XPIDatabase.isUsableAddon(this.addon);
     return undefined;
   }
 
@@ -1682,7 +1658,7 @@ class AddonInstall {
       return null;
     }
 
-    let { icon } = IconDetails.getPreferredIcon(
+    let { icon } = lazy.IconDetails.getPreferredIcon(
       this.addon.icons,
       null,
       desiredSize
@@ -1783,7 +1759,7 @@ class AddonInstall {
       this.existingAddon.userDisabled &&
       !this.existingAddon.pendingUninstall
     ) {
-      await XPIDatabase.updateAddonDisabledState(this.existingAddon, {
+      await lazy.XPIDatabase.updateAddonDisabledState(this.existingAddon, {
         userDisabled: false,
       });
       this.state = AddonManager.STATE_INSTALLED;
@@ -1830,7 +1806,7 @@ class AddonInstall {
           this.existingAddon.active &&
           !isSameLocation
         ) {
-          XPIDatabase.updateAddonActive(this.existingAddon, false);
+          lazy.XPIDatabase.updateAddonActive(this.existingAddon, false);
         }
 
         // Install the new add-on into its final location
@@ -1845,7 +1821,7 @@ class AddonInstall {
         this.addon.visible = willActivate;
 
         if (isSameLocation) {
-          this.addon = XPIDatabase.updateAddonMetadata(
+          this.addon = lazy.XPIDatabase.updateAddonMetadata(
             this.existingAddon,
             this.addon,
             file.path
@@ -1861,12 +1837,12 @@ class AddonInstall {
           }
         } else {
           this.addon.active = this.addon.visible && !this.addon.disabled;
-          this.addon = XPIDatabase.addToDatabase(this.addon, file.path);
-          XPIStates.addAddon(this.addon);
+          this.addon = lazy.XPIDatabase.addToDatabase(this.addon, file.path);
+          lazy.XPIInternal.XPIStates.addAddon(this.addon);
           this.addon.installDate = this.addon.updateDate;
-          XPIDatabase.saveChanges();
+          lazy.XPIDatabase.saveChanges();
         }
-        XPIStates.save();
+        lazy.XPIInternal.XPIStates.save();
 
         AddonManagerPrivate.callAddonListeners(
           "onInstalled",
@@ -1877,7 +1853,7 @@ class AddonInstall {
         this.state = AddonManager.STATE_INSTALLED;
         this._callInstallListeners("onInstallEnded", this.addon.wrapper);
 
-        XPIDatabase.recordAddonTelemetry(this.addon);
+        lazy.XPIDatabase.recordAddonTelemetry(this.addon);
 
         // Notify providers that a new theme has been enabled.
         if (this.addon.type === "theme" && this.addon.active) {
@@ -1886,13 +1862,25 @@ class AddonInstall {
             this.addon.type
           );
         }
+
+        // Clear the colorways builtins migrated to a non-builtin themes
+        // form the list of the retained themes.
+        if (
+          this.existingAddon?.isBuiltinColorwayTheme &&
+          !this.addon.isBuiltin &&
+          lazy.BuiltInThemesHelpers.isColorwayMigrationEnabled
+        ) {
+          lazy.BuiltInThemesHelpers.unretainMigratedColorwayTheme(
+            this.addon.id
+          );
+        }
       };
 
       this._startupPromise = (async () => {
         if (!willActivate) {
           await install();
         } else if (this.existingAddon) {
-          await XPIInternal.BootstrapScope.get(this.existingAddon).update(
+          await lazy.XPIInternal.BootstrapScope.get(this.existingAddon).update(
             this.addon,
             !this.addon.disabled,
             install
@@ -1903,7 +1891,7 @@ class AddonInstall {
           }
         } else {
           await install();
-          await XPIInternal.BootstrapScope.get(this.addon).install(
+          await lazy.XPIInternal.BootstrapScope.get(this.addon).install(
             undefined,
             true
           );
@@ -2141,7 +2129,7 @@ var LocalAddonInstall = class extends AddonInstall {
       return;
     }
 
-    let addon = await XPIDatabase.getVisibleAddonForID(this.addon.id);
+    let addon = await lazy.XPIDatabase.getVisibleAddonForID(this.addon.id);
 
     this.existingAddon = addon;
     this.addon.propagateDisabledState(this.existingAddon);
@@ -2328,8 +2316,10 @@ var DownloadAddonInstall = class extends AddonInstall {
       this.ownsTempFile = true;
       this.stream = new FileOutputStream(
         this.file,
-        FileUtils.MODE_WRONLY | FileUtils.MODE_CREATE | FileUtils.MODE_TRUNCATE,
-        FileUtils.PERMS_FILE,
+        lazy.FileUtils.MODE_WRONLY |
+          lazy.FileUtils.MODE_CREATE |
+          lazy.FileUtils.MODE_TRUNCATE,
+        lazy.FileUtils.PERMS_FILE,
         0
       );
     } catch (e) {
@@ -2349,11 +2339,11 @@ var DownloadAddonInstall = class extends AddonInstall {
     ].createInstance(Ci.nsIStreamListenerTee);
     listener.init(this, this.stream);
     try {
-      this.badCertHandler = new CertUtils.BadCertHandler(
-        !AddonSettings.INSTALL_REQUIREBUILTINCERTS
+      this.badCertHandler = new lazy.CertUtils.BadCertHandler(
+        !lazy.AddonSettings.INSTALL_REQUIREBUILTINCERTS
       );
 
-      this.channel = NetUtil.newChannel({
+      this.channel = lazy.NetUtil.newChannel({
         uri: this.sourceURI,
         securityFlags:
           Ci.nsILoadInfo.SEC_ALLOW_CROSS_ORIGIN_INHERITS_SEC_CONTEXT,
@@ -2522,9 +2512,9 @@ var DownloadAddonInstall = class extends AddonInstall {
       ) {
         if (!this.hash && aRequest instanceof Ci.nsIChannel) {
           try {
-            CertUtils.checkCert(
+            lazy.CertUtils.checkCert(
               aRequest,
-              !AddonSettings.INSTALL_REQUIREBUILTINCERTS
+              !lazy.AddonSettings.INSTALL_REQUIREBUILTINCERTS
             );
           } catch (e) {
             this.downloadFailed(AddonManager.ERROR_NETWORK_FAILURE, e);
@@ -2611,7 +2601,7 @@ var DownloadAddonInstall = class extends AddonInstall {
    */
   async downloadCompleted() {
     let wasUpdate = !!this.existingAddon;
-    let aAddon = await XPIDatabase.getVisibleAddonForID(this.addon.id);
+    let aAddon = await lazy.XPIDatabase.getVisibleAddonForID(this.addon.id);
     if (aAddon) {
       this.existingAddon = aAddon;
     }
@@ -2688,7 +2678,7 @@ var DownloadAddonInstall = class extends AddonInstall {
 function createUpdate(aCallback, aAddon, aUpdate, isUserRequested) {
   let url = Services.io.newURI(aUpdate.updateURL);
 
-  (async function() {
+  (async function () {
     let opts = {
       hash: aUpdate.updateHash,
       existingAddon: aAddon,
@@ -2714,7 +2704,22 @@ function createUpdate(aCallback, aAddon, aUpdate, isUserRequested) {
       install = new LocalAddonInstall(aAddon.location, url, opts);
       await install.init();
     } else {
-      install = new DownloadAddonInstall(aAddon.location, url, opts);
+      let loc = aAddon.location;
+      if (
+        aAddon.isBuiltinColorwayTheme &&
+        lazy.BuiltInThemesHelpers.isColorwayMigrationEnabled
+      ) {
+        // Builtin colorways theme needs to be updated by installing the version
+        // got from AMO into the profile location and not using the location
+        // where the builtin addon is currently installed.
+        logger.info(
+          `Overriding location to APP_PROFILE on builtin colorway theme update for "${aAddon.id}"`
+        );
+        loc = lazy.XPIInternal.XPIStates.getLocation(
+          lazy.XPIInternal.KEY_APP_PROFILE
+        );
+      }
+      install = new DownloadAddonInstall(loc, url, opts);
     }
 
     aCallback(install);
@@ -2839,7 +2844,7 @@ AddonInstallWrapper.prototype = {
   "state",
   "progress",
   "maxProgress",
-].forEach(function(aProp) {
+].forEach(function (aProp) {
   Object.defineProperty(AddonInstallWrapper.prototype, aProp, {
     get() {
       return installFor(this)[aProp];
@@ -2864,7 +2869,7 @@ AddonInstallWrapper.prototype = {
  * @throws if the aListener or aReason arguments are not valid
  */
 var AddonUpdateChecker;
-var UpdateChecker = function(
+var UpdateChecker = function (
   aAddon,
   aListener,
   aReason,
@@ -2875,8 +2880,8 @@ var UpdateChecker = function(
     throw Components.Exception("", Cr.NS_ERROR_INVALID_ARG);
   }
 
-  ({ AddonUpdateChecker } = ChromeUtils.import(
-    "resource://gre/modules/addons/AddonUpdateChecker.jsm"
+  ({ AddonUpdateChecker } = ChromeUtils.importESModule(
+    "resource://gre/modules/addons/AddonUpdateChecker.sys.mjs"
   ));
 
   this.addon = aAddon;
@@ -3112,7 +3117,9 @@ UpdateChecker.prototype = {
  */
 function createLocalInstall(file, location, telemetryInfo) {
   if (!location) {
-    location = XPIStates.getLocation(KEY_APP_PROFILE);
+    location = lazy.XPIInternal.XPIStates.getLocation(
+      lazy.XPIInternal.KEY_APP_PROFILE
+    );
   }
   let url = Services.io.newFileURI(file);
 
@@ -3136,7 +3143,10 @@ function createLocalInstall(file, location, telemetryInfo) {
  *        The location to remove the addon from.
  */
 async function uninstallAddonFromLocation(addonID, location) {
-  let existing = await XPIDatabase.getAddonInLocation(addonID, location.name);
+  let existing = await lazy.XPIDatabase.getAddonInLocation(
+    addonID,
+    location.name
+  );
   if (!existing) {
     return;
   }
@@ -3146,9 +3156,9 @@ async function uninstallAddonFromLocation(addonID, location) {
       await a.uninstall();
     }
   } else {
-    XPIDatabase.removeAddonMetadata(existing);
+    lazy.XPIDatabase.removeAddonMetadata(existing);
     location.removeAddon(addonID);
-    XPIStates.save();
+    lazy.XPIInternal.XPIStates.save();
     AddonManagerPrivate.callAddonListeners("onUninstalled", existing);
   }
 }
@@ -3180,7 +3190,7 @@ class DirectoryInstaller {
    * @returns {nsIFile}
    */
   getStagingDir() {
-    return getFile(DIR_STAGE, this.dir);
+    return getFile(lazy.XPIInternal.DIR_STAGE, this.dir);
   }
 
   requestStagingDir() {
@@ -3190,7 +3200,7 @@ class DirectoryInstaller {
       return this._stagingDirPromise;
     }
 
-    let stagepath = PathUtils.join(this.dir.path, DIR_STAGE);
+    let stagepath = PathUtils.join(this.dir.path, lazy.XPIInternal.DIR_STAGE);
     return (this._stagingDirPromise = IOUtils.makeDirectory(stagepath, {
       createAncestors: true,
       ignoreExisting: true,
@@ -3222,6 +3232,12 @@ class DirectoryInstaller {
   cleanStagingDir(aLeafNames = []) {
     let dir = this.getStagingDir();
 
+    // SystemAddonInstaller getStatingDir may return null if there isn't
+    // any addon set directory returned by SystemAddonInstaller._loadAddonSet.
+    if (!dir) {
+      return;
+    }
+
     for (let name of aLeafNames) {
       let file = getFile(name, dir);
       recursiveRemove(file);
@@ -3232,12 +3248,12 @@ class DirectoryInstaller {
     }
 
     // eslint-disable-next-line no-unused-vars
-    for (let file of iterDirectory(dir)) {
+    for (let file of lazy.XPIInternal.iterDirectory(dir)) {
       return;
     }
 
     try {
-      setFilePermissions(dir, FileUtils.PERMS_DIRECTORY);
+      setFilePermissions(dir, lazy.FileUtils.PERMS_DIRECTORY);
       dir.remove(false);
     } catch (e) {
       logger.warn("Failed to remove staging dir", e);
@@ -3254,7 +3270,7 @@ class DirectoryInstaller {
    * @returns {nsIFile}
    */
   getTrashDir() {
-    let trashDir = getFile(DIR_TRASH, this.dir);
+    let trashDir = getFile(lazy.XPIInternal.DIR_TRASH, this.dir);
     let trashDirExists = trashDir.exists();
     try {
       if (trashDirExists) {
@@ -3265,7 +3281,10 @@ class DirectoryInstaller {
       logger.warn("Failed to remove trash directory", e);
     }
     if (!trashDirExists) {
-      trashDir.create(Ci.nsIFile.DIRECTORY_TYPE, FileUtils.PERMS_DIRECTORY);
+      trashDir.create(
+        Ci.nsIFile.DIRECTORY_TYPE,
+        lazy.FileUtils.PERMS_DIRECTORY
+      );
     }
 
     return trashDir;
@@ -3432,13 +3451,13 @@ class SystemAddonInstaller extends DirectoryInstaller {
    */
   static _saveAddonSet(aAddonSet) {
     Services.prefs.setStringPref(
-      PREF_SYSTEM_ADDON_SET,
+      lazy.XPIInternal.PREF_SYSTEM_ADDON_SET,
       JSON.stringify(aAddonSet)
     );
   }
 
   static _loadAddonSet() {
-    return XPIInternal.SystemAddonLocation._loadAddonSet();
+    return lazy.XPIInternal.SystemAddonLocation._loadAddonSet();
   }
 
   /**
@@ -3453,7 +3472,7 @@ class SystemAddonInstaller extends DirectoryInstaller {
     let dir = null;
     if (this._addonSet.directory) {
       this.dir = getFile(this._addonSet.directory, this._baseDir);
-      dir = getFile(DIR_STAGE, this.dir);
+      dir = getFile(lazy.XPIInternal.DIR_STAGE, this.dir);
     } else {
       logger.info("SystemAddonInstaller directory is missing");
     }
@@ -3732,7 +3751,7 @@ class SystemAddonInstaller extends DirectoryInstaller {
    * @returns {nsIFile}
    */
   getTrashDir() {
-    let trashDir = getFile(DIR_TRASH, this.dir);
+    let trashDir = getFile(lazy.XPIInternal.DIR_TRASH, this.dir);
     let trashDirExists = trashDir.exists();
     try {
       if (trashDirExists) {
@@ -3743,7 +3762,10 @@ class SystemAddonInstaller extends DirectoryInstaller {
       logger.warn("Failed to remove trash directory", e);
     }
     if (!trashDirExists) {
-      trashDir.create(Ci.nsIFile.DIRECTORY_TYPE, FileUtils.PERMS_DIRECTORY);
+      trashDir.create(
+        Ci.nsIFile.DIRECTORY_TYPE,
+        lazy.FileUtils.PERMS_DIRECTORY
+      );
     }
 
     return trashDir;
@@ -3962,9 +3984,14 @@ var XPIInstall = {
     ) {
       /* Distribution language packs didn't get installed due to the signing
            issues so we need to force them to be reinstalled. */
-      Services.prefs.clearUserPref(PREF_BRANCH_INSTALLED_ADDON + id);
+      Services.prefs.clearUserPref(
+        lazy.XPIInternal.PREF_BRANCH_INSTALLED_ADDON + id
+      );
     } else if (
-      Services.prefs.getBoolPref(PREF_BRANCH_INSTALLED_ADDON + id, false)
+      Services.prefs.getBoolPref(
+        lazy.XPIInternal.PREF_BRANCH_INSTALLED_ADDON + id,
+        false
+      )
     ) {
       return null;
     }
@@ -3976,10 +4003,13 @@ var XPIInstall = {
       action: "copy",
     });
 
-    XPIStates.addAddon(addon);
+    lazy.XPIInternal.XPIStates.addAddon(addon);
     logger.debug(`Installed distribution add-on ${id}`);
 
-    Services.prefs.setBoolPref(PREF_BRANCH_INSTALLED_ADDON + id, true);
+    Services.prefs.setBoolPref(
+      lazy.XPIInternal.PREF_BRANCH_INSTALLED_ADDON + id,
+      true
+    );
 
     return addon;
   },
@@ -4008,7 +4038,7 @@ var XPIInstall = {
     let addon = await loadManifestFromFile(source, location);
 
     if (
-      XPIDatabase.mustSign(addon.type) &&
+      lazy.XPIDatabase.mustSign(addon.type) &&
       addon.signedState <= AddonManager.SIGNEDSTATE_MISSING
     ) {
       throw new Error(
@@ -4028,7 +4058,7 @@ var XPIInstall = {
     }
 
     logger.debug(`Processing install of ${id} in ${location.name}`);
-    let existingAddon = XPIStates.findAddon(id);
+    let existingAddon = lazy.XPIInternal.XPIStates.findAddon(id);
     // This part of the startup file changes is called from
     // processPendingFileChanges, no addons are started yet.
     // Here we handle copying the xpi into its proper place, later
@@ -4038,11 +4068,11 @@ var XPIInstall = {
         id,
         source,
       });
-      XPIStates.addAddon(addon);
+      lazy.XPIInternal.XPIStates.addAddon(addon);
     } catch (e) {
       if (existingAddon) {
         // Re-install the old add-on
-        XPIInternal.get(existingAddon).install();
+        lazy.XPIInternal.get(existingAddon).install();
       }
       throw e;
     }
@@ -4051,7 +4081,9 @@ var XPIInstall = {
   },
 
   async updateSystemAddons() {
-    let systemAddonLocation = XPIStates.getLocation(KEY_APP_SYSTEM_ADDONS);
+    let systemAddonLocation = lazy.XPIInternal.XPIStates.getLocation(
+      lazy.XPIInternal.KEY_APP_SYSTEM_ADDONS
+    );
     if (!systemAddonLocation) {
       return;
     }
@@ -4070,10 +4102,10 @@ var XPIInstall = {
       return;
     }
 
-    url = await UpdateUtils.formatUpdateURL(url);
+    url = await lazy.UpdateUtils.formatUpdateURL(url);
 
     logger.info(`Starting system add-on update check from ${url}.`);
-    let res = await ProductAddonChecker.getProductAddonList(
+    let res = await lazy.ProductAddonChecker.getProductAddonList(
       url,
       true
     ).catch(e => logger.error(`System addon update list error ${e}`));
@@ -4110,7 +4142,9 @@ var XPIInstall = {
 
     // If this matches the current set in the profile location then do nothing.
     let updatedAddons = addonMap(
-      await XPIDatabase.getAddonsInLocation(KEY_APP_SYSTEM_ADDONS)
+      await lazy.XPIDatabase.getAddonsInLocation(
+        lazy.XPIInternal.KEY_APP_SYSTEM_ADDONS
+      )
     );
     if (setMatches(addonList, updatedAddons)) {
       logger.info("Retaining existing updated system add-ons.");
@@ -4121,7 +4155,9 @@ var XPIInstall = {
     // If this matches the current set in the default location then reset the
     // updated set.
     let defaultAddons = addonMap(
-      await XPIDatabase.getAddonsInLocation(KEY_APP_SYSTEM_DEFAULTS)
+      await lazy.XPIDatabase.getAddonsInLocation(
+        lazy.XPIInternal.KEY_APP_SYSTEM_DEFAULTS
+      )
     );
     if (setMatches(addonList, defaultAddons)) {
       logger.info("Resetting system add-ons.");
@@ -4155,7 +4191,7 @@ var XPIInstall = {
           }
         }
         if (!item.path) {
-          item.path = await ProductAddonChecker.downloadAddon(item.spec);
+          item.path = await lazy.ProductAddonChecker.downloadAddon(item.spec);
         }
         item.addon = await loadManifestFromFile(
           nsIFile(item.path),
@@ -4272,11 +4308,11 @@ var XPIInstall = {
       return true;
     }
 
-    XPIDatabase.importPermissions();
+    lazy.XPIDatabase.importPermissions();
 
     let permission = Services.perms.testPermissionFromPrincipal(
       aInstallingPrincipal,
-      XPI_PERMISSION
+      lazy.XPIInternal.XPI_PERMISSION
     );
     if (permission == Ci.nsIPermissionManager.DENY_ACTION) {
       return false;
@@ -4333,9 +4369,9 @@ var XPIInstall = {
    */
   async getInstallForURL(aUrl, aOptions) {
     let locationName = aOptions.useSystemLocation
-      ? KEY_APP_SYSTEM_PROFILE
-      : KEY_APP_PROFILE;
-    let location = XPIStates.getLocation(locationName);
+      ? lazy.XPIInternal.KEY_APP_SYSTEM_PROFILE
+      : lazy.XPIInternal.KEY_APP_PROFILE;
+    let location = lazy.XPIInternal.XPIStates.getLocation(locationName);
     if (!location) {
       throw Components.Exception(
         "Invalid location name",
@@ -4372,8 +4408,10 @@ var XPIInstall = {
     aInstallTelemetryInfo,
     aUseSystemLocation = false
   ) {
-    let location = XPIStates.getLocation(
-      aUseSystemLocation ? KEY_APP_SYSTEM_PROFILE : KEY_APP_PROFILE
+    let location = lazy.XPIInternal.XPIStates.getLocation(
+      aUseSystemLocation
+        ? lazy.XPIInternal.KEY_APP_SYSTEM_PROFILE
+        : lazy.XPIInternal.KEY_APP_PROFILE
     );
     let install = await createLocalInstall(
       aFile,
@@ -4416,13 +4454,13 @@ var XPIInstall = {
    *        same ID is already installed.
    */
   async installTemporaryAddon(aFile) {
-    let installLocation = XPIInternal.TemporaryInstallLocation;
+    let installLocation = lazy.XPIInternal.TemporaryInstallLocation;
 
-    if (XPIInternal.isXPI(aFile.leafName)) {
+    if (lazy.XPIInternal.isXPI(aFile.leafName)) {
       flushJarCache(aFile);
     }
     let addon = await loadManifestFromFile(aFile, installLocation);
-    addon.rootURI = getURIForResourceInFile(aFile, "").spec;
+    addon.rootURI = lazy.XPIInternal.getURIForResourceInFile(aFile, "").spec;
 
     await this._activateAddon(addon, { temporarilyInstalled: true });
 
@@ -4459,7 +4497,7 @@ var XPIInstall = {
     }
 
     let pkg = builtinPackage(baseURL);
-    let addon = await loadManifest(pkg, XPIInternal.BuiltInLocation);
+    let addon = await loadManifest(pkg, lazy.XPIInternal.BuiltInLocation);
     addon.rootURI = base;
 
     // If this is a theme, decide whether to enable it. Themes are
@@ -4473,8 +4511,10 @@ var XPIInstall = {
       if (
         addon.id === lastSelectedTheme ||
         (!lastSelectedTheme.endsWith("@mozilla.org") &&
-          addon.id === AddonSettings.DEFAULT_THEME_ID &&
-          !XPIDatabase.getAddonsByType("theme").some(theme => !theme.disabled))
+          addon.id === lazy.AddonSettings.DEFAULT_THEME_ID &&
+          !lazy.XPIDatabase.getAddonsByType("theme").some(
+            theme => !theme.disabled
+          ))
       ) {
         addon.userDisabled = false;
       }
@@ -4513,7 +4553,7 @@ var XPIInstall = {
       throw new Error(message);
     }
 
-    let oldAddon = await XPIDatabase.getVisibleAddonForID(addon.id);
+    let oldAddon = await lazy.XPIDatabase.getVisibleAddonForID(addon.id);
 
     let willActivate =
       !oldAddon ||
@@ -4530,13 +4570,13 @@ var XPIInstall = {
       }
       addon.active = addon.visible && !addon.disabled;
 
-      addon = XPIDatabase.addToDatabase(
+      addon = lazy.XPIDatabase.addToDatabase(
         addon,
         addon._sourceBundle ? addon._sourceBundle.path : null
       );
 
-      XPIStates.addAddon(addon);
-      XPIStates.save();
+      lazy.XPIInternal.XPIStates.addAddon(addon);
+      lazy.XPIInternal.XPIStates.save();
     };
 
     AddonManagerPrivate.callAddonListeners("onInstalling", addon.wrapper);
@@ -4553,7 +4593,7 @@ var XPIInstall = {
 
       addon.installDate = oldAddon.installDate;
 
-      await XPIInternal.BootstrapScope.get(oldAddon).update(
+      await lazy.XPIInternal.BootstrapScope.get(oldAddon).update(
         addon,
         true,
         install
@@ -4562,7 +4602,7 @@ var XPIInstall = {
       addon.installDate = Date.now();
 
       install();
-      let bootstrap = XPIInternal.BootstrapScope.get(addon);
+      let bootstrap = lazy.XPIInternal.BootstrapScope.get(addon);
       await bootstrap.install(undefined, true, extraParams);
     }
 
@@ -4606,7 +4646,7 @@ var XPIInstall = {
     // sideloads, it is a legacy sideload.  We allow those to be uninstalled.
     let isLegacySideload =
       aAddon.foreignInstall &&
-      !(location.scope & AddonSettings.SCOPES_SIDELOAD);
+      !(location.scope & lazy.AddonSettings.SCOPES_SIDELOAD);
 
     if (location.locked && !isLegacySideload) {
       throw new Error(
@@ -4638,18 +4678,21 @@ var XPIInstall = {
           aAddon.location.installer.getStagingDir()
         );
         if (!stage.exists()) {
-          stage.create(Ci.nsIFile.DIRECTORY_TYPE, FileUtils.PERMS_DIRECTORY);
+          stage.create(
+            Ci.nsIFile.DIRECTORY_TYPE,
+            lazy.FileUtils.PERMS_DIRECTORY
+          );
         }
       }
 
-      XPIDatabase.setAddonProperties(aAddon, {
+      lazy.XPIDatabase.setAddonProperties(aAddon, {
         pendingUninstall: true,
       });
       Services.prefs.setBoolPref(PREF_PENDING_OPERATIONS, true);
       let xpiState = aAddon.location.get(aAddon.id);
       if (xpiState) {
         xpiState.enabled = false;
-        XPIStates.save();
+        lazy.XPIInternal.XPIStates.save();
       } else {
         logger.warn(
           "Can't find XPI state while uninstalling ${id} from ${location}",
@@ -4674,45 +4717,61 @@ var XPIInstall = {
       );
     }
 
-    let existingAddon = XPIStates.findAddon(
+    let existingAddon = lazy.XPIInternal.XPIStates.findAddon(
       aAddon.id,
       loc => loc != aAddon.location
     );
 
-    let bootstrap = XPIInternal.BootstrapScope.get(aAddon);
+    let bootstrap = lazy.XPIInternal.BootstrapScope.get(aAddon);
     if (!aForcePending) {
       let existing;
       if (existingAddon) {
-        existing = await XPIDatabase.getAddonInLocation(
+        existing = await lazy.XPIDatabase.getAddonInLocation(
           aAddon.id,
           existingAddon.location.name
         );
       }
 
       let uninstall = () => {
-        XPIStates.disableAddon(aAddon.id);
+        lazy.XPIInternal.XPIStates.disableAddon(aAddon.id);
         if (aAddon.location.installer) {
           aAddon.location.installer.uninstallAddon(aAddon.id);
         }
-        XPIDatabase.removeAddonMetadata(aAddon);
+        lazy.XPIDatabase.removeAddonMetadata(aAddon);
         aAddon.location.removeAddon(aAddon.id);
         AddonManagerPrivate.callAddonListeners("onUninstalled", wrapper);
 
         if (existing) {
-          XPIDatabase.makeAddonVisible(existing);
-          AddonManagerPrivate.callAddonListeners(
-            "onInstalling",
-            existing.wrapper,
-            false
-          );
+          // Migrate back to the existing addon, unless it was a builtin colorway theme,
+          // in that case we also make sure to remove the addon from the builtin location.
+          if (
+            existing.isBuiltinColorwayTheme &&
+            lazy.BuiltInThemesHelpers.isColorwayMigrationEnabled
+          ) {
+            existing.location.removeAddon(existing.id);
+          } else {
+            lazy.XPIDatabase.makeAddonVisible(existing);
+            AddonManagerPrivate.callAddonListeners(
+              "onInstalling",
+              existing.wrapper,
+              false
+            );
 
-          if (!existing.disabled) {
-            XPIDatabase.updateAddonActive(existing, true);
+            if (!existing.disabled) {
+              lazy.XPIDatabase.updateAddonActive(existing, true);
+            }
           }
         }
       };
 
-      if (existing) {
+      // Migrate back to the existing addon, unless it was a builtin colorway theme.
+      if (
+        existing &&
+        !(
+          existing.isBuiltinColorwayTheme &&
+          lazy.BuiltInThemesHelpers.isColorwayMigrationEnabled
+        )
+      ) {
         await bootstrap.update(existing, !existing.disabled, uninstall);
 
         AddonManagerPrivate.callAddonListeners("onInstalled", existing.wrapper);
@@ -4722,9 +4781,9 @@ var XPIInstall = {
         uninstall();
       }
     } else if (aAddon.active) {
-      XPIStates.disableAddon(aAddon.id);
-      bootstrap.shutdown(BOOTSTRAP_REASONS.ADDON_UNINSTALL);
-      XPIDatabase.updateAddonActive(aAddon, false);
+      lazy.XPIInternal.XPIStates.disableAddon(aAddon.id);
+      bootstrap.shutdown(lazy.XPIInternal.BOOTSTRAP_REASONS.ADDON_UNINSTALL);
+      lazy.XPIDatabase.updateAddonActive(aAddon, false);
     }
 
     // Notify any other providers that a new theme has been enabled
@@ -4752,7 +4811,7 @@ var XPIInstall = {
       aAddon.location.installer.cleanStagingDir([aAddon.id]);
     }
 
-    XPIDatabase.setAddonProperties(aAddon, {
+    lazy.XPIDatabase.setAddonProperties(aAddon, {
       pendingUninstall: false,
     });
 
@@ -4761,15 +4820,15 @@ var XPIInstall = {
     }
 
     aAddon.location.get(aAddon.id).syncWithDB(aAddon);
-    XPIStates.save();
+    lazy.XPIInternal.XPIStates.save();
 
     Services.prefs.setBoolPref(PREF_PENDING_OPERATIONS, true);
 
     if (!aAddon.disabled) {
-      XPIInternal.BootstrapScope.get(aAddon).startup(
-        BOOTSTRAP_REASONS.ADDON_INSTALL
+      lazy.XPIInternal.BootstrapScope.get(aAddon).startup(
+        lazy.XPIInternal.BOOTSTRAP_REASONS.ADDON_INSTALL
       );
-      XPIDatabase.updateAddonActive(aAddon, true);
+      lazy.XPIDatabase.updateAddonActive(aAddon, true);
     }
 
     let wrapper = aAddon.wrapper;

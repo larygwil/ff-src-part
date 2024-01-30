@@ -232,9 +232,13 @@ interface nsIFile : nsISupports
      *  This will try to delete this file.  The 'recursive' flag
      *  must be PR_TRUE to delete directories which are not empty.
      *
+     *  If passed, 'removeCount' will be incremented by the total number of files
+     *  and/or directories removed. Will be 1 unless the 'recursive' flag is
+     *  set. The parameter must be initialized beforehand.
+     *
      *  This will not resolve any symlinks.
      */
-    void remove(in boolean recursive);
+    void remove(in boolean recursive, [optional] inout uint32_t removeCount);
 
     /**
      *  Attributes of nsIFile.
@@ -242,6 +246,13 @@ interface nsIFile : nsISupports
 
     attribute unsigned long permissions;
     attribute unsigned long permissionsOfLink;
+
+    /**
+     * The last accesss time of the file in milliseconds from midnight, January
+     * 1, 1970 GMT, if available.
+     */
+    attribute PRTime lastAccessedTime;
+    attribute PRTime lastAccessedTimeOfLink;
 
     /**
      *  File Times are to be in milliseconds from

@@ -9,14 +9,16 @@
 
 var EXPORTED_SYMBOLS = ["BrowserWindowTracker"];
 
-const { XPCOMUtils } = ChromeUtils.import(
-  "resource://gre/modules/XPCOMUtils.jsm"
+const { AppConstants } = ChromeUtils.importESModule(
+  "resource://gre/modules/AppConstants.sys.mjs"
 );
-const { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm");
+
+const lazy = {};
 
 // Lazy getters
-XPCOMUtils.defineLazyModuleGetters(this, {
-  PrivateBrowsingUtils: "resource://gre/modules/PrivateBrowsingUtils.jsm",
+ChromeUtils.defineESModuleGetters(lazy, {
+  PrivateBrowsingUtils: "resource://gre/modules/PrivateBrowsingUtils.sys.mjs",
+  PromiseUtils: "resource://gre/modules/PromiseUtils.sys.mjs",
 });
 
 // Constants
@@ -25,41 +27,39 @@ const WINDOW_EVENTS = ["activate", "unload"];
 const DEBUG = false;
 
 // Variables
-var _lastTopBrowsingContextID = 0;
-var _trackedWindows = [];
+let _lastCurrentBrowserId = 0;
+let _trackedWindows = [];
 
 // Global methods
 function debug(s) {
   if (DEBUG) {
-    dump("-*- UpdateTopBrowsingContextIDHelper: " + s + "\n");
+    dump("-*- UpdateBrowserIDHelper: " + s + "\n");
   }
 }
 
-function _updateCurrentBrowsingContextID(browser) {
+function _updateCurrentBrowserId(browser) {
   if (
-    !browser.browsingContext ||
-    browser.browsingContext.id === _lastTopBrowsingContextID ||
+    !browser.browserId ||
+    browser.browserId === _lastCurrentBrowserId ||
     browser.ownerGlobal != _trackedWindows[0]
   ) {
     return;
   }
 
-  debug(
-    "Current window uri=" +
-      (browser.currentURI && browser.currentURI.spec) +
-      " browsing context id=" +
-      browser.browsingContext.id
-  );
+  // Guard on DEBUG here because materializing a long data URI into
+  // a JS string for concatenation is not free.
+  if (DEBUG) {
+    debug(
+      `Current window uri=${browser.currentURI?.spec} browser id=${browser.browserId}`
+    );
+  }
 
-  _lastTopBrowsingContextID = browser.browsingContext.id;
+  _lastCurrentBrowserId = browser.browserId;
   let idWrapper = Cc["@mozilla.org/supports-PRUint64;1"].createInstance(
     Ci.nsISupportsPRUint64
   );
-  idWrapper.data = _lastTopBrowsingContextID;
-  Services.obs.notifyObservers(
-    idWrapper,
-    "net:current-top-browsing-context-id"
-  );
+  idWrapper.data = _lastCurrentBrowserId;
+  Services.obs.notifyObservers(idWrapper, "net:current-browser-id");
 }
 
 function _handleEvent(event) {
@@ -69,11 +69,11 @@ function _handleEvent(event) {
         event.target.ownerGlobal.gBrowser.selectedBrowser ===
         event.target.linkedBrowser
       ) {
-        _updateCurrentBrowsingContextID(event.target.linkedBrowser);
+        _updateCurrentBrowserId(event.target.linkedBrowser);
       }
       break;
     case "TabSelect":
-      _updateCurrentBrowsingContextID(event.target.linkedBrowser);
+      _updateCurrentBrowserId(event.target.linkedBrowser);
       break;
     case "activate":
       WindowHelper.onActivate(event.target);
@@ -109,27 +109,27 @@ function _untrackWindowOrder(window) {
 var WindowHelper = {
   addWindow(window) {
     // Add event listeners
-    TAB_EVENTS.forEach(function(event) {
+    TAB_EVENTS.forEach(function (event) {
       window.gBrowser.tabContainer.addEventListener(event, _handleEvent);
     });
-    WINDOW_EVENTS.forEach(function(event) {
+    WINDOW_EVENTS.forEach(function (event) {
       window.addEventListener(event, _handleEvent);
     });
 
     _trackWindowOrder(window);
 
     // Update the selected tab's content outer window ID.
-    _updateCurrentBrowsingContextID(window.gBrowser.selectedBrowser);
+    _updateCurrentBrowserId(window.gBrowser.selectedBrowser);
   },
 
   removeWindow(window) {
     _untrackWindowOrder(window);
 
     // Remove the event listeners
-    TAB_EVENTS.forEach(function(event) {
+    TAB_EVENTS.forEach(function (event) {
       window.gBrowser.tabContainer.removeEventListener(event, _handleEvent);
     });
-    WINDOW_EVENTS.forEach(function(event) {
+    WINDOW_EVENTS.forEach(function (event) {
       window.removeEventListener(event, _handleEvent);
     });
   },
@@ -143,11 +143,13 @@ var WindowHelper = {
     _untrackWindowOrder(window);
     _trackWindowOrder(window);
 
-    _updateCurrentBrowsingContextID(window.gBrowser.selectedBrowser);
+    _updateCurrentBrowserId(window.gBrowser.selectedBrowser);
   },
 };
 
-this.BrowserWindowTracker = {
+const BrowserWindowTracker = {
+  pendingWindows: new Map(),
+
   /**
    * Get the most recent browser window.
    *
@@ -163,8 +165,8 @@ this.BrowserWindowTracker = {
         !win.closed &&
         (options.allowPopups || win.toolbar.visible) &&
         (!("private" in options) ||
-          PrivateBrowsingUtils.permanentPrivateBrowsing ||
-          PrivateBrowsingUtils.isWindowPrivate(win) == options.private)
+          lazy.PrivateBrowsingUtils.permanentPrivateBrowsing ||
+          lazy.PrivateBrowsingUtils.isWindowPrivate(win) == options.private)
       ) {
         return win;
       }
@@ -172,10 +174,88 @@ this.BrowserWindowTracker = {
     return null;
   },
 
-  windowCreated(browser) {
-    if (browser === browser.ownerGlobal.gBrowser.selectedBrowser) {
-      _updateCurrentBrowsingContextID(browser);
+  /**
+   * Get a window that is in the process of loading. Only supports windows
+   * opened via the `openWindow` function in this module or that have been
+   * registered with the `registerOpeningWindow` function.
+   *
+   * @param {Object} options
+   *   Options for the search.
+   * @param {boolean} [options.private]
+   *   true to restrict the search to private windows only, false to restrict
+   *   the search to non-private only. Omit the property to search in both
+   *   groups.
+   *
+   * @returns {Promise<Window> | null}
+   */
+  getPendingWindow(options = {}) {
+    for (let pending of this.pendingWindows.values()) {
+      if (
+        !("private" in options) ||
+        lazy.PrivateBrowsingUtils.permanentPrivateBrowsing ||
+        pending.isPrivate == options.private
+      ) {
+        return pending.deferred.promise;
+      }
     }
+    return null;
+  },
+
+  /**
+   * Registers a browser window that is in the process of opening. Normally it
+   * would be preferable to use the standard method for opening the window from
+   * this module.
+   *
+   * @param {Window} window
+   *   The opening window.
+   * @param {boolean} isPrivate
+   *   Whether the opening window is a private browsing window.
+   */
+  registerOpeningWindow(window, isPrivate) {
+    let deferred = lazy.PromiseUtils.defer();
+
+    this.pendingWindows.set(window, {
+      isPrivate,
+      deferred,
+    });
+  },
+
+  /**
+   * A standard function for opening a new browser window.
+   *
+   * @param {Object} [options]
+   *   Options for the new window.
+   * @param {boolean} [options.private]
+   *   True to make the window a private browsing window.
+   * @param {String} [options.features]
+   *   Additional window features to give the new window.
+   * @param {nsIArray | nsISupportsString} [options.args]
+   *   Arguments to pass to the new window.
+   *
+   * @returns {Window}
+   */
+  openWindow({
+    private: isPrivate = false,
+    features = undefined,
+    args = null,
+  } = {}) {
+    let windowFeatures = "chrome,dialog=no,all";
+    if (features) {
+      windowFeatures += `,${features}`;
+    }
+    if (isPrivate) {
+      windowFeatures += ",private";
+    }
+
+    let win = Services.ww.openWindow(
+      null,
+      AppConstants.BROWSER_CHROME_URL,
+      "_blank",
+      windowFeatures,
+      args
+    );
+    this.registerOpeningWindow(win, isPrivate);
+    return win;
   },
 
   /**
@@ -210,7 +290,26 @@ this.BrowserWindowTracker = {
   },
 
   track(window) {
+    let pending = this.pendingWindows.get(window);
+    if (pending) {
+      this.pendingWindows.delete(window);
+      // Waiting for delayed startup to complete ensures that this new window
+      // has started loading its initial urls.
+      window.delayedStartupPromise.then(() => pending.deferred.resolve(window));
+    }
+
     return WindowHelper.addWindow(window);
+  },
+
+  getBrowserById(browserId) {
+    for (let win of BrowserWindowTracker.orderedWindows) {
+      for (let tab of win.gBrowser.visibleTabs) {
+        if (tab.linkedPanel && tab.linkedBrowser.browserId === browserId) {
+          return tab.linkedBrowser;
+        }
+      }
+    }
+    return null;
   },
 
   // For tests only, this function will remove this window from the list of

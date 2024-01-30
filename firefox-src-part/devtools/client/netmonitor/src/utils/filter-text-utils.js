@@ -33,15 +33,17 @@
 const {
   FILTER_FLAGS,
   SUPPORTED_HTTP_CODES,
-} = require("devtools/client/netmonitor/src/constants");
+} = require("resource://devtools/client/netmonitor/src/constants.js");
 const {
   getFormattedIPAndPort,
   getRequestPriorityAsText,
-} = require("devtools/client/netmonitor/src/utils/format-utils");
-const { getUnicodeUrl } = require("devtools/client/shared/unicode-url");
+} = require("resource://devtools/client/netmonitor/src/utils/format-utils.js");
+const {
+  getUnicodeUrl,
+} = require("resource://devtools/client/shared/unicode-url.js");
 const {
   getUrlBaseName,
-} = require("devtools/client/netmonitor/src/utils/request-utils");
+} = require("resource://devtools/client/netmonitor/src/utils/request-utils.js");
 
 /*
   The function `parseFilters` is from:
@@ -69,7 +71,7 @@ function parseFilters(query) {
         return item.toLowerCase().startsWith(part.toLowerCase());
       });
 
-      if (filteredStatusCodes.length > 0) {
+      if (filteredStatusCodes.length) {
         flags.push({
           type: "status-code", // a standard key before a colon
           value: isNegative ? part.substring(1) : part,
@@ -113,10 +115,10 @@ function processFlagFilter(type, value) {
     case "transferred-larger-than":
       let multiplier = 1;
       if (value.endsWith("k")) {
-        multiplier = 1024;
+        multiplier = 1000;
         value = value.substring(0, value.length - 1);
       } else if (value.endsWith("m")) {
-        multiplier = 1024 * 1024;
+        multiplier = 1000 * 1000;
         value = value.substring(0, value.length - 1);
       }
       const quantity = Number(value);
@@ -222,7 +224,7 @@ function isFlagFilterMatch(item, { type, value, negative }) {
     priority: () =>
       getRequestPriorityAsText(item.priority).toLowerCase() == value,
     "set-cookie-domain": () => {
-      if (responseCookies.length > 0) {
+      if (responseCookies.length) {
         const { host } = item.urlDetails;
         const i = responseCookies.findIndex(c => {
           const domain = c.hasOwnProperty("domain") ? c.domain : host;

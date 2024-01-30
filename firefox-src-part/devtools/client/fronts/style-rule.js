@@ -7,13 +7,15 @@
 const {
   FrontClassWithSpec,
   registerFront,
-} = require("devtools/shared/protocol");
-const { styleRuleSpec } = require("devtools/shared/specs/style-rule");
+} = require("resource://devtools/shared/protocol.js");
+const {
+  styleRuleSpec,
+} = require("resource://devtools/shared/specs/style-rule.js");
 
 loader.lazyRequireGetter(
   this,
   "RuleRewriter",
-  "devtools/client/fronts/inspector/rule-rewriter"
+  "resource://devtools/client/fronts/inspector/rule-rewriter.js"
 );
 
 /**
@@ -89,18 +91,10 @@ class StyleRuleFront extends FrontClassWithSpec(styleRuleSpec) {
 
   get parentStyleSheet() {
     const resourceCommand = this.targetFront.commands.resourceCommand;
-    if (
-      resourceCommand?.hasResourceCommandSupport(
-        resourceCommand.TYPES.STYLESHEET
-      )
-    ) {
-      return resourceCommand.getResourceById(
-        resourceCommand.TYPES.STYLESHEET,
-        this._form.parentStyleSheet
-      );
-    }
-
-    return this.conn.getFrontByID(this._form.parentStyleSheet);
+    return resourceCommand.getResourceById(
+      resourceCommand.TYPES.STYLESHEET,
+      this._form.parentStyleSheet
+    );
   }
 
   get element() {

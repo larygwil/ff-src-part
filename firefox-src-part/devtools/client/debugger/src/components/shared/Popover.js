@@ -4,9 +4,10 @@
 
 import React, { Component } from "react";
 import PropTypes from "prop-types";
-import classNames from "classnames";
 import BracketArrow from "./BracketArrow";
 import SmartGap from "./SmartGap";
+
+const classnames = require("devtools/client/shared/classnames.js");
 
 import "./Popover.css";
 
@@ -72,7 +73,8 @@ class Popover extends Component {
         this.timerId = setTimeout(this.onTimeout, 200);
         return;
       }
-      return this.props.mouseout();
+      this.props.mouseout();
+      return;
     }
 
     // Don't clear the current preview if mouse is hovered on
@@ -258,7 +260,7 @@ class Popover extends Component {
 
     return (
       <div
-        className={classNames("popover", `orientation-${orientation}`, {
+        className={classnames("popover", `orientation-${orientation}`, {
           up: orientation === "up",
         })}
         style={{ top, left }}
@@ -274,7 +276,7 @@ class Popover extends Component {
     const { top, left, orientation } = this.state.coords;
     return (
       <div
-        className={classNames("tooltip", `orientation-${orientation}`)}
+        className={`tooltip orientation-${orientation}`}
         style={{ top, left }}
         ref={c => (this.$tooltip = c)}
       >

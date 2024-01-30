@@ -29,21 +29,14 @@ const UNITS_COUNT = Ci.nsIMemoryReporter.UNITS_COUNT;
 const UNITS_COUNT_CUMULATIVE = Ci.nsIMemoryReporter.UNITS_COUNT_CUMULATIVE;
 const UNITS_PERCENTAGE = Ci.nsIMemoryReporter.UNITS_PERCENTAGE;
 
-const { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm");
-const { XPCOMUtils } = ChromeUtils.import(
-  "resource://gre/modules/XPCOMUtils.jsm"
+const { XPCOMUtils } = ChromeUtils.importESModule(
+  "resource://gre/modules/XPCOMUtils.sys.mjs"
 );
 const { NetUtil } = ChromeUtils.import("resource://gre/modules/NetUtil.jsm");
-ChromeUtils.defineModuleGetter(
-  this,
-  "Downloads",
-  "resource://gre/modules/Downloads.jsm"
-);
-ChromeUtils.defineModuleGetter(
-  this,
-  "FileUtils",
-  "resource://gre/modules/FileUtils.jsm"
-);
+ChromeUtils.defineESModuleGetters(this, {
+  Downloads: "resource://gre/modules/Downloads.sys.mjs",
+  FileUtils: "resource://gre/modules/FileUtils.sys.mjs",
+});
 
 XPCOMUtils.defineLazyGetter(this, "nsBinaryStream", () =>
   CC(
@@ -147,7 +140,7 @@ function stringMatchesFilter(aString, aFilter) {
 
 // ---------------------------------------------------------------------------
 
-window.onunload = function() {};
+window.onunload = function () {};
 
 // ---------------------------------------------------------------------------
 
@@ -305,38 +298,42 @@ function appendHiddenFileInput(aP, aId, aChangeListener) {
   return input;
 }
 
-window.onload = function() {
+window.onload = function () {
   // Generate the header.
 
   let header = appendElement(document.body, "div", "ancillary");
 
   // A hidden file input element that can be invoked when necessary.
-  let fileInput1 = appendHiddenFileInput(header, "fileInput1", function() {
+  let fileInput1 = appendHiddenFileInput(header, "fileInput1", function () {
     let file = this.files[0];
     let filename = file.mozFullPath;
     updateAboutMemoryFromFile(filename);
   });
 
   // Ditto.
-  let fileInput2 = appendHiddenFileInput(header, "fileInput2", function(aElem) {
-    let file = this.files[0];
-    // First time around, we stash a copy of the filename and reinvoke.  Second
-    // time around we do the diff and display.
-    if (!this.filename1) {
-      this.filename1 = file.mozFullPath;
+  let fileInput2 = appendHiddenFileInput(
+    header,
+    "fileInput2",
+    function (aElem) {
+      let file = this.files[0];
+      // First time around, we stash a copy of the filename and reinvoke.  Second
+      // time around we do the diff and display.
+      if (!this.filename1) {
+        this.filename1 = file.mozFullPath;
 
-      // aElem.skipClick is only true when testing -- it allows fileInput2's
-      // onchange handler to be re-called without having to go via the file
-      // picker.
-      if (!aElem.skipClick) {
-        this.click();
+        // aElem.skipClick is only true when testing -- it allows fileInput2's
+        // onchange handler to be re-called without having to go via the file
+        // picker.
+        if (!aElem.skipClick) {
+          this.click();
+        }
+      } else {
+        let filename1 = this.filename1;
+        delete this.filename1;
+        updateAboutMemoryFromTwoFiles(filename1, file.mozFullPath);
       }
-    } else {
-      let filename1 = this.filename1;
-      delete this.filename1;
-      updateAboutMemoryFromTwoFiles(filename1, file.mozFullPath);
     }
-  });
+  );
 
   const CuDesc = "Measure current memory reports and show.";
   const LdDesc = "Load memory reports from file and show.";
@@ -381,6 +378,8 @@ window.onload = function() {
     "opsRowLabel",
     "Show memory reports"
   );
+  labelDiv1.setAttribute("role", "heading");
+  labelDiv1.setAttribute("aria-level", "1");
   let label1 = appendElementWithText(labelDiv1, "label", "");
   gVerbose = appendElement(label1, "input", "");
   gVerbose.type = "checkbox";
@@ -400,6 +399,8 @@ window.onload = function() {
     "opsRowLabel",
     "Save memory reports"
   );
+  labelDiv2.setAttribute("role", "heading");
+  labelDiv2.setAttribute("aria-level", "1");
   appendButton(row2, SvDesc, saveReportsToFile, "Measure and save…");
 
   // XXX: this isn't a great place for this checkbox, but I can't think of
@@ -411,14 +412,28 @@ window.onload = function() {
 
   let row3 = appendElement(ops, "div", "opsRow");
 
-  appendElementWithText(row3, "div", "opsRowLabel", "Free memory");
+  let labelDiv3 = appendElementWithText(
+    row3,
+    "div",
+    "opsRowLabel",
+    "Free memory"
+  );
+  labelDiv3.setAttribute("role", "heading");
+  labelDiv3.setAttribute("aria-level", "1");
   appendButton(row3, GCDesc, doGC, "GC");
   appendButton(row3, CCDesc, doCC, "CC");
   appendButton(row3, MMDesc, doMMU, "Minimize memory usage");
 
   let row4 = appendElement(ops, "div", "opsRow");
 
-  appendElementWithText(row4, "div", "opsRowLabel", "Save GC & CC logs");
+  let labelDiv4 = appendElementWithText(
+    row4,
+    "div",
+    "opsRowLabel",
+    "Save GC & CC logs"
+  );
+  labelDiv4.setAttribute("role", "heading");
+  labelDiv4.setAttribute("aria-level", "1");
   appendButton(
     row4,
     GCAndCCLogDesc,
@@ -441,7 +456,14 @@ window.onload = function() {
   if (gMgr.isDMDEnabled) {
     let row5 = appendElement(ops, "div", "opsRow");
 
-    appendElementWithText(row5, "div", "opsRowLabel", "Save DMD output");
+    let labelDiv5 = appendElementWithText(
+      row5,
+      "div",
+      "opsRowLabel",
+      "Save DMD output"
+    );
+    labelDiv5.setAttribute("role", "heading");
+    labelDiv5.setAttribute("aria-level", "1");
     let enableButtons = gMgr.isDMDRunning;
 
     let dmdButton = appendButton(
@@ -462,6 +484,7 @@ window.onload = function() {
   // Generate the footer.  It's hidden at first.
 
   gFooter = appendElement(document.body, "div", "ancillary hidden");
+  gFooter.setAttribute("role", "contentinfo");
 
   if (Services.policies.isAllowed("aboutSupport")) {
     let a = appendElementWithText(
@@ -617,7 +640,7 @@ function updateAboutMemoryFromReporters() {
     gFilter = "";
 
     // Record the reports from the live memory reporters then process them.
-    let handleReport = function(
+    let handleReport = function (
       aProcess,
       aUnsafePath,
       aKind,
@@ -635,7 +658,7 @@ function updateAboutMemoryFromReporters() {
       });
     };
 
-    let displayReports = function() {
+    let displayReports = function () {
       updateTitleMainAndFooter(
         "live measurement",
         "",
@@ -859,8 +882,8 @@ function updateAboutMemoryFromFile(aFilename) {
  */
 function updateAboutMemoryFromTwoFiles(aFilename1, aFilename2) {
   let titleNote = `diff of ${aFilename1} and ${aFilename2}`;
-  loadMemoryReportsFromFile(aFilename1, titleNote, function(aStr1) {
-    loadMemoryReportsFromFile(aFilename2, titleNote, function(aStr2) {
+  loadMemoryReportsFromFile(aFilename1, titleNote, function (aStr1) {
+    loadMemoryReportsFromFile(aFilename2, titleNote, function (aStr2) {
       try {
         let obj1 = parseAndUnwrapIfCrashDump(aStr1);
         let obj2 = parseAndUnwrapIfCrashDump(aStr2);
@@ -981,7 +1004,8 @@ function makeDReportMap(aJSONReports, aForgetIsolation) {
     // Strip PIDs:
     // - pid 123
     // - pid=123
-    let pidRegex = /pid([ =])\d+/g;
+    // - pid: 123
+    let pidRegex = /pid([ =]|: )\d+/g;
     let pidSubst = "pid$1NNN";
     let process = jr.process.replace(pidRegex, pidSubst);
     let path = jr.path.replace(pidRegex, pidSubst);
@@ -1295,7 +1319,7 @@ function appendAboutMemoryMain(
   function displayReports() {
     // Sort the processes.
     let processes = Object.keys(infoByProcess);
-    processes.sort(function(aProcessA, aProcessB) {
+    processes.sort(function (aProcessA, aProcessB) {
       assert(
         aProcessA != aProcessB,
         `Elements of Object.keys() should be unique, but ` +
@@ -1351,6 +1375,7 @@ function appendAboutMemoryMain(
 
     // Generate the main process sections.
     let sections = newElement("div", "sections");
+    sections.setAttribute("role", "main");
 
     for (let [i, process] of processes.entries()) {
       let pcolls = pcollsByProcess[process];
@@ -1408,6 +1433,7 @@ function appendAboutMemoryMain(
     outputContainer.appendChild(sections);
 
     let sidebar = appendElement(outputContainer, "div", "sidebar");
+    sidebar.setAttribute("role", "navigation");
     let sidebarContents = appendElement(sidebar, "div", "sidebarContents");
 
     // Generate the filter input and checkbox.
@@ -1427,11 +1453,11 @@ function appendAboutMemoryMain(
     // Set up event handlers to update the display if the filter input or
     // checkbox changes.
     let filterUpdateTimeout;
-    let filterUpdate = function() {
+    let filterUpdate = function () {
       if (filterUpdateTimeout) {
         window.clearTimeout(filterUpdateTimeout);
       }
-      filterUpdateTimeout = window.setTimeout(function() {
+      filterUpdateTimeout = window.setTimeout(function () {
         try {
           gFilter =
             filterRegExCheckbox.checked && filterInput.value != ""
@@ -1541,7 +1567,7 @@ TreeNode.prototype = {
 // Sort TreeNodes first by size, then by name.  The latter is important for the
 // about:memory tests, which need a predictable ordering of reporters which
 // have the same amount.
-TreeNode.compareAmounts = function(aA, aB) {
+TreeNode.compareAmounts = function (aA, aB) {
   let a, b;
   if (gIsDiff) {
     a = aA.maxAbsDescendant();
@@ -1559,7 +1585,7 @@ TreeNode.compareAmounts = function(aA, aB) {
   return TreeNode.compareUnsafeNames(aA, aB);
 };
 
-TreeNode.compareUnsafeNames = function(aA, aB) {
+TreeNode.compareUnsafeNames = function (aA, aB) {
   return aA._unsafeName.localeCompare(aB._unsafeName);
 };
 
@@ -1859,7 +1885,7 @@ function appendProcessAboutMemoryElements(
   aHasMozMallocUsableSize,
   aFiltered
 ) {
-  let appendLink = function(aHere, aThere, aArrow) {
+  let appendLink = function (aHere, aThere, aArrow) {
     let link = appendElementWithText(aP, "a", "upDownArrow", aArrow);
     link.href = "#" + aThere + aN;
     link.id = aHere + aN;
@@ -2146,8 +2172,12 @@ function toggle(aEvent) {
   // right nodes.  And the span containing the children of this line must
   // immediately follow.  Assertions check this.
 
-  // |aEvent.target| will be one of the spans.  Get the outer span.
-  let outerSpan = aEvent.target.parentNode;
+  // We want the outer span. |aEvent.target| will normally be one of the inner
+  // spans. However, if the click was dispatched via a11y, it might be the outer
+  // span because some of the inner spans are pruned from the a11y tree.
+  let outerSpan = aEvent.target.classList.contains("hasKids")
+    ? aEvent.target
+    : aEvent.target.parentNode;
   assertClassListContains(outerSpan, "hasKids");
 
   // Toggle the '++'/'--' separator.
@@ -2157,9 +2187,11 @@ function toggle(aEvent) {
   if (sepSpan.textContent === kHideKidsSep) {
     isExpansion = true;
     sepSpan.textContent = kShowKidsSep;
+    outerSpan.setAttribute("aria-expanded", "true");
   } else if (sepSpan.textContent === kShowKidsSep) {
     isExpansion = false;
     sepSpan.textContent = kHideKidsSep;
+    outerSpan.setAttribute("aria-expanded", "false");
   } else {
     assert(false, "bad sepSpan textContent");
   }
@@ -2188,7 +2220,8 @@ function expandPathToThisElement(aElement) {
     let sepSpan = aElement.childNodes[2];
     assertClassListContains(sepSpan, "mrSep");
     sepSpan.textContent = kShowKidsSep;
-    expandPathToThisElement(aElement.parentNode); // kids or pre.entries
+    aElement.setAttribute("aria-expanded", "true");
+    expandPathToThisElement(aElement.parentNode.parentNode); // kids or pre.entries
   } else {
     assertClassListContains(aElement, "entries");
   }
@@ -2248,6 +2281,12 @@ function appendTreeElements(aP, aRoot, aProcess, aPadText) {
       return aS;
     }
 
+    // The entire entry including children needs to be treated as a list item
+    // for a11y purposes.
+    let p = document.createElement("span");
+    p.setAttribute("role", "listitem");
+    aP.appendChild(p);
+
     // The tree line.  Indent more if this entry is narrower than its parent.
     let valueText = aT.toString();
     let extraTlLength = Math.max(aParentStringLength - valueText.length, 0);
@@ -2255,7 +2294,8 @@ function appendTreeElements(aP, aRoot, aProcess, aPadText) {
       aTlThis = appendN(aTlThis, "─", extraTlLength);
       aTlKids = appendN(aTlKids, " ", extraTlLength);
     }
-    appendElementWithText(aP, "span", "treeline", aTlThis);
+    let treeLine = appendElementWithText(p, "span", "treeline", aTlThis);
+    treeLine.setAttribute("aria-hidden", "true");
 
     // Detect and record invalid values.  But not if gIsDiff is true, because
     // we expect negative values in that case.
@@ -2288,14 +2328,16 @@ function appendTreeElements(aP, aRoot, aProcess, aPadText) {
       if (gShowSubtreesBySafeTreeId[safeTreeId] !== undefined) {
         showSubtrees = gShowSubtreesBySafeTreeId[safeTreeId];
       }
-      d = appendElement(aP, "span", "hasKids");
+      d = appendElement(p, "span", "hasKids");
       d.id = safeTreeId;
       d.onclick = toggle;
+      d.setAttribute("role", "button");
       sep = showSubtrees ? kShowKidsSep : kHideKidsSep;
+      d.setAttribute("aria-expanded", showSubtrees ? "true" : "false");
     } else {
       assert(!aT._hideKids, "leaf node with _hideKids set");
       sep = kNoKidsSep;
-      d = aP;
+      d = p;
     }
 
     // The value.
@@ -2328,13 +2370,14 @@ function appendTreeElements(aP, aRoot, aProcess, aPadText) {
     // In non-verbose mode, invalid nodes can be hidden in collapsed sub-trees.
     // But it's good to always see them, so force this.
     if (!gVerbose.checked && tIsInvalid) {
-      expandPathToThisElement(d);
+      expandPathToThisElement(aT._kids ? d : aP);
     }
 
     // Recurse over children.
     if (aT._kids) {
       // The 'kids' class is just used for sanity checking in toggle().
-      d = appendElement(aP, "span", showSubtrees ? "kids" : "kids hidden");
+      d = appendElement(p, "span", showSubtrees ? "kids" : "kids hidden");
+      d.setAttribute("role", "list");
 
       let tlThisForMost, tlKidsForMost;
       if (aT._kids.length > 1) {
@@ -2379,7 +2422,9 @@ function appendTreeElements(aP, aRoot, aProcess, aPadText) {
 
 function appendSectionHeader(aP, aText) {
   appendElementWithText(aP, "h2", "", aText + "\n");
-  return appendElement(aP, "pre", "entries");
+  let entries = appendElement(aP, "pre", "entries");
+  entries.setAttribute("role", "list");
+  return entries;
 }
 
 // ---------------------------------------------------------------------------
@@ -2392,7 +2437,7 @@ function saveReportsToFile() {
   fp.addToRecentDocs = true;
   fp.defaultString = "memory-report.json.gz";
 
-  let fpFinish = function(aFile) {
+  let fpFinish = function (aFile) {
     let dumper = Cc["@mozilla.org/memory-info-dumper;1"].getService(
       Ci.nsIMemoryInfoDumper
     );
@@ -2412,7 +2457,7 @@ function saveReportsToFile() {
     );
   };
 
-  let fpCallback = function(aResult) {
+  let fpCallback = function (aResult) {
     if (
       aResult == Ci.nsIFilePicker.returnOK ||
       aResult == Ci.nsIFilePicker.returnReplace
@@ -2426,7 +2471,7 @@ function saveReportsToFile() {
   } catch (ex) {
     // This will fail on Android, since there is no Save as file picker there.
     // Just save to the default downloads dir if it does.
-    Downloads.getSystemDownloadsDirectory().then(function(aDirPath) {
+    Downloads.getSystemDownloadsDirectory().then(function (aDirPath) {
       let file = FileUtils.File(aDirPath);
       file.append(fp.defaultString);
       fpFinish(file);

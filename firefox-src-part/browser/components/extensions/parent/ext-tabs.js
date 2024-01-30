@@ -11,33 +11,16 @@ ChromeUtils.defineModuleGetter(
   "BrowserUIUtils",
   "resource:///modules/BrowserUIUtils.jsm"
 );
-ChromeUtils.defineModuleGetter(
-  this,
-  "DownloadPaths",
-  "resource://gre/modules/DownloadPaths.jsm"
-);
-ChromeUtils.defineModuleGetter(
-  this,
-  "ExtensionControlledPopup",
-  "resource:///modules/ExtensionControlledPopup.jsm"
-);
-ChromeUtils.defineModuleGetter(
-  this,
-  "PrivateBrowsingUtils",
-  "resource://gre/modules/PrivateBrowsingUtils.jsm"
-);
-ChromeUtils.defineModuleGetter(
-  this,
-  "PromiseUtils",
-  "resource://gre/modules/PromiseUtils.jsm"
-);
-ChromeUtils.defineModuleGetter(
-  this,
-  "SessionStore",
-  "resource:///modules/sessionstore/SessionStore.jsm"
-);
+ChromeUtils.defineESModuleGetters(this, {
+  DownloadPaths: "resource://gre/modules/DownloadPaths.sys.mjs",
+  ExtensionControlledPopup:
+    "resource:///modules/ExtensionControlledPopup.sys.mjs",
+  PrivateBrowsingUtils: "resource://gre/modules/PrivateBrowsingUtils.sys.mjs",
+  PromiseUtils: "resource://gre/modules/PromiseUtils.sys.mjs",
+  SessionStore: "resource:///modules/sessionstore/SessionStore.sys.mjs",
+});
 
-XPCOMUtils.defineLazyGetter(this, "strBundle", function() {
+XPCOMUtils.defineLazyGetter(this, "strBundle", function () {
   return Services.strings.createBundle(
     "chrome://global/locale/extensions.properties"
   );
@@ -611,6 +594,23 @@ this.tabs = class extends ExtensionAPIPersistent {
       return tab;
     }
 
+    function setContentTriggeringPrincipal(url, browser, options) {
+      // For urls that we want to allow an extension to open in a tab, but
+      // that it may not otherwise have access to, we set the triggering
+      // principal to the url that is being opened.  This is used for newtab,
+      // about: and moz-extension: protocols.
+      options.triggeringPrincipal =
+        Services.scriptSecurityManager.createContentPrincipal(
+          Services.io.newURI(url),
+          {
+            userContextId: options.userContextId,
+            privateBrowsingId: PrivateBrowsingUtils.isBrowserPrivate(browser)
+              ? 1
+              : 0,
+          }
+        );
+    }
+
     let tabsApi = {
       tabs: {
         onActivated: new EventManager({
@@ -706,9 +706,8 @@ this.tabs = class extends ExtensionAPIPersistent {
             }
           }).then(window => {
             let url;
-            let principal = context.principal;
 
-            let options = {};
+            let options = { triggeringPrincipal: context.principal };
             if (createProperties.cookieStoreId) {
               // May throw if validation fails.
               options.userContextId = getUserContextIdForCookieStoreId(
@@ -721,7 +720,10 @@ this.tabs = class extends ExtensionAPIPersistent {
             if (createProperties.url !== null) {
               url = context.uri.resolve(createProperties.url);
 
-              if (!context.checkLoadURL(url, { dontReportErrors: true })) {
+              if (
+                !url.startsWith("moz-extension://") &&
+                !context.checkLoadURL(url, { dontReportErrors: true })
+              ) {
                 return Promise.reject({ message: `Illegal URL: ${url}` });
               }
 
@@ -731,30 +733,10 @@ this.tabs = class extends ExtensionAPIPersistent {
             } else {
               url = window.BROWSER_NEW_TAB_URL;
             }
-            // Only set allowInheritPrincipal on discardable urls as it
-            // will override creating a lazy browser.  Setting triggeringPrincipal
-            // will ensure other cases are handled, but setting it may prevent
-            // creating about and data urls.
             let discardable = url && !url.startsWith("about:");
-            if (!discardable) {
-              // Make sure things like about:blank and data: URIs never inherit,
-              // and instead always get a NullPrincipal.
-              options.allowInheritPrincipal = false;
-              // Falling back to content here as about: requires it, however is safe.
-              principal = Services.scriptSecurityManager.createContentPrincipal(
-                Services.io.newURI(url),
-                {
-                  userContextId: options.userContextId,
-                  privateBrowsingId: PrivateBrowsingUtils.isBrowserPrivate(
-                    window.gBrowser
-                  )
-                    ? 1
-                    : 0,
-                }
-              );
-            } else {
-              options.allowInheritPrincipal = true;
-              options.triggeringPrincipal = context.principal;
+            // Handle moz-ext separately from the discardable flag to retain prior behavior.
+            if (!discardable || url.startsWith("moz-extension://")) {
+              setContentTriggeringPrincipal(url, window.gBrowser, options);
             }
 
             tabListener.initTabReady();
@@ -814,7 +796,6 @@ this.tabs = class extends ExtensionAPIPersistent {
               });
             }
 
-            options.triggeringPrincipal = principal;
             let nativeTab = window.gBrowser.addTab(url, options);
 
             if (active) {
@@ -888,17 +869,35 @@ this.tabs = class extends ExtensionAPIPersistent {
           if (updateProperties.url !== null) {
             let url = context.uri.resolve(updateProperties.url);
 
-            if (!context.checkLoadURL(url, { dontReportErrors: true })) {
-              return Promise.reject({ message: `Illegal URL: ${url}` });
-            }
-
             let options = {
               flags: updateProperties.loadReplace
                 ? Ci.nsIWebNavigation.LOAD_FLAGS_REPLACE_HISTORY
                 : Ci.nsIWebNavigation.LOAD_FLAGS_NONE,
               triggeringPrincipal: context.principal,
             };
-            nativeTab.linkedBrowser.loadURI(url, options);
+
+            if (!context.checkLoadURL(url, { dontReportErrors: true })) {
+              // We allow loading top level tabs for "other" extensions.
+              if (url.startsWith("moz-extension://")) {
+                setContentTriggeringPrincipal(url, tabbrowser, options);
+              } else {
+                return Promise.reject({ message: `Illegal URL: ${url}` });
+              }
+            }
+
+            let browser = nativeTab.linkedBrowser;
+            if (nativeTab.linkedPanel) {
+              browser.fixupAndLoadURIString(url, options);
+            } else {
+              // Shift to fully loaded browser and make
+              // sure load handler is instantiated.
+              nativeTab.addEventListener(
+                "SSTabRestoring",
+                () => browser.fixupAndLoadURIString(url, options),
+                { once: true }
+              );
+              tabbrowser._insertBrowser(nativeTab);
+            }
           }
 
           if (updateProperties.active) {
@@ -1076,24 +1075,25 @@ this.tabs = class extends ExtensionAPIPersistent {
               move([tabA, tabB], {index: 0})
                 -> tabA to 0, tabB to 0 if tabA and tabB are in different windows
           */
-          let indexMap = new Map();
-          let lastInsertion = new Map();
+          let lastInsertionMap = new Map();
 
           for (let nativeTab of getNativeTabsFromIDArray(tabIds)) {
             // If the window is not specified, use the window from the tab.
             let window = destinationWindow || nativeTab.ownerGlobal;
+            let isSameWindow = nativeTab.ownerGlobal == window;
             let gBrowser = window.gBrowser;
 
             // If we are not moving the tab to a different window, and the window
             // only has one tab, do nothing.
-            if (nativeTab.ownerGlobal == window && gBrowser.tabs.length === 1) {
+            if (isSameWindow && gBrowser.tabs.length === 1) {
+              lastInsertionMap.set(window, 0);
               continue;
             }
             // If moving between windows, be sure privacy matches.  While gBrowser
             // prevents this, we want to silently ignore it.
             if (
-              nativeTab.ownerGlobal != window &&
-              PrivateBrowsingUtils.isBrowserPrivate(window.gBrowser) !=
+              !isSameWindow &&
+              PrivateBrowsingUtils.isBrowserPrivate(gBrowser) !=
                 PrivateBrowsingUtils.isBrowserPrivate(
                   nativeTab.ownerGlobal.gBrowser
                 )
@@ -1101,10 +1101,28 @@ this.tabs = class extends ExtensionAPIPersistent {
               continue;
             }
 
-            let insertionPoint = indexMap.get(window) || moveProperties.index;
-            // If the index is -1 it should go to the end of the tabs.
-            if (insertionPoint == -1) {
-              insertionPoint = gBrowser.tabs.length;
+            let insertionPoint;
+            let lastInsertion = lastInsertionMap.get(window);
+            if (lastInsertion == null) {
+              insertionPoint = moveProperties.index;
+              let maxIndex = gBrowser.tabs.length - (isSameWindow ? 1 : 0);
+              if (insertionPoint == -1) {
+                // If the index is -1 it should go to the end of the tabs.
+                insertionPoint = maxIndex;
+              } else {
+                insertionPoint = Math.min(insertionPoint, maxIndex);
+              }
+            } else if (isSameWindow && nativeTab._tPos <= lastInsertion) {
+              // lastInsertion is the current index of the last inserted tab.
+              // insertionPoint is the desired index of the current tab *after* moving it.
+              // When the tab is moved, the last inserted tab will no longer be at index
+              // lastInsertion, but (lastInsertion - 1). To position the tabs adjacent to
+              // each other, the tab should therefore be at index (lastInsertion - 1 + 1).
+              insertionPoint = lastInsertion;
+            } else {
+              // In this case the last inserted tab will stay at index lastInsertion,
+              // so we should move the current tab to index (lastInsertion + 1).
+              insertionPoint = lastInsertion + 1;
             }
 
             // We can only move pinned tabs to a point within, or just after,
@@ -1119,28 +1137,15 @@ this.tabs = class extends ExtensionAPIPersistent {
               continue;
             }
 
-            // If this is not the first tab to be inserted into this window and
-            // the insertion point is the same as the last insertion and
-            // the tab is further to the right than the current insertion point
-            // then you need to bump up the insertion point. See bug 1323311.
-            if (
-              lastInsertion.has(window) &&
-              lastInsertion.get(window) === insertionPoint &&
-              nativeTab._tPos > insertionPoint
-            ) {
-              insertionPoint++;
-              indexMap.set(window, insertionPoint);
-            }
-
-            if (nativeTab.ownerGlobal != window) {
+            if (isSameWindow) {
+              // If the window we are moving is the same, just move the tab.
+              gBrowser.moveTabTo(nativeTab, insertionPoint);
+            } else {
               // If the window we are moving the tab in is different, then move the tab
               // to the new window.
               nativeTab = gBrowser.adoptTab(nativeTab, insertionPoint, false);
-            } else {
-              // If the window we are moving is the same, just move the tab.
-              gBrowser.moveTabTo(nativeTab, insertionPoint);
             }
-            lastInsertion.set(window, nativeTab._tPos);
+            lastInsertionMap.set(window, nativeTab._tPos);
             tabsMoved.push(nativeTab);
           }
 
@@ -1200,26 +1205,22 @@ this.tabs = class extends ExtensionAPIPersistent {
           return Promise.resolve();
         },
 
-        _getZoomSettings(tabId) {
+        async getZoomSettings(tabId) {
           let nativeTab = getTabOrActive(tabId);
 
-          let { FullZoom } = nativeTab.ownerGlobal;
+          let { FullZoom, ZoomUI } = nativeTab.ownerGlobal;
 
           return {
             mode: "automatic",
             scope: FullZoom.siteSpecific ? "per-origin" : "per-tab",
-            defaultZoomFactor: 1,
+            defaultZoomFactor: await ZoomUI.getGlobalValue(),
           };
         },
 
-        getZoomSettings(tabId) {
-          return Promise.resolve(this._getZoomSettings(tabId));
-        },
-
-        setZoomSettings(tabId, settings) {
+        async setZoomSettings(tabId, settings) {
           let nativeTab = getTabOrActive(tabId);
 
-          let currentSettings = this._getZoomSettings(
+          let currentSettings = await this.getZoomSettings(
             tabTracker.getId(nativeTab)
           );
 
@@ -1228,11 +1229,10 @@ this.tabs = class extends ExtensionAPIPersistent {
               key => settings[key] === currentSettings[key]
             )
           ) {
-            return Promise.reject(
+            throw new ExtensionError(
               `Unsupported zoom settings: ${JSON.stringify(settings)}`
             );
           }
-          return Promise.resolve();
         },
 
         onZoomChange: new EventManager({
@@ -1267,7 +1267,7 @@ this.tabs = class extends ExtensionAPIPersistent {
               }
             };
 
-            let zoomListener = event => {
+            let zoomListener = async event => {
               let browser = event.originalTarget;
 
               // For non-remote browsers, this event is dispatched on the document
@@ -1298,7 +1298,7 @@ this.tabs = class extends ExtensionAPIPersistent {
                   tabId,
                   oldZoomFactor,
                   newZoomFactor,
-                  zoomSettings: tabsApi.tabs._getZoomSettings(tabId),
+                  zoomSettings: await tabsApi.tabs.getZoomSettings(tabId),
                 });
               }
             };
@@ -1362,7 +1362,7 @@ this.tabs = class extends ExtensionAPIPersistent {
           picker.defaultString = filename;
 
           return new Promise(resolve => {
-            picker.open(function(retval) {
+            picker.open(function (retval) {
               if (retval == 0 || retval == 2) {
                 // OK clicked (retval == 0) or replace confirmed (retval == 2)
 

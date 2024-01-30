@@ -6,89 +6,28 @@
 
 const EXPORTED_SYMBOLS = ["AboutWelcomeChild"];
 
-const { XPCOMUtils } = ChromeUtils.import(
-  "resource://gre/modules/XPCOMUtils.jsm"
+const { XPCOMUtils } = ChromeUtils.importESModule(
+  "resource://gre/modules/XPCOMUtils.sys.mjs"
 );
 
-XPCOMUtils.defineLazyModuleGetters(this, {
-  DEFAULT_SITES: "resource://activity-stream/lib/DefaultSites.jsm",
-  ExperimentAPI: "resource://nimbus/ExperimentAPI.jsm",
-  shortURL: "resource://activity-stream/lib/ShortURL.jsm",
-  TippyTopProvider: "resource://activity-stream/lib/TippyTopProvider.jsm",
-  AboutWelcomeDefaults:
-    "resource://activity-stream/aboutwelcome/lib/AboutWelcomeDefaults.jsm",
-  NimbusFeatures: "resource://nimbus/ExperimentAPI.jsm",
+const lazy = {};
+
+ChromeUtils.defineESModuleGetters(lazy, {
+  ExperimentAPI: "resource://nimbus/ExperimentAPI.sys.mjs",
+  NimbusFeatures: "resource://nimbus/ExperimentAPI.sys.mjs",
 });
 
-XPCOMUtils.defineLazyGetter(this, "log", () => {
-  const { Logger } = ChromeUtils.import(
-    "resource://messaging-system/lib/Logger.jsm"
+XPCOMUtils.defineLazyModuleGetters(lazy, {
+  AboutWelcomeDefaults:
+    "resource://activity-stream/aboutwelcome/lib/AboutWelcomeDefaults.jsm",
+});
+
+XPCOMUtils.defineLazyGetter(lazy, "log", () => {
+  const { Logger } = ChromeUtils.importESModule(
+    "resource://messaging-system/lib/Logger.sys.mjs"
   );
   return new Logger("AboutWelcomeChild");
 });
-
-XPCOMUtils.defineLazyGetter(this, "tippyTopProvider", () =>
-  (async () => {
-    const provider = new TippyTopProvider();
-    await provider.init();
-    return provider;
-  })()
-);
-
-const SEARCH_REGION_PREF = "browser.search.region";
-
-XPCOMUtils.defineLazyPreferenceGetter(
-  this,
-  "searchRegion",
-  SEARCH_REGION_PREF,
-  ""
-);
-
-/**
- * Lazily get importable sites from parent or reuse cached ones.
- */
-function getImportableSites(child) {
-  return (
-    getImportableSites.cache ??
-    (getImportableSites.cache = (async () => {
-      // Use tippy top to get packaged rich icons
-      const tippyTop = await tippyTopProvider;
-      // Remove duplicate entries if they would appear the same
-      return `[${[
-        ...new Set(
-          (await child.sendQuery("AWPage:IMPORTABLE_SITES")).map(url => {
-            // Get both rich icon and short name and save for deduping
-            const site = { url };
-            tippyTop.processSite(site, "*");
-            return JSON.stringify({
-              icon: site.tippyTopIcon,
-              label: shortURL(site),
-            });
-          })
-        ),
-      ]}]`;
-    })())
-  );
-}
-
-async function getDefaultSites(child) {
-  // Get default TopSites by region
-  let sites = DEFAULT_SITES.get(
-    DEFAULT_SITES.has(searchRegion) ? searchRegion : ""
-  );
-
-  // Use tippy top to get packaged rich icons
-  const tippyTop = await tippyTopProvider;
-  let defaultSites = sites.split(",").map(link => {
-    let site = { url: link };
-    tippyTop.processSite(site);
-    return {
-      icon: site.tippyTopIcon,
-      title: shortURL(site),
-    };
-  });
-  return Cu.cloneInto(defaultSites, child.contentWindow);
-}
 
 async function getSelectedTheme(child) {
   let activeThemeId = await child.sendQuery("AWPage:GET_SELECTED_THEME");
@@ -105,7 +44,7 @@ class AboutWelcomeChild extends JSWindowActorChild {
    * @param {{type: string, data?: any}} action
    */
   sendToPage(action) {
-    log.debug(`Sending to page: ${action.type}`);
+    lazy.log.debug(`Sending to page: ${action.type}`);
     const win = this.document.defaultView;
     const event = new win.CustomEvent("AboutWelcomeChromeToContent", {
       detail: Cu.cloneInto(action, win),
@@ -119,6 +58,10 @@ class AboutWelcomeChild extends JSWindowActorChild {
   exportFunctions() {
     let window = this.contentWindow;
 
+    Cu.exportFunction(this.AWAddScreenImpression.bind(this), window, {
+      defineAs: "AWAddScreenImpression",
+    });
+
     Cu.exportFunction(this.AWGetFeatureConfig.bind(this), window, {
       defineAs: "AWGetFeatureConfig",
     });
@@ -127,24 +70,16 @@ class AboutWelcomeChild extends JSWindowActorChild {
       defineAs: "AWGetFxAMetricsFlowURI",
     });
 
-    Cu.exportFunction(this.AWGetImportableSites.bind(this), window, {
-      defineAs: "AWGetImportableSites",
-    });
-
-    Cu.exportFunction(this.AWGetDefaultSites.bind(this), window, {
-      defineAs: "AWGetDefaultSites",
-    });
-
     Cu.exportFunction(this.AWGetSelectedTheme.bind(this), window, {
       defineAs: "AWGetSelectedTheme",
     });
 
-    Cu.exportFunction(this.AWGetRegion.bind(this), window, {
-      defineAs: "AWGetRegion",
-    });
-
     Cu.exportFunction(this.AWSelectTheme.bind(this), window, {
       defineAs: "AWSelectTheme",
+    });
+
+    Cu.exportFunction(this.AWEvaluateScreenTargeting.bind(this), window, {
+      defineAs: "AWEvaluateScreenTargeting",
     });
 
     Cu.exportFunction(this.AWSendEventTelemetry.bind(this), window, {
@@ -182,6 +117,10 @@ class AboutWelcomeChild extends JSWindowActorChild {
     Cu.exportFunction(this.AWSendToDeviceEmailsSupported.bind(this), window, {
       defineAs: "AWSendToDeviceEmailsSupported",
     });
+
+    Cu.exportFunction(this.AWNewScreen.bind(this), window, {
+      defineAs: "AWNewScreen",
+    });
   }
 
   /**
@@ -213,6 +152,19 @@ class AboutWelcomeChild extends JSWindowActorChild {
     );
   }
 
+  AWEvaluateScreenTargeting(data) {
+    return this.sendQueryAndCloneForContent(
+      "AWPage:EVALUATE_SCREEN_TARGETING",
+      data
+    );
+  }
+
+  AWAddScreenImpression(screen) {
+    return this.wrapPromise(
+      this.sendQuery("AWPage:ADD_SCREEN_IMPRESSION", screen)
+    );
+  }
+
   /**
    * Send initial data to page including experiment information
    */
@@ -221,23 +173,24 @@ class AboutWelcomeChild extends JSWindowActorChild {
 
     // Return to AMO gets returned early.
     if (attributionData?.template) {
-      log.debug("Loading about:welcome with RTAMO attribution data");
+      lazy.log.debug("Loading about:welcome with RTAMO attribution data");
       return Cu.cloneInto(attributionData, this.contentWindow);
     } else if (attributionData?.ua) {
-      log.debug("Loading about:welcome with UA attribution");
+      lazy.log.debug("Loading about:welcome with UA attribution");
     }
 
     let experimentMetadata =
-      ExperimentAPI.getExperimentMetaData({
+      lazy.ExperimentAPI.getExperimentMetaData({
         featureId: "aboutwelcome",
       }) || {};
 
-    log.debug(
-      `Loading about:welcome with ${experimentMetadata?.slug ??
-        "no"} experiment`
+    lazy.log.debug(
+      `Loading about:welcome with ${
+        experimentMetadata?.slug ?? "no"
+      } experiment`
     );
 
-    let featureConfig = NimbusFeatures.aboutwelcome.getAllVariables();
+    let featureConfig = lazy.NimbusFeatures.aboutwelcome.getAllVariables();
     featureConfig.needDefault = await this.sendQuery("AWPage:NEED_DEFAULT");
     featureConfig.needPin = await this.sendQuery("AWPage:DOES_APP_NEED_PIN");
     if (featureConfig.languageMismatchEnabled) {
@@ -245,20 +198,22 @@ class AboutWelcomeChild extends JSWindowActorChild {
         "AWPage:GET_APP_AND_SYSTEM_LOCALE_INFO"
       );
     }
-    let defaults = AboutWelcomeDefaults.getDefaults();
-    // FeatureConfig (from prefs or experiments) has higher precendence
+
+    // FeatureConfig (from experiments) has higher precendence
     // to defaults. But the `screens` property isn't defined we shouldn't
     // override the default with `null`
-    return Cu.cloneInto(
-      await AboutWelcomeDefaults.prepareContentForReact({
-        ...attributionData,
-        ...experimentMetadata,
-        ...defaults,
-        ...featureConfig,
-        screens: featureConfig.screens ?? defaults.screens,
-      }),
-      this.contentWindow
-    );
+    let defaults = lazy.AboutWelcomeDefaults.getDefaults();
+
+    const content = await lazy.AboutWelcomeDefaults.prepareContentForReact({
+      ...attributionData,
+      ...experimentMetadata,
+      ...defaults,
+      ...featureConfig,
+      screens: featureConfig.screens ?? defaults.screens,
+      backdrop: featureConfig.backdrop ?? defaults.backdrop,
+    });
+
+    return Cu.cloneInto(content, this.contentWindow);
   }
 
   AWGetFeatureConfig() {
@@ -267,14 +222,6 @@ class AboutWelcomeChild extends JSWindowActorChild {
 
   AWGetFxAMetricsFlowURI() {
     return this.wrapPromise(this.sendQuery("AWPage:FXA_METRICS_FLOW_URI"));
-  }
-
-  AWGetImportableSites() {
-    return this.wrapPromise(getImportableSites(this));
-  }
-
-  AWGetDefaultSites() {
-    return this.wrapPromise(getDefaultSites(this));
   }
 
   AWGetSelectedTheme() {
@@ -298,27 +245,63 @@ class AboutWelcomeChild extends JSWindowActorChild {
    * Send message that can be handled by AboutWelcomeParent.jsm
    * @param {string} type
    * @param {any=} data
+   * @returns {Promise<unknown>}
    */
   AWSendToParent(type, data) {
-    this.sendAsyncMessage(`AWPage:${type}`, data);
+    return this.sendQueryAndCloneForContent(`AWPage:${type}`, data);
   }
 
   AWWaitForMigrationClose() {
     return this.wrapPromise(this.sendQuery("AWPage:WAIT_FOR_MIGRATION_CLOSE"));
   }
 
-  AWGetRegion() {
-    return this.wrapPromise(this.sendQuery("AWPage:GET_REGION"));
-  }
-
   AWFinish() {
     this.contentWindow.location.href = "about:home";
   }
 
-  AWEnsureLangPackInstalled(langPack) {
-    return this.sendQueryAndCloneForContent(
-      "AWPage:ENSURE_LANG_PACK_INSTALLED",
-      langPack
+  AWEnsureLangPackInstalled(negotiated, screenContent) {
+    const content = Cu.cloneInto(screenContent, {});
+    return this.wrapPromise(
+      this.sendQuery(
+        "AWPage:ENSURE_LANG_PACK_INSTALLED",
+        negotiated.langPack
+      ).then(() => {
+        const formatting = [];
+        const l10n = new Localization(
+          ["branding/brand.ftl", "browser/newtab/onboarding.ftl"],
+          false,
+          undefined,
+          // Use the system-ish then app then default locale.
+          [...negotiated.requestSystemLocales, "en-US"]
+        );
+
+        // Add the negotiated language name as args.
+        function addMessageArgsAndUseLangPack(obj) {
+          for (const value of Object.values(obj)) {
+            if (value?.string_id) {
+              value.args = {
+                ...value.args,
+                negotiatedLanguage: negotiated.langPackDisplayName,
+              };
+
+              // Expose fluent strings wanting lang pack as raw.
+              if (value.useLangPack) {
+                formatting.push(
+                  l10n.formatValue(value.string_id, value.args).then(raw => {
+                    delete value.string_id;
+                    value.raw = raw;
+                  })
+                );
+              }
+            }
+          }
+        }
+        addMessageArgsAndUseLangPack(content.languageSwitcher);
+        addMessageArgsAndUseLangPack(content);
+        return Promise.all(formatting).then(() =>
+          Cu.cloneInto(content, this.contentWindow)
+        );
+      })
     );
   }
 
@@ -342,11 +325,15 @@ class AboutWelcomeChild extends JSWindowActorChild {
     );
   }
 
+  AWNewScreen(screenId) {
+    return this.wrapPromise(this.sendQuery("AWPage:NEW_SCREEN", screenId));
+  }
+
   /**
    * @param {{type: string, detail?: any}} event
    * @override
    */
   handleEvent(event) {
-    log.debug(`Received page event ${event.type}`);
+    lazy.log.debug(`Received page event ${event.type}`);
   }
 }

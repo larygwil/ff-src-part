@@ -10,25 +10,15 @@
 // modules. All of the code is installed on |global|, which is a scope
 // shared among the different ext-*.js scripts.
 
-ChromeUtils.defineModuleGetter(
-  this,
-  "PrivateBrowsingUtils",
-  "resource://gre/modules/PrivateBrowsingUtils.jsm"
-);
+ChromeUtils.defineESModuleGetters(this, {
+  AboutReaderParent: "resource:///actors/AboutReaderParent.sys.mjs",
+  PrivateBrowsingUtils: "resource://gre/modules/PrivateBrowsingUtils.sys.mjs",
+  PromiseUtils: "resource://gre/modules/PromiseUtils.sys.mjs",
+});
 ChromeUtils.defineModuleGetter(
   this,
   "BrowserWindowTracker",
   "resource:///modules/BrowserWindowTracker.jsm"
-);
-ChromeUtils.defineModuleGetter(
-  this,
-  "PromiseUtils",
-  "resource://gre/modules/PromiseUtils.jsm"
-);
-ChromeUtils.defineModuleGetter(
-  this,
-  "AboutReaderParent",
-  "resource:///actors/AboutReaderParent.jsm"
 );
 
 var { ExtensionError } = ExtensionUtils;
@@ -49,7 +39,6 @@ extensions.on("uninstalling", (msg, extension) => {
   if (extension.uninstallURL) {
     let browser = windowTracker.topWindow.gBrowser;
     browser.addTab(extension.uninstallURL, {
-      disallowInheritPrincipal: true,
       relatedToCurrent: true,
       triggeringPrincipal: Services.scriptSecurityManager.createNullPrincipal(
         {}
@@ -138,9 +127,9 @@ global.waitForTabLoaded = (tab, url) => {
   });
 };
 
-global.replaceUrlInTab = (gBrowser, tab, url) => {
-  let loaded = waitForTabLoaded(tab, url);
-  gBrowser.loadURI(url, {
+global.replaceUrlInTab = (gBrowser, tab, uri) => {
+  let loaded = waitForTabLoaded(tab, uri.spec);
+  gBrowser.loadURI(uri, {
     flags: Ci.nsIWebNavigation.LOAD_FLAGS_REPLACE_HISTORY,
     triggeringPrincipal: Services.scriptSecurityManager.getSystemPrincipal(), // This is safe from this functions usage however it would be preferred not to dot his.
   });
@@ -177,7 +166,7 @@ global.TabContext = class extends EventEmitter {
    *
    * @param {XULElement|ChromeWindow} keyObject
    *        Browser tab or browser chrome window.
-   * @returns {Object}
+   * @returns {object}
    */
   get(keyObject) {
     if (!this.tabData.has(keyObject)) {
@@ -565,7 +554,7 @@ class TabTracker extends TabTrackerBase {
   }
 
   /**
-   * @param {Object} message
+   * @param {object} message
    *        The message to handle.
    * @private
    */
@@ -671,7 +660,7 @@ class TabTracker extends TabTrackerBase {
    *
    * @param {NativeTab} nativeTab
    *        The tab element which is being created.
-   * @param {Object} [currentTabSize]
+   * @param {object} [currentTabSize]
    *        The size of the tab element for the currently active tab.
    * @private
    */
@@ -877,14 +866,14 @@ class Tab extends TabBase {
    *
    * @param {Extension} extension
    *        The extension for which to convert the data.
-   * @param {Object} tabData
+   * @param {object} tabData
    *        Session store data for a closed tab, as returned by
    *        `SessionStore.getClosedTabData()`.
    * @param {DOMWindow} [window = null]
    *        The browser window which the tab belonged to before it was closed.
    *        May be null if the window the tab belonged to no longer exists.
    *
-   * @returns {Object}
+   * @returns {object}
    * @static
    */
   static convertFromSessionStoreClosedData(extension, tabData, window = null) {
@@ -935,7 +924,7 @@ class Window extends WindowBase {
   /**
    * Update the geometry of the browser window.
    *
-   * @param {Object} options
+   * @param {object} options
    *        An object containing new values for the window's geometry.
    * @param {integer} [options.left]
    *        The new pixel distance of the left side of the browser window from
@@ -1012,36 +1001,55 @@ class Window extends WindowBase {
     const STATES = {
       [window.STATE_MAXIMIZED]: "maximized",
       [window.STATE_MINIMIZED]: "minimized",
+      [window.STATE_FULLSCREEN]: "fullscreen",
       [window.STATE_NORMAL]: "normal",
     };
-    let state = STATES[window.windowState];
-    if (window.fullScreen) {
-      state = "fullscreen";
-    }
-    return state;
+    return STATES[window.windowState];
   }
 
   get state() {
     return Window.getState(this.window);
   }
 
-  set state(state) {
+  async setState(state) {
     let { window } = this;
-    if (state !== "fullscreen" && window.fullScreen) {
+
+    const expectedState = (function () {
+      switch (state) {
+        case "maximized":
+          return window.STATE_MAXIMIZED;
+        case "minimized":
+        case "docked":
+          return window.STATE_MINIMIZED;
+        case "normal":
+          return window.STATE_NORMAL;
+        case "fullscreen":
+          return window.STATE_FULLSCREEN;
+      }
+      throw new Error(`Unexpected window state: ${state}`);
+    })();
+
+    const initialState = window.windowState;
+    if (expectedState == initialState) {
+      return;
+    }
+
+    // We check for window.fullScreen here to make sure to exit fullscreen even
+    // if DOM and widget disagree on what the state is. This is a speculative
+    // fix for bug 1780876, ideally it should not be needed.
+    if (initialState == window.STATE_FULLSCREEN || window.fullScreen) {
       window.fullScreen = false;
     }
 
-    switch (state) {
-      case "maximized":
+    switch (expectedState) {
+      case window.STATE_MAXIMIZED:
         window.maximize();
         break;
-
-      case "minimized":
-      case "docked":
+      case window.STATE_MINIMIZED:
         window.minimize();
         break;
 
-      case "normal":
+      case window.STATE_NORMAL:
         // Restore sometimes returns the window to its previous state, rather
         // than to the "normal" state, so it may need to be called anywhere from
         // zero to two times.
@@ -1049,19 +1057,38 @@ class Window extends WindowBase {
         if (window.windowState !== window.STATE_NORMAL) {
           window.restore();
         }
-        if (window.windowState !== window.STATE_NORMAL) {
-          // And on OS-X, where normal vs. maximized is basically a heuristic,
-          // we need to cheat.
-          window.sizeToContent();
-        }
         break;
 
-      case "fullscreen":
+      case window.STATE_FULLSCREEN:
         window.fullScreen = true;
         break;
 
       default:
         throw new Error(`Unexpected window state: ${state}`);
+    }
+
+    if (window.windowState != expectedState) {
+      // On Linux, sizemode changes are asynchronous. Some of them might not
+      // even happen if the window manager doesn't want to, so wait for a bit
+      // instead of forever for a sizemode change that might not ever happen.
+      const noWindowManagerTimeout = 2000;
+
+      let onSizeModeChange;
+      const promiseExpectedSizeMode = new Promise(resolve => {
+        onSizeModeChange = function () {
+          if (window.windowState == expectedState) {
+            resolve();
+          }
+        };
+        window.addEventListener("sizemodechange", onSizeModeChange);
+      });
+
+      await Promise.any([
+        promiseExpectedSizeMode,
+        new Promise(resolve => setTimeout(resolve, noWindowManagerTimeout)),
+      ]);
+
+      window.removeEventListener("sizemodechange", onSizeModeChange);
     }
   }
 
@@ -1119,11 +1146,11 @@ class Window extends WindowBase {
    *
    * @param {Extension} extension
    *        The extension for which to convert the data.
-   * @param {Object} windowData
+   * @param {object} windowData
    *        Session store data for a closed window, as returned by
    *        `SessionStore.getClosedWindowData()`.
    *
-   * @returns {Object}
+   * @returns {object}
    * @static
    */
   static convertFromSessionStoreClosedData(extension, windowData) {
@@ -1132,8 +1159,9 @@ class Window extends WindowBase {
       focused: false,
       incognito: false,
       type: "normal", // this is always "normal" for a closed window
-      // Surely this does not actually work?
-      state: this.getState(windowData),
+      // Bug 1781226: we assert "state" is "normal" in tests, but we could use
+      // the "sizemode" property if we wanted.
+      state: "normal",
       alwaysOnTop: false,
     };
 
@@ -1186,6 +1214,12 @@ class TabManager extends TabManagerBase {
 
   wrapTab(nativeTab) {
     return new Tab(this.extension, nativeTab, tabTracker.getId(nativeTab));
+  }
+
+  getWrapper(nativeTab) {
+    if (!nativeTab.ownerGlobal.gBrowserInit.isAdoptingTab()) {
+      return super.getWrapper(nativeTab);
+    }
   }
 }
 

@@ -4,12 +4,27 @@
 
 "use strict";
 
-const { objectSpec } = require("devtools/shared/specs/object");
+const { objectSpec } = require("resource://devtools/shared/specs/object.js");
 const {
   FrontClassWithSpec,
   registerFront,
-} = require("devtools/shared/protocol");
-const { LongStringFront } = require("devtools/client/fronts/string");
+} = require("resource://devtools/shared/protocol.js");
+const {
+  LongStringFront,
+} = require("resource://devtools/client/fronts/string.js");
+
+const SUPPORT_ENUM_ENTRIES_SET = new Set([
+  "Headers",
+  "Map",
+  "WeakMap",
+  "Set",
+  "WeakSet",
+  "Storage",
+  "URLSearchParams",
+  "FormData",
+  "MIDIInputMap",
+  "MIDIOutputMap",
+]);
 
 /**
  * A ObjectFront is used as a front end for the ObjectActor that is
@@ -87,9 +102,8 @@ class ObjectFront extends FrontClassWithSpec(objectSpec) {
         if (descriptor) {
           for (const gripKey of gripKeys) {
             if (descriptor.hasOwnProperty(gripKey)) {
-              result.safeGetterValues[key][
-                gripKey
-              ] = getAdHocFrontOrPrimitiveGrip(descriptor[gripKey], this);
+              result.safeGetterValues[key][gripKey] =
+                getAdHocFrontOrPrimitiveGrip(descriptor[gripKey], this);
             }
           }
         }
@@ -140,13 +154,13 @@ class ObjectFront extends FrontClassWithSpec(objectSpec) {
    * Map/Set-like object.
    */
   enumEntries() {
-    if (
-      !["Map", "WeakMap", "Set", "WeakSet", "Storage"].includes(
-        this._grip.class
-      )
-    ) {
+    if (!SUPPORT_ENUM_ENTRIES_SET.has(this._grip.class)) {
       console.error(
-        "enumEntries is only valid for Map/Set/Storage-like grips."
+        `enumEntries can't be called for "${
+          this._grip.class
+        }" grips. Supported grips are: ${[...SUPPORT_ENUM_ENTRIES_SET].join(
+          ", "
+        )}.`
       );
       return null;
     }
@@ -196,6 +210,30 @@ class ObjectFront extends FrontClassWithSpec(objectSpec) {
       }
     }
     return response;
+  }
+
+  /**
+   * Get the body of a custom formatted object.
+   */
+  async customFormatterBody() {
+    const result = await super.customFormatterBody();
+
+    if (!result?.customFormatterBody) {
+      return result;
+    }
+
+    const createFrontsInJsonMl = item => {
+      if (Array.isArray(item)) {
+        return item.map(i => createFrontsInJsonMl(i));
+      }
+      return getAdHocFrontOrPrimitiveGrip(item, this);
+    };
+
+    result.customFormatterBody = createFrontsInJsonMl(
+      result.customFormatterBody
+    );
+
+    return result;
   }
 
   /**
@@ -406,6 +444,18 @@ function createChildFronts(objectFront, packet) {
         }
       }
     }
+  }
+
+  // Handle custom formatters
+  if (packet && packet.useCustomFormatter && Array.isArray(packet.header)) {
+    const createFrontsInJsonMl = item => {
+      if (Array.isArray(item)) {
+        return item.map(i => createFrontsInJsonMl(i));
+      }
+      return getAdHocFrontOrPrimitiveGrip(item, objectFront);
+    };
+
+    packet.header = createFrontsInJsonMl(packet.header);
   }
 }
 

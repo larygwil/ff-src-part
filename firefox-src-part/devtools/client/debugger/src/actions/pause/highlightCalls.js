@@ -4,7 +4,6 @@
 
 import {
   getSymbols,
-  getLocationSource,
   getSelectedFrame,
   getCurrentThread,
 } from "../../selectors";
@@ -25,9 +24,9 @@ function inHouseContainsPosition(a, b) {
 }
 
 export function highlightCalls(cx) {
-  return async function({ dispatch, getState, parser, client }) {
+  return async function ({ dispatch, getState, parserWorker }) {
     if (!cx) {
-      return;
+      return null;
     }
 
     const frame = await getSelectedFrame(
@@ -35,36 +34,31 @@ export function highlightCalls(cx) {
       getCurrentThread(getState())
     );
 
-    if (!frame) {
-      return;
+    if (!frame || !parserWorker.isLocationSupported(frame.location)) {
+      return null;
     }
 
     const { thread } = cx;
 
-    const originalAstScopes = await parser.getScopes(frame.location);
+    const originalAstScopes = await parserWorker.getScopes(frame.location);
     if (!originalAstScopes) {
-      return;
+      return null;
     }
 
-    const source = getLocationSource(getState(), frame.location);
-    if (!source) {
-      return;
-    }
+    const symbols = getSymbols(getState(), frame.location);
 
-    const symbols = getSymbols(getState(), source);
-
-    if (!symbols || symbols.loading) {
-      return;
+    if (!symbols) {
+      return null;
     }
 
     if (!symbols.callExpressions) {
-      return;
+      return null;
     }
 
     const localAstScope = originalAstScopes[0];
     const allFunctionCalls = symbols.callExpressions;
 
-    const highlightedCalls = allFunctionCalls.filter(function(call) {
+    const highlightedCalls = allFunctionCalls.filter(function (call) {
       const containsStart = inHouseContainsPosition(
         localAstScope,
         call.location.start
@@ -85,7 +79,7 @@ export function highlightCalls(cx) {
 }
 
 export function unhighlightCalls(cx) {
-  return async function({ dispatch, getState, parser, client }) {
+  return async function ({ dispatch, getState }) {
     const { thread } = cx;
     return dispatch({
       type: "UNHIGHLIGHT_CALLS",

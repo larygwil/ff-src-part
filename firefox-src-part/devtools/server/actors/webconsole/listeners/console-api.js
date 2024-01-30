@@ -4,12 +4,10 @@
 
 "use strict";
 
-const { Cc, Ci } = require("chrome");
-const ChromeUtils = require("ChromeUtils");
 const {
   CONSOLE_WORKER_IDS,
   WebConsoleUtils,
-} = require("devtools/server/actors/webconsole/utils");
+} = require("resource://devtools/server/actors/webconsole/utils.js");
 
 // The window.console API observer
 
@@ -146,6 +144,11 @@ class ConsoleAPIListener {
     // don't have a proper window id (for now, we receive the worker messages from the
     // main process so we still want to get them, although their innerID isn't a number).
     if (!workerType && typeof message.innerID !== "number" && this.window) {
+      return false;
+    }
+
+    // Don't show ChromeWorker messages on WindowGlobal targets
+    if (workerType && this.window && message.chromeContext) {
       return false;
     }
 

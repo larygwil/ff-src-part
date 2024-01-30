@@ -6,21 +6,18 @@ import React, { useState, useEffect } from "react";
 import panelMessaging from "../../messages";
 
 function TagPicker(props) {
-  const [tags, setTags] = useState(props.tags);
+  const [tags, setTags] = useState(props.tags); // New tag group to store
+  const [allTags, setAllTags] = useState([]); // All tags ever used (in no particular order)
+  const [recentTags, setRecentTags] = useState([]); // Most recently used tags
   const [duplicateTag, setDuplicateTag] = useState(null);
   const [inputValue, setInputValue] = useState("");
-  const [usedTags, setUsedTags] = useState([]);
-  // Status be success, waiting, or error.
-  const [
-    { tagInputStatus, tagInputErrorMessage },
-    setTagInputStatus,
-  ] = useState({
-    tagInputStatus: "",
-    tagInputErrorMessage: "",
-  });
 
-  const inputToSubmit = inputValue.trim();
-  const tagsToSubmit = [...tags, ...(inputToSubmit ? [inputToSubmit] : [])];
+  // Status can be success, waiting, or error.
+  const [{ tagInputStatus, tagInputErrorMessage }, setTagInputStatus] =
+    useState({
+      tagInputStatus: "",
+      tagInputErrorMessage: "",
+    });
 
   let handleKeyDown = e => {
     const enterKey = e.keyCode === 13;
@@ -33,23 +30,23 @@ function TagPicker(props) {
     if (commaKey || enterKey || tabKey) {
       e.preventDefault();
       if (inputValue) {
-        addTag();
+        addTag(inputValue.trim());
+        setInputValue(``); // Clear out input
       } else if (enterKey) {
         submitTags();
       }
     }
   };
 
-  let addTag = () => {
-    let newDuplicateTag = tags.find(item => item === inputToSubmit);
-
-    if (!inputToSubmit?.length) {
+  let addTag = tagToAdd => {
+    if (!tagToAdd?.length) {
       return;
     }
 
-    setInputValue(``); // Clear out input
+    let newDuplicateTag = tags.find(item => item === tagToAdd);
+
     if (!newDuplicateTag) {
-      setTags(tagsToSubmit);
+      setTags([...tags, tagToAdd]);
     } else {
       setDuplicateTag(newDuplicateTag);
 
@@ -66,9 +63,21 @@ function TagPicker(props) {
   };
 
   let submitTags = () => {
+    let tagsToSubmit = [];
+
+    if (tags?.length) {
+      tagsToSubmit = tags;
+    }
+
+    // Capture tags that have been typed in but not explicitly added to the tag collection
+    if (inputValue?.trim().length) {
+      tagsToSubmit.push(inputValue.trim());
+    }
+
     if (!props.itemUrl || !tagsToSubmit?.length) {
       return;
     }
+
     setTagInputStatus({
       tagInputStatus: "waiting",
       tagInputErrorMessage: "",
@@ -79,7 +88,7 @@ function TagPicker(props) {
         url: props.itemUrl,
         tags: tagsToSubmit,
       },
-      function(resp) {
+      function (resp) {
         const { data } = resp;
 
         if (data.status === "success") {
@@ -98,9 +107,15 @@ function TagPicker(props) {
   };
 
   useEffect(() => {
-    panelMessaging.sendMessage("PKT_getTags", {}, resp =>
-      setUsedTags(resp?.data?.tags)
-    );
+    panelMessaging.sendMessage("PKT_getTags", {}, resp => {
+      setAllTags(resp?.data?.tags);
+    });
+  }, []);
+
+  useEffect(() => {
+    panelMessaging.sendMessage("PKT_getRecentTags", {}, resp => {
+      setRecentTags(resp?.data?.recentTags);
+    });
   }, []);
 
   return (
@@ -118,13 +133,13 @@ function TagPicker(props) {
                   duplicateTag === tag ? ` stp_tag_picker_tag_duplicate` : ``
                 }`}
               >
-                {tag}
                 <button
                   onClick={() => removeTag(i)}
                   className={`stp_tag_picker_tag_remove`}
                 >
                   X
                 </button>
+                {tag}
               </div>
             ))}
             <div className="stp_tag_picker_input_wrapper">
@@ -138,17 +153,36 @@ function TagPicker(props) {
                 maxlength="25"
               />
               <datalist id="tag-list">
-                {usedTags.map(item => (
-                  <option key={item} value={item} />
-                ))}
+                {allTags
+                  .sort((a, b) => a.search(inputValue) - b.search(inputValue))
+                  .map(item => (
+                    <option key={item} value={item} />
+                  ))}
               </datalist>
               <button
                 className="stp_tag_picker_button"
-                disabled={!tagsToSubmit?.length}
+                disabled={!inputValue?.length && !tags.length}
                 data-l10n-id="pocket-panel-saved-save-tags"
                 onClick={() => submitTags()}
               />
             </div>
+          </div>
+          <div className="recent_tags">
+            {recentTags
+              .slice(0, 3)
+              .filter(recentTag => {
+                return !tags.find(item => item === recentTag);
+              })
+              .map(tag => (
+                <div className="stp_tag_picker_tag">
+                  <button
+                    className="stp_tag_picker_tag_remove"
+                    onClick={() => addTag(tag)}
+                  >
+                    + {tag}
+                  </button>
+                </div>
+              ))}
           </div>
         </>
       )}

@@ -15,7 +15,8 @@ var gTabsPanel = {
   kElements: {
     allTabsButton: "alltabs-button",
     allTabsView: "allTabsMenu-allTabsView",
-    allTabsViewTabs: "allTabsMenu-allTabsViewTabs",
+    allTabsViewTabs: "allTabsMenu-allTabsView-tabs",
+    dropIndicator: "allTabsMenu-dropIndicator",
     containerTabsView: "allTabsMenu-containerTabsView",
     hiddenTabsButton: "allTabsMenu-hiddenTabsButton",
     hiddenTabsView: "allTabsMenu-hiddenTabsView",
@@ -56,6 +57,7 @@ var gTabsPanel = {
       containerNode: this.allTabsViewTabs,
       filterFn: tab =>
         !tab.hidden && (!tab.pinned || (showPinnedTabs && tab.pinned)),
+      dropIndicator: this.dropIndicator,
     });
 
     this.allTabsView.addEventListener("ViewShowing", e => {
@@ -64,17 +66,14 @@ var gTabsPanel = {
       let containersEnabled =
         Services.prefs.getBoolPref("privacy.userContext.enabled") &&
         !PrivateBrowsingUtils.isWindowPrivate(window);
-      document.getElementById(
-        "allTabsMenu-containerTabsButton"
-      ).hidden = !containersEnabled;
+      document.getElementById("allTabsMenu-containerTabsButton").hidden =
+        !containersEnabled;
 
       let hasHiddenTabs = gBrowser.visibleTabs.length < gBrowser.tabs.length;
-      document.getElementById(
-        "allTabsMenu-hiddenTabsButton"
-      ).hidden = !hasHiddenTabs;
-      document.getElementById(
-        "allTabsMenu-hiddenTabsSeparator"
-      ).hidden = !hasHiddenTabs;
+      document.getElementById("allTabsMenu-hiddenTabsButton").hidden =
+        !hasHiddenTabs;
+      document.getElementById("allTabsMenu-hiddenTabsSeparator").hidden =
+        !hasHiddenTabs;
     });
 
     this.allTabsView.addEventListener("ViewShown", e =>
@@ -83,9 +82,8 @@ var gTabsPanel = {
         ?.scrollIntoView({ block: "center" })
     );
 
-    let containerTabsMenuSeparator = this.containerTabsView.querySelector(
-      "toolbarseparator"
-    );
+    let containerTabsMenuSeparator =
+      this.containerTabsView.querySelector("toolbarseparator");
     this.containerTabsView.addEventListener("ViewShowing", e => {
       let elements = [];
       let frag = document.createDocumentFragment();
@@ -138,7 +136,7 @@ var gTabsPanel = {
     return isElementVisible(this.allTabsButton);
   },
 
-  showAllTabsPanel(event) {
+  showAllTabsPanel(event, entrypoint = "unknown") {
     // Note that event may be null.
 
     // Only space and enter should open the popup, ignore other keypresses:
@@ -147,6 +145,11 @@ var gTabsPanel = {
     }
     this.init();
     if (this.canOpen) {
+      Services.telemetry.keyedScalarAdd(
+        "browser.ui.interaction.all_tabs_panel_entrypoint",
+        entrypoint,
+        1
+      );
       PanelUI.showSubView(
         this.kElements.allTabsView,
         this.allTabsButton,
@@ -161,7 +164,7 @@ var gTabsPanel = {
     }
   },
 
-  showHiddenTabsPanel(event) {
+  showHiddenTabsPanel(event, entrypoint = "unknown") {
     this.init();
     if (!this.canOpen) {
       return;
@@ -176,7 +179,7 @@ var gTabsPanel = {
       },
       { once: true }
     );
-    this.showAllTabsPanel(event);
+    this.showAllTabsPanel(event, entrypoint);
   },
 
   searchTabs() {

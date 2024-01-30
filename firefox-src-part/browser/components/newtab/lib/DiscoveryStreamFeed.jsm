@@ -3,40 +3,21 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 "use strict";
 
-const { XPCOMUtils } = ChromeUtils.import(
-  "resource://gre/modules/XPCOMUtils.jsm"
+const lazy = {};
+ChromeUtils.defineESModuleGetters(lazy, {
+  ExperimentAPI: "resource://nimbus/ExperimentAPI.sys.mjs",
+  NimbusFeatures: "resource://nimbus/ExperimentAPI.sys.mjs",
+  NewTabUtils: "resource://gre/modules/NewTabUtils.sys.mjs",
+  pktApi: "chrome://pocket/content/pktApi.sys.mjs",
+  PersistentCache: "resource://activity-stream/lib/PersistentCache.sys.mjs",
+  Region: "resource://gre/modules/Region.sys.mjs",
+  RemoteSettings: "resource://services-settings/remote-settings.sys.mjs",
+});
+const { setTimeout, clearTimeout } = ChromeUtils.importESModule(
+  "resource://gre/modules/Timer.sys.mjs"
 );
-ChromeUtils.defineModuleGetter(
-  this,
-  "NewTabUtils",
-  "resource://gre/modules/NewTabUtils.jsm"
-);
-ChromeUtils.defineModuleGetter(
-  this,
-  "RemoteSettings",
-  "resource://services-settings/remote-settings.js"
-);
-const { setTimeout, clearTimeout } = ChromeUtils.import(
-  "resource://gre/modules/Timer.jsm"
-);
-ChromeUtils.defineModuleGetter(
-  this,
-  "Services",
-  "resource://gre/modules/Services.jsm"
-);
-XPCOMUtils.defineLazyGlobalGetters(this, ["fetch"]);
-const { actionTypes: at, actionCreators: ac } = ChromeUtils.import(
-  "resource://activity-stream/common/Actions.jsm"
-);
-ChromeUtils.defineModuleGetter(
-  this,
-  "Region",
-  "resource://gre/modules/Region.jsm"
-);
-ChromeUtils.defineModuleGetter(
-  this,
-  "PersistentCache",
-  "resource://activity-stream/lib/PersistentCache.jsm"
+const { actionTypes: at, actionCreators: ac } = ChromeUtils.importESModule(
+  "resource://activity-stream/common/Actions.sys.mjs"
 );
 
 const CACHE_KEY = "discovery_stream";
@@ -48,6 +29,9 @@ const DEFAULT_RECS_EXPIRE_TIME = 60 * 60 * 1000; // 1 hour
 const MIN_PERSONALIZATION_UPDATE_TIME = 12 * 60 * 60 * 1000; // 12 hours
 const MAX_LIFETIME_CAP = 500; // Guard against misconfiguration on the server
 const FETCH_TIMEOUT = 45 * 1000;
+const SPOCS_URL = "https://spocs.getpocket.com/spocs";
+const FEED_URL =
+  "https://getpocket.cdn.mozilla.net/v3/firefox/global-recs?version=3&consumer_key=$apiKey&locale_lang=$locale&region=$region&count=30";
 const PREF_CONFIG = "discoverystream.config";
 const PREF_ENDPOINTS = "discoverystream.endpoints";
 const PREF_IMPRESSION_ID = "browser.newtabpage.activity-stream.impressionId";
@@ -58,8 +42,11 @@ const PREF_SPOCS_ENDPOINT_QUERY = "discoverystream.spocs-endpoint-query";
 const PREF_REGION_BASIC_LAYOUT = "discoverystream.region-basic-layout";
 const PREF_USER_TOPSTORIES = "feeds.section.topstories";
 const PREF_SYSTEM_TOPSTORIES = "feeds.system.topstories";
+const PREF_USER_TOPSITES = "feeds.topsites";
+const PREF_SYSTEM_TOPSITES = "feeds.system.topsites";
 const PREF_SPOCS_CLEAR_ENDPOINT = "discoverystream.endpointSpocsClear";
 const PREF_SHOW_SPONSORED = "showSponsored";
+const PREF_SHOW_SPONSORED_TOPSITES = "showSponsoredTopSites";
 const PREF_SPOC_IMPRESSIONS = "discoverystream.spoc.impressions";
 const PREF_FLIGHT_BLOCKS = "discoverystream.flight.blocks";
 const PREF_REC_IMPRESSIONS = "discoverystream.rec.impressions";
@@ -73,13 +60,13 @@ const PREF_PERSONALIZATION_OVERRIDE =
 
 let getHardcodedLayout;
 
-this.DiscoveryStreamFeed = class DiscoveryStreamFeed {
+class DiscoveryStreamFeed {
   constructor() {
     // Internal state for checking if we've intialized all our data
     this.loaded = false;
 
     // Persistent cache for remote endpoint data.
-    this.cache = new PersistentCache(CACHE_KEY, true);
+    this.cache = new lazy.PersistentCache(CACHE_KEY, true);
     this.locale = Services.locale.appLocaleAsBCP47;
     this._impressionId = this.getOrCreateImpressionId();
     // Internal in-memory cache for parsing json prefs.
@@ -126,7 +113,7 @@ this.DiscoveryStreamFeed = class DiscoveryStreamFeed {
       // istanbul ignore next
       this._prefCache.config = {};
       // istanbul ignore next
-      Cu.reportError(
+      console.error(
         `Could not parse preference. Try resetting ${PREF_CONFIG} in about:config. ${e}`
       );
     }
@@ -147,10 +134,38 @@ this.DiscoveryStreamFeed = class DiscoveryStreamFeed {
   }
 
   get region() {
-    return Region.home;
+    return lazy.Region.home;
+  }
+
+  get isBff() {
+    if (this._isBff === undefined) {
+      const pocketConfig =
+        this.store.getState().Prefs.values?.pocketConfig || {};
+
+      const preffedLocaleListString = pocketConfig.localeListConfig || "";
+      const preffedLocales = preffedLocaleListString
+        .split(",")
+        .map(s => s.trim());
+      const localeEnabled = this.locale && preffedLocales.includes(this.locale);
+
+      const preffedRegionBffConfigString = pocketConfig.regionBffConfig || "";
+      const preffedRegionBffConfig = preffedRegionBffConfigString
+        .split(",")
+        .map(s => s.trim());
+      const regionBff = preffedRegionBffConfig.includes(this.region);
+      this._isBff = !localeEnabled && regionBff;
+    }
+
+    return this._isBff;
   }
 
   get showSpocs() {
+    // High level overall sponsored check, if one of these is true,
+    // we know we need some sort of spoc control setup.
+    return this.showSponsoredStories || this.showSponsoredTopsites;
+  }
+
+  get showSponsoredStories() {
     // Combine user-set sponsored opt-out with Mozilla-set config
     return (
       this.store.getState().Prefs.values[PREF_SHOW_SPONSORED] &&
@@ -158,11 +173,28 @@ this.DiscoveryStreamFeed = class DiscoveryStreamFeed {
     );
   }
 
+  get showSponsoredTopsites() {
+    const placements = this.getPlacements();
+    // Combine user-set sponsored opt-out with placement data
+    return !!(
+      this.store.getState().Prefs.values[PREF_SHOW_SPONSORED_TOPSITES] &&
+      placements.find(placement => placement.name === "sponsored-topsites")
+    );
+  }
+
   get showStories() {
-    // Combine user-set sponsored opt-out with Mozilla-set config
+    // Combine user-set stories opt-out with Mozilla-set config
     return (
       this.store.getState().Prefs.values[PREF_SYSTEM_TOPSTORIES] &&
       this.store.getState().Prefs.values[PREF_USER_TOPSTORIES]
+    );
+  }
+
+  get showTopsites() {
+    // Combine user-set topsites opt-out with Mozilla-set config
+    return (
+      this.store.getState().Prefs.values[PREF_SYSTEM_TOPSITES] &&
+      this.store.getState().Prefs.values[PREF_USER_TOPSITES]
     );
   }
 
@@ -171,20 +203,18 @@ this.DiscoveryStreamFeed = class DiscoveryStreamFeed {
     if (!this.showStories) {
       return false;
     }
-    const spocsPersonalized = this.store.getState().Prefs.values?.pocketConfig
-      ?.spocsPersonalized;
-    const recsPersonalized = this.store.getState().Prefs.values?.pocketConfig
-      ?.recsPersonalized;
-    const personalization = this.store.getState().Prefs.values[
-      PREF_PERSONALIZATION
-    ];
+    const spocsPersonalized =
+      this.store.getState().Prefs.values?.pocketConfig?.spocsPersonalized;
+    const recsPersonalized =
+      this.store.getState().Prefs.values?.pocketConfig?.recsPersonalized;
+    const personalization =
+      this.store.getState().Prefs.values[PREF_PERSONALIZATION];
 
     // There is a server sent flag to keep personalization on.
     // If the server stops sending this, we turn personalization off,
     // until the server starts returning the signal.
-    const overrideState = this.store.getState().Prefs.values[
-      PREF_PERSONALIZATION_OVERRIDE
-    ];
+    const overrideState =
+      this.store.getState().Prefs.values[PREF_PERSONALIZATION_OVERRIDE];
 
     return (
       personalization &&
@@ -204,7 +234,7 @@ this.DiscoveryStreamFeed = class DiscoveryStreamFeed {
     return this._recommendationProvider;
   }
 
-  setupPrefs(isStartup = false) {
+  setupConfig(isStartup = false) {
     // Send the initial state of the pref on our reducer
     this.store.dispatch(
       ac.BroadcastToContent({
@@ -215,19 +245,136 @@ this.DiscoveryStreamFeed = class DiscoveryStreamFeed {
         },
       })
     );
+  }
+
+  setupPrefs(isStartup = false) {
+    const pocketNewtabExperiment = lazy.ExperimentAPI.getExperimentMetaData({
+      featureId: "pocketNewtab",
+    });
+
+    const pocketNewtabRollout = lazy.ExperimentAPI.getRolloutMetaData({
+      featureId: "pocketNewtab",
+    });
+
+    // We want to know if the user is in an experiment or rollout,
+    // but we prioritize experiments over rollouts.
+    const experimentMetaData = pocketNewtabExperiment || pocketNewtabRollout;
+
+    let utmSource = "pocket-newtab";
+    let utmCampaign = experimentMetaData?.slug;
+    let utmContent = experimentMetaData?.branch?.slug;
+
     this.store.dispatch(
       ac.BroadcastToContent({
-        type: at.DISCOVERY_STREAM_COLLECTION_DISMISSIBLE_TOGGLE,
+        type: at.DISCOVERY_STREAM_EXPERIMENT_DATA,
         data: {
-          value: this.store.getState().Prefs.values[
-            PREF_COLLECTION_DISMISSIBLE
-          ],
+          utmSource,
+          utmCampaign,
+          utmContent,
         },
         meta: {
           isStartup,
         },
       })
     );
+
+    const pocketButtonEnabled = Services.prefs.getBoolPref(PREF_POCKET_BUTTON);
+
+    const nimbusConfig = this.store.getState().Prefs.values?.pocketConfig || {};
+    const { region } = this.store.getState().Prefs.values;
+
+    this.setupSpocsCacheUpdateTime();
+    const saveToPocketCardRegions = nimbusConfig.saveToPocketCardRegions
+      ?.split(",")
+      .map(s => s.trim());
+    const saveToPocketCard =
+      pocketButtonEnabled &&
+      (nimbusConfig.saveToPocketCard ||
+        saveToPocketCardRegions?.includes(region));
+
+    const hideDescriptionsRegions = nimbusConfig.hideDescriptionsRegions
+      ?.split(",")
+      .map(s => s.trim());
+    const hideDescriptions =
+      nimbusConfig.hideDescriptions ||
+      hideDescriptionsRegions?.includes(region);
+
+    // We don't BroadcastToContent for this, as the changes may
+    // shift around elements on an open newtab the user is currently reading.
+    // So instead we AlsoToPreloaded so the next tab is updated.
+    // This is because setupPrefs is called by the system and not a user interaction.
+    this.store.dispatch(
+      ac.AlsoToPreloaded({
+        type: at.DISCOVERY_STREAM_PREFS_SETUP,
+        data: {
+          recentSavesEnabled: nimbusConfig.recentSavesEnabled,
+          pocketButtonEnabled,
+          saveToPocketCard,
+          hideDescriptions,
+          compactImages: nimbusConfig.compactImages,
+          imageGradient: nimbusConfig.imageGradient,
+          newSponsoredLabel: nimbusConfig.newSponsoredLabel,
+          titleLines: nimbusConfig.titleLines,
+          descLines: nimbusConfig.descLines,
+          readTime: nimbusConfig.readTime,
+        },
+        meta: {
+          isStartup,
+        },
+      })
+    );
+
+    this.store.dispatch(
+      ac.BroadcastToContent({
+        type: at.DISCOVERY_STREAM_COLLECTION_DISMISSIBLE_TOGGLE,
+        data: {
+          value:
+            this.store.getState().Prefs.values[PREF_COLLECTION_DISMISSIBLE],
+        },
+        meta: {
+          isStartup,
+        },
+      })
+    );
+  }
+
+  async setupPocketState(target) {
+    let dispatch = action =>
+      this.store.dispatch(ac.OnlyToOneContent(action, target));
+    const isUserLoggedIn = lazy.pktApi.isUserLoggedIn();
+    dispatch({
+      type: at.DISCOVERY_STREAM_POCKET_STATE_SET,
+      data: {
+        isUserLoggedIn,
+      },
+    });
+
+    // If we're not logged in, don't bother fetching recent saves, we're done.
+    if (isUserLoggedIn) {
+      let recentSaves = await lazy.pktApi.getRecentSavesCache();
+      if (recentSaves) {
+        // We have cache, so we can use those.
+        dispatch({
+          type: at.DISCOVERY_STREAM_RECENT_SAVES,
+          data: {
+            recentSaves,
+          },
+        });
+      } else {
+        // We don't have cache, so fetch fresh stories.
+        lazy.pktApi.getRecentSaves({
+          success(data) {
+            dispatch({
+              type: at.DISCOVERY_STREAM_RECENT_SAVES,
+              data: {
+                recentSaves: data,
+              },
+            });
+          },
+          error(error) {},
+        });
+      }
+    }
   }
 
   uninitPrefs() {
@@ -237,7 +384,7 @@ this.DiscoveryStreamFeed = class DiscoveryStreamFeed {
 
   async fetchFromEndpoint(rawEndpoint, options = {}) {
     if (!rawEndpoint) {
-      Cu.reportError("Tried to fetch endpoint but none was configured.");
+      console.error("Tried to fetch endpoint but none was configured.");
       return null;
     }
 
@@ -279,11 +426,40 @@ this.DiscoveryStreamFeed = class DiscoveryStreamFeed {
         throw new Error(`Unexpected status (${response.status})`);
       }
       clearTimeout(timeoutId);
+
       return response.json();
     } catch (error) {
-      Cu.reportError(`Failed to fetch ${endpoint}: ${error.message}`);
+      console.error(`Failed to fetch ${endpoint}: ${error.message}`);
     }
     return null;
+  }
+
+  get spocsCacheUpdateTime() {
+    if (this._spocsCacheUpdateTime) {
+      return this._spocsCacheUpdateTime;
+    }
+    this.setupSpocsCacheUpdateTime();
+    return this._spocsCacheUpdateTime;
+  }
+
+  setupSpocsCacheUpdateTime() {
+    const nimbusConfig = this.store.getState().Prefs.values?.pocketConfig || {};
+    const { spocsCacheTimeout } = nimbusConfig;
+    const MAX_TIMEOUT = 30;
+    const MIN_TIMEOUT = 5;
+    // We do a bit of min max checking the the configured value is between
+    // 5 and 30 minutes, to protect against unreasonable values.
+    if (
+      spocsCacheTimeout &&
+      spocsCacheTimeout <= MAX_TIMEOUT &&
+      spocsCacheTimeout >= MIN_TIMEOUT
+    ) {
+      // This value is in minutes, but we want ms.
+      this._spocsCacheUpdateTime = spocsCacheTimeout * 60 * 1000;
+    } else {
+      // The const is already in ms.
+      this._spocsCacheUpdateTime = SPOCS_FEEDS_UPDATE_TIME;
+    }
   }
 
   /**
@@ -297,7 +473,7 @@ this.DiscoveryStreamFeed = class DiscoveryStreamFeed {
     const { layout, spocs, feeds } = cachedData;
     const updateTimePerComponent = {
       layout: LAYOUT_UPDATE_TIME,
-      spocs: SPOCS_FEEDS_UPDATE_TIME,
+      spocs: this.spocsCacheUpdateTime,
       feed: COMPONENT_FEEDS_UPDATE_TIME,
     };
     const EXPIRATION_TIME = isStartup
@@ -329,12 +505,13 @@ this.DiscoveryStreamFeed = class DiscoveryStreamFeed {
     const { feeds } = cachedData;
     return {
       layout: this.isExpired({ cachedData, key: "layout" }),
-      spocs: this.isExpired({ cachedData, key: "spocs" }),
+      spocs: this.showSpocs && this.isExpired({ cachedData, key: "spocs" }),
       feeds:
-        !feeds ||
-        Object.keys(feeds).some(url =>
-          this.isExpired({ cachedData, key: "feed", url })
-        ),
+        this.showStories &&
+        (!feeds ||
+          Object.keys(feeds).some(url =>
+            this.isExpired({ cachedData, key: "feed", url })
+          )),
     };
   }
 
@@ -367,7 +544,7 @@ this.DiscoveryStreamFeed = class DiscoveryStreamFeed {
 
         await this.cache.set("layout", layout);
       } else {
-        Cu.reportError("No response for response.layout prop");
+        console.error("No response for response.layout prop");
       }
     }
     return layout;
@@ -377,25 +554,48 @@ this.DiscoveryStreamFeed = class DiscoveryStreamFeed {
     const placements = [];
     const placementsMap = {};
     for (const row of layout.filter(r => r.components && r.components.length)) {
-      for (const component of row.components) {
-        if (component.placement) {
-          // Throw away any dupes for the request.
-          if (!placementsMap[component.placement.name]) {
-            placementsMap[component.placement.name] = component.placement;
-            placements.push(component.placement);
+      for (const component of row.components.filter(
+        c => c.placement && c.spocs
+      )) {
+        // If we find a valid placement, we set it to this value.
+        let placement;
+
+        // We need to check to see if this placement is on or not.
+        // If this placement has a prefs array, check against that.
+        if (component.spocs.prefs) {
+          // Check every pref in the array to see if this placement is turned on.
+          if (
+            component.spocs.prefs.length &&
+            component.spocs.prefs.every(
+              p => this.store.getState().Prefs.values[p]
+            )
+          ) {
+            // This placement is on.
+            placement = component.placement;
           }
+        } else if (this.showSponsoredStories) {
+          // If we do not have a prefs array, use old check.
+          // This is because Pocket spocs uses an old non pref method.
+          placement = component.placement;
+        }
+
+        // Validate this placement and check for dupes.
+        if (placement?.name && !placementsMap[placement.name]) {
+          placementsMap[placement.name] = placement;
+          placements.push(placement);
         }
       }
     }
-    if (placements.length) {
-      sendUpdate({
-        type: at.DISCOVERY_STREAM_SPOCS_PLACEMENTS,
-        data: { placements },
-        meta: {
-          isStartup,
-        },
-      });
-    }
+
+    // Update placements data.
+    // Even if we have no placements, we still want to update it to clear it.
+    sendUpdate({
+      type: at.DISCOVERY_STREAM_SPOCS_PLACEMENTS,
+      data: { placements },
+      meta: {
+        isStartup,
+      },
+    });
   }
 
   /**
@@ -455,33 +655,77 @@ this.DiscoveryStreamFeed = class DiscoveryStreamFeed {
         this.store.getState().Prefs.values[PREF_HARDCODED_BASIC_LAYOUT] ||
         this.store.getState().Prefs.values[PREF_REGION_BASIC_LAYOUT];
 
-      const sponsoredCollectionsEnabled = this.store.getState().Prefs.values[
-        PREF_COLLECTIONS_ENABLED
-      ];
-
-      const pocketButtonEnabled = Services.prefs.getBoolPref(
-        PREF_POCKET_BUTTON
-      );
+      const sponsoredCollectionsEnabled =
+        this.store.getState().Prefs.values[PREF_COLLECTIONS_ENABLED];
 
       const pocketConfig =
         this.store.getState().Prefs.values?.pocketConfig || {};
+      const onboardingExperience =
+        this.isBff && pocketConfig.onboardingExperience;
 
       let items = isBasicLayout ? 3 : 21;
-      if (
-        pocketConfig.compactLayout ||
-        pocketConfig.fourCardLayout ||
-        pocketConfig.hybridLayout
-      ) {
+      if (pocketConfig.fourCardLayout || pocketConfig.hybridLayout) {
         items = isBasicLayout ? 4 : 24;
+      }
+
+      const prepConfArr = arr => {
+        return arr
+          ?.split(",")
+          .filter(item => item)
+          .map(item => parseInt(item, 10));
+      };
+
+      const spocAdTypes = prepConfArr(pocketConfig.spocAdTypes);
+      const spocZoneIds = prepConfArr(pocketConfig.spocZoneIds);
+      const spocTopsitesAdTypes = prepConfArr(pocketConfig.spocTopsitesAdTypes);
+      const spocTopsitesZoneIds = prepConfArr(pocketConfig.spocTopsitesZoneIds);
+      const { spocSiteId } = pocketConfig;
+      let spocPlacementData;
+      let spocTopsitesPlacementData;
+      let spocsUrl;
+
+      if (spocAdTypes?.length && spocZoneIds?.length) {
+        spocPlacementData = {
+          ad_types: spocAdTypes,
+          zone_ids: spocZoneIds,
+        };
+      }
+
+      if (spocTopsitesAdTypes?.length && spocTopsitesZoneIds?.length) {
+        spocTopsitesPlacementData = {
+          ad_types: spocTopsitesAdTypes,
+          zone_ids: spocTopsitesZoneIds,
+        };
+      }
+
+      if (spocSiteId) {
+        const newUrl = new URL(SPOCS_URL);
+        newUrl.searchParams.set("site", spocSiteId);
+        spocsUrl = newUrl.href;
+      }
+
+      let feedUrl = FEED_URL;
+
+      if (this.isBff) {
+        feedUrl = `https://${lazy.NimbusFeatures.saveToPocket.getVariable(
+          "bffApi"
+        )}/desktop/v1/recommendations?locale=$locale&region=$region&count=30`;
       }
 
       // Set a hardcoded layout if one is needed.
       // Changing values in this layout in memory object is unnecessary.
       layoutResp = getHardcodedLayout({
+        spocsUrl,
+        feedUrl,
         items,
         sponsoredCollectionsEnabled,
+        spocPlacementData,
+        spocTopsitesPlacementData,
         spocPositions: this.parseGridPositions(
           pocketConfig.spocPositions?.split(`,`)
+        ),
+        spocTopsitesPositions: this.parseGridPositions(
+          pocketConfig.spocTopsitesPositions?.split(`,`)
         ),
         widgetPositions: this.parseGridPositions(
           pocketConfig.widgetPositions?.split(`,`)
@@ -489,28 +733,17 @@ this.DiscoveryStreamFeed = class DiscoveryStreamFeed {
         widgetData: [
           ...(this.locale.startsWith("en-") ? [{ type: "TopicsWidget" }] : []),
         ],
-        compactLayout: pocketConfig.compactLayout,
         hybridLayout: pocketConfig.hybridLayout,
         hideCardBackground: pocketConfig.hideCardBackground,
         fourCardLayout: pocketConfig.fourCardLayout,
-        loadMore: pocketConfig.loadMore,
-        lastCardMessageEnabled: pocketConfig.lastCardMessageEnabled,
-        pocketButtonEnabled,
-        saveToPocketCard: pocketButtonEnabled && pocketConfig.saveToPocketCard,
         newFooterSection: pocketConfig.newFooterSection,
-        hideDescriptions: pocketConfig.hideDescriptions,
         compactGrid: pocketConfig.compactGrid,
-        compactImages: pocketConfig.compactImages,
-        imageGradient: pocketConfig.imageGradient,
-        newSponsoredLabel: pocketConfig.newSponsoredLabel,
-        titleLines: pocketConfig.titleLines,
-        descLines: pocketConfig.descLines,
         // For now essentialReadsHeader and editorsPicksHeader are English only.
         essentialReadsHeader:
           this.locale.startsWith("en-") && pocketConfig.essentialReadsHeader,
         editorsPicksHeader:
           this.locale.startsWith("en-") && pocketConfig.editorsPicksHeader,
-        readTime: pocketConfig.readTime,
+        onboardingExperience,
       });
     }
 
@@ -528,9 +761,8 @@ this.DiscoveryStreamFeed = class DiscoveryStreamFeed {
         this.config.spocs_endpoint ||
         layoutResp.spocs.url;
 
-      const spocsEndpointQuery = this.store.getState().Prefs.values[
-        PREF_SPOCS_ENDPOINT_QUERY
-      ];
+      const spocsEndpointQuery =
+        this.store.getState().Prefs.values[PREF_SPOCS_ENDPOINT_QUERY];
 
       // For QA, testing, or debugging purposes, there may be a query string to add.
       url = this.addEndpointQuery(url, spocsEndpointQuery);
@@ -595,7 +827,7 @@ this.DiscoveryStreamFeed = class DiscoveryStreamFeed {
           })
           .catch(
             /* istanbul ignore next */ error => {
-              Cu.reportError(
+              console.error(
                 `Error trying to load component feed ${url}: ${error}`
               );
             }
@@ -693,10 +925,6 @@ this.DiscoveryStreamFeed = class DiscoveryStreamFeed {
 
   getPlacements() {
     const { placements } = this.store.getState().DiscoveryStream.spocs;
-    // Backwards comp for before we had placements, assume just a single spocs placement.
-    if (!placements || !placements.length) {
-      return [{ name: "spocs" }];
-    }
     return placements;
   }
 
@@ -742,14 +970,12 @@ this.DiscoveryStreamFeed = class DiscoveryStreamFeed {
   personalizationOverride(overrideCommand) {
     // Are we currently in an override state.
     // This is useful to know if we want to do a cleanup.
-    const overrideState = this.store.getState().Prefs.values[
-      PREF_PERSONALIZATION_OVERRIDE
-    ];
+    const overrideState =
+      this.store.getState().Prefs.values[PREF_PERSONALIZATION_OVERRIDE];
 
     // Is this profile currently set to be personalized.
-    const personalization = this.store.getState().Prefs.values[
-      PREF_PERSONALIZATION
-    ];
+    const personalization =
+      this.store.getState().Prefs.values[PREF_PERSONALIZATION];
 
     // If we have an override command, profile is currently personalized,
     // and is not currently being overridden, we can set the override pref.
@@ -769,9 +995,8 @@ this.DiscoveryStreamFeed = class DiscoveryStreamFeed {
   }
 
   updateSponsoredCollectionsPref(collectionEnabled = false) {
-    const currentState = this.store.getState().Prefs.values[
-      PREF_COLLECTIONS_ENABLED
-    ];
+    const currentState =
+      this.store.getState().Prefs.values[PREF_COLLECTIONS_ENABLED];
 
     // If the current state does not match the new state, update the pref.
     if (currentState !== collectionEnabled) {
@@ -785,13 +1010,13 @@ this.DiscoveryStreamFeed = class DiscoveryStreamFeed {
     const cachedData = (await this.cache.get()) || {};
     let spocsState;
 
-    const { placements } = this.store.getState().DiscoveryStream.spocs;
+    const placements = this.getPlacements();
 
-    if (this.showSpocs) {
+    if (this.showSpocs && placements?.length) {
       spocsState = cachedData.spocs;
       if (this.isExpired({ cachedData, key: "spocs", isStartup })) {
-        const endpoint = this.store.getState().DiscoveryStream.spocs
-          .spocs_endpoint;
+        const endpoint =
+          this.store.getState().DiscoveryStream.spocs.spocs_endpoint;
 
         const headers = new Headers();
         headers.append("content-type", "application/json");
@@ -866,9 +1091,8 @@ this.DiscoveryStreamFeed = class DiscoveryStreamFeed {
               }
 
               // Migrate flight_id
-              const { data: migratedSpocs } = this.migrateFlightId(
-                normalizedSpocsItems
-              );
+              const { data: migratedSpocs } =
+                this.migrateFlightId(normalizedSpocsItems);
 
               const { data: capResult } = this.frequencyCapSpocs(migratedSpocs);
 
@@ -899,7 +1123,7 @@ this.DiscoveryStreamFeed = class DiscoveryStreamFeed {
             spocs: spocsState.spocs,
           });
         } else {
-          Cu.reportError("No response for spocs_endpoint prop");
+          console.error("No response for spocs_endpoint prop");
         }
       }
     }
@@ -929,9 +1153,8 @@ this.DiscoveryStreamFeed = class DiscoveryStreamFeed {
   }
 
   async clearSpocs() {
-    const endpoint = this.store.getState().Prefs.values[
-      PREF_SPOCS_CLEAR_ENDPOINT
-    ];
+    const endpoint =
+      this.store.getState().Prefs.values[PREF_SPOCS_CLEAR_ENDPOINT];
     if (!endpoint) {
       return;
     }
@@ -1058,10 +1281,10 @@ this.DiscoveryStreamFeed = class DiscoveryStreamFeed {
   }
 
   async scoreItems(items, type) {
-    const spocsPersonalized = this.store.getState().Prefs.values?.pocketConfig
-      ?.spocsPersonalized;
-    const recsPersonalized = this.store.getState().Prefs.values?.pocketConfig
-      ?.recsPersonalized;
+    const spocsPersonalized =
+      this.store.getState().Prefs.values?.pocketConfig?.spocsPersonalized;
+    const recsPersonalized =
+      this.store.getState().Prefs.values?.pocketConfig?.recsPersonalized;
     const personalizedByType =
       type === "feed" ? recsPersonalized : spocsPersonalized;
 
@@ -1092,7 +1315,7 @@ this.DiscoveryStreamFeed = class DiscoveryStreamFeed {
       let flights = this.readDataPref(PREF_FLIGHT_BLOCKS);
       const filteredItems = data.filter(item => {
         const blocked =
-          NewTabUtils.blockedLinks.isBlocked({ url: item.url }) ||
+          lazy.NewTabUtils.blockedLinks.isBlocked({ url: item.url }) ||
           flights[item.flight_id];
         return !blocked;
       });
@@ -1223,25 +1446,50 @@ this.DiscoveryStreamFeed = class DiscoveryStreamFeed {
 
     let feed = feeds ? feeds[feedUrl] : null;
     if (this.isExpired({ cachedData, key: "feed", url: feedUrl, isStartup })) {
-      const feedResponse = await this.fetchFromEndpoint(feedUrl);
+      let options = {};
+      if (this.isBff) {
+        const headers = new Headers();
+        const oAuthConsumerKey = lazy.NimbusFeatures.saveToPocket.getVariable(
+          "oAuthConsumerKeyBff"
+        );
+        headers.append("consumer_key", oAuthConsumerKey);
+        options = {
+          method: "GET",
+          headers,
+        };
+      }
+
+      const feedResponse = await this.fetchFromEndpoint(feedUrl, options);
       if (feedResponse) {
+        const { settings = {} } = feedResponse;
+        let { recommendations } = feedResponse;
+        if (this.isBff) {
+          recommendations = feedResponse.data.map(item => ({
+            id: item.tileId,
+            url: item.url,
+            title: item.title,
+            excerpt: item.excerpt,
+            publisher: item.publisher,
+            raw_image_src: item.imageUrl,
+          }));
+        }
         const { data: scoredItems } = await this.scoreItems(
-          feedResponse.recommendations,
+          recommendations,
           "feed"
         );
-        const { recsExpireTime } = feedResponse.settings;
-        const recommendations = this.rotate(scoredItems, recsExpireTime);
+        const { recsExpireTime } = settings;
+        const rotatedItems = this.rotate(scoredItems, recsExpireTime);
         this.componentFeedFetched = true;
         feed = {
           lastUpdated: Date.now(),
           data: {
-            settings: feedResponse.settings,
-            recommendations,
+            settings,
+            recommendations: rotatedItems,
             status: "success",
           },
         };
       } else {
-        Cu.reportError("No response for feed");
+        console.error("No response for feed");
       }
     }
 
@@ -1286,10 +1534,10 @@ this.DiscoveryStreamFeed = class DiscoveryStreamFeed {
       options.isStartup
     );
 
-    const spocsPersonalized = this.store.getState().Prefs.values?.pocketConfig
-      ?.spocsPersonalized;
-    const recsPersonalized = this.store.getState().Prefs.values?.pocketConfig
-      ?.recsPersonalized;
+    const spocsPersonalized =
+      this.store.getState().Prefs.values?.pocketConfig?.spocsPersonalized;
+    const recsPersonalized =
+      this.store.getState().Prefs.values?.pocketConfig?.recsPersonalized;
 
     let expirationPerComponent = {};
     if (this.personalized) {
@@ -1415,15 +1663,25 @@ this.DiscoveryStreamFeed = class DiscoveryStreamFeed {
       : this.store.dispatch;
 
     await this.loadLayout(dispatch, isStartup);
-    if (this.showStories) {
-      await Promise.all([
-        this.loadSpocs(dispatch, isStartup).catch(error =>
-          Cu.reportError(`Error trying to load spocs feeds: ${error}`)
-        ),
-        this.loadComponentFeeds(dispatch, isStartup).catch(error =>
-          Cu.reportError(`Error trying to load component feeds: ${error}`)
-        ),
-      ]);
+    if (this.showStories || this.showTopsites) {
+      const promises = [];
+      // We could potentially have either or both sponsored topsites or stories.
+      // We only make one fetch, and control which to request when we fetch.
+      // So for now we only care if we need to make this request at all.
+      const spocsPromise = this.loadSpocs(dispatch, isStartup).catch(error =>
+        console.error(`Error trying to load spocs feeds: ${error}`)
+      );
+      promises.push(spocsPromise);
+      if (this.showStories) {
+        const storiesPromise = this.loadComponentFeeds(
+          dispatch,
+          isStartup
+        ).catch(error =>
+          console.error(`Error trying to load component feeds: ${error}`)
+        );
+        promises.push(storiesPromise);
+      }
+      await Promise.all(promises);
       if (isStartup) {
         await this._maybeUpdateCachedData();
       }
@@ -1489,6 +1747,9 @@ this.DiscoveryStreamFeed = class DiscoveryStreamFeed {
   async resetAllCache() {
     await this.resetContentCache();
     await this.cache.set("personalization", {});
+    // Reset in-memory caches.
+    this._isBff = undefined;
+    this._spocsCacheUpdateTime = undefined;
   }
 
   resetDataPrefs() {
@@ -1502,13 +1763,13 @@ this.DiscoveryStreamFeed = class DiscoveryStreamFeed {
     this.store.dispatch(
       ac.BroadcastToContent({ type: at.DISCOVERY_STREAM_LAYOUT_RESET })
     );
+    this.setupPrefs(false /* isStartup */);
     this.store.dispatch(
       ac.BroadcastToContent({
         type: at.DISCOVERY_STREAM_COLLECTION_DISMISSIBLE_TOGGLE,
         data: {
-          value: this.store.getState().Prefs.values[
-            PREF_COLLECTION_DISMISSIBLE
-          ],
+          value:
+            this.store.getState().Prefs.values[PREF_COLLECTION_DISMISSIBLE],
         },
       })
     );
@@ -1526,7 +1787,7 @@ this.DiscoveryStreamFeed = class DiscoveryStreamFeed {
   }
 
   // This is a request to change the config from somewhere.
-  // Can be from a spefic pref related to Discovery Stream,
+  // Can be from a specific pref related to Discovery Stream,
   // or can be a generic request from an external feed that
   // something changed.
   configReset() {
@@ -1625,7 +1886,7 @@ this.DiscoveryStreamFeed = class DiscoveryStreamFeed {
     }
   }
 
-  onPocketConfigChanged() {
+  onCollectionsChanged() {
     // Update layout, and reload any off screen tabs.
     // This does not change any existing open tabs.
     // It also doesn't update any spoc or rec data, just the layout.
@@ -1645,26 +1906,62 @@ this.DiscoveryStreamFeed = class DiscoveryStreamFeed {
         this.configReset();
         break;
       case PREF_COLLECTIONS_ENABLED:
-        this.onPocketConfigChanged();
+        this.onCollectionsChanged();
+        break;
+      case PREF_USER_TOPSITES:
+      case PREF_SYSTEM_TOPSITES:
+        if (
+          !(
+            this.showTopsites ||
+            (this.showStories && this.showSponsoredStories)
+          )
+        ) {
+          // Ensure we delete any remote data potentially related to spocs.
+          this.clearSpocs();
+        }
         break;
       case PREF_USER_TOPSTORIES:
       case PREF_SYSTEM_TOPSTORIES:
-        if (!action.data.value) {
+        if (
+          !(
+            this.showStories ||
+            (this.showTopsites && this.showSponsoredTopsites)
+          )
+        ) {
           // Ensure we delete any remote data potentially related to spocs.
           this.clearSpocs();
-        } else {
+        }
+        if (action.data.value) {
           this.enableStories();
         }
         break;
       // Check if spocs was disabled. Remove them if they were.
       case PREF_SHOW_SPONSORED:
-        if (!action.data.value) {
+      case PREF_SHOW_SPONSORED_TOPSITES:
+        const dispatch = update =>
+          this.store.dispatch(ac.BroadcastToContent(update));
+        // We refresh placements data because one of the spocs were turned off.
+        this.updatePlacements(
+          dispatch,
+          this.store.getState().DiscoveryStream.layout
+        );
+        // Currently the order of this is important.
+        // We need to check this after updatePlacements is called,
+        // because some of the spoc logic depends on the result of placement updates.
+        if (
+          !(
+            (this.showSponsoredStories ||
+              (this.showTopSites && this.showSponsoredTopSites)) &&
+            (this.showSponsoredTopsites ||
+              (this.showStories && this.showSponsoredStories))
+          )
+        ) {
           // Ensure we delete any remote data potentially related to spocs.
           this.clearSpocs();
         }
-        await this.loadSpocs(update =>
-          this.store.dispatch(ac.BroadcastToContent(update))
-        );
+        // Placements have changed so consider spocs expired, and reload them.
+        await this.cache.set("spocs", {});
+        await this.loadSpocs(dispatch);
         break;
     }
   }
@@ -1674,6 +1971,7 @@ this.DiscoveryStreamFeed = class DiscoveryStreamFeed {
       case at.INIT:
         // During the initialization of Firefox:
         // 1. Set-up listeners and initialize the redux state for config;
+        this.setupConfig(true /* isStartup */);
         this.setupPrefs(true /* isStartup */);
         // 2. If config.enabled is true, start loading data.
         if (this.config.enabled) {
@@ -1696,7 +1994,7 @@ this.DiscoveryStreamFeed = class DiscoveryStreamFeed {
         Services.obs.notifyObservers(null, "idle-daily");
         break;
       case at.DISCOVERY_STREAM_DEV_SYNC_RS:
-        RemoteSettings.pollChanges();
+        lazy.RemoteSettings.pollChanges();
         break;
       case at.DISCOVERY_STREAM_DEV_EXPIRE_CACHE:
         // Personalization scores update at a slower interval than content, so in order to debug,
@@ -1716,7 +2014,9 @@ this.DiscoveryStreamFeed = class DiscoveryStreamFeed {
           )
         );
         break;
-
+      case at.DISCOVERY_STREAM_POCKET_STATE_INIT:
+        this.setupPocketState(action.meta.fromTarget);
+        break;
       case at.DISCOVERY_STREAM_CONFIG_RESET:
         // This is a generic config reset likely related to an external feed pref.
         this.configReset();
@@ -1875,69 +2175,59 @@ this.DiscoveryStreamFeed = class DiscoveryStreamFeed {
       case at.PREF_CHANGED:
         await this.onPrefChangedAction(action);
         if (action.data.name === "pocketConfig") {
-          await this.onPocketConfigChanged(action.data.value);
+          await this.onPrefChange();
+          this.setupPrefs(false /* isStartup */);
         }
         break;
     }
   }
-};
+}
 
 /* This function generates a hardcoded layout each call.
    This is because modifying the original object would
    persist across pref changes and system_tick updates.
 
    NOTE: There is some branching logic in the template.
+     `spocsUrl` Changing the url for spocs is used for adding a siteId query param.
+     `feedUrl` Where to fetch stories from.
      `items` How many items to include in the primary card grid.
      `spocPositions` Changes the position of spoc cards.
+     `spocTopsitesPositions` Changes the position of spoc topsites.
+     `spocPlacementData` Used to set the spoc content.
+     `spocTopsitesPlacementData` Used to set spoc content for topsites.
      `sponsoredCollectionsEnabled` Tuns on and off the sponsored collection section.
-     `compactLayout` Changes cards to smaller more compact cards.
      `hybridLayout` Changes cards to smaller more compact cards only for specific breakpoints.
      `hideCardBackground` Removes Pocket card background and borders.
      `fourCardLayout` Enable four Pocket cards per row.
-     `loadMore` Hide half the Pocket stories behind a load more button.
-     `lastCardMessageEnabled` Shows a message card at the end of the feed.
      `newFooterSection` Changes the layout of the topics section.
-     `pocketButtonEnabled` Removes Pocket context menu items from cards.
-     `saveToPocketCard` Cards have a save to Pocket button over their thumbnail on hover.
-     `hideDescriptions` Hide or display descriptions for Pocket stories.
      `compactGrid` Reduce the number of pixels between the Pocket cards.
-     `compactImages` Reduce the height on Pocket card images.
-     `imageGradient` Add a gradient to the bottom of Pocket card images to blend the image in with the card.
-     `newSponsoredLabel` Updates the sponsored label position to below the image.
-     `titleLines` Changes the maximum number of lines a title can be for Pocket cards.
-     `descLines` Changes the maximum number of lines a description can be for Pocket cards.
      `essentialReadsHeader` Updates the Pocket section header and title to say "Today’s Essential Reads", moves the "Recommended by Pocket" header to the right side.
      `editorsPicksHeader` Updates the Pocket section header and title to say "Editor’s Picks", if used with essentialReadsHeader, creates a second section 2 rows down for editorsPicks.
+     `onboardingExperience` Show new users some UI explaining Pocket above the Pocket section.
 */
 getHardcodedLayout = ({
+  spocsUrl = SPOCS_URL,
+  feedUrl = FEED_URL,
   items = 21,
   spocPositions = [1, 5, 7, 11, 18, 20],
+  spocTopsitesPositions = [1],
+  spocPlacementData = { ad_types: [3617], zone_ids: [217758, 217995] },
+  spocTopsitesPlacementData,
   widgetPositions = [],
   widgetData = [],
   sponsoredCollectionsEnabled = false,
-  compactLayout = false,
   hybridLayout = false,
   hideCardBackground = false,
   fourCardLayout = false,
-  loadMore = false,
-  lastCardMessageEnabled = false,
   newFooterSection = false,
-  pocketButtonEnabled = false,
-  saveToPocketCard = false,
-  hideDescriptions = true,
   compactGrid = false,
-  compactImages = false,
-  imageGradient = false,
-  newSponsoredLabel = false,
-  titleLines = 3,
-  descLines = 3,
   essentialReadsHeader = false,
   editorsPicksHeader = false,
-  readTime = false,
+  onboardingExperience = false,
 }) => ({
   lastUpdate: Date.now(),
   spocs: {
-    url: "https://spocs.getpocket.com/spocs",
+    url: spocsUrl,
   },
   layout: [
     {
@@ -1950,6 +2240,22 @@ getHardcodedLayout = ({
               id: "newtab-section-header-topsites",
             },
           },
+          ...(spocTopsitesPlacementData
+            ? {
+                placement: {
+                  name: "sponsored-topsites",
+                  ad_types: spocTopsitesPlacementData.ad_types,
+                  zone_ids: spocTopsitesPlacementData.zone_ids,
+                },
+                spocs: {
+                  probability: 1,
+                  prefs: [PREF_SHOW_SPONSORED_TOPSITES],
+                  positions: spocTopsitesPositions.map(position => {
+                    return { index: position };
+                  }),
+                },
+              }
+            : {}),
           properties: {},
         },
         ...(sponsoredCollectionsEnabled
@@ -1959,7 +2265,6 @@ getHardcodedLayout = ({
                 properties: {
                   items: 3,
                 },
-                pocketButtonEnabled,
                 header: {
                   title: "",
                 },
@@ -2011,18 +2316,12 @@ getHardcodedLayout = ({
           properties: {
             items,
             hybridLayout,
-            hideCardBackground: hideCardBackground || compactLayout,
-            fourCardLayout: fourCardLayout || compactLayout,
-            hideDescriptions: hideDescriptions || compactLayout,
-            compactImages,
-            imageGradient,
-            newSponsoredLabel: newSponsoredLabel || compactLayout,
-            titleLines: (compactLayout && 3) || titleLines,
-            descLines,
+            hideCardBackground,
+            fourCardLayout,
             compactGrid,
             essentialReadsHeader,
             editorsPicksHeader,
-            readTime: readTime || compactLayout,
+            onboardingExperience,
           },
           widgets: {
             positions: widgetPositions.map(position => {
@@ -2030,23 +2329,18 @@ getHardcodedLayout = ({
             }),
             data: widgetData,
           },
-          loadMore,
-          lastCardMessageEnabled,
-          pocketButtonEnabled,
-          saveToPocketCard,
           cta_variant: "link",
           header: {
             title: "",
           },
           placement: {
             name: "spocs",
-            ad_types: [3617],
-            zone_ids: [217758, 217995],
+            ad_types: spocPlacementData.ad_types,
+            zone_ids: spocPlacementData.zone_ids,
           },
           feed: {
             embed_reference: null,
-            url:
-              "https://getpocket.cdn.mozilla.net/v3/firefox/global-recs?version=3&consumer_key=$apiKey&locale_lang=$locale&region=$region&count=30",
+            url: feedUrl,
           },
           spocs: {
             probability: 1,
@@ -2063,28 +2357,23 @@ getHardcodedLayout = ({
             links: [
               {
                 name: "Self improvement",
-                url:
-                  "https://getpocket.com/explore/self-improvement?utm_source=pocket-newtab",
+                url: "https://getpocket.com/explore/self-improvement?utm_source=pocket-newtab",
               },
               {
                 name: "Food",
-                url:
-                  "https://getpocket.com/explore/food?utm_source=pocket-newtab",
+                url: "https://getpocket.com/explore/food?utm_source=pocket-newtab",
               },
               {
                 name: "Entertainment",
-                url:
-                  "https://getpocket.com/explore/entertainment?utm_source=pocket-newtab",
+                url: "https://getpocket.com/explore/entertainment?utm_source=pocket-newtab",
               },
               {
                 name: "Health & fitness",
-                url:
-                  "https://getpocket.com/explore/health?utm_source=pocket-newtab",
+                url: "https://getpocket.com/explore/health?utm_source=pocket-newtab",
               },
               {
                 name: "Science",
-                url:
-                  "https://getpocket.com/explore/science?utm_source=pocket-newtab",
+                url: "https://getpocket.com/explore/science?utm_source=pocket-newtab",
               },
               {
                 name: "More recommendations ›",
@@ -2094,18 +2383,15 @@ getHardcodedLayout = ({
             extraLinks: [
               {
                 name: "Career",
-                url:
-                  "https://getpocket.com/explore/career?utm_source=pocket-newtab",
+                url: "https://getpocket.com/explore/career?utm_source=pocket-newtab",
               },
               {
                 name: "Technology",
-                url:
-                  "https://getpocket.com/explore/technology?utm_source=pocket-newtab",
+                url: "https://getpocket.com/explore/technology?utm_source=pocket-newtab",
               },
             ],
             privacyNoticeURL: {
-              url:
-                "https://www.mozilla.org/privacy/firefox/#suggest-relevant-content",
+              url: "https://www.mozilla.org/privacy/firefox/#suggest-relevant-content",
               title: {
                 id: "newtab-section-menu-privacy-notice",
               },

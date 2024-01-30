@@ -28,6 +28,11 @@ html|*.addon-webext-perm-list {
   margin-inline-start: 0;
 }
 
+.addon-webext-perm-text-multiline {
+  margin-top: 1em;
+  white-space: pre-line;
+}
+
 .popup-notification-description[popupid="addon-webext-permissions"],
 .popup-notification-description[popupid="addon-webext-permissions-notification"] {
   margin-inline-start: -1px;
@@ -40,7 +45,6 @@ html|*.addon-webext-perm-list {
 
 .addon-installed-notification-content > checkbox {
   margin: 8px 4px 2px;
-  flex-wrap: wrap;
 }
 
 .addon-webext-name {

@@ -162,7 +162,7 @@ export function getPatternIdentifiers(pattern) {
 
 function getIdentifiers(items) {
   let ids = [];
-  items.forEach(function(item) {
+  items.forEach(function (item) {
     if (t.isObjectPattern(item) || t.isArrayPattern(item)) {
       ids = ids.concat(getPatternIdentifiers(item));
     } else if (t.isIdentifier(item)) {
@@ -222,6 +222,8 @@ export function getFunctionParameterNames(path) {
       ) {
         return `${param.left.name} = null`;
       }
+
+      return null;
     });
   }
   return [];

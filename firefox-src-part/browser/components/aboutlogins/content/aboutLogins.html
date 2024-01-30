@@ -10,23 +10,24 @@
     <meta name="color-scheme" content="light dark">
     <title data-l10n-id="about-logins-page-title"></title>
     <link rel="localization" href="branding/brand.ftl">
-    <link rel="localization" href="browser/branding/sync-brand.ftl">
-    <link rel="localization" href="browser/branding/brandings.ftl">
     <link rel="localization" href="browser/aboutLogins.ftl">
-    <script type="module" src="chrome://browser/content/aboutlogins/components/confirmation-dialog.js"></script>
-    <script type="module" src="chrome://browser/content/aboutlogins/components/remove-logins-dialog.js"></script>
-    <script type="module" src="chrome://browser/content/aboutlogins/components/import-summary-dialog.js"></script>
-    <script type="module" src="chrome://browser/content/aboutlogins/components/import-error-dialog.js"></script>
-    <script type="module" src="chrome://browser/content/aboutlogins/components/generic-dialog.js"></script>
-    <script type="module" src="chrome://browser/content/aboutlogins/components/fxaccounts-button.js"></script>
-    <script type="module" src="chrome://browser/content/aboutlogins/components/login-filter.js"></script>
-    <script type="module" src="chrome://browser/content/aboutlogins/components/login-intro.js"></script>
-    <script type="module" src="chrome://browser/content/aboutlogins/components/login-item.js"></script>
-    <script type="module" src="chrome://browser/content/aboutlogins/components/login-list.js"></script>
-    <script type="module" src="chrome://browser/content/aboutlogins/components/login-list-item.js"></script>
-    <script type="module" src="chrome://browser/content/aboutlogins/components/login-list-section.js"></script>
-    <script type="module" src="chrome://browser/content/aboutlogins/components/menu-button.js"></script>
-    <script type="module" src="chrome://browser/content/aboutlogins/aboutLogins.js"></script>
+    <link rel="localization" href="toolkit/branding/accounts.ftl">
+    <link rel="localization" href="toolkit/branding/brandings.ftl">
+    <script type="module" src="chrome://browser/content/aboutlogins/components/confirmation-dialog.mjs"></script>
+    <script type="module" src="chrome://browser/content/aboutlogins/components/remove-logins-dialog.mjs"></script>
+    <script type="module" src="chrome://browser/content/aboutlogins/components/import-summary-dialog.mjs"></script>
+    <script type="module" src="chrome://browser/content/aboutlogins/components/import-error-dialog.mjs"></script>
+    <script type="module" src="chrome://browser/content/aboutlogins/components/generic-dialog.mjs"></script>
+    <script type="module" src="chrome://browser/content/aboutlogins/components/fxaccounts-button.mjs"></script>
+    <script type="module" src="chrome://browser/content/aboutlogins/components/login-filter.mjs"></script>
+    <script type="module" src="chrome://browser/content/aboutlogins/components/login-intro.mjs"></script>
+    <script type="module" src="chrome://browser/content/aboutlogins/components/login-item.mjs"></script>
+    <script type="module" src="chrome://browser/content/aboutlogins/components/login-list.mjs"></script>
+    <script type="module" src="chrome://browser/content/aboutlogins/components/login-list-item.mjs"></script>
+    <script type="module" src="chrome://browser/content/aboutlogins/components/login-list-section.mjs"></script>
+    <script type="module" src="chrome://browser/content/aboutlogins/components/menu-button.mjs"></script>
+    <script type="module" src="chrome://global/content/elements/moz-button-group.mjs"></script>
+    <script type="module" src="chrome://browser/content/aboutlogins/aboutLogins.mjs"></script>
     <link rel="stylesheet" href="chrome://global/skin/in-content/common.css">
     <link rel="stylesheet" href="chrome://browser/content/aboutlogins/aboutLogins.css">
     <link rel="stylesheet" href="chrome://browser/content/aboutlogins/common.css">
@@ -34,7 +35,6 @@
   </head>
   <body>
     <header>
-      <login-filter></login-filter>
       <fxaccounts-button hidden></fxaccounts-button>
       <menu-button></menu-button>
     </header>
@@ -61,10 +61,10 @@
             <h1 class="title" id="title"></h1>
             <p class="message" id="message"></p>
           </div>
-          <div class="buttons">
+          <moz-button-group class="buttons">
             <button class="confirm-button primary danger-button"></button>
             <button class="cancel-button" data-l10n-id="confirmation-dialog-cancel-button"></button>
-          </div>
+          </moz-button-group>
         </div>
       </div>
     </template>
@@ -107,9 +107,9 @@
           </div>
           <a class="open-detailed-report" href="about:loginsimportreport" target="_blank" data-l10n-id="about-logins-alert-import-message"></a>
         </div>
-        <div slot="buttons">
+        <moz-button-group slot="buttons" class="buttons">
           <button class="dismiss-button primary" data-l10n-id="about-logins-import-dialog-done"></button>
-        </div>
+        </moz-button-group>
       </generic-dialog>
     </template>
 
@@ -119,7 +119,7 @@
       <link rel="stylesheet" href="chrome://browser/content/aboutlogins/components/import-error-dialog.css">
       <generic-dialog>
         <span slot="dialog-title" data-l10n-id="about-logins-import-dialog-error-title"></span>
-        <img slot="dialog-icon" part="dialog-icon" class="warning-icon" src="chrome://global/skin/icons/warning.svg"/ draggable="false">
+        <img slot="dialog-icon" part="dialog-icon" class="warning-icon" src="chrome://global/skin/icons/warning.svg" draggable="false"/>
         <div slot="content" class="content">
           <span class="error-title" data-l10n-id="about-logins-import-dialog-error-unable-to-read-title"></span>
           <span class="error-description" data-l10n-id="about-logins-import-dialog-error-unable-to-read-description"></span>
@@ -127,10 +127,10 @@
           <a class="error-learn-more-link" href="https://support.mozilla.org/kb/import-login-data-file"
             data-l10n-id="about-logins-import-dialog-error-learn-more" target="_blank" rel="noreferrer"></a>
         </div>
-        <div slot="buttons" class="buttons">
+        <moz-button-group slot="buttons" class="buttons">
           <button class="dismiss-button" data-l10n-id="about-logins-import-dialog-error-cancel"></button>
           <button class="try-import-again primary" data-l10n-id="about-logins-import-dialog-error-try-import-again"></button>
-        </div>
+        </moz-button-group>
       </generic-dialog>
     </template>
 
@@ -152,10 +152,10 @@
             <span class="checkbox-text"></span>
           </label>
         </div>
-        <div class="buttons">
+        <moz-button-group class="buttons">
           <button class="confirm-button primary danger-button"></button>
           <button class="cancel-button" data-l10n-id="confirmation-dialog-cancel-button"></button>
-        </div>
+        </moz-button-group>
       </div>
     </template>
 
@@ -179,6 +179,12 @@
       <link rel="stylesheet" href="chrome://global/skin/in-content/common.css">
       <link rel="stylesheet" href="chrome://browser/content/aboutlogins/common.css">
       <link rel="stylesheet" href="chrome://browser/content/aboutlogins/components/login-list.css">
+      <div class="listHeader">
+        <login-filter></login-filter>
+        <div class="create-login-button-container">
+          <button class="create-login-button" data-l10n-id="create-new-login-button"></button>
+        </div>
+      </div>
       <div class="meta">
         <label for="login-sort">
           <span data-l10n-id="login-list-sort-label-text"></span>
@@ -206,16 +212,11 @@
           <span data-l10n-id="about-logins-login-list-empty-search-description"></span>
         </div>
       </div>
-      <div class="create-login-button-container">
-        <button class="create-login-button" data-l10n-id="create-login-button"></button>
-      </div>
     </template>
 
     <template id="login-list-item-template">
       <li class="login-list-item" role="option">
-        <div class="favicon-wrapper">
-          <img class="favicon" src=""/>
-        </div>
+        <img class="favicon" />
         <div class="labels">
           <span class="title" dir="auto"></span>
           <span class="username" dir="ltr"></span>
@@ -257,6 +258,7 @@
     </template>
 
     <template id="login-item-template">
+      <script type="module" src="chrome://browser/content/aboutlogins/components/login-timeline.mjs"></script>
       <link rel="stylesheet" href="chrome://global/skin/in-content/common.css">
       <link rel="stylesheet" href="chrome://browser/content/aboutlogins/common.css">
       <link rel="stylesheet" href="chrome://browser/content/aboutlogins/components/login-item.css">
@@ -269,9 +271,7 @@
             </span>
           </div>
           <div class="header">
-            <div class="login-item-favicon-wrapper">
-              <img class="login-item-favicon" src=""/>
-            </div>
+            <img class="login-item-favicon" />
             <h2 class="title">
               <span class="login-item-title"></span>
               <span class="new-login-title" data-l10n-id="login-item-new-login-title"></span>
@@ -285,7 +285,6 @@
             <span class="alert-date" data-l10n-id="about-logins-breach-alert-date" data-l10n-args='{"date": 0}'></span>
             <span class="alert-text" data-l10n-id="breach-alert-text"></span>
             <a class="alert-link" data-l10n-id="about-logins-breach-alert-link" data-l10n-args='{"hostname": ""}' href="#" rel="noreferrer" target="_blank"></a>
-            <a class="alert-learn-more-link" data-l10n-id="about-logins-breach-alert-learn-more-link" href="#" rel="noreferrer" target="_blank"></a>
           </div>
           <div class="vulnerable-alert">
             <h3 class="alert-title" data-l10n-id="about-logins-vulnerable-alert-title"></h3>
@@ -344,7 +343,6 @@
                            type="password"
                            autocomplete="off"
                            dir="ltr"
-                           tabindex="-1"
                            readonly/>
                     <input type="checkbox"
                            class="reveal-password-checkbox"
@@ -357,13 +355,11 @@
                 </button>
               </div>
             </div>
-            <div class="form-actions-row">
+            <moz-button-group class="form-actions-row">
               <button class="save-changes-button" type="submit"></button>
               <button class="cancel-button" data-l10n-id="login-item-cancel-button" type="button"></button>
-            </div>
-            <p class="time-created meta-info" data-l10n-id="login-item-time-created" data-l10n-args='{"timeCreated": 0}'></p>
-            <p class="time-changed meta-info" data-l10n-id="login-item-time-changed" data-l10n-args='{"timeChanged": 0}'></p>
-            <p class="time-used meta-info" data-l10n-id="login-item-time-used" data-l10n-args='{"timeUsed": 0}'></p>
+            </moz-button-group>
+            <login-timeline hidden ></login-timeline>
           </form>
         </div>
       </div>
@@ -373,7 +369,7 @@
       <link rel="stylesheet" href="chrome://global/skin/in-content/common.css">
       <link rel="stylesheet" href="chrome://browser/content/aboutlogins/common.css">
       <link rel="stylesheet" href="chrome://browser/content/aboutlogins/components/login-filter.css">
-      <input data-l10n-id="login-filter" class="filter" type="text" dir="auto"/>
+      <input data-l10n-id="about-logins-login-filter" class="filter" type="text" dir="auto"/>
     </template>
 
     <template id="menu-button-template">

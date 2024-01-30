@@ -21,6 +21,7 @@ module.exports = {
         /[/\\]node_modules[/\\]devtools-/,
         /[/\\]node_modules[/\\]react-aria-components[/\\]/,
         "../../shared",
+        "../shared/worker-utils.js",
       ],
       presets: [
         "@babel/preset-react",
@@ -52,6 +53,7 @@ module.exports = {
               "devtools/client/shared/vendor/react-prop-types": "prop-types",
               // Map all require("devtools/...") to the real devtools root.
               "^devtools\\/(.*)": `${__dirname}/../../\\1`,
+              "^resource://devtools/(.*)": `${__dirname}/../../\\1`,
             },
           },
         ],

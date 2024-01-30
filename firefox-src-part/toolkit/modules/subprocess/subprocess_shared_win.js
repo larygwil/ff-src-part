@@ -5,11 +5,21 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 "use strict";
 
+if (typeof Components !== "undefined") {
+  /* global OS */
+  Cc["@mozilla.org/net/osfileconstantsservice;1"]
+    .getService(Ci.nsIOSFileConstantsService)
+    .init();
+}
+
 /* exported LIBC, Win, createPipe, libc, win32 */
 
-// This file is loaded into the same scope as subprocess_win.jsm
+// ctypes is either already available in the chrome worker scope, or defined
+// in scope via loadSubScript.
+/* global ctypes */
+
+// This file is loaded into the same scope as subprocess_shared.js.
 /* import-globals-from subprocess_shared.js */
-/* import-globals-from subprocess_win.jsm */
 
 const LIBC = OS.Constants.libc;
 
@@ -434,11 +444,11 @@ var libc = new Library("libc", LIBC_CHOICES, {
 
 let nextNamedPipeId = 0;
 
-win32.Handle = function(handle) {
+win32.Handle = function (handle) {
   return ctypes.CDataFinalizer(win32.HANDLE(handle), libc.CloseHandle);
 };
 
-win32.createPipe = function(secAttr, readFlags = 0, writeFlags = 0, size = 0) {
+win32.createPipe = function (secAttr, readFlags = 0, writeFlags = 0, size = 0) {
   readFlags |= win32.PIPE_ACCESS_INBOUND;
   writeFlags |= Win.FILE_ATTRIBUTE_NORMAL;
 
@@ -485,7 +495,7 @@ win32.createPipe = function(secAttr, readFlags = 0, writeFlags = 0, size = 0) {
   return [win32.Handle(readHandle), win32.Handle(writeHandle)];
 };
 
-win32.createThreadAttributeList = function(handles) {
+win32.createThreadAttributeList = function (handles) {
   try {
     void libc.InitializeProcThreadAttributeList;
     void libc.DeleteProcThreadAttributeList;

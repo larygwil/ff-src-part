@@ -62,9 +62,18 @@ var PointerlockFsWarning = {
       this._element = document.getElementById(elementId);
       // Setup event listeners
       this._element.addEventListener("transitionend", this);
+      this._element.addEventListener("transitioncancel", this);
       window.addEventListener("mousemove", this, true);
+      // If the user explicitly disables the prompt, there's no need to detect
+      // activation.
+      if (timeout > 0) {
+        window.addEventListener("activate", this);
+        window.addEventListener("deactivate", this);
+      }
       // The timeout to hide the warning box after a while.
       this._timeoutHide = new this.Timeout(() => {
+        window.removeEventListener("activate", this);
+        window.removeEventListener("deactivate", this);
         this._state = "hidden";
       }, timeout);
       // The timeout to show the warning box when the pointer is at the top
@@ -94,8 +103,8 @@ var PointerlockFsWarning = {
     } else {
       textElem.removeAttribute("hidden");
       // Document's principal's URI has a host. Display a warning including it.
-      let { DownloadUtils } = ChromeUtils.import(
-        "resource://gre/modules/DownloadUtils.jsm"
+      let { DownloadUtils } = ChromeUtils.importESModule(
+        "resource://gre/modules/DownloadUtils.sys.mjs"
       );
       let displayHost = DownloadUtils.getURIHost(uri.spec)[0];
       let l10nString = {
@@ -116,11 +125,10 @@ var PointerlockFsWarning = {
       return;
     }
 
-    // Explicitly set the last state to hidden to avoid the warning
-    // box being hidden immediately because of mousemove.
-    this._state = "onscreen";
-    this._lastState = "hidden";
-    this._timeoutHide.start();
+    if (Services.focus.activeWindow == window) {
+      this._state = "onscreen";
+      this._timeoutHide.start();
+    }
   },
 
   /**
@@ -148,7 +156,10 @@ var PointerlockFsWarning = {
     this._element.hidden = true;
     // Remove all event listeners
     this._element.removeEventListener("transitionend", this);
+    this._element.removeEventListener("transitioncancel", this);
     window.removeEventListener("mousemove", this, true);
+    window.removeEventListener("activate", this);
+    window.removeEventListener("deactivate", this);
     // Clear fields
     this._element = null;
     this._timeoutHide = null;
@@ -186,7 +197,7 @@ var PointerlockFsWarning = {
     }
     if (newState != "hidden") {
       if (currentState != "hidden") {
-        this._element.setAttribute(newState, true);
+        this._element.setAttribute(newState, "");
       } else {
         // When the previous state is hidden, the display was none,
         // thus no box was constructed. We need to wait for the new
@@ -197,7 +208,7 @@ var PointerlockFsWarning = {
         requestAnimationFrame(() => {
           requestAnimationFrame(() => {
             if (this._element) {
-              this._element.setAttribute(newState, true);
+              this._element.setAttribute(newState, "");
             }
           });
         });
@@ -217,7 +228,7 @@ var PointerlockFsWarning = {
           } else if (this._timeoutShow.delay >= 0) {
             this._timeoutShow.start();
           }
-        } else {
+        } else if (state != "onscreen") {
           let elemRect = this._element.getBoundingClientRect();
           if (state == "hiding" && this._lastState != "hidden") {
             // If we are on the hiding transition, and the pointer
@@ -239,10 +250,21 @@ var PointerlockFsWarning = {
         }
         break;
       }
-      case "transitionend": {
+      case "transitionend":
+      case "transitioncancel": {
         if (this._state == "hiding") {
           this._element.hidden = true;
         }
+        break;
+      }
+      case "activate": {
+        this._state = "onscreen";
+        this._timeoutHide.start();
+        break;
+      }
+      case "deactivate": {
+        this._state = "hidden";
+        this._timeoutHide.cancel();
         break;
       }
     }
@@ -295,6 +317,12 @@ var FullScreen = {
     }
   },
 
+  get fullScreenToggler() {
+    delete this.fullScreenToggler;
+    return (this.fullScreenToggler =
+      document.getElementById("fullscr-toggler"));
+  },
+
   toggle() {
     var enterFS = window.fullScreen;
 
@@ -314,14 +342,12 @@ var FullScreen = {
       this.shiftMacToolbarDown(0);
     }
 
-    if (!this._fullScrToggler) {
-      this._fullScrToggler = document.getElementById("fullscr-toggler");
-      this._fullScrToggler.addEventListener("mouseover", this._expandCallback);
-      this._fullScrToggler.addEventListener("dragenter", this._expandCallback);
-      this._fullScrToggler.addEventListener("touchmove", this._expandCallback, {
-        passive: true,
-      });
-    }
+    let fstoggler = this.fullScreenToggler;
+    fstoggler.addEventListener("mouseover", this._expandCallback);
+    fstoggler.addEventListener("dragenter", this._expandCallback);
+    fstoggler.addEventListener("touchmove", this._expandCallback, {
+      passive: true,
+    });
 
     if (enterFS) {
       gNavToolbox.setAttribute("inFullscreen", true);
@@ -361,6 +387,7 @@ var FullScreen = {
       this._isPopupOpen = false;
       this.cleanup();
     }
+    this._toggleShortcutKeys();
   },
 
   exitDomFullScreen() {
@@ -377,7 +404,7 @@ var FullScreen = {
    */
   shiftMacToolbarDown(shiftSize) {
     if (typeof shiftSize !== "number") {
-      Cu.reportError("Tried to shift the toolbar by a non-numeric distance.");
+      console.error("Tried to shift the toolbar by a non-numeric distance.");
       return;
     }
 
@@ -549,6 +576,25 @@ var FullScreen = {
       document.removeEventListener("popupshown", this._setPopupOpen);
       document.removeEventListener("popuphidden", this._setPopupOpen);
       gURLBar.controller.removeQueryListener(this);
+    }
+  },
+
+  _toggleShortcutKeys() {
+    const kEnterKeyIds = [
+      "key_enterFullScreen",
+      "key_enterFullScreen_old",
+      "key_enterFullScreen_compat",
+    ];
+    const kExitKeyIds = [
+      "key_exitFullScreen",
+      "key_exitFullScreen_old",
+      "key_exitFullScreen_compat",
+    ];
+    for (let id of window.fullScreen ? kEnterKeyIds : kExitKeyIds) {
+      document.getElementById(id)?.setAttribute("disabled", "true");
+    }
+    for (let id of window.fullScreen ? kExitKeyIds : kEnterKeyIds) {
+      document.getElementById(id)?.removeAttribute("disabled");
     }
   },
 
@@ -769,7 +815,7 @@ var FullScreen = {
   },
 
   // Autohide helpers for the context menu item
-  getAutohide(aItem) {
+  updateAutohideMenuitem(aItem) {
     aItem.setAttribute(
       "checked",
       Services.prefs.getBoolPref("browser.fullscreen.autohide")
@@ -788,7 +834,7 @@ var FullScreen = {
     if (BrowserHandler.kiosk) {
       return;
     }
-    this._fullScrToggler.hidden = true;
+    this.fullScreenToggler.hidden = true;
     gNavToolbox.removeAttribute("fullscreenShouldAnimate");
     gNavToolbox.style.marginTop = "";
 
@@ -859,7 +905,7 @@ var FullScreen = {
     }
 
     if (!BrowserHandler.kiosk) {
-      this._fullScrToggler.hidden = false;
+      this.fullScreenToggler.hidden = false;
     }
 
     if (
@@ -896,12 +942,24 @@ var FullScreen = {
 };
 
 XPCOMUtils.defineLazyGetter(FullScreen, "_permissionNotificationIDs", () => {
-  let { PermissionUI } = ChromeUtils.import(
-    "resource:///modules/PermissionUI.jsm"
+  let { PermissionUI } = ChromeUtils.importESModule(
+    "resource:///modules/PermissionUI.sys.mjs"
   );
   return (
     Object.values(PermissionUI)
-      .filter(value => value.prototype && value.prototype.notificationID)
+      .filter(value => {
+        let returnValue;
+        try {
+          returnValue = value.prototype.notificationID;
+        } catch (err) {
+          if (err.message === "Not implemented.") {
+            returnValue = false;
+          } else {
+            throw err;
+          }
+        }
+        return returnValue;
+      })
       .map(value => value.prototype.notificationID)
       // Additionally include webRTC permission prompt which does not use PermissionUI
       .concat(["webRTC-shareDevices"])

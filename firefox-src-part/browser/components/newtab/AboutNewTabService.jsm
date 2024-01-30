@@ -30,19 +30,21 @@ const EXPORTED_SYMBOLS = [
  * been put into an abstract base class.
  */
 
-const { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm");
-const { XPCOMUtils } = ChromeUtils.import(
-  "resource://gre/modules/XPCOMUtils.jsm"
+const { XPCOMUtils } = ChromeUtils.importESModule(
+  "resource://gre/modules/XPCOMUtils.sys.mjs"
 );
-const { AppConstants } = ChromeUtils.import(
-  "resource://gre/modules/AppConstants.jsm"
+const { AppConstants } = ChromeUtils.importESModule(
+  "resource://gre/modules/AppConstants.sys.mjs"
 );
-const { E10SUtils } = ChromeUtils.import(
-  "resource://gre/modules/E10SUtils.jsm"
+const { E10SUtils } = ChromeUtils.importESModule(
+  "resource://gre/modules/E10SUtils.sys.mjs"
 );
 
-XPCOMUtils.defineLazyModuleGetters(this, {
-  NimbusFeatures: "resource://nimbus/ExperimentAPI.jsm",
+const lazy = {};
+
+ChromeUtils.defineESModuleGetters(lazy, {
+  BasePromiseWorker: "resource://gre/modules/PromiseWorker.sys.mjs",
+  NimbusFeatures: "resource://nimbus/ExperimentAPI.sys.mjs",
 });
 
 /**
@@ -58,12 +60,6 @@ const PREF_ABOUT_HOME_CACHE_TESTING =
   "browser.startup.homepage.abouthome_cache.testing";
 const ABOUT_WELCOME_URL =
   "resource://activity-stream/aboutwelcome/aboutwelcome.html";
-
-ChromeUtils.defineModuleGetter(
-  this,
-  "BasePromiseWorker",
-  "resource://gre/modules/PromiseWorker.jsm"
-);
 
 const CACHE_WORKER_URL = "resource://activity-stream/lib/cache-worker.js";
 
@@ -96,6 +92,7 @@ const AboutHomeStartupCacheChild = {
     PAGE_CONSUMED: 2,
     PAGE_AND_SCRIPT_CONSUMED: 3,
     FAILED: 4,
+    DISQUALIFIED: 5,
   },
   REQUEST_TYPE: {
     PAGE: 0,
@@ -125,7 +122,7 @@ const AboutHomeStartupCacheChild = {
       );
     }
 
-    if (!NimbusFeatures.abouthomecache.isEnabled()) {
+    if (!lazy.NimbusFeatures.abouthomecache.getVariable("enabled")) {
       return;
     }
 
@@ -338,7 +335,7 @@ const AboutHomeStartupCacheChild = {
       return this._cacheWorker;
     }
 
-    this._cacheWorker = new BasePromiseWorker(CACHE_WORKER_URL);
+    this._cacheWorker = new lazy.BasePromiseWorker(CACHE_WORKER_URL);
     return this._cacheWorker;
   },
 
@@ -378,6 +375,19 @@ const AboutHomeStartupCacheChild = {
           `${this._state} to ${state}`,
         new Error().stack
       );
+    }
+  },
+
+  /**
+   * If the cache hasn't been used, transitions it into the DISQUALIFIED
+   * state so that it cannot be used. This should be called if it's been
+   * determined that about:newtab is going to be loaded, which doesn't
+   * use the cache.
+   */
+  disqualifyCache() {
+    if (this._state === this.STATES.UNCONSUMED) {
+      this.setState(this.STATES.DISQUALIFIED);
+      this.reportUsageResult(false /* success */);
     }
   },
 };
@@ -443,8 +453,8 @@ class BaseAboutNewTabService {
      * This is calculated in the same way the default URL is.
      */
 
-    NimbusFeatures.aboutwelcome.recordExposureEvent({ once: true });
-    if (NimbusFeatures.aboutwelcome.isEnabled({ defaultValue: true })) {
+    lazy.NimbusFeatures.aboutwelcome.recordExposureEvent({ once: true });
+    if (lazy.NimbusFeatures.aboutwelcome.getVariable("enabled") ?? true) {
       return ABOUT_WELCOME_URL;
     }
     return this.defaultURL;
@@ -482,6 +492,20 @@ class AboutNewTabChildService extends BaseAboutNewTabService {
     );
     fileChannel.originalURI = uri;
     return fileChannel;
+  }
+
+  get defaultURL() {
+    if (IS_PRIVILEGED_PROCESS) {
+      // This is a bit of a hack, but attempting to load about:newtab will
+      // enter this code path in order to get at the expected URL, and we
+      // can use that to disqualify the about:home cache, since we don't
+      // use it for about:newtab loads, and we don't want the about:home
+      // cache to be wildly out of date when about:home is eventually
+      // loaded (for example, in the first new window).
+      AboutHomeStartupCacheChild.disqualifyCache();
+    }
+
+    return super.defaultURL;
   }
 }
 

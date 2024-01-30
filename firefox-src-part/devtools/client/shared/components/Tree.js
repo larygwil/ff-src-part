@@ -4,10 +4,10 @@
 
 "use strict";
 
-const React = require("devtools/client/shared/vendor/react");
+const React = require("resource://devtools/client/shared/vendor/react.js");
 const { Component, createFactory } = React;
-const dom = require("devtools/client/shared/vendor/react-dom-factories");
-const PropTypes = require("devtools/client/shared/vendor/react-prop-types");
+const dom = require("resource://devtools/client/shared/vendor/react-dom-factories.js");
+const PropTypes = require("resource://devtools/client/shared/vendor/react-prop-types.js");
 
 // depth
 const AUTO_EXPAND_DEPTH = 0;
@@ -91,7 +91,7 @@ class TreeNode extends Component {
     const elms = this.getFocusableElements();
     if (this.props.active) {
       const doc = this.treeNodeRef.current.ownerDocument;
-      if (elms.length > 0 && !elms.includes(doc.activeElement)) {
+      if (elms.length && !elms.includes(doc.activeElement)) {
         elms[0].focus();
       }
     } else {
@@ -241,7 +241,7 @@ const TreeNodeFactory = createFactory(TreeNode);
 function oncePerAnimationFrame(fn, { getDocument }) {
   let animationId = null;
   let argsToPass = null;
-  return function(...args) {
+  return function (...args) {
     argsToPass = args;
     if (animationId !== null) {
       return;
@@ -537,7 +537,8 @@ class Tree extends Component {
     }
   }
 
-  componentWillReceiveProps(nextProps) {
+  // FIXME: https://bugzilla.mozilla.org/show_bug.cgi?id=1774507
+  UNSAFE_componentWillReceiveProps(nextProps) {
     this._autoExpand();
   }
 
@@ -548,11 +549,8 @@ class Tree extends Component {
   }
 
   _autoExpand() {
-    const {
-      autoExpandDepth,
-      autoExpandNodeChildrenLimit,
-      initiallyExpanded,
-    } = this.props;
+    const { autoExpandDepth, autoExpandNodeChildrenLimit, initiallyExpanded } =
+      this.props;
 
     if (!autoExpandDepth && !initiallyExpanded) {
       return;
@@ -978,6 +976,7 @@ class Tree extends Component {
     const nodes = traversal.map((v, i) => {
       const { item, depth } = traversal[i];
       const key = this.props.getKey(item, i);
+      const focusedKey = focused ? this.props.getKey(focused, i) : null;
       return TreeNodeFactory({
         // We make a key unique depending on whether the tree node is in active
         // or inactive state to make sure that it is actually replaced and the
@@ -989,7 +988,7 @@ class Tree extends Component {
         depth,
         shouldItemUpdate: this.props.shouldItemUpdate,
         renderItem: this.props.renderItem,
-        focused: focused === item,
+        focused: focusedKey === key,
         active: active === item,
         expanded: this.props.isExpanded(item),
         isExpandable: this._nodeIsExpandable(item),

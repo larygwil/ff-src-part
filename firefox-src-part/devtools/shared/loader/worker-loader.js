@@ -65,7 +65,7 @@ function normalizeId(id) {
   const [, root, path] = id.match(/^(\w+:\/\/\/?|\/)?(.*)/);
 
   const stack = [];
-  path.split("/").forEach(function(component) {
+  path.split("/").forEach(function (component) {
     switch (component) {
       case "":
       case ".":
@@ -323,25 +323,10 @@ function WorkerDebuggerLoader(options) {
 
 this.WorkerDebuggerLoader = WorkerDebuggerLoader;
 
-// The following APIs rely on the use of Components, and the worker debugger
-// does not provide alternative definitions for them. Consequently, they are
-// stubbed out both on the main thread and worker threads.
-
-var chrome = {
-  CC: undefined,
-  Cc: undefined,
-  ChromeWorker: undefined,
-  Cm: undefined,
-  Ci: undefined,
-  Cu: undefined,
-  Cr: undefined,
-  components: undefined,
-};
-
 var loader = {
-  lazyGetter: function(object, name, lambda) {
+  lazyGetter(object, name, lambda) {
     Object.defineProperty(object, name, {
-      get: function() {
+      get() {
         delete object[name];
         object[name] = lambda.apply(object);
         return object[name];
@@ -350,13 +335,10 @@ var loader = {
       enumerable: true,
     });
   },
-  lazyImporter: function() {
-    throw new Error("Can't import JSM from worker thread!");
-  },
-  lazyServiceGetter: function() {
+  lazyServiceGetter() {
     throw new Error("Can't import XPCOM service from worker thread!");
   },
-  lazyRequireGetter: function(obj, properties, module, destructure) {
+  lazyRequireGetter(obj, properties, module, destructure) {
     if (Array.isArray(properties) && !destructure) {
       throw new Error(
         "Pass destructure=true to call lazyRequireGetter with an array of properties"
@@ -391,15 +373,15 @@ var {
   dump,
   rpc,
   loadSubScript,
-  reportError,
   setImmediate,
   xpcInspector,
-} = function() {
+} = function () {
   // Main thread
   if (typeof Components === "object") {
-    const { Constructor: CC } = Components;
-
-    const principal = CC("@mozilla.org/systemprincipal;1", "nsIPrincipal")();
+    const principal = Components.Constructor(
+      "@mozilla.org/systemprincipal;1",
+      "nsIPrincipal"
+    )();
 
     // To ensure that the this passed to addDebuggerToGlobal is a global, the
     // Debugger object needs to be defined in a sandbox.
@@ -408,16 +390,16 @@ var {
     });
     Cu.evalInSandbox(
       `
-const { addDebuggerToGlobal } = ChromeUtils.import(
-  'resource://gre/modules/jsdebugger.jsm'
+const { addDebuggerToGlobal } = ChromeUtils.importESModule(
+  'resource://gre/modules/jsdebugger.sys.mjs'
 );
-addDebuggerToGlobal(this);
+addDebuggerToGlobal(globalThis);
 `,
       sandbox
     );
     const Debugger = sandbox.Debugger;
 
-    const createSandbox = function(name, prototype) {
+    const createSandbox = function (name, prototype) {
       return Cu.Sandbox(principal, {
         invisibleToDebugger: true,
         sandboxName: name,
@@ -434,15 +416,15 @@ addDebuggerToGlobal(this);
       "@mozilla.org/moz/jssubscript-loader;1"
     ].getService(Ci.mozIJSSubScriptLoader);
 
-    const loadSubScript = function(url, sandbox) {
+    const loadSubScript = function (url, sandbox) {
       subScriptLoader.loadSubScript(url, sandbox);
     };
 
-    const reportError = Cu.reportError;
+    const Timer = ChromeUtils.importESModule(
+      "resource://gre/modules/Timer.sys.mjs"
+    );
 
-    const Timer = ChromeUtils.import("resource://gre/modules/Timer.jsm");
-
-    const setImmediate = function(callback) {
+    const setImmediate = function (callback) {
       Timer.setTimeout(callback, 0);
     };
 
@@ -456,12 +438,11 @@ addDebuggerToGlobal(this);
 
     return {
       Debugger,
-      URL: URL,
+      URL,
       createSandbox,
       dump: this.dump,
       rpc,
       loadSubScript,
-      reportError,
       setImmediate,
       xpcInspector,
     };
@@ -480,13 +461,13 @@ addDebuggerToGlobal(this);
       return requestors.length === 0 ? null : requestors[requestors.length - 1];
     },
 
-    enterNestedEventLoop: function(requestor) {
+    enterNestedEventLoop(requestor) {
       requestors.push(requestor);
       scope.enterEventLoop();
       return requestors.length;
     },
 
-    exitNestedEventLoop: function() {
+    exitNestedEventLoop() {
       requestors.pop();
       scope.leaveEventLoop();
       return requestors.length;
@@ -500,9 +481,8 @@ addDebuggerToGlobal(this);
     dump: this.dump,
     rpc: this.rpc,
     loadSubScript: this.loadSubScript,
-    reportError: this.reportError,
     setImmediate: this.setImmediate,
-    xpcInspector: xpcInspector,
+    xpcInspector,
   };
 }.call(this);
 /* eslint-enable no-shadow */
@@ -511,30 +491,38 @@ addDebuggerToGlobal(this);
 // above.
 
 this.worker = new WorkerDebuggerLoader({
-  createSandbox: createSandbox,
+  createSandbox,
   globals: {
     isWorker: true,
-    dump: dump,
-    loader: loader,
-    reportError: reportError,
-    rpc: rpc,
-    URL: URL,
-    setImmediate: setImmediate,
+    dump,
+    loader,
+    rpc,
+    URL,
+    setImmediate,
     retrieveConsoleEvents: this.retrieveConsoleEvents,
     setConsoleEventHandler: this.setConsoleEventHandler,
     clearConsoleEvents: this.clearConsoleEvents,
-    console: console,
+    console,
     btoa: this.btoa,
     atob: this.atob,
-  },
-  loadSubScript: loadSubScript,
-  modules: {
-    Debugger: Debugger,
     Services: Object.create(null),
-    chrome: chrome,
-    xpcInspector: xpcInspector,
-    ChromeUtils: ChromeUtils,
-    DebuggerNotificationObserver: DebuggerNotificationObserver,
+    ChromeUtils,
+    DebuggerNotificationObserver,
+
+    // The following APIs rely on the use of Components, and the worker debugger
+    // does not provide alternative definitions for them. Consequently, they are
+    // stubbed out both on the main thread and worker threads.
+    Cc: undefined,
+    ChromeWorker: undefined,
+    Ci: undefined,
+    Cu: undefined,
+    Cr: undefined,
+    Components: undefined,
+  },
+  loadSubScript,
+  modules: {
+    Debugger,
+    xpcInspector,
   },
   paths: {
     // ⚠ DISCUSSION ON DEV-DEVELOPER-TOOLS REQUIRED BEFORE MODIFYING ⚠

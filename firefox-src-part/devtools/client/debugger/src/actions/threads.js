@@ -2,38 +2,39 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
 
-import { validateContext } from "../utils/context";
-import { getContext } from "../selectors";
+import { createThread } from "../client/firefox/create";
+import { getSourcesToRemoveForThread } from "../selectors";
 
 export function addTarget(targetFront) {
-  return async function(args) {
-    const { client, getState, dispatch } = args;
-    const cx = getContext(getState());
-    const thread = await client.addThread(targetFront);
-    validateContext(getState(), cx);
-
-    dispatch({ type: "INSERT_THREAD", cx, newThread: thread });
-  };
+  return { type: "INSERT_THREAD", newThread: createThread(targetFront) };
 }
 
 export function removeTarget(targetFront) {
-  return async function(args) {
-    const { getState, client, dispatch } = args;
-    const cx = getContext(getState());
+  return ({ getState, dispatch }) => {
     const threadActorID = targetFront.targetForm.threadActor;
 
-    client.removeThread(threadActorID);
+    // Just before emitting the REMOVE_THREAD action,
+    // synchronously compute the list of source and source actor objects
+    // which should be removed as that one target get removed.
+    //
+    // The list of source objects isn't trivial to compute as these objects
+    // are shared across targets/threads.
+    const { actors, sources } = getSourcesToRemoveForThread(
+      getState(),
+      threadActorID
+    );
 
     dispatch({
       type: "REMOVE_THREAD",
-      cx,
       threadActorID,
+      actors,
+      sources,
     });
   };
 }
 
 export function toggleJavaScriptEnabled(enabled) {
-  return async ({ panel, dispatch, client }) => {
+  return async ({ dispatch, client }) => {
     await client.toggleJavaScriptEnabled(enabled);
     dispatch({
       type: "TOGGLE_JAVASCRIPT_ENABLED",

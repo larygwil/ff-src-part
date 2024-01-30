@@ -96,6 +96,14 @@ interface nsIDOMWindowUtils : nsISupports {
   AString getDocumentMetadata(in AString aName);
 
   /**
+   * Relative to the top-level document.
+   *
+   * @param aX 0, if there's no such location.
+   * @param aY 0, if there's no such location.
+   */
+  void getLastOverWindowPointerLocationInCSSPixels(out float aX, out float aY);
+
+  /**
    * Force a synchronous layer transaction for this window if necessary.
    */
   [can_run_script]
@@ -385,6 +393,9 @@ interface nsIDOMWindowUtils : nsISupports {
    * @param rys array of radii in CSS pixels for each touch to be sent
    * @param rotationAngles array of angles in degrees for each touch to be sent
    * @param forces array of forces (floats from 0 to 1) for each touch to be sent
+   * @param tiltXs array of tiltX for each touch to be sent
+   * @param tiltYs array of tiltY for each touch to be sent
+   * @param twists array of twist for each touch to be sent
    * @param count number of touches in this set
    * @param aModifiers modifiers pressed, using constants defined as MODIFIER_*
    * @param aIgnoreRootScrollFrame whether the event should ignore viewport bounds
@@ -401,6 +412,9 @@ interface nsIDOMWindowUtils : nsISupports {
                          in Array<uint32_t> aRys,
                          in Array<float> aRotationAngles,
                          in Array<float> aForces,
+                         in Array<long> aTiltXs,
+                         in Array<long> aTiltYs,
+                         in Array<long> aTwists,
                          in long aModifiers,
                          [optional] in boolean aIgnoreRootScrollFrame);
 
@@ -434,6 +448,9 @@ interface nsIDOMWindowUtils : nsISupports {
                                  in Array<uint32_t> aRys,
                                  in Array<float> aRotationAngles,
                                  in Array<float> aForces,
+                                 in Array<long> aTiltXs,
+                                 in Array<long> aTiltYs,
+                                 in Array<long> aTwists,
                                  in long aModifiers,
                                  [optional] in boolean aIgnoreRootScrollFrame);
 
@@ -1147,6 +1164,11 @@ interface nsIDOMWindowUtils : nsISupports {
   readonly attribute unsigned long IMEStatus;
 
   /**
+   * Get the document URI which may be retrieved by native IME.
+   */
+  readonly attribute nsIURI inputContextURI;
+
+  /**
    * Get whether current input context (including IME status) in the widget
    * is set by content or not.
    */
@@ -1158,14 +1180,6 @@ interface nsIDOMWindowUtils : nsISupports {
    * Get a root node which is observed by IMEContentObserver.
    */
   readonly attribute Node nodeObservedByIMEContentObserver;
-
-  /**
-   * Get the current zoom factor.
-   * This is _approximately_ the same as nsIContentViewer.fullZoom,
-   * but takes into account Gecko's quantization of the zoom factor, which is
-   * implemented by adjusting the (integer) number of appUnits per devPixel.
-   */
-  readonly attribute float fullZoom;
 
   /**
    * Dispatches aEvent as a synthesized trusted event for tests via the
@@ -1420,6 +1434,12 @@ interface nsIDOMWindowUtils : nsISupports {
    * Synthesize a selection set event to the window.
    *
    * This sets the selection as the specified information.
+   * Note that for avoiding unnecessary update from user and web app point of
+   * view, it compares aOffset and aLength with selection cache which is same
+   * as what is notified with NOTIFY_IME_OF_SELECTION_CHANGE.  Therefore, if
+   * the notification is still queued, this works different from user's
+   * scenario.  Therefore, before calling this, the caller should wait at least
+   * 2 animation frames if `Selection` was changed before.
    *
    * @param aOffset  The caret offset of the selection start.
    * @param aLength  The length of the selection.  If this is too long, the
@@ -1493,11 +1513,6 @@ interface nsIDOMWindowUtils : nsISupports {
    * Is the window is in a modal state? [See enterModalState()]
    */
   boolean isInModalState();
-
-  /**
-   * Internal desktopMode flag.
-   */
-  attribute boolean desktopModeViewport;
 
   /**
    * Suspend/resume timeouts on this window and its descendant windows.
@@ -1760,11 +1775,8 @@ interface nsIDOMWindowUtils : nsISupports {
 
   /**
    * Get file ref count info for given database and file id.
-   *
    */
-  [implicit_jscontext]
   boolean getFileReferences(in AString aDatabaseName, in long long aId,
-                            [optional] in jsval aOptions,
                             [optional] out long aRefCnt,
                             [optional] out long aDBRefCnt);
 
@@ -1932,8 +1944,8 @@ interface nsIDOMWindowUtils : nsISupports {
 
   /**
    * If aHandlingInput is true, this informs the event state manager that
-   * we're handling user input. Otherwise, this is a no-op (as by default
-   * we're not handling user input).
+   * we're handling user input, and provides transient user activation.
+   * Otherwise, this is a no-op (as by default we're not handling user input).
    * Remember to call destruct() on the return value!
    * See also nsIDOMWindowUtils::isHandlingUserInput.
    */
@@ -2078,10 +2090,10 @@ interface nsIDOMWindowUtils : nsISupports {
   readonly attribute int32_t gpuProcessPid;
 
   /**
-   * Adds an EventStates bit to the element.
+   * Adds an ElementState bit to the element.
    *
    * The state string must be one of the following:
-   *   * (none yet; but for example "higlighted" for NS_EVENT_STATE_HIGHLIGHTED)
+   *   * (none yet; but for example "higlighted" for ElementState::HIGHLIGHTED)
    *
    * The supported state strings are defined in kManuallyManagedStates
    * in nsDOMWindowUtils.cpp.
@@ -2090,7 +2102,7 @@ interface nsIDOMWindowUtils : nsISupports {
                                in AString state);
 
   /**
-   * Removes the specified EventStates bits from the element.
+   * Removes the specified ElementState bits from the element.
    *
    * See above for the strings that can be passed for |state|.
    */
@@ -2206,6 +2218,24 @@ interface nsIDOMWindowUtils : nsISupports {
    */
   void resetMobileViewportManager();
 
+  bool isCoepCredentialless();
+
+  /**
+   * Change the DPI setting for the primary monitor.
+   * This setHiDPIMode and restoreHiDPIMode below are only available on debug
+   * builds since these APIs are supposed to be used in tests.
+   *
+   * Note that on Mac, this API doesn't change the system DPI setting, rather it
+   * changes our internal state of DPI settings, thus it will not invoke the
+   * exact same stuff when the system DPI setting is changed.
+   *
+   */
+  void setHiDPIMode(in boolean aHiDPI);
+  /**
+   * Restore the modified HiDPI mode.
+   */
+  void restoreHiDPIMode();
+
   /**
    * NOTE: Currently works only on GTK+.
    */
@@ -2276,6 +2306,9 @@ interface nsIDOMWindowUtils : nsISupports {
   // Returns the current orientation lock value in browsing context.
   // This value is defined in hal/HalScreenConfiguration.h
   readonly attribute uint32_t orientationLock;
+
+  // Returns an element currently scrolling by wheel.
+  Element getWheelScrollTarget();
 };
 
 [scriptable, uuid(c694e359-7227-4392-a138-33c0cc1f15a6)]

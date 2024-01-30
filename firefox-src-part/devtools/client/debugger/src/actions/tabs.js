@@ -13,31 +13,14 @@ import { selectSource } from "./sources";
 import {
   getSourceByURL,
   getSourceTabs,
-  getNewSelectedSourceId,
+  getNewSelectedSource,
 } from "../selectors";
 
-export function updateTab(source, framework) {
-  const { url, id: sourceId, isOriginal, thread } = source;
-
-  return {
-    type: "UPDATE_TAB",
-    url,
-    framework,
-    isOriginal,
-    sourceId,
-    thread,
-  };
-}
-
-export function addTab(source) {
-  const { url, id: sourceId, isOriginal, thread } = source;
-
+export function addTab(source, sourceActor) {
   return {
     type: "ADD_TAB",
-    url,
-    isOriginal,
-    sourceId,
-    thread,
+    source,
+    sourceActor,
   };
 }
 
@@ -68,8 +51,8 @@ export function closeTab(cx, source, reason = "click") {
     const tabs = getSourceTabs(getState());
     dispatch({ type: "CLOSE_TAB", source });
 
-    const sourceId = getNewSelectedSourceId(getState(), tabs);
-    dispatch(selectSource(cx, sourceId));
+    const newSource = getNewSelectedSource(getState(), tabs);
+    dispatch(selectSource(cx, newSource));
   };
 }
 
@@ -87,7 +70,7 @@ export function closeTabs(cx, urls) {
     sources.map(source => removeDocument(source.id));
     dispatch({ type: "CLOSE_TABS", sources });
 
-    const sourceId = getNewSelectedSourceId(getState(), tabs);
-    dispatch(selectSource(cx, sourceId));
+    const source = getNewSelectedSource(getState(), tabs);
+    dispatch(selectSource(cx, source));
   };
 }

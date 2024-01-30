@@ -13,34 +13,38 @@ const { require } = BrowserLoader({
   baseURI: "resource://devtools/client/responsive/",
   window,
 });
-const Telemetry = require("devtools/client/shared/telemetry");
+const Telemetry = require("resource://devtools/client/shared/telemetry.js");
 
 const {
   createFactory,
   createElement,
-} = require("devtools/client/shared/vendor/react");
-const ReactDOM = require("devtools/client/shared/vendor/react-dom");
-const { Provider } = require("devtools/client/shared/vendor/react-redux");
+} = require("resource://devtools/client/shared/vendor/react.js");
+const ReactDOM = require("resource://devtools/client/shared/vendor/react-dom.js");
+const {
+  Provider,
+} = require("resource://devtools/client/shared/vendor/react-redux.js");
 
-const message = require("devtools/client/responsive/utils/message");
-const App = createFactory(require("devtools/client/responsive/components/App"));
-const Store = require("devtools/client/responsive/store");
+const message = require("resource://devtools/client/responsive/utils/message.js");
+const App = createFactory(
+  require("resource://devtools/client/responsive/components/App.js")
+);
+const Store = require("resource://devtools/client/responsive/store.js");
 const {
   loadDevices,
   restoreDeviceState,
-} = require("devtools/client/responsive/actions/devices");
+} = require("resource://devtools/client/responsive/actions/devices.js");
 const {
   addViewport,
   changePixelRatio,
   removeDeviceAssociation,
   resizeViewport,
   zoomViewport,
-} = require("devtools/client/responsive/actions/viewports");
+} = require("resource://devtools/client/responsive/actions/viewports.js");
 const {
   changeDisplayPixelRatio,
   changeUserAgent,
   toggleTouchSimulation,
-} = require("devtools/client/responsive/actions/ui");
+} = require("resource://devtools/client/responsive/actions/ui.js");
 
 // Exposed for use by tests
 window.require = require;
@@ -54,9 +58,7 @@ const bootstrap = {
   store: null,
 
   async init() {
-    // responsive is not connected with a toolbox so we pass -1 as the
-    // toolbox session id.
-    this.telemetry.toolOpened("responsive", -1, this);
+    this.telemetry.toolOpened("responsive", this);
 
     const store = (this.store = Store());
     const provider = createElement(Provider, { store }, App());
@@ -73,9 +75,7 @@ const bootstrap = {
 
     this.store = null;
 
-    // responsive is not connected with a toolbox so we pass -1 as the
-    // toolbox session id.
-    this.telemetry.toolClosed("responsive", -1, this);
+    this.telemetry.toolClosed("responsive", this);
     this.telemetry = null;
   },
 

@@ -36,9 +36,8 @@ async function refreshData() {
     updateTimestamp();
     return;
   }
-  document.getElementById(
-    "button-unload"
-  ).disabled = !TabUnloader.isDiscardable(sortedTabs[0]);
+  document.getElementById("button-unload").disabled =
+    !TabUnloader.isDiscardable(sortedTabs[0]);
   document.getElementById("no-unloadable-tab-message").hidden = true;
 
   const fragmentRows = new DocumentFragment();
@@ -123,5 +122,5 @@ async function onLoad() {
 try {
   document.addEventListener("DOMContentLoaded", onLoad, { once: true });
 } catch (ex) {
-  Cu.reportError(ex);
+  console.error(ex);
 }

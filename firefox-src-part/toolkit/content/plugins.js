@@ -2,11 +2,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-/* eslint-env mozilla/frame-script */
+/* eslint-env mozilla/remote-page */
 
 "use strict";
-
-const { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm");
 
 /* JavaScript to enumerate and display all installed plug-ins
 
@@ -34,19 +32,16 @@ RPMSendQuery("RequestPlugins", {}).then(aPlugins => {
   document.l10n.setAttributes(enabledplugins, label);
   fragment.appendChild(enabledplugins);
 
-  var deprecation = document.createElement("p");
-  var deprecationLink = document.createElement("a");
-  let deprecationLink_href =
-    Services.urlFormatter.formatURLPref("app.support.baseURL") + "npapi";
+  let deprecation = document.createElement("message-bar");
+  let deprecationLink = document.createElement("a", { is: "moz-support-link" });
   deprecationLink.setAttribute("data-l10n-name", "deprecation-link");
-  deprecationLink.setAttribute("href", deprecationLink_href);
+  deprecationLink.setAttribute("support-page", "npapi");
   deprecation.appendChild(deprecationLink);
-  deprecation.setAttribute("class", "notice");
   document.l10n.setAttributes(deprecation, "deprecation-description");
   fragment.appendChild(deprecation);
 
   var stateNames = {};
-  ["STATE_SOFTBLOCKED", "STATE_BLOCKED"].forEach(function(label) {
+  ["STATE_SOFTBLOCKED", "STATE_BLOCKED"].forEach(function (label) {
     stateNames[Ci.nsIBlocklistService[label]] = label;
   });
 
@@ -69,7 +64,7 @@ RPMSendQuery("RequestPlugins", {}).then(aPlugins => {
       file.setAttribute("class", "label");
       fileDd.appendChild(file);
       document.l10n.setAttributes(fileDd, "file-dd", {
-        pluginLibraries: plugin.pluginLibraries[0],
+        pluginLibraries: plugin.pluginLibraries[0] ?? "",
       });
       dl.appendChild(fileDd);
 
@@ -80,7 +75,7 @@ RPMSendQuery("RequestPlugins", {}).then(aPlugins => {
       path.setAttribute("class", "label");
       pathDd.appendChild(path);
       document.l10n.setAttributes(pathDd, "path-dd", {
-        pluginFullPath: plugin.pluginFullpath[0],
+        pluginFullPath: plugin.pluginFullpath[0] ?? "",
       });
       dl.appendChild(pathDd);
 
@@ -91,7 +86,7 @@ RPMSendQuery("RequestPlugins", {}).then(aPlugins => {
       version.setAttribute("class", "label");
       versionDd.appendChild(version);
       document.l10n.setAttributes(versionDd, "version-dd", {
-        version: plugin.version,
+        version: plugin.version ?? "",
       });
       dl.appendChild(versionDd);
 

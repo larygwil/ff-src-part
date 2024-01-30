@@ -4,38 +4,34 @@
 
 "use strict";
 
-const EventEmitter = require("devtools/shared/event-emitter");
-const { Ci } = require("chrome");
-const { fetch } = require("devtools/shared/DevToolsUtils");
-const InspectorUtils = require("InspectorUtils");
+const EventEmitter = require("resource://devtools/shared/event-emitter.js");
 const {
   getSourcemapBaseURL,
-} = require("devtools/server/actors/utils/source-map-utils");
-const { TYPES } = require("devtools/server/actors/resources/index");
+} = require("resource://devtools/server/actors/utils/source-map-utils.js");
 
 loader.lazyRequireGetter(
   this,
   ["addPseudoClassLock", "removePseudoClassLock"],
-  "devtools/server/actors/highlighters/utils/markup",
+  "resource://devtools/server/actors/highlighters/utils/markup.js",
   true
 );
 loader.lazyRequireGetter(
   this,
   "loadSheet",
-  "devtools/shared/layout/utils",
+  "resource://devtools/shared/layout/utils.js",
   true
 );
 loader.lazyRequireGetter(
   this,
-  ["getSheetOwnerNode", "UPDATE_GENERAL", "UPDATE_PRESERVING_RULES"],
-  "devtools/server/actors/style-sheet",
+  ["getStyleSheetOwnerNode", "getStyleSheetText"],
+  "resource://devtools/server/actors/utils/stylesheet-utils.js",
   true
 );
 
 const TRANSITION_PSEUDO_CLASS = ":-moz-styleeditor-transitioning";
 const TRANSITION_DURATION_MS = 500;
 const TRANSITION_BUFFER_MS = 1000;
-const TRANSITION_RULE_SELECTOR = `:root${TRANSITION_PSEUDO_CLASS}, :root${TRANSITION_PSEUDO_CLASS} *`;
+const TRANSITION_RULE_SELECTOR = `:root${TRANSITION_PSEUDO_CLASS}, :root${TRANSITION_PSEUDO_CLASS} *:not(:-moz-native-anonymous)`;
 const TRANSITION_SHEET =
   "data:text/css;charset=utf-8," +
   encodeURIComponent(`
@@ -46,6 +42,13 @@ const TRANSITION_SHEET =
     transition-property: all !important;
   }
 `);
+
+// The possible kinds of style-applied events.
+// UPDATE_PRESERVING_RULES means that the update is guaranteed to
+// preserve the number and order of rules on the style sheet.
+// UPDATE_GENERAL covers any other kind of change to the style sheet.
+const UPDATE_PRESERVING_RULES = 0;
+const UPDATE_GENERAL = 1;
 
 // If the user edits a stylesheet, we stash a copy of the edited text
 // here, keyed by the stylesheet.  This way, if the tools are closed
@@ -69,13 +72,13 @@ const modifiedStyleSheets = new WeakMap();
  *        First arg is an object with the following properties:
  *        - resourceId {String}: The id that was assigned to the stylesheet
  *        - updateKind {String}: Which kind of update it is ("style-applied",
- *          "media-rules-changed", "matches-change", "property-change")
+ *          "at-rules-changed", "matches-change", "property-change")
  *        - updates {Object}: The update data
  */
 class StyleSheetsManager extends EventEmitter {
   _styleSheetCount = 0;
   _styleSheetMap = new Map();
-  // List of all watched media queries. Change listeners are being registered from _getMediaRules.
+  // List of all watched media queries. Change listeners are being registered from getAtRules.
   _mqlList = [];
 
   /**
@@ -116,7 +119,17 @@ class StyleSheetsManager extends EventEmitter {
     let styleSheets = await Promise.all(promises);
     styleSheets = styleSheets.flat();
     for (const styleSheet of styleSheets) {
-      this._registerStyleSheet(styleSheet);
+      const resourceId = this._findStyleSheetResourceId(styleSheet);
+      if (resourceId) {
+        // If the stylesheet was already registered before any consumer started
+        // watching, emit "applicable-stylesheet-added" immediately.
+        this.emitAsync("applicable-stylesheet-added", {
+          resourceId,
+          styleSheet,
+        });
+      } else {
+        this._registerStyleSheet(styleSheet);
+      }
     }
   }
 
@@ -159,6 +172,7 @@ class StyleSheetsManager extends EventEmitter {
       "style"
     );
     style.setAttribute("type", "text/css");
+    style.setDevtoolsAsTriggeringPrincipal();
 
     if (text) {
       style.appendChild(document.createTextNode(text));
@@ -268,17 +282,7 @@ class StyleSheetsManager extends EventEmitter {
       return modifiedText;
     }
 
-    if (!styleSheet.href) {
-      if (styleSheet.ownerNode) {
-        // this is an inline <style> sheet
-        return styleSheet.ownerNode.textContent;
-      }
-      // Constructed stylesheet.
-      // TODO(bug 176993): Maybe preserve authored text?
-      return "";
-    }
-
-    return this._fetchStyleSheet(styleSheet);
+    return getStyleSheetText(styleSheet);
   }
 
   /**
@@ -342,17 +346,17 @@ class StyleSheetsManager extends EventEmitter {
     }
 
     // Remove event handler from all media query list we set to. We are going to re-set
-    // those handler properly from _getMediaRules.
+    // those handler properly from getAtRules.
     for (const mql of this._mqlList) {
       mql.onchange = null;
     }
 
-    const mediaRules = await this._getMediaRules(styleSheet);
+    const atRules = await this.getAtRules(styleSheet);
     this.emit("stylesheet-updated", {
       resourceId,
-      updateKind: "media-rules-changed",
+      updateKind: "at-rules-changed",
       updates: {
-        resourceUpdates: { mediaRules },
+        resourceUpdates: { atRules },
       },
     });
   }
@@ -416,82 +420,6 @@ class StyleSheetsManager extends EventEmitter {
         event: { kind, cause },
       },
     });
-  }
-
-  /**
-   * Retrieve the content of a given stylesheet
-   *
-   * @param {StyleSheet} styleSheet
-   * @returns {String}
-   */
-  async _fetchStyleSheet(styleSheet) {
-    const href = styleSheet.href;
-
-    const options = {
-      loadFromCache: true,
-      policy: Ci.nsIContentPolicy.TYPE_INTERNAL_STYLESHEET,
-      charset: this._getCSSCharset(styleSheet),
-    };
-
-    // Bug 1282660 - We use the system principal to load the default internal
-    // stylesheets instead of the content principal since such stylesheets
-    // require system principal to load. At meanwhile, we strip the loadGroup
-    // for preventing the assertion of the userContextId mismatching.
-
-    // chrome|file|resource|moz-extension protocols rely on the system principal.
-    const excludedProtocolsRe = /^(chrome|file|resource|moz-extension):\/\//;
-    if (!excludedProtocolsRe.test(href)) {
-      // Stylesheets using other protocols should use the content principal.
-      const ownerNode = getSheetOwnerNode(styleSheet);
-      if (ownerNode) {
-        // eslint-disable-next-line mozilla/use-ownerGlobal
-        options.window = ownerNode.ownerDocument.defaultView;
-        options.principal = ownerNode.ownerDocument.nodePrincipal;
-      }
-    }
-
-    let result;
-
-    try {
-      result = await fetch(href, options);
-    } catch (e) {
-      // The list of excluded protocols can be missing some protocols, try to use the
-      // system principal if the first fetch failed.
-      console.error(
-        `stylesheets: fetch failed for ${href},` +
-          ` using system principal instead.`
-      );
-      options.window = undefined;
-      options.principal = undefined;
-      result = await fetch(href, options);
-    }
-
-    return result.content;
-  }
-
-  /**
-   * Get charset of a given stylesheet
-   *
-   * @param {StyleSheet} styleSheet
-   * @returns {String}
-   */
-  _getCSSCharset(styleSheet) {
-    if (styleSheet) {
-      // charset attribute of <link> or <style> element, if it exists
-      if (styleSheet.ownerNode?.getAttribute) {
-        const linkCharset = styleSheet.ownerNode.getAttribute("charset");
-        if (linkCharset != null) {
-          return linkCharset;
-        }
-      }
-
-      // charset of referring document.
-      if (styleSheet.ownerNode?.ownerDocument.characterSet) {
-        return styleSheet.ownerNode.ownerDocument.characterSet;
-      }
-    }
-
-    return "UTF-8";
   }
 
   /**
@@ -563,17 +491,18 @@ class StyleSheetsManager extends EventEmitter {
   }
 
   /**
-   * Retrieve the media rules of a given stylesheet
+   * Retrieve the at-rules of a given stylesheet
    *
    * @param {StyleSheet} styleSheet
    * @returns {Array<Object>} An array of object of the following shape:
+   *           - type {String}
    *           - mediaText {String}
    *           - conditionText {String}
    *           - matches {Boolean}: true if the media rule matches the current state of the document
    *           - line {Number}
    *           - column {Number}
    */
-  async _getMediaRules(styleSheet) {
+  async getAtRules(styleSheet) {
     const resourceId = this._findStyleSheetResourceId(styleSheet);
     if (!resourceId) {
       return [];
@@ -582,31 +511,77 @@ class StyleSheetsManager extends EventEmitter {
     this._mqlList = [];
 
     const styleSheetRules = await this._getCSSRules(styleSheet);
-    const mediaRules = Array.from(styleSheetRules).filter(
-      rule => rule.type === CSSRule.MEDIA_RULE
-    );
+    const document = styleSheet.associatedDocument;
+    const win = document?.ownerGlobal;
+    const CSSGroupingRule = win?.CSSGroupingRule;
 
-    return mediaRules.map((rule, index) => {
-      let matches = false;
+    // We need to go through nested rules to extract all the rules we're interested in
+    const rules = [];
+    const traverseRules = ruleList => {
+      for (const rule of ruleList) {
+        // Don't go further if the rule can't hold other rules (e.g. not a @media, @supports, …)
+        if (!CSSGroupingRule || !CSSGroupingRule.isInstance(rule)) {
+          continue;
+        }
 
-      try {
-        const window = styleSheet.ownerNode.ownerGlobal;
-        const mql = window.matchMedia(rule.media.mediaText);
-        matches = mql.matches;
-        mql.onchange = this._onMatchesChange.bind(this, resourceId, index);
-        this._mqlList.push(mql);
-      } catch (e) {
-        // Ignored
+        const line = InspectorUtils.getRelativeRuleLine(rule);
+        const column = InspectorUtils.getRuleColumn(rule);
+
+        const className = ChromeUtils.getClassName(rule);
+        if (className === "CSSMediaRule") {
+          let matches = false;
+
+          try {
+            const mql = win.matchMedia(rule.media.mediaText);
+            matches = mql.matches;
+            mql.onchange = this._onMatchesChange.bind(
+              this,
+              resourceId,
+              rules.length
+            );
+            this._mqlList.push(mql);
+          } catch (e) {
+            // Ignored
+          }
+
+          rules.push({
+            type: "media",
+            mediaText: rule.media.mediaText,
+            conditionText: rule.conditionText,
+            matches,
+            line,
+            column,
+          });
+        } else if (className === "CSSContainerRule") {
+          rules.push({
+            type: "container",
+            conditionText: rule.conditionText,
+            line,
+            column,
+          });
+        } else if (className === "CSSSupportsRule") {
+          rules.push({
+            type: "support",
+            conditionText: rule.conditionText,
+            line,
+            column,
+          });
+        } else if (className === "CSSLayerBlockRule") {
+          rules.push({
+            type: "layer",
+            layerName: rule.name,
+            line,
+            column,
+          });
+        }
+
+        if (rule.cssRules) {
+          traverseRules(rule.cssRules);
+        }
       }
-
-      return {
-        mediaText: rule.media.mediaText,
-        conditionText: rule.conditionText,
-        matches,
-        line: InspectorUtils.getRuleLine(rule),
-        column: InspectorUtils.getRuleColumn(rule),
-      };
-    });
+    };
+    traverseRules(styleSheetRules);
+    return rules;
   }
 
   /**
@@ -616,7 +591,7 @@ class StyleSheetsManager extends EventEmitter {
    * @param {String} resourceId
    *        The id associated with the stylesheet
    * @param {Number} index
-   *        The index of the media rule relatively to all the other media rules of the stylesheet
+   *        The index of the media rule relatively to all the other at-rules of the stylesheet
    * @param {MediaQueryList} mql
    *        The result of matchMedia for the given media rule
    */
@@ -627,7 +602,7 @@ class StyleSheetsManager extends EventEmitter {
       updates: {
         nestedResourceUpdates: [
           {
-            path: ["mediaRules", index, "matches"],
+            path: ["atRules", index, "matches"],
             value: mql.matches,
           },
         ],
@@ -668,7 +643,7 @@ class StyleSheetsManager extends EventEmitter {
     // When the style is injected via nsIDOMWindowUtils.loadSheet, even
     // the parent style sheet has no owner, so default back to target actor
     // document
-    const ownerNode = getSheetOwnerNode(styleSheet);
+    const ownerNode = getStyleSheetOwnerNode(styleSheet);
     const ownerDocument = ownerNode
       ? ownerNode.ownerDocument
       : this._targetActor.window;
@@ -856,7 +831,7 @@ class StyleSheetsManager extends EventEmitter {
   }
 
   /**
-   * The StyleSheetManager instance is managed by the target, so this will be called when
+   * The StyleSheetsManager instance is managed by the target, so this will be called when
    * the target gets destroyed.
    */
   destroy() {
@@ -887,13 +862,8 @@ class StyleSheetsManager extends EventEmitter {
   }
 }
 
-function hasStyleSheetWatcherSupportForTarget(targetActor) {
-  return (
-    targetActor.sessionContext.supportedResources?.[TYPES.STYLESHEET] || false
-  );
-}
-
 module.exports = {
   StyleSheetsManager,
-  hasStyleSheetWatcherSupportForTarget,
+  UPDATE_GENERAL,
+  UPDATE_PRESERVING_RULES,
 };

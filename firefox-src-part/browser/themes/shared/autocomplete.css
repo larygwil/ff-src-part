@@ -17,6 +17,29 @@
   margin-inline: 4px 0;
 }
 
+#PopupAutoComplete > richlistbox > richlistitem > .ac-login-item {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+#PopupAutoComplete > richlistbox > richlistitem > .ac-login-item > .ac-settings-button {
+  visibility: hidden;
+  height: 16px;
+  width: 16px;
+  border: 0;
+  -moz-context-properties: fill;
+  fill: currentColor;
+  margin-inline: 8px;
+  cursor: pointer;
+  background: url("chrome://global/skin/icons/settings.svg") center no-repeat;
+}
+
+#PopupAutoComplete > richlistbox > richlistitem:is(:hover, [selected]) > .ac-login-item > .ac-settings-button {
+  visibility: visible;
+}
+
 #PopupAutoComplete > richlistbox > richlistitem > .ac-title {
   font: icon;
   margin-inline-start: 4px;
@@ -48,7 +71,9 @@
   box-sizing: border-box;
   display: flex;
   flex-direction: row;
+  gap: 8px;
   margin: 0;
+  min-width: 0;
 }
 
 #PopupAutoComplete > richlistbox > richlistitem[originaltype="login"] > .ac-site-icon,
@@ -65,9 +90,8 @@
 #PopupAutoComplete > richlistbox > richlistitem > .two-line-wrapper > .labels-wrapper {
   /* The text should flex while the icon should not */
   flex: 1;
-  /* width/min-width are needed to get the text-overflow: ellipsis to work for the children */
+  /* min-width is needed to get the text-overflow: ellipsis to work for the children */
   min-width: 0;
-  width: 0;
 }
 
 #PopupAutoComplete > richlistbox > richlistitem > .two-line-wrapper > .labels-wrapper > .label-row {
@@ -88,7 +112,6 @@
 #PopupAutoComplete > richlistbox > richlistitem[originaltype="loginWithOrigin"] > .two-line-wrapper > .ac-site-icon,
 #PopupAutoComplete > richlistbox > richlistitem[originaltype="login"] > .ac-site-icon {
   fill: GrayText;
-  list-style-image: url(chrome://browser/skin/login.svg);
 }
 
 #PopupAutoComplete > richlistbox > richlistitem[originaltype="importableLogins"] > .two-line-wrapper > .ac-site-icon {
@@ -103,10 +126,8 @@
   fill: SelectedItemText;
 }
 
-/* Login form autocompletion with origin showing and generated passwords */
-#PopupAutoComplete > richlistbox > richlistitem[originaltype="generatedPassword"] > .two-line-wrapper,
-#PopupAutoComplete > richlistbox > richlistitem[originaltype="importableLogins"] > .two-line-wrapper,
-#PopupAutoComplete > richlistbox > richlistitem[originaltype="loginWithOrigin"] > .two-line-wrapper {
+/* Login form autocompletion */
+#PopupAutoComplete > richlistbox > richlistitem > .two-line-wrapper {
   padding: 4px;
   padding-inline-start: 0;
 }

@@ -6,7 +6,6 @@
 
 <!DOCTYPE html [
   <!ENTITY % htmlDTD PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"> %htmlDTD;
-  <!ENTITY % brandDTD SYSTEM "chrome://branding/locale/brand.dtd"> %brandDTD;
 ]>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -31,35 +30,35 @@
   </head>
 
   <body class="wide-container">
+    <h1 data-l10n-id="page-title"/>
+    <div class="header-flex">
+      <div class="content-flex">
+        <div class="page-subtitle" data-l10n-id="page-subtitle">
+          <a id="supportLink" data-l10n-name="support-link"></a>
+        </div>
+        <div>
+          <button id="copy-raw-data-to-clipboard" data-l10n-id="copy-raw-data-to-clipboard-label"/>
+          <button id="copy-to-clipboard" data-l10n-id="copy-text-to-clipboard-label"/>
+        </div>
+      </div>
 
 #ifndef ANDROID
-    <div class="action-box">
-      <div id="reset-box">
-        <h3 data-l10n-id="refresh-profile"/>
-        <button id="reset-box-button" data-l10n-id="refresh-profile-button"/>
+      <div class="action-box">
+        <div id="reset-box">
+          <h3 data-l10n-id="refresh-profile"/>
+          <button id="reset-box-button" data-l10n-id="refresh-profile-button"/>
+        </div>
+        <div id="safe-mode-box">
+          <h3 data-l10n-id="troubleshoot-mode-title"/>
+          <button id="restart-in-safe-mode-button" data-l10n-id="restart-in-troubleshoot-mode-label"/>
+        </div>
+        <div id="clear-startup-cache-box">
+          <h3 data-l10n-id="clear-startup-cache-title"/>
+          <button id="clear-startup-cache-button" data-l10n-id="clear-startup-cache-label"/>
+        </div>
       </div>
-      <div id="safe-mode-box">
-        <h3 data-l10n-id="troubleshoot-mode-title"/>
-        <button id="restart-in-safe-mode-button" data-l10n-id="restart-in-troubleshoot-mode-label"/>
-      </div>
-      <div id="clear-startup-cache-box">
-        <h3 data-l10n-id="clear-startup-cache-title"/>
-        <button id="clear-startup-cache-button" data-l10n-id="clear-startup-cache-label"/>
-      </div>
-    </div>
 #endif
-
-    <h1 data-l10n-id="page-title"/>
-
-    <div class="page-subtitle" data-l10n-id="page-subtitle">
-      <a id="supportLink" data-l10n-name="support-link"></a>
     </div>
-
-    <div>
-      <button id="copy-raw-data-to-clipboard" data-l10n-id="copy-raw-data-to-clipboard-label"/>
-      <button id="copy-to-clipboard" data-l10n-id="copy-text-to-clipboard-label"/>
-    </div>
-
     <div id="contents">
 
       <!-- - - - - - - - - - - - - - - - - - - - - -->
@@ -198,7 +197,7 @@
             <th class="column" data-l10n-id="app-basics-performance"/>
 
             <td>
-              <a href="about:performance">about:performance</a>
+              <a href="about:processes">about:processes</a>
             </td>
           </tr>
 
@@ -648,10 +647,27 @@
           <tr class="no-copy">
             <th class="column" data-l10n-id="place-database-integrity"/>
 
-            <td>
+            <td colspan="5">
               <button id="verify-place-integrity-button" data-l10n-id="place-database-verify-integrity"/>
               <pre id="verify-place-result" class="hidden no-copy"></pre>
             </td>
+          </tr>
+          <tr class="no-copy">
+            <th class="column" data-l10n-id="place-database-stats"/>
+
+            <td colspan="5">
+              <button id="place-database-stats-toggle" data-l10n-id="place-database-stats-show"/>
+            </td>
+          </tr>
+        </tbody>
+        <tbody id="place-database-stats-tbody">
+          <tr>
+            <th data-l10n-id="place-database-stats-entity"/>
+            <th data-l10n-id="place-database-stats-count"/>
+            <th data-l10n-id="place-database-stats-size-kib"/>
+            <th data-l10n-id="place-database-stats-size-perc"/>
+            <th data-l10n-id="place-database-stats-efficiency-perc"/>
+            <th data-l10n-id="place-database-stats-sequentiality-perc"/>
           </tr>
         </tbody>
       </table>
@@ -675,13 +691,6 @@
             </td>
           </tr>
 #if defined(XP_WIN)
-          <tr>
-            <th class="column" data-l10n-id="a11y-handler-used"/>
-
-            <td id="a11y-handler-used">
-            </td>
-          </tr>
-
           <tr>
             <th class="column" data-l10n-id="a11y-instantiator"/>
 

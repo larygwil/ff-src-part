@@ -1,17 +1,18 @@
 /* -*- Mode: indent-tabs-mode: nil; js-indent-level: 2 -*- */
 /* vim: set sts=2 sw=2 et tw=80: */
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
 "use strict";
 
-// The ext-* files are imported into the same scopes.
-/* import-globals-from ext-android.js */
-
-XPCOMUtils.defineLazyModuleGetters(this, {
-  GeckoViewWebExtension: "resource://gre/modules/GeckoViewWebExtension.jsm",
-  ExtensionActionHelper: "resource://gre/modules/GeckoViewWebExtension.jsm",
+ChromeUtils.defineESModuleGetters(this, {
+  GeckoViewWebExtension: "resource://gre/modules/GeckoViewWebExtension.sys.mjs",
+  ExtensionActionHelper: "resource://gre/modules/GeckoViewWebExtension.sys.mjs",
 });
 
-const { BrowserActionBase } = ChromeUtils.import(
-  "resource://gre/modules/ExtensionActions.jsm"
+const { BrowserActionBase } = ChromeUtils.importESModule(
+  "resource://gre/modules/ExtensionActions.sys.mjs"
 );
 
 const BROWSER_ACTION_PROPERTIES = [
@@ -50,9 +51,10 @@ class BrowserAction extends BrowserActionBase {
     });
   }
 
-  openPopup() {
-    const tab = tabTracker.activeTab;
-    const popupUri = this.triggerClickOrPopup(tab);
+  openPopup(tab, openPopupWithoutUserInteraction = false) {
+    const popupUri = openPopupWithoutUserInteraction
+      ? this.getPopupUrl(tab)
+      : this.triggerClickOrPopup(tab);
     const actionObject = this.getContextData(tab);
     const action = this.helper.extractProperties(actionObject);
     this.helper.sendRequest(tab.id, {
@@ -151,8 +153,35 @@ this.browserAction = class extends ExtensionAPIPersistent {
           extensionApi: this,
         }).api(),
 
-        openPopup: function() {
-          action.openPopup();
+        openPopup: options => {
+          const isHandlingUserInput =
+            context.callContextData?.isHandlingUserInput;
+
+          if (
+            !Services.prefs.getBoolPref(
+              "extensions.openPopupWithoutUserGesture.enabled"
+            ) &&
+            !isHandlingUserInput
+          ) {
+            throw new ExtensionError("openPopup requires a user gesture");
+          }
+
+          const currentWindow = windowTracker.getCurrentWindow(context);
+
+          const window =
+            typeof options?.windowId === "number"
+              ? windowTracker.getWindow(options.windowId, context)
+              : currentWindow;
+
+          if (window !== currentWindow) {
+            throw new ExtensionError(
+              "Only the current window is supported on Android."
+            );
+          }
+
+          if (this.action.getPopupUrl(window.tab, true)) {
+            action.openPopup(window.tab, !isHandlingUserInput);
+          }
         },
       },
     };

@@ -44,15 +44,14 @@
 var EXPORTED_SYMBOLS = ["AeroPeek"];
 
 const { NetUtil } = ChromeUtils.import("resource://gre/modules/NetUtil.jsm");
-const { PlacesUtils } = ChromeUtils.import(
-  "resource://gre/modules/PlacesUtils.jsm"
+const { PlacesUtils } = ChromeUtils.importESModule(
+  "resource://gre/modules/PlacesUtils.sys.mjs"
 );
-const { PrivateBrowsingUtils } = ChromeUtils.import(
-  "resource://gre/modules/PrivateBrowsingUtils.jsm"
+const { PrivateBrowsingUtils } = ChromeUtils.importESModule(
+  "resource://gre/modules/PrivateBrowsingUtils.sys.mjs"
 );
-const { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm");
-const { XPCOMUtils } = ChromeUtils.import(
-  "resource://gre/modules/XPCOMUtils.jsm"
+const { XPCOMUtils } = ChromeUtils.importESModule(
+  "resource://gre/modules/XPCOMUtils.sys.mjs"
 );
 
 // Pref to enable/disable preview-per-tab
@@ -64,18 +63,18 @@ const CACHE_EXPIRATION_TIME_PREF_NAME = "browser.taskbar.previews.cachetime";
 
 const WINTASKBAR_CONTRACTID = "@mozilla.org/windows-taskbar;1";
 
+const lazy = {};
+
 // Various utility properties
 XPCOMUtils.defineLazyServiceGetter(
-  this,
+  lazy,
   "imgTools",
   "@mozilla.org/image/tools;1",
   "imgITools"
 );
-ChromeUtils.defineModuleGetter(
-  this,
-  "PageThumbs",
-  "resource://gre/modules/PageThumbs.jsm"
-);
+ChromeUtils.defineESModuleGetters(lazy, {
+  PageThumbs: "resource://gre/modules/PageThumbs.sys.mjs",
+});
 
 // nsIURI -> imgIContainer
 function _imageFromURI(uri, privateMode, callback) {
@@ -91,7 +90,7 @@ function _imageFromURI(uri, privateMode, callback) {
   } catch (e) {
     // Ignore channels which do not support nsIPrivateBrowsingChannel
   }
-  NetUtil.asyncFetch(channel, function(inputStream, resultCode) {
+  NetUtil.asyncFetch(channel, function (inputStream, resultCode) {
     if (!Components.isSuccessCode(resultCode)) {
       return;
     }
@@ -114,7 +113,7 @@ function _imageFromURI(uri, privateMode, callback) {
 
     try {
       let threadManager = Cc["@mozilla.org/thread-manager;1"].getService();
-      imgTools.decodeImageAsync(
+      lazy.imgTools.decodeImageAsync(
         inputStream,
         channel.contentType,
         decodeCallback,
@@ -165,8 +164,8 @@ function PreviewController(win, tab) {
 
   this.tab.addEventListener("TabAttrModified", this);
 
-  XPCOMUtils.defineLazyGetter(this, "canvasPreview", function() {
-    let canvas = PageThumbs.createCanvas(this.win.win);
+  XPCOMUtils.defineLazyGetter(this, "canvasPreview", function () {
+    let canvas = lazy.PageThumbs.createCanvas(this.win.win);
     canvas.mozOpaque = true;
     return canvas;
   });
@@ -226,9 +225,13 @@ PreviewController.prototype = {
     // events don't trigger another invalidation if this tab becomes active.
     this.cacheBrowserDims();
     AeroPeek.resetCacheTimer();
-    return PageThumbs.captureToCanvas(this.linkedBrowser, this.canvasPreview, {
-      fullScale: aFullScale,
-    }).catch(e => Cu.reportError(e));
+    return lazy.PageThumbs.captureToCanvas(
+      this.linkedBrowser,
+      this.canvasPreview,
+      {
+        fullScale: aFullScale,
+      }
+    ).catch(console.error);
     // If we're updating the canvas, then we're in the middle of a peek so
     // don't discard the cache of previews.
   },
@@ -275,7 +278,7 @@ PreviewController.prototype = {
       let winWidth = this.win.width;
       let winHeight = this.win.height;
 
-      let composite = PageThumbs.createCanvas(this.win.win);
+      let composite = lazy.PageThumbs.createCanvas(this.win.win);
 
       // Use transparency, Aero glass is drawn black without it.
       composite.mozOpaque = false;
@@ -304,7 +307,7 @@ PreviewController.prototype = {
       ctx.restore();
 
       // Deliver the resulting composite canvas to Windows
-      this.win.tabbrowser.previewTab(this.tab, function() {
+      this.win.tabbrowser.previewTab(this.tab, function () {
         aTaskbarCallback.done(composite, false);
       });
     });
@@ -552,7 +555,7 @@ TabWindow.prototype = {
       () => {
         // invalidate every preview. note the internal implementation of
         // invalidate ignores thumbnails that aren't visible.
-        this.previews.forEach(function(aPreview) {
+        this.previews.forEach(function (aPreview) {
           let controller = aPreview.controller.wrappedJSObject;
           if (!controller.testCacheBrowserDims()) {
             controller.cacheBrowserDims();
@@ -705,9 +708,8 @@ var AeroPeek = {
     }
 
     Services.prefs.addObserver(TOGGLE_PREF_NAME, this, true);
-    this.enabled = this._prefenabled = Services.prefs.getBoolPref(
-      TOGGLE_PREF_NAME
-    );
+    this.enabled = this._prefenabled =
+      Services.prefs.getBoolPref(TOGGLE_PREF_NAME);
     this.initialized = true;
   },
 
@@ -730,7 +732,7 @@ var AeroPeek = {
 
     this._enabled = enable;
 
-    this.windows.forEach(function(win) {
+    this.windows.forEach(function (win) {
       win.enabled = enable;
     });
   },
@@ -871,7 +873,7 @@ var AeroPeek = {
         this.checkPreviewCount();
         break;
       case "timer-callback":
-        this.previews.forEach(function(preview) {
+        this.previews.forEach(function (preview) {
           let controller = preview.controller.wrappedJSObject;
           controller.resetCanvasPreview();
         });

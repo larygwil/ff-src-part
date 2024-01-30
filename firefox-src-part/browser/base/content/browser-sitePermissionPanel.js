@@ -15,10 +15,7 @@ var gPermissionPanel = {
       let wrapper = document.getElementById("template-permission-popup");
       wrapper.replaceWith(wrapper.content);
 
-      let baseURL = Services.urlFormatter.formatURLPref("app.support.baseURL");
-      document.getElementById(
-        "permission-popup-storage-access-permission-learn-more"
-      ).href = baseURL + "site-information-third-party-access";
+      window.ensureCustomElements("moz-support-link");
 
       this._popupInitialized = true;
     }
@@ -30,7 +27,26 @@ var gPermissionPanel = {
     }
   },
 
+  /**
+   * _popupAnchorNode will be set by setAnchor if an outside consumer
+   * of this object wants to override the default anchor for the panel.
+   * If there is no override, this remains null, and the _identityPermissionBox
+   * will be used as the anchor.
+   */
+  _popupAnchorNode: null,
+  _popupPosition: "bottomleft topleft",
+  setAnchor(anchorNode, popupPosition) {
+    this._popupAnchorNode = anchorNode;
+    this._popupPosition = popupPosition;
+  },
+
   // smart getters
+  get _popupAnchor() {
+    if (this._popupAnchorNode) {
+      return this._popupAnchorNode;
+    }
+    return this._identityPermissionBox;
+  },
   get _identityPermissionBox() {
     delete this._identityPermissionBox;
     return (this._identityPermissionBox = document.getElementById(
@@ -48,9 +64,8 @@ var gPermissionPanel = {
       return null;
     }
     delete this._permissionPopup;
-    return (this._permissionPopup = document.getElementById(
-      "permission-popup"
-    ));
+    return (this._permissionPopup =
+      document.getElementById("permission-popup"));
   },
   get _permissionPopupMainView() {
     delete this._permissionPopupPopupMainView;
@@ -117,10 +132,8 @@ var gPermissionPanel = {
     let host = gIdentityHandler.getHostForDisplay();
 
     // Update header label
-    this._permissionPopupMainViewHeaderLabel.textContent = gNavigatorBundle.getFormattedString(
-      "permissions.header",
-      [host]
-    );
+    this._permissionPopupMainViewHeaderLabel.textContent =
+      gNavigatorBundle.getFormattedString("permissions.header", [host]);
 
     // Refresh the permission list
     this.updateSitePermissions();
@@ -187,7 +200,28 @@ var gPermissionPanel = {
    * Shows the permission popup.
    * @param {Event} event - Event which caused the popup to show.
    */
-  _openPopup(event) {
+  openPopup(event) {
+    // If we are in DOM fullscreen, exit it before showing the permission popup
+    // (see bug 1557041)
+    if (document.fullscreen) {
+      // Open the identity popup after DOM fullscreen exit
+      // We need to wait for the exit event and after that wait for the fullscreen exit transition to complete
+      // If we call openPopup before the fullscreen transition ends it can get cancelled
+      // Only waiting for painted is not sufficient because we could still be in the fullscreen enter transition.
+      this._exitedEventReceived = false;
+      this._event = event;
+      Services.obs.addObserver(this, "fullscreen-painted");
+      window.addEventListener(
+        "MozDOMFullscreen:Exited",
+        () => {
+          this._exitedEventReceived = true;
+        },
+        { once: true }
+      );
+      document.exitFullscreen();
+      return;
+    }
+
     // Make the popup available.
     this._initializePopup();
 
@@ -204,14 +238,10 @@ var gPermissionPanel = {
     }
 
     // Now open the popup, anchored off the primary chrome element
-    PanelMultiView.openPopup(
-      this._permissionPopup,
-      this._identityPermissionBox,
-      {
-        position: "bottomcenter topleft",
-        triggerEvent: event,
-      }
-    ).catch(Cu.reportError);
+    PanelMultiView.openPopup(this._permissionPopup, this._popupAnchor, {
+      position: this._popupPosition,
+      triggerEvent: event,
+    }).catch(console.error);
   },
 
   /**
@@ -308,28 +338,7 @@ var gPermissionPanel = {
       return;
     }
 
-    // If we are in DOM fullscreen, exit it before showing the permission popup
-    // (see bug 1557041)
-    if (document.fullscreen) {
-      // Open the identity popup after DOM fullscreen exit
-      // We need to wait for the exit event and after that wait for the fullscreen exit transition to complete
-      // If we call _openPopup before the fullscreen transition ends it can get cancelled
-      // Only waiting for painted is not sufficient because we could still be in the fullscreen enter transition.
-      this._exitedEventReceived = false;
-      this._event = event;
-      Services.obs.addObserver(this, "fullscreen-painted");
-      window.addEventListener(
-        "MozDOMFullscreen:Exited",
-        () => {
-          this._exitedEventReceived = true;
-        },
-        { once: true }
-      );
-      document.exitFullscreen();
-      return;
-    }
-
-    this._openPopup(event);
+    this.openPopup(event);
   },
 
   onPopupShown(event) {
@@ -369,7 +378,7 @@ var gPermissionPanel = {
           return;
         }
         Services.obs.removeObserver(this, "fullscreen-painted");
-        this._openPopup(this._event);
+        this.openPopup(this._event);
         delete this._event;
         break;
       }
@@ -461,7 +470,8 @@ var gPermissionPanel = {
       }
     }
 
-    let totalBlockedPopups = gBrowser.selectedBrowser.popupBlocker.getBlockedPopupCount();
+    let totalBlockedPopups =
+      gBrowser.selectedBrowser.popupBlocker.getBlockedPopupCount();
     let hasBlockedPopupIndicator = false;
     for (let permission of permissions) {
       let [id, key] = permission.id.split(SitePermissions.PERM_KEY_DELIMITER);
@@ -485,7 +495,7 @@ var gPermissionPanel = {
         if (permContainer) {
           anchor.appendChild(permContainer);
         }
-      } else if (["camera", "screen", "microphone"].includes(id)) {
+      } else if (["camera", "screen", "microphone", "speaker"].includes(id)) {
         item = this._createWebRTCPermissionItem(permission, id, key);
         if (!item) {
           continue;
@@ -523,10 +533,6 @@ var gPermissionPanel = {
       this._defaultPermissionAnchor.appendChild(item);
       this._createBlockedPopupIndicator(totalBlockedPopups);
     }
-
-    PanelView.forNode(
-      this._permissionPopupMainView
-    ).descriptionHeightWorkaround();
   },
 
   /**
@@ -534,7 +540,7 @@ var gPermissionPanel = {
    * It is up to the caller to actually insert the element somewhere.
    *
    * @param permission - An object containing information representing the
-   *                     permission, typically obtained via SitePermissions.jsm
+   *                     permission, typically obtained via SitePermissions.sys.mjs
    * @param isContainer - If true, the permission item will be added to a vbox
    *                      and the vbox will be returned.
    * @param permClearButton - Whether to show an "x" button to clear the permission
@@ -727,7 +733,6 @@ var gPermissionPanel = {
 
   _createStateLabel(aPermission, idNoSuffix) {
     let label = document.createXULElement("label");
-    label.setAttribute("flex", "1");
     label.setAttribute("class", "permission-popup-permission-state-label");
     let labelId = `permission-popup-permission-state-label-${idNoSuffix}-${this
       ._permissionLabelIndex++}`;
@@ -778,9 +783,10 @@ var gPermissionPanel = {
       if (permission.sharingState && idNoSuffix === "xr") {
         let origins = browser.getDevicePermissionOrigins(idNoSuffix);
         for (let origin of origins) {
-          let principal = Services.scriptSecurityManager.createContentPrincipalFromOrigin(
-            origin
-          );
+          let principal =
+            Services.scriptSecurityManager.createContentPrincipalFromOrigin(
+              origin
+            );
           this._removePermPersistentAllow(principal, permission.id);
         }
         origins.clear();
@@ -792,9 +798,6 @@ var gPermissionPanel = {
       );
 
       this._permissionReloadHint.hidden = false;
-      PanelView.forNode(
-        this._permissionPopupMainView
-      ).descriptionHeightWorkaround();
 
       if (idNoSuffix === "geo") {
         gBrowser.updateBrowserSharing(browser, { geo: false });
@@ -847,7 +850,7 @@ var gPermissionPanel = {
     }
     let lastAccess = new Date(lastAccessStr);
     if (isNaN(lastAccess)) {
-      Cu.reportError("Invalid timestamp for last geolocation access");
+      console.error("Invalid timestamp for last geolocation access");
       return;
     }
 
@@ -882,7 +885,7 @@ var gPermissionPanel = {
    * should be skipped.
    */
   _createWebRTCPermissionItem(permission, id, key) {
-    if (id != "camera" && id != "microphone" && id != "screen") {
+    if (!["camera", "screen", "microphone", "speaker"].includes(id)) {
       throw new Error("Invalid permission id for WebRTC permission item.");
     }
     // Only show WebRTC device-specific ALLOW permissions. Since we only show

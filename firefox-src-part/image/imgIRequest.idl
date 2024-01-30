@@ -12,6 +12,7 @@
 interface imgINotificationObserver;
 interface nsIURI;
 interface nsIPrincipal;
+interface nsIReferrerInfo;
 
 /**
  * imgIRequest interface
@@ -34,6 +35,12 @@ interface imgIRequest : nsIRequest
    * Provider ID for image providers created by this image.
    */
   [infallible] readonly attribute unsigned long providerId;
+
+  /**
+   * The principal for the document that loaded this image. Used when trying to
+   * validate a CORS image load.
+   */
+  [infallible] readonly attribute nsIPrincipal triggeringPrincipal;
 
   /**
    * Bits set in the return value from imageStatus
@@ -89,7 +96,7 @@ interface imgIRequest : nsIRequest
    * actual URI for the image (e.g. if HTTP redirects happened during the
    * load).
    */
-  readonly attribute nsIURI URI;
+  [infallible] readonly attribute nsIURI URI;
 
   /**
    * The URI of the resource we ended up loading after all redirects, etc.
@@ -135,6 +142,11 @@ interface imgIRequest : nsIRequest
    * The CORS mode that this image was loaded with (a mozilla::CORSMode).
    */
   readonly attribute long CORSMode;
+
+  /**
+   * The referrer that this image was loaded with.
+   */
+  readonly attribute nsIReferrerInfo referrerInfo;
 
   /**
    * Cancels this request as in nsIRequest::Cancel(); further, also nulls out
@@ -262,4 +274,3 @@ interface imgIRequest : nsIRequest
   const uint32_t CATEGORY_DISPLAY     = 1 << 3;
   void boostPriority(in uint32_t aCategory);
 };
-

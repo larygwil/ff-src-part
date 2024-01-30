@@ -3,33 +3,33 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 "use strict";
 
-const { Actor, ActorClassWithSpec } = require("devtools/shared/protocol");
+const { Actor } = require("resource://devtools/shared/protocol.js");
 const {
   screenshotContentSpec,
-} = require("devtools/shared/specs/screenshot-content");
+} = require("resource://devtools/shared/specs/screenshot-content.js");
 
-const { LocalizationHelper } = require("devtools/shared/l10n");
+const { LocalizationHelper } = require("resource://devtools/shared/l10n.js");
 const STRINGS_URI = "devtools/shared/locales/screenshot.properties";
 const L10N = new LocalizationHelper(STRINGS_URI);
 loader.lazyRequireGetter(
   this,
   ["getCurrentZoom", "getRect"],
-  "devtools/shared/layout/utils",
+  "resource://devtools/shared/layout/utils.js",
   true
 );
 
-exports.ScreenshotContentActor = ActorClassWithSpec(screenshotContentSpec, {
-  initialize: function(conn, targetActor) {
-    Actor.prototype.initialize.call(this, conn);
+exports.ScreenshotContentActor = class ScreenshotContentActor extends Actor {
+  constructor(conn, targetActor) {
+    super(conn, screenshotContentSpec);
     this.targetActor = targetActor;
-  },
+  }
 
   _getRectForNode(node) {
     const originWindow = this.targetActor.ignoreSubFrames
       ? node.ownerGlobal
       : node.ownerGlobal.top;
     return getRect(originWindow, node, node.ownerGlobal);
-  },
+  }
 
   /**
    * Retrieve some window-related information that will be passed to the parent process
@@ -140,5 +140,5 @@ exports.ScreenshotContentActor = ActorClassWithSpec(screenshotContentSpec, {
       rect: { left, top, width, height },
       messages,
     };
-  },
-});
+  }
+};

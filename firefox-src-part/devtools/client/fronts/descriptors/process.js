@@ -3,23 +3,23 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 "use strict";
 
-const Services = require("Services");
 const {
   processDescriptorSpec,
-} = require("devtools/shared/specs/descriptors/process");
+} = require("resource://devtools/shared/specs/descriptors/process.js");
 const {
   WindowGlobalTargetFront,
-} = require("devtools/client/fronts/targets/window-global");
+} = require("resource://devtools/client/fronts/targets/window-global.js");
 const {
   ContentProcessTargetFront,
-} = require("devtools/client/fronts/targets/content-process");
+} = require("resource://devtools/client/fronts/targets/content-process.js");
 const {
   FrontClassWithSpec,
   registerFront,
-} = require("devtools/shared/protocol");
+} = require("resource://devtools/shared/protocol.js");
 const {
   DescriptorMixin,
-} = require("devtools/client/fronts/descriptors/descriptor-mixin");
+} = require("resource://devtools/client/fronts/descriptors/descriptor-mixin.js");
+const DESCRIPTOR_TYPES = require("resource://devtools/client/fronts/descriptors/descriptor-types.js");
 
 class ProcessDescriptorFront extends DescriptorMixin(
   FrontClassWithSpec(processDescriptorSpec)
@@ -30,6 +30,8 @@ class ProcessDescriptorFront extends DescriptorMixin(
     this._processTargetFront = null;
     this._targetFrontPromise = null;
   }
+
+  descriptorType = DESCRIPTOR_TYPES.PROCESS;
 
   form(json) {
     this.id = json.id;
@@ -81,10 +83,6 @@ class ProcessDescriptorFront extends DescriptorMixin(
     return this._isParent && !this._isWindowlessParent;
   }
 
-  get isBrowserToolboxFission() {
-    return Services.prefs.getBoolPref("devtools.browsertoolbox.fission", false);
-  }
-
   get isParentProcessDescriptor() {
     return this._isParent;
   }
@@ -110,9 +108,7 @@ class ProcessDescriptorFront extends DescriptorMixin(
     this._targetFrontPromise = (async () => {
       let targetFront = null;
       try {
-        const targetForm = await super.getTarget({
-          isBrowserToolboxFission: this.isBrowserToolboxFission,
-        });
+        const targetForm = await super.getTarget();
         targetFront = await this._createProcessTargetFront(targetForm);
       } catch (e) {
         // This is likely to happen if we get a lot of events which drop previous
@@ -130,12 +126,6 @@ class ProcessDescriptorFront extends DescriptorMixin(
       return targetFront;
     })();
     return this._targetFrontPromise;
-  }
-
-  getWatcher() {
-    return super.getWatcher({
-      isBrowserToolboxFission: this.isBrowserToolboxFission,
-    });
   }
 
   destroy() {

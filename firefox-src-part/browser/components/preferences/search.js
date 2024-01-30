@@ -5,6 +5,12 @@
 /* import-globals-from extensionControlled.js */
 /* import-globals-from preferences.js */
 
+const lazy = {};
+
+ChromeUtils.defineESModuleGetters(lazy, {
+  SearchUIUtils: "resource:///modules/SearchUIUtils.sys.mjs",
+});
+
 Preferences.addAll([
   { id: "browser.search.suggest.enabled", type: "bool" },
   { id: "browser.urlbar.suggest.searches", type: "bool" },
@@ -12,6 +18,7 @@ Preferences.addAll([
   { id: "browser.search.hiddenOneOffs", type: "unichar" },
   { id: "browser.search.widget.inNavBar", type: "bool" },
   { id: "browser.urlbar.showSearchSuggestionsFirst", type: "bool" },
+  { id: "browser.urlbar.showSearchTerms.enabled", type: "bool" },
   { id: "browser.search.separatePrivateDefault", type: "bool" },
   { id: "browser.search.separatePrivateDefault.ui.enabled", type: "bool" },
 ]);
@@ -35,10 +42,7 @@ var gSearchPane = {
       document.getElementById("addEnginesBox").hidden = true;
     } else {
       let addEnginesLink = document.getElementById("addEngines");
-      let searchEnginesURL = Services.wm.getMostRecentWindow(
-        "navigator:browser"
-      ).BrowserSearch.searchEnginesURL;
-      addEnginesLink.setAttribute("href", searchEnginesURL);
+      addEnginesLink.setAttribute("href", lazy.SearchUIUtils.searchEnginesURL);
     }
 
     window.addEventListener("click", this);
@@ -60,9 +64,8 @@ var gSearchPane = {
     let privateSuggestsPref = Preferences.get(
       "browser.search.suggest.enabled.private"
     );
-    let updateSuggestionCheckboxes = this._updateSuggestionCheckboxes.bind(
-      this
-    );
+    let updateSuggestionCheckboxes =
+      this._updateSuggestionCheckboxes.bind(this);
     suggestsPref.on("change", updateSuggestionCheckboxes);
     urlbarSuggestsPref.on("change", updateSuggestionCheckboxes);
     let urlbarSuggests = document.getElementById("urlBarSuggestion");
@@ -81,15 +84,18 @@ var gSearchPane = {
       "command",
       this._onBrowserSeparateDefaultEngineChange.bind(this)
     );
-    setEventListener("openLocationBarPrivacyPreferences", "click", function(
-      event
-    ) {
-      if (event.button == 0) {
-        gotoPref("privacy-locationBar");
+    setEventListener(
+      "openLocationBarPrivacyPreferences",
+      "click",
+      function (event) {
+        if (event.button == 0) {
+          gotoPref("privacy-locationBar");
+        }
       }
-    });
+    );
 
     this._initDefaultEngines();
+    this._initShowSearchTermsCheckbox();
     this._updateSuggestionCheckboxes();
     this._showAddEngineButton();
   },
@@ -121,11 +127,36 @@ var gSearchPane = {
     this._separatePrivateDefaultPref.on("change", listener);
   },
 
+  _initShowSearchTermsCheckbox() {
+    let checkbox = document.getElementById("searchShowSearchTermCheckbox");
+
+    // Add Nimbus event to show/hide checkbox.
+    let onNimbus = () => {
+      checkbox.hidden = !UrlbarPrefs.get("showSearchTermsFeatureGate");
+    };
+    NimbusFeatures.urlbar.onUpdate(onNimbus);
+
+    // Add observer of Search Bar preference as showSearchTerms
+    // can't be enabled/disabled while Search Bar is enabled.
+    let searchBarPref = Preferences.get("browser.search.widget.inNavBar");
+    let updateCheckboxEnabled = () => {
+      checkbox.disabled = searchBarPref.value;
+    };
+    searchBarPref.on("change", updateCheckboxEnabled);
+
+    // Fire once to initialize.
+    onNimbus();
+    updateCheckboxEnabled();
+
+    window.addEventListener("unload", () => {
+      NimbusFeatures.urlbar.offUpdate(onNimbus);
+    });
+  },
+
   _updatePrivateEngineDisplayBoxes() {
     const separateEnabled = this._separatePrivateDefaultEnabledPref.value;
-    document.getElementById(
-      "browserSeparateDefaultEngine"
-    ).hidden = !separateEnabled;
+    document.getElementById("browserSeparateDefaultEngine").hidden =
+      !separateEnabled;
 
     const separateDefault = this._separatePrivateDefaultPref.value;
 
@@ -201,14 +232,18 @@ var gSearchPane = {
   async buildDefaultEngineDropDowns() {
     await this._buildEngineDropDown(
       document.getElementById("defaultEngine"),
-      (await Services.search.getDefault()).name,
+      (
+        await Services.search.getDefault()
+      ).name,
       false
     );
 
     if (this._separatePrivateDefaultEnabledPref.value) {
       await this._buildEngineDropDown(
         document.getElementById("defaultPrivateEngine"),
-        (await Services.search.getDefaultPrivate()).name,
+        (
+          await Services.search.getDefaultPrivate()
+        ).name,
         true
       );
     }
@@ -279,7 +314,7 @@ var gSearchPane = {
           // away from.
           if (engineList.inputField.hidden && engineList.view) {
             let selection = engineList.view.selection;
-            if (selection.count > 0) {
+            if (selection?.count > 0) {
               selection.toggleSelect(selection.currentIndex);
             }
             engineList.blur();
@@ -371,8 +406,8 @@ var gSearchPane = {
         // If the user is going through the drop down using up/down keys, the
         // dropdown may still be open (eg. on Windows) when engine-default is
         // fired, so rebuilding the list unconditionally would get in the way.
-        let selectedEngine = document.getElementById("defaultEngine")
-          .selectedItem.engine;
+        let selectedEngine =
+          document.getElementById("defaultEngine").selectedItem.engine;
         if (selectedEngine.name != engine.name) {
           gSearchPane.buildDefaultEngineDropDowns();
         }
@@ -414,9 +449,8 @@ var gSearchPane = {
   },
 
   onTreeSelect() {
-    document.getElementById(
-      "removeEngineButton"
-    ).disabled = !gEngineView.isEngineSelectedAndRemovable();
+    document.getElementById("removeEngineButton").disabled =
+      !gEngineView.isEngineSelectedAndRemovable();
   },
 
   onTreeKeyPress(aEvent) {
@@ -553,14 +587,14 @@ var gSearchPane = {
         hiddenList.push(engine.name);
       }
     }
-    Preferences.get("browser.search.hiddenOneOffs").value = hiddenList.join(
-      ","
-    );
+    Preferences.get("browser.search.hiddenOneOffs").value =
+      hiddenList.join(",");
   },
 
   async setDefaultEngine() {
     await Services.search.setDefault(
-      document.getElementById("defaultEngine").selectedItem.engine
+      document.getElementById("defaultEngine").selectedItem.engine,
+      Ci.nsISearchService.CHANGE_REASON_USER
     );
     if (ExtensionSettingsStore.getSetting(SEARCH_TYPE, SEARCH_KEY) !== null) {
       ExtensionSettingsStore.select(
@@ -573,7 +607,8 @@ var gSearchPane = {
 
   async setDefaultPrivateEngine() {
     await Services.search.setDefaultPrivate(
-      document.getElementById("defaultPrivateEngine").selectedItem.engine
+      document.getElementById("defaultPrivateEngine").selectedItem.engine,
+      Ci.nsISearchService.CHANGE_REASON_USER
     );
   },
 };
@@ -638,7 +673,7 @@ EngineStore.prototype = {
 
   _cloneEngine(aEngine) {
     var clonedObj = {};
-    for (let i of ["name", "alias", "iconURI", "hidden"]) {
+    for (let i of ["id", "name", "alias", "iconURI", "hidden"]) {
       clonedObj[i] = aEngine[i];
     }
     clonedObj.originalEngine = aEngine;
@@ -648,7 +683,7 @@ EngineStore.prototype = {
 
   // Callback for Array's some(). A thisObj must be passed to some()
   _isSameEngine(aEngineClone) {
-    return aEngineClone.originalEngine == this.originalEngine;
+    return aEngineClone.originalEngine.id == this.originalEngine.id;
   },
 
   addEngine(aEngine) {
@@ -657,7 +692,7 @@ EngineStore.prototype = {
 
   updateEngine(newEngine) {
     let engineToUpdate = this._engines.findIndex(
-      e => e.originalEngine == newEngine
+      e => e.originalEngine.id == newEngine.id
     );
     if (engineToUpdate != -1) {
       this.engines[engineToUpdate] = this._cloneEngine(newEngine);
@@ -744,7 +779,7 @@ EngineStore.prototype = {
       }
     }
 
-    Services.search.resetToOriginalDefaultEngine();
+    Services.search.resetToAppDefaultEngine();
     gSearchPane.showRestoreDefaults(false);
     gSearchPane.buildDefaultEngineDropDowns();
     return added;
@@ -761,7 +796,7 @@ EngineStore.prototype = {
   },
 
   reloadIcons() {
-    this._engines.forEach(function(e) {
+    this._engines.forEach(function (e) {
       e.iconURI = e.originalEngine.iconURI;
     });
   },
@@ -843,12 +878,17 @@ EngineView.prototype = {
   },
 
   isEngineSelectedAndRemovable() {
+    let defaultEngine = Services.search.defaultEngine;
+    let defaultPrivateEngine = Services.search.defaultPrivateEngine;
     // We don't allow the last remaining engine to be removed, thus the
     // `this.lastEngineIndex != 0` check.
+    // We don't allow the default engine to be removed.
     return (
       this.selectedIndex != -1 &&
       this.lastEngineIndex != 0 &&
-      !this._getLocalShortcut(this.selectedIndex)
+      !this._getLocalShortcut(this.selectedIndex) &&
+      this.selectedEngine.name != defaultEngine.name &&
+      this.selectedEngine.name != defaultPrivateEngine.name
     );
   },
 

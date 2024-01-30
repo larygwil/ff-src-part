@@ -35,33 +35,35 @@ function Home(props) {
     if (!hideRecentSaves) {
       // We don't display the loading message until instructed. This is because cache
       // loads should be fast, so using the loading message for cache just adds loading jank.
-      panelMessaging.addMessageListener("PKT_loadingRecentSaves", function(
-        resp
-      ) {
-        setArticlesState({
-          articles,
-          status: "loading",
-        });
-      });
-
-      panelMessaging.addMessageListener("PKT_renderRecentSaves", function(
-        resp
-      ) {
-        const { data } = resp;
-
-        if (data.status === "error") {
+      panelMessaging.addMessageListener(
+        "PKT_loadingRecentSaves",
+        function (resp) {
           setArticlesState({
-            articles: [],
-            status: "error",
+            articles,
+            status: "loading",
           });
-          return;
         }
+      );
 
-        setArticlesState({
-          articles: data,
-          status: "success",
-        });
-      });
+      panelMessaging.addMessageListener(
+        "PKT_renderRecentSaves",
+        function (resp) {
+          const { data } = resp;
+
+          if (data.status === "error") {
+            setArticlesState({
+              articles: [],
+              status: "error",
+            });
+            return;
+          }
+
+          setArticlesState({
+            articles: data,
+            status: "success",
+          });
+        }
+      );
     }
 
     // tell back end we're ready
@@ -141,7 +143,7 @@ function Home(props) {
             url={`https://${pockethost}/a?${utmParams}`}
             source="home_view_list"
           >
-            <span data-l10n-id="pocket-panel-header-my-list" />
+            <span data-l10n-id="pocket-panel-header-my-saves" />
           </Button>
         </Header>
         <hr />

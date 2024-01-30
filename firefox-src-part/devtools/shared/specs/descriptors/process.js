@@ -7,24 +7,20 @@ const {
   generateActorSpec,
   RetVal,
   Option,
-} = require("devtools/shared/protocol");
+} = require("resource://devtools/shared/protocol.js");
 
 const processDescriptorSpec = generateActorSpec({
   typeName: "processDescriptor",
 
   methods: {
     getTarget: {
-      request: {
-        isBrowserToolboxFission: Option(0, "boolean"),
-      },
+      request: {},
       response: {
         process: RetVal("json"),
       },
     },
     getWatcher: {
-      request: {
-        isBrowserToolboxFission: Option(0, "boolean"),
-      },
+      request: {},
       response: RetVal("watcher"),
     },
     reloadDescriptor: {

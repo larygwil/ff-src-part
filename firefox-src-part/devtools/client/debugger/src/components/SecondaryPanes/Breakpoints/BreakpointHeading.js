@@ -14,11 +14,11 @@ import {
   getSourceQueryString,
   getFileURL,
 } from "../../../utils/source";
+import { createLocation } from "../../../utils/location";
 import {
-  getHasSiblingOfSameName,
   getBreakpointsForSource,
   getContext,
-  getThread,
+  getFirstSourceActorForGeneratedSource,
 } from "../../../selectors";
 
 import SourceIcon from "../../shared/SourceIcon";
@@ -31,9 +31,8 @@ class BreakpointHeading extends PureComponent {
       cx: PropTypes.object.isRequired,
       sources: PropTypes.array.isRequired,
       source: PropTypes.object.isRequired,
-      hasSiblingOfSameName: PropTypes.bool.isRequired,
+      firstSourceActor: PropTypes.object,
       selectSource: PropTypes.func.isRequired,
-      thread: PropTypes.object.isRequired,
     };
   }
   onContextMenu = e => {
@@ -41,27 +40,27 @@ class BreakpointHeading extends PureComponent {
   };
 
   render() {
-    const {
-      cx,
-      sources,
-      source,
-      hasSiblingOfSameName,
-      selectSource,
-      thread,
-    } = this.props;
+    const { cx, sources, source, selectSource } = this.props;
 
     const path = getDisplayPath(source, sources);
-    const query = hasSiblingOfSameName ? getSourceQueryString(source) : "";
+    const query = getSourceQueryString(source);
 
     return (
       <div
         className="breakpoint-heading"
-        title={`${thread?.name} - ${getFileURL(source, false)}`}
-        onClick={() => selectSource(cx, source.id)}
+        title={getFileURL(source, false)}
+        onClick={() => selectSource(cx, source)}
         onContextMenu={this.onContextMenu}
       >
         <SourceIcon
-          source={source}
+          // Breakpoints are displayed per source and may relate to many source actors.
+          // Arbitrarily pick the first source actor to compute the matching source icon
+          // The source actor is used to pick one specific source text content and guess
+          // the related framework icon.
+          location={createLocation({
+            source,
+            sourceActor: this.props.firstSourceActor,
+          })}
           modifier={icon =>
             ["file", "javascript"].includes(icon) ? null : icon
           }
@@ -77,9 +76,8 @@ class BreakpointHeading extends PureComponent {
 
 const mapStateToProps = (state, { source }) => ({
   cx: getContext(state),
-  hasSiblingOfSameName: getHasSiblingOfSameName(state, source),
   breakpointsForSource: getBreakpointsForSource(state, source.id),
-  thread: getThread(state, source.thread),
+  firstSourceActor: getFirstSourceActorForGeneratedSource(state, source.id),
 });
 
 export default connect(mapStateToProps, {

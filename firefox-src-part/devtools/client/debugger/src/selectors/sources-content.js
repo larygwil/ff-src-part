@@ -4,26 +4,43 @@
 
 import { asSettled } from "../utils/async-value";
 
-import { getSelectedSource } from "../selectors/sources";
+import {
+  getSelectedLocation,
+  getFirstSourceActorForGeneratedSource,
+} from "../selectors/sources";
 
-export function getSourceTextContent(state, id) {
-  return state.sourcesContent.mutableTextContentMap.get(id);
+export function getSourceTextContent(state, location) {
+  if (location.source.isOriginal) {
+    return state.sourcesContent.mutableOriginalSourceTextContentMapBySourceId.get(
+      location.source.id
+    );
+  }
+
+  let { sourceActor } = location;
+  if (!sourceActor) {
+    sourceActor = getFirstSourceActorForGeneratedSource(
+      state,
+      location.source.id
+    );
+  }
+  return state.sourcesContent.mutableGeneratedSourceTextContentMapBySourceActorId.get(
+    sourceActor.id
+  );
 }
 
-export function getSourceContent(state, id) {
-  const content = getSourceTextContent(state, id);
+export function getSettledSourceTextContent(state, location) {
+  const content = getSourceTextContent(state, location);
   return asSettled(content);
 }
 
 export function getSelectedSourceTextContent(state) {
-  const source = getSelectedSource(state);
-  if (!source) return null;
-  return getSourceTextContent(state, source.id);
-}
+  const location = getSelectedLocation(state);
 
-export function isSourceLoadingOrLoaded(state, sourceId) {
-  const content = getSourceTextContent(state, sourceId);
-  return content != null;
+  if (!location) {
+    return null;
+  }
+
+  return getSourceTextContent(state, location);
 }
 
 export function getSourcesEpoch(state) {

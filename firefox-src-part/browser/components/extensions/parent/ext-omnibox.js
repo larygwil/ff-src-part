@@ -6,11 +6,10 @@
 
 "use strict";
 
-ChromeUtils.defineModuleGetter(
-  this,
-  "ExtensionSearchHandler",
-  "resource://gre/modules/ExtensionSearchHandler.jsm"
-);
+ChromeUtils.defineESModuleGetters(this, {
+  ExtensionSearchHandler:
+    "resource://gre/modules/ExtensionSearchHandler.sys.mjs",
+});
 
 this.omnibox = class extends ExtensionAPIPersistent {
   PERSISTENT_EVENTS = {
@@ -68,6 +67,21 @@ this.omnibox = class extends ExtensionAPIPersistent {
       return {
         unregister() {
           extension.off(ExtensionSearchHandler.MSG_INPUT_CHANGED, listener);
+        },
+        convert(_fire) {
+          fire = _fire;
+        },
+      };
+    },
+    onDeleteSuggestion({ fire }) {
+      let { extension } = this;
+      let listener = (eventName, text) => {
+        fire.sync(text);
+      };
+      extension.on(ExtensionSearchHandler.MSG_INPUT_DELETED, listener);
+      return {
+        unregister() {
+          extension.off(ExtensionSearchHandler.MSG_INPUT_DELETED, listener);
         },
         convert(_fire) {
           fire = _fire;
@@ -134,6 +148,13 @@ this.omnibox = class extends ExtensionAPIPersistent {
           context,
           module: "omnibox",
           event: "onInputChanged",
+          extensionApi: this,
+        }).api(),
+
+        onDeleteSuggestion: new EventManager({
+          context,
+          module: "omnibox",
+          event: "onDeleteSuggestion",
           extensionApi: this,
         }).api(),
 

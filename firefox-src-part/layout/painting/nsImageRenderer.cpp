@@ -148,8 +148,9 @@ bool nsImageRenderer::PrepareImage() {
     }
 
     if (srcImage) {
-      srcImage = nsLayoutUtils::OrientImage(
-          srcImage, mForFrame->StyleVisibility()->mImageOrientation);
+      StyleImageOrientation orientation =
+          mForFrame->StyleVisibility()->UsedImageOrientation(request);
+      srcImage = nsLayoutUtils::OrientImage(srcImage, orientation);
     }
 
     if (!mImage->IsRect()) {
@@ -443,6 +444,8 @@ static uint32_t ConvertImageRendererToDrawFlags(uint32_t aImageRendererFlags) {
   uint32_t drawFlags = imgIContainer::FLAG_ASYNC_NOTIFY;
   if (aImageRendererFlags & nsImageRenderer::FLAG_SYNC_DECODE_IMAGES) {
     drawFlags |= imgIContainer::FLAG_SYNC_DECODE;
+  } else {
+    drawFlags |= imgIContainer::FLAG_SYNC_DECODE_IF_FAST;
   }
   if (aImageRendererFlags & (nsImageRenderer::FLAG_PAINTING_TO_WINDOW |
                              nsImageRenderer::FLAG_HIGH_QUALITY_SCALING)) {
@@ -473,7 +476,8 @@ ImgDrawResult nsImageRenderer::Draw(nsPresContext* aPresContext,
   SamplingFilter samplingFilter =
       nsLayoutUtils::GetSamplingFilterForFrame(mForFrame);
   ImgDrawResult result = ImgDrawResult::SUCCESS;
-  RefPtr<gfxContext> ctx = &aRenderingContext;
+  gfxContext* ctx = &aRenderingContext;
+  Maybe<gfxContext> tempCtx;
   IntRect tmpDTRect;
 
   if (ctx->CurrentOp() != CompositionOp::OP_OVER ||
@@ -492,7 +496,8 @@ ImgDrawResult nsImageRenderer::Draw(nsPresContext* aPresContext,
     }
     tempDT->SetTransform(ctx->GetDrawTarget()->GetTransform() *
                          Matrix::Translation(-tmpDTRect.TopLeft()));
-    ctx = gfxContext::CreatePreservingTransformOrNull(tempDT);
+    tempCtx.emplace(tempDT, /* aPreserveTransform */ true);
+    ctx = &tempCtx.ref();
     if (!ctx) {
       gfxDevCrash(LogReason::InvalidContext)
           << "ImageRenderer::Draw problem " << gfx::hexa(tempDT);
@@ -619,8 +624,7 @@ ImgDrawResult nsImageRenderer::BuildWebRenderDisplayItems(
           nsPresContext::AppUnitsToIntCSSPixels(aDest.width),
           nsPresContext::AppUnitsToIntCSSPixels(aDest.height)};
 
-      Maybe<SVGImageContext> svgContext(
-          Some(SVGImageContext(Some(destCSSSize))));
+      SVGImageContext svgContext(Some(destCSSSize));
       Maybe<ImageIntRegion> region;
 
       const int32_t appUnitsPerDevPixel =
@@ -925,17 +929,7 @@ ImgDrawResult nsImageRenderer::DrawBorderImageComponent(
     // Retrieve or create the subimage we'll draw.
     nsIntRect srcRect(aSrc.x, aSrc.y, aSrc.width, aSrc.height);
     if (isRequestBacked) {
-      CachedBorderImageData* cachedData =
-          mForFrame->GetProperty(nsIFrame::CachedBorderImageDataProperty());
-      if (!cachedData) {
-        cachedData = new CachedBorderImageData();
-        mForFrame->AddProperty(nsIFrame::CachedBorderImageDataProperty(),
-                               cachedData);
-      }
-      if (!(subImage = cachedData->GetSubImage(aIndex))) {
-        subImage = ImageOps::Clip(mImageContainer, srcRect, aSVGViewportSize);
-        cachedData->SetSubImage(aIndex, subImage);
-      }
+      subImage = ImageOps::Clip(mImageContainer, srcRect, aSVGViewportSize);
     } else {
       // This path, for eStyleImageType_Element, is currently slower than it
       // needs to be because we don't cache anything. (In particular, if we have
@@ -965,7 +959,7 @@ ImgDrawResult nsImageRenderer::DrawBorderImageComponent(
     if (!RequiresScaling(aFill, aHFill, aVFill, aUnitSize)) {
       ImgDrawResult result = nsLayoutUtils::DrawSingleImage(
           aRenderingContext, aPresContext, subImage, samplingFilter, aFill,
-          aDirtyRect, /* no SVGImageContext */ Nothing(), drawFlags);
+          aDirtyRect, SVGImageContext(), drawFlags);
 
       if (!mImage->IsComplete()) {
         result &= ImgDrawResult::SUCCESS_NOT_COMPLETE;
@@ -1034,7 +1028,7 @@ ImgDrawResult nsImageRenderer::DrawShapeImage(nsPresContext* aPresContext,
     // closest pixel in the image.
     return nsLayoutUtils::DrawSingleImage(
         aRenderingContext, aPresContext, mImageContainer, SamplingFilter::POINT,
-        dest, dest, Nothing(), drawFlags);
+        dest, dest, SVGImageContext(), drawFlags);
   }
 
   if (mImage->IsGradient()) {
@@ -1057,18 +1051,4 @@ bool nsImageRenderer::IsRasterImage() {
 
 already_AddRefed<imgIContainer> nsImageRenderer::GetImage() {
   return do_AddRef(mImageContainer);
-}
-
-void nsImageRenderer::PurgeCacheForViewportChange(
-    const Maybe<nsSize>& aSVGViewportSize, const bool aHasIntrinsicRatio) {
-  // Check if we should flush the cached data - only vector images need to do
-  // the check since they might not have fixed ratio.
-  if (mImageContainer &&
-      mImageContainer->GetType() == imgIContainer::TYPE_VECTOR) {
-    if (auto* cachedData =
-            mForFrame->GetProperty(nsIFrame::CachedBorderImageDataProperty())) {
-      cachedData->PurgeCacheForViewportChange(aSVGViewportSize,
-                                              aHasIntrinsicRatio);
-    }
-  }
 }

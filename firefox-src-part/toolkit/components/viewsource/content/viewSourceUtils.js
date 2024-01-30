@@ -11,13 +11,9 @@
  * This file silently depends on contentAreaUtils.js for getDefaultFileName
  */
 
-var { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm");
-
-ChromeUtils.defineModuleGetter(
-  this,
-  "PrivateBrowsingUtils",
-  "resource://gre/modules/PrivateBrowsingUtils.jsm"
-);
+ChromeUtils.defineESModuleGetters(this, {
+  PrivateBrowsingUtils: "resource://gre/modules/PrivateBrowsingUtils.sys.mjs",
+});
 
 var gViewSourceUtils = {
   mnsIWebBrowserPersist: Ci.nsIWebBrowserPersist,
@@ -268,14 +264,15 @@ var gViewSourceUtils = {
             "@mozilla.org/embedding/browser/nsWebBrowserPersist;1"
           ].createInstance(this.mnsIWebBrowserPersist);
           // the default setting is to not decode. we need to decode.
-          webBrowserPersist.persistFlags = this.mnsIWebBrowserPersist.PERSIST_FLAGS_REPLACE_EXISTING_FILES;
+          webBrowserPersist.persistFlags =
+            this.mnsIWebBrowserPersist.PERSIST_FLAGS_REPLACE_EXISTING_FILES;
           webBrowserPersist.progressListener = this.viewSourceProgressListener;
           let ssm = Services.scriptSecurityManager;
           let principal = ssm.createContentPrincipal(
             data.uri,
             browser.contentPrincipal.originAttributes
           );
-          webBrowserPersist.savePrivacyAwareURI(
+          webBrowserPersist.saveURI(
             uri,
             principal,
             null,
@@ -301,7 +298,7 @@ var gViewSourceUtils = {
         }
       } catch (ex) {
         // we failed loading it with the external editor.
-        Cu.reportError(ex);
+        console.error(ex);
         reject(data);
       }
     });
@@ -321,7 +318,7 @@ var gViewSourceUtils = {
 
       return editor;
     } catch (ex) {
-      Cu.reportError(ex);
+      console.error(ex);
     }
 
     return null;
@@ -377,7 +374,7 @@ var gViewSourceUtils = {
         this.resolve(this.data);
       } catch (ex) {
         // we failed loading it with the external editor.
-        Cu.reportError(ex);
+        console.error(ex);
         this.reject(this.data);
       } finally {
         this.destroy();

@@ -11,7 +11,7 @@ const BAD_LISTENER =
 const eventListeners = Symbol("EventEmitter/listeners");
 const onceOriginalListener = Symbol("EventEmitter/once-original-listener");
 const handler = Symbol("EventEmitter/event-handler");
-loader.lazyRequireGetter(this, "flags", "devtools/shared/flags");
+loader.lazyRequireGetter(this, "flags", "resource://devtools/shared/flags.js");
 
 class EventEmitter {
   /**
@@ -350,8 +350,9 @@ module.exports = EventEmitter;
 const isEventHandler = listener =>
   listener && handler in listener && typeof listener[handler] === "function";
 
-const Services = require("Services");
-const { getNthPathExcluding } = require("devtools/shared/platform/stack");
+const {
+  getNthPathExcluding,
+} = require("resource://devtools/shared/platform/stack.js");
 let loggingEnabled = false;
 
 if (!isWorker) {
@@ -365,7 +366,7 @@ if (!isWorker) {
 
   // Also listen for Loader unload to unregister the pref observer and
   // prevent leaking
-  const unloadObserver = function(subject) {
+  const unloadObserver = function (subject) {
     if (subject.wrappedJSObject == require("@loader/unload")) {
       Services.prefs.removeObserver("devtools.dump.emit", observer);
       Services.obs.removeObserver(unloadObserver, "devtools:loader:destroy");
@@ -461,7 +462,7 @@ function logEvent(type, args) {
 
   const path = getNthPathExcluding(0, "devtools/shared/event-emitter.js");
 
-  if (args.length > 0) {
+  if (args.length) {
     dump(`EMITTING: emit(${type}, ${argsOut}) from ${path}\n`);
   } else {
     dump(`EMITTING: emit(${type}) from ${path}\n`);

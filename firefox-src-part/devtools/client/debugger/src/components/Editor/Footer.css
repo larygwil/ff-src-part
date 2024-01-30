@@ -60,7 +60,11 @@
 }
 
 .source-footer .blackboxed .img.blackBox {
-  background-color: var(--red-40);
+  background-color: #806414;
+}
+
+.source-footer .commands button.prettyPrint:disabled {
+  opacity: 0.6;
 }
 
 .source-footer .mapped-source,

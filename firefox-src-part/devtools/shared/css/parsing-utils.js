@@ -11,12 +11,12 @@
 
 "use strict";
 
-const { getCSSLexer } = require("devtools/shared/css/lexer");
+const { getCSSLexer } = require("resource://devtools/shared/css/lexer.js");
 
 loader.lazyRequireGetter(
   this,
   "CSS_ANGLEUNIT",
-  "devtools/shared/css/constants",
+  "resource://devtools/shared/css/constants.js",
   true
 );
 
@@ -28,8 +28,8 @@ const CSS_BLOCKS = { "(": ")", "[": "]", "{": "}" };
 // When commenting out a declaration, we put this character into the
 // comment opener so that future parses of the commented text know to
 // bypass the property name validity heuristic.
-const COMMENT_PARSING_HEURISTIC_BYPASS_CHAR = (exports.COMMENT_PARSING_HEURISTIC_BYPASS_CHAR =
-  "!");
+const COMMENT_PARSING_HEURISTIC_BYPASS_CHAR =
+  (exports.COMMENT_PARSING_HEURISTIC_BYPASS_CHAR = "!");
 
 /**
  * A generator function that lexes a CSS source string, yielding the

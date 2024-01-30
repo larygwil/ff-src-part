@@ -9,13 +9,12 @@
  * as known by the platform. It is run from ./mach_commands.py by running
  * `mach devtools-css-db`.
  */
-var { require } = ChromeUtils.import(
-  "resource://devtools/shared/loader/Loader.jsm"
+var { require } = ChromeUtils.importESModule(
+  "resource://devtools/shared/loader/Loader.sys.mjs"
 );
 var {
   generateCssProperties,
-} = require("devtools/server/actors/css-properties");
-const InspectorUtils = require("InspectorUtils");
+} = require("resource://devtools/server/actors/css-properties.js");
 
 // xpcshell can output extra information, so place some delimiter text between
 // the output of the css properties database.
@@ -25,7 +24,6 @@ dump("DEVTOOLS_CSS_DB_DELIMITER");
 dump(
   JSON.stringify({
     cssProperties: cssProperties(),
-    preferences: preferences(),
     pseudoElements: pseudoElements(),
   })
 );
@@ -51,18 +49,6 @@ function cssProperties() {
     }
   }
   return properties;
-}
-
-/**
- * A list of preferences of CSS properties.
- */
-function preferences() {
-  const prefs = InspectorUtils.getCSSPropertyPrefs();
-  const result = [];
-  for (const { name, pref } of prefs) {
-    result.push([name, pref]);
-  }
-  return result;
 }
 
 /**

@@ -166,6 +166,7 @@ var gIdentityHandler = {
 
   _popupInitialized: false,
   _initializePopup() {
+    window.ensureCustomElements("moz-support-link");
     if (!this._popupInitialized) {
       let wrapper = document.getElementById("template-identity-popup");
       wrapper.replaceWith(wrapper.content);
@@ -193,9 +194,8 @@ var gIdentityHandler = {
   },
   get _identityIconBox() {
     delete this._identityIconBox;
-    return (this._identityIconBox = document.getElementById(
-      "identity-icon-box"
-    ));
+    return (this._identityIconBox =
+      document.getElementById("identity-icon-box"));
   },
   get _identityPopupMultiView() {
     delete this._identityPopupMultiView;
@@ -229,9 +229,8 @@ var gIdentityHandler = {
   },
   get _identityPopupHttpsOnlyModeMenuListTempItem() {
     delete this._identityPopupHttpsOnlyModeMenuListTempItem;
-    return (this._identityPopupHttpsOnlyModeMenuListTempItem = document.getElementById(
-      "identity-popup-security-menulist-tempitem"
-    ));
+    return (this._identityPopupHttpsOnlyModeMenuListTempItem =
+      document.getElementById("identity-popup-security-menulist-tempitem"));
   },
   get _identityPopupSecurityEVContentOwner() {
     delete this._identityPopupSecurityEVContentOwner;
@@ -449,7 +448,7 @@ var gIdentityHandler = {
 
   removeCertException() {
     if (!this._uriHasHost) {
-      Cu.reportError(
+      console.error(
         "Trying to revoke a cert exception on a URI without a host?"
       );
       return;
@@ -515,13 +514,10 @@ var gIdentityHandler = {
     let principal = gBrowser.contentPrincipal;
     // ...but if we're on the HTTPS-Only error page, the content-principal is
     // for HTTPS but. We always want to set the exception for HTTP. (Code should
-    // be almost identical to the one in AboutHttpsOnlyErrorParent.jsm)
+    // be almost identical to the one in AboutHttpsOnlyErrorParent.sys.mjs)
     let newURI;
     if (this._isAboutHttpsOnlyErrorPage) {
-      newURI = gBrowser.currentURI
-        .mutate()
-        .setScheme("http")
-        .finalize();
+      newURI = gBrowser.currentURI.mutate().setScheme("http").finalize();
       principal = Services.scriptSecurityManager.createContentPrincipal(
         newURI,
         gBrowser.contentPrincipal.originAttributes
@@ -553,8 +549,9 @@ var gIdentityHandler = {
     // If we're on the error-page, we have to redirect the user
     // from HTTPS to HTTP. Otherwise we can just reload the page.
     if (this._isAboutHttpsOnlyErrorPage) {
-      gBrowser.loadURI(newURI.spec, {
-        triggeringPrincipal: Services.scriptSecurityManager.getSystemPrincipal(),
+      gBrowser.loadURI(newURI, {
+        triggeringPrincipal:
+          Services.scriptSecurityManager.getSystemPrincipal(),
         loadFlags: Ci.nsIWebNavigation.LOAD_FLAGS_REPLACE_HISTORY,
       });
       if (this._popupInitialized) {
@@ -590,7 +587,7 @@ var gIdentityHandler = {
     // SubjectName fields, broken up for individual access
     if (cert.subjectName) {
       result.subjectNameFields = {};
-      cert.subjectName.split(",").forEach(function(v) {
+      cert.subjectName.split(",").forEach(function (v) {
         var field = v.split("=");
         this[field[0]] = field[1];
       }, result.subjectNameFields);
@@ -626,9 +623,9 @@ var gIdentityHandler = {
       );
       return principal.isOriginPotentiallyTrustworthy;
     } catch (error) {
-      Cu.reportError(
-        "Error while computing isPotentiallyTrustWorthy for pdf viewer page: " +
-          error
+      console.error(
+        "Error while computing isPotentiallyTrustWorthy for pdf viewer page: ",
+        error
       );
       return false;
     }
@@ -748,9 +745,10 @@ var gIdentityHandler = {
    */
   _hasCustomRoot() {
     let issuerCert = null;
-    issuerCert = this._secInfo.succeededCertChain[
-      this._secInfo.succeededCertChain.length - 1
-    ];
+    issuerCert =
+      this._secInfo.succeededCertChain[
+        this._secInfo.succeededCertChain.length - 1
+      ];
 
     return !issuerCert.isBuiltInRoot;
   },
@@ -915,27 +913,16 @@ var gIdentityHandler = {
     // "Clear Site Data" button if the site is storing local data, and
     // if the page is not controlled by a WebExtension.
     this._clearSiteDataFooter.hidden = true;
-    let securityButton = document.getElementById(
-      "identity-popup-security-button"
+    let identityPopupPanelView = document.getElementById(
+      "identity-popup-mainView"
     );
-    securityButton.removeAttribute("footerHidden");
+    identityPopupPanelView.removeAttribute("footerVisible");
     if (this._uriHasHost && !this._pageExtensionPolicy) {
       SiteDataManager.hasSiteData(this._uri.asciiHost).then(hasData => {
         this._clearSiteDataFooter.hidden = !hasData;
-        securityButton.setAttribute("footerHidden", !hasData);
+        identityPopupPanelView.setAttribute("footerVisible", hasData);
       });
     }
-
-    // Update "Learn More" for Mixed Content Blocking and Insecure Login Forms.
-    let baseURL = Services.urlFormatter.formatURLPref("app.support.baseURL");
-    this._identityPopupMixedContentLearnMore.forEach(e =>
-      e.setAttribute("href", baseURL + "mixed-content")
-    );
-
-    this._identityPopupCustomRootLearnMore.setAttribute(
-      "href",
-      baseURL + "enterprise-roots"
-    );
 
     let customRoot = false;
 
@@ -1047,7 +1034,10 @@ var gIdentityHandler = {
     }
 
     // Update all elements.
-    let elementIDs = ["identity-popup", "identity-popup-securityView-body"];
+    let elementIDs = [
+      "identity-popup",
+      "identity-popup-securityView-extended-info",
+    ];
 
     for (let id of elementIDs) {
       let element = document.getElementById(id);
@@ -1111,10 +1101,8 @@ var gIdentityHandler = {
       }
     );
 
-    this._identityPopupSecurityEVContentOwner.textContent = gNavigatorBundle.getFormattedString(
-      "identity.ev.contentOwner2",
-      [owner]
-    );
+    this._identityPopupSecurityEVContentOwner.textContent =
+      gNavigatorBundle.getFormattedString("identity.ev.contentOwner2", [owner]);
 
     this._identityPopupContentOwner.textContent = owner;
     this._identityPopupContentSupp.textContent = supplemental;
@@ -1204,9 +1192,9 @@ var gIdentityHandler = {
 
     // Now open the popup, anchored off the primary chrome element
     PanelMultiView.openPopup(this._identityPopup, this._identityIconBox, {
-      position: "bottomcenter topleft",
+      position: "bottomleft topleft",
       triggerEvent: event,
-    }).catch(Cu.reportError);
+    }).catch(console.error);
   },
 
   onPopupShown(event) {

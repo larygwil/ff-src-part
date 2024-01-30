@@ -5,21 +5,18 @@
 
 "use strict";
 
-var { AppConstants } = ChromeUtils.import(
-  "resource://gre/modules/AppConstants.jsm"
+var { AppConstants } = ChromeUtils.importESModule(
+  "resource://gre/modules/AppConstants.sys.mjs"
 );
-var { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm");
 
 ChromeUtils.defineModuleGetter(
   this,
   "SiteDataManager",
   "resource:///modules/SiteDataManager.jsm"
 );
-ChromeUtils.defineModuleGetter(
-  this,
-  "DownloadUtils",
-  "resource://gre/modules/DownloadUtils.jsm"
-);
+ChromeUtils.defineESModuleGetters(this, {
+  DownloadUtils: "resource://gre/modules/DownloadUtils.sys.mjs",
+});
 
 let gSiteDataSettings = {
   // Array of metadata of sites. Each array element is object holding:
@@ -42,7 +39,7 @@ let gSiteDataSettings = {
     function addColumnItem(l10n, flexWidth, tooltipText) {
       let box = document.createXULElement("hbox");
       box.className = "item-box";
-      box.setAttribute("flex", flexWidth);
+      box.setAttribute("style", `flex: ${flexWidth} ${flexWidth};`);
       let label = document.createXULElement("label");
       label.setAttribute("crop", "end");
       if (l10n) {
@@ -276,7 +273,7 @@ let gSiteDataSettings = {
           await SiteDataManager.remove(removals);
         }
       } catch (e) {
-        Cu.reportError(e);
+        console.error(e);
       }
     }
   },

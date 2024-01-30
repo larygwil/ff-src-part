@@ -29,6 +29,7 @@
 #include <algorithm>
 #include "nsIContentPolicy.h"
 #include "nsContentUtils.h"
+#include "mozilla/Logging.h"
 #include "mozilla/UniquePtr.h"
 
 // Default values used to initialize a nsIncrementalDownload object.
@@ -42,6 +43,10 @@
 
 using namespace mozilla;
 using namespace mozilla::net;
+
+static LazyLogModule gIDLog("IncrementalDownload");
+#undef LOG
+#define LOG(args) MOZ_LOG(gIDLog, mozilla::LogLevel::Debug, args)
 
 //-----------------------------------------------------------------------------
 
@@ -323,6 +328,20 @@ NS_IMETHODIMP
 nsIncrementalDownload::GetStatus(nsresult* status) {
   *status = mStatus;
   return NS_OK;
+}
+
+NS_IMETHODIMP nsIncrementalDownload::SetCanceledReason(
+    const nsACString& aReason) {
+  return SetCanceledReasonImpl(aReason);
+}
+
+NS_IMETHODIMP nsIncrementalDownload::GetCanceledReason(nsACString& aReason) {
+  return GetCanceledReasonImpl(aReason);
+}
+
+NS_IMETHODIMP nsIncrementalDownload::CancelWithReason(
+    nsresult aStatus, const nsACString& aReason) {
+  return CancelWithReasonImpl(aStatus, aReason);
 }
 
 NS_IMETHODIMP

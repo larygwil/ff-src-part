@@ -34,12 +34,12 @@ const {
   Component,
   createElement,
   createRef,
-} = require("devtools/client/shared/vendor/react");
+} = require("resource://devtools/client/shared/vendor/react.js");
 
 loader.lazyRequireGetter(
   this,
   "PropTypes",
-  "devtools/client/shared/vendor/react-prop-types"
+  "resource://devtools/client/shared/vendor/react-prop-types.js"
 );
 
 // This element is a webconsole optimization for handling large numbers of
@@ -85,7 +85,8 @@ class LazyMessageList extends Component {
     this.#scrollHandlerBinding = this.#scrollHandler.bind(this);
   }
 
-  componentWillUpdate(nextProps, nextState) {
+  // FIXME: https://bugzilla.mozilla.org/show_bug.cgi?id=1774507
+  UNSAFE_componentWillUpdate(nextProps, nextState) {
     if (nextProps.cacheGeneration !== this.props.cacheGeneration) {
       this.#cachedHeights = [];
       this.#startIndex = 0;
@@ -129,7 +130,7 @@ class LazyMessageList extends Component {
     let element = this.#topBufferRef.current.nextSibling;
     let elementRect = element?.getBoundingClientRect();
     while (
-      element instanceof Element &&
+      Element.isInstance(element) &&
       index < this.#clampedEndIndex &&
       element !== this.#bottomBufferRef.current
     ) {
@@ -237,7 +238,8 @@ class LazyMessageList extends Component {
     const scrollportMin =
       this.props.viewportRef.current.getBoundingClientRect().top -
       this.#overdrawHeight;
-    const uppermostItemRect = this.#topBufferRef.current.nextSibling.getBoundingClientRect();
+    const uppermostItemRect =
+      this.#topBufferRef.current.nextSibling.getBoundingClientRect();
     const uppermostItemMin = uppermostItemRect.top;
     const uppermostItemMax = uppermostItemRect.bottom;
 
@@ -292,12 +294,8 @@ class LazyMessageList extends Component {
   }
 
   render() {
-    const {
-      items,
-      itemDefaultHeight,
-      renderItem,
-      itemsToKeepAlive,
-    } = this.props;
+    const { items, itemDefaultHeight, renderItem, itemsToKeepAlive } =
+      this.props;
     if (!items.length) {
       return createElement(Fragment, {
         key: "LazyMessageList",

@@ -6,59 +6,61 @@
 const {
   Component,
   createFactory,
-} = require("devtools/client/shared/vendor/react");
-const dom = require("devtools/client/shared/vendor/react-dom-factories");
-const PropTypes = require("devtools/client/shared/vendor/react-prop-types");
-const Services = require("Services");
-const { L10N } = require("devtools/client/netmonitor/src/utils/l10n");
+} = require("resource://devtools/client/shared/vendor/react.js");
+const dom = require("resource://devtools/client/shared/vendor/react-dom-factories.js");
+const PropTypes = require("resource://devtools/client/shared/vendor/react-prop-types.js");
+const {
+  L10N,
+} = require("resource://devtools/client/netmonitor/src/utils/l10n.js");
 const {
   decodeUnicodeBase64,
   fetchNetworkUpdatePacket,
   parseJSON,
-} = require("devtools/client/netmonitor/src/utils/request-utils");
+} = require("resource://devtools/client/netmonitor/src/utils/request-utils.js");
 const {
   getCORSErrorURL,
-} = require("devtools/client/netmonitor/src/utils/doc-utils");
+} = require("resource://devtools/client/netmonitor/src/utils/doc-utils.js");
 const {
   Filters,
-} = require("devtools/client/netmonitor/src/utils/filter-predicates");
+} = require("resource://devtools/client/netmonitor/src/utils/filter-predicates.js");
 const {
   FILTER_SEARCH_DELAY,
-} = require("devtools/client/netmonitor/src/constants");
+} = require("resource://devtools/client/netmonitor/src/constants.js");
 const {
   BLOCKED_REASON_MESSAGES,
-} = require("devtools/client/netmonitor/src/constants");
+} = require("resource://devtools/client/netmonitor/src/constants.js");
 
 // Components
 const PropertiesView = createFactory(
-  require("devtools/client/netmonitor/src/components/request-details/PropertiesView")
+  require("resource://devtools/client/netmonitor/src/components/request-details/PropertiesView.js")
 );
 const ImagePreview = createFactory(
-  require("devtools/client/netmonitor/src/components/previews/ImagePreview")
+  require("resource://devtools/client/netmonitor/src/components/previews/ImagePreview.js")
 );
 const FontPreview = createFactory(
-  require("devtools/client/netmonitor/src/components/previews/FontPreview")
+  require("resource://devtools/client/netmonitor/src/components/previews/FontPreview.js")
 );
 const SourcePreview = createFactory(
-  require("devtools/client/netmonitor/src/components/previews/SourcePreview")
+  require("resource://devtools/client/netmonitor/src/components/previews/SourcePreview.js")
 );
 const HtmlPreview = createFactory(
-  require("devtools/client/netmonitor/src/components/previews/HtmlPreview")
+  require("resource://devtools/client/netmonitor/src/components/previews/HtmlPreview.js")
 );
 let {
   NotificationBox,
   PriorityLevels,
-} = require("devtools/client/shared/components/NotificationBox");
+} = require("resource://devtools/client/shared/components/NotificationBox.js");
 NotificationBox = createFactory(NotificationBox);
 const MessagesView = createFactory(
-  require("devtools/client/netmonitor/src/components/messages/MessagesView")
+  require("resource://devtools/client/netmonitor/src/components/messages/MessagesView.js")
 );
 const SearchBox = createFactory(
-  require("devtools/client/shared/components/SearchBox")
+  require("resource://devtools/client/shared/components/SearchBox.js")
 );
 
-loader.lazyGetter(this, "MODE", function() {
-  return require("devtools/client/shared/components/reps/index").MODE;
+loader.lazyGetter(this, "MODE", function () {
+  return require("resource://devtools/client/shared/components/reps/index.js")
+    .MODE;
 });
 
 const { div, input, label, span, h2 } = dom;
@@ -97,9 +99,8 @@ class ResponsePanel extends Component {
 
     this.toggleRawResponsePayload = this.toggleRawResponsePayload.bind(this);
     this.renderCORSBlockedReason = this.renderCORSBlockedReason.bind(this);
-    this.renderRawResponsePayloadBtn = this.renderRawResponsePayloadBtn.bind(
-      this
-    );
+    this.renderRawResponsePayloadBtn =
+      this.renderRawResponsePayloadBtn.bind(this);
     this.renderJsonHtmlAndSource = this.renderJsonHtmlAndSource.bind(this);
     this.handleJSONResponse = this.handleJSONResponse.bind(this);
   }
@@ -111,7 +112,8 @@ class ResponsePanel extends Component {
     ]);
   }
 
-  componentWillReceiveProps(nextProps) {
+  // FIXME: https://bugzilla.mozilla.org/show_bug.cgi?id=1774507
+  UNSAFE_componentWillReceiveProps(nextProps) {
     const { request, connector } = nextProps;
     fetchNetworkUpdatePacket(connector.requestData, request, [
       "responseContent",
@@ -296,9 +298,8 @@ class ResponsePanel extends Component {
       // If raw response payload is not displayed render xssi info box if
       // there are stripped chars
       if (!rawResponsePayloadDisplayed) {
-        xssiStrippedCharsInfoBox = this.renderXssiStrippedCharsInfoBox(
-          strippedChars
-        );
+        xssiStrippedCharsInfoBox =
+          this.renderXssiStrippedCharsInfoBox(strippedChars);
       } else {
         xssiStrippedCharsInfoBox = null;
       }
@@ -411,9 +412,8 @@ class ResponsePanel extends Component {
     const { filterText, rawResponsePayloadDisplayed } = this.state;
 
     // Display CORS blocked Reason info box
-    const CORSBlockedReasonDetails = this.renderCORSBlockedReason(
-      blockedReason
-    );
+    const CORSBlockedReasonDetails =
+      this.renderCORSBlockedReason(blockedReason);
 
     if (showMessagesView) {
       return MessagesView({ connector });

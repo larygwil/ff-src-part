@@ -6,14 +6,14 @@
 
 "use strict";
 
-this.ui = (function() {
+this.ui = (function () {
   // eslint-disable-line no-unused-vars
   const exports = {};
   const SAVE_BUTTON_HEIGHT = 50;
 
   const { watchFunction } = catcher;
 
-  exports.isHeader = function(el) {
+  exports.isHeader = function (el) {
     while (el) {
       if (
         el.classList &&
@@ -90,6 +90,8 @@ this.ui = (function() {
           this.element = initializeIframe();
           this.element.id = "firefox-screenshots-selection-iframe";
           this.element.style.display = "none";
+          this.element.style.setProperty("max-width", "none", "important");
+          this.element.style.setProperty("max-height", "none", "important");
           this.element.style.setProperty("position", "absolute", "important");
           this.element.setAttribute("role", "dialog");
           this.updateElementSize();
@@ -110,12 +112,10 @@ this.ui = (function() {
               if (this.addClassName) {
                 this.document.body.className = this.addClassName;
               }
-              this.document.documentElement.dir = browser.i18n.getMessage(
-                "@@bidi_dir"
-              );
-              this.document.documentElement.lang = browser.i18n.getMessage(
-                "@@ui_locale"
-              );
+              this.document.documentElement.dir =
+                browser.i18n.getMessage("@@bidi_dir");
+              this.document.documentElement.lang =
+                browser.i18n.getMessage("@@ui_locale");
               resolve();
             }),
             { once: true }
@@ -174,12 +174,15 @@ this.ui = (function() {
         // document's body is not at (0, 0) of the viewport. That makes the
         // frame shifted relative to the viewport. These margins negates that.
         if (window.getComputedStyle(document.body).position === "relative") {
-          const docBoundingRect = document.documentElement.getBoundingClientRect();
+          const docBoundingRect =
+            document.documentElement.getBoundingClientRect();
           const bodyBoundingRect = document.body.getBoundingClientRect();
-          this.element.style.marginLeft = `-${bodyBoundingRect.left -
-            docBoundingRect.left}px`;
-          this.element.style.marginTop = `-${bodyBoundingRect.top -
-            docBoundingRect.top}px`;
+          this.element.style.marginLeft = `-${
+            bodyBoundingRect.left - docBoundingRect.left
+          }px`;
+          this.element.style.marginTop = `-${
+            bodyBoundingRect.top - docBoundingRect.top
+          }px`;
         }
       }
       if (force && visible) {
@@ -244,6 +247,8 @@ this.ui = (function() {
           this.element.style.setProperty("position", "fixed", "important");
           this.element.style.width = "100%";
           this.element.style.height = "100%";
+          this.element.style.setProperty("max-width", "none", "important");
+          this.element.style.setProperty("max-height", "none", "important");
           this.element.setAttribute("role", "dialog");
           this.element.addEventListener(
             "load",
@@ -279,12 +284,10 @@ this.ui = (function() {
               if (this.addClassName) {
                 this.document.body.className = this.addClassName;
               }
-              this.document.documentElement.dir = browser.i18n.getMessage(
-                "@@bidi_dir"
-              );
-              this.document.documentElement.lang = browser.i18n.getMessage(
-                "@@ui_locale"
-              );
+              this.document.documentElement.dir =
+                browser.i18n.getMessage("@@bidi_dir");
+              this.document.documentElement.lang =
+                browser.i18n.getMessage("@@ui_locale");
               const overlay = this.document.querySelector(".preview-overlay");
               overlay
                 .querySelector(".visible")
@@ -386,6 +389,8 @@ this.ui = (function() {
           this.element.style.setProperty("position", "fixed", "important");
           this.element.style.height = "100%";
           this.element.style.width = "100%";
+          this.element.style.setProperty("max-width", "none", "important");
+          this.element.style.setProperty("max-height", "none", "important");
           this.element.setAttribute("role", "dialog");
           this.element.onload = watchFunction(() => {
             msgsPromise.then(([cancelTitle, copyTitle, downloadTitle]) => {
@@ -424,12 +429,10 @@ this.ui = (function() {
               </body>`;
 
               installHandlerOnDocument(this.document);
-              this.document.documentElement.dir = browser.i18n.getMessage(
-                "@@bidi_dir"
-              );
-              this.document.documentElement.lang = browser.i18n.getMessage(
-                "@@ui_locale"
-              );
+              this.document.documentElement.dir =
+                browser.i18n.getMessage("@@bidi_dir");
+              this.document.documentElement.lang =
+                browser.i18n.getMessage("@@ui_locale");
 
               const overlay = this.document.querySelector(".preview-overlay");
               overlay
@@ -682,7 +685,7 @@ this.ui = (function() {
     // when a user ends scrolling or ends resizing a window
     delayExecution(delay, cb) {
       let timer;
-      return function() {
+      return function () {
         if (typeof timer !== "undefined") {
           clearTimeout(timer);
         }
@@ -704,13 +707,8 @@ this.ui = (function() {
       if (boxEl) {
         return;
       }
-      let [
-        cancelTitle,
-        copyTitle,
-        downloadTitle,
-        copyText,
-        downloadText,
-      ] = await msgsPromise;
+      let [cancelTitle, copyTitle, downloadTitle, copyText, downloadText] =
+        await msgsPromise;
       boxEl = makeEl("div", "highlight");
       const buttons = makeEl("div", "highlight-buttons");
       const cancel = makeEl("button", "highlight-button-cancel");
@@ -881,7 +879,7 @@ this.ui = (function() {
   };
 
   /** Removes every UI this module creates */
-  exports.remove = function() {
+  exports.remove = function () {
     for (const name in exports) {
       if (name.startsWith("iframe")) {
         continue;
@@ -893,7 +891,7 @@ this.ui = (function() {
     exports.iframe.remove();
   };
 
-  exports.triggerDownload = function(url, filename) {
+  exports.triggerDownload = function (url, filename) {
     return catcher.watchPromise(
       callBackground("downloadShot", { url, filename })
     );

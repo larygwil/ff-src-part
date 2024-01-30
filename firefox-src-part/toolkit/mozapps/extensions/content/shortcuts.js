@@ -5,10 +5,13 @@
 
 "use strict";
 
-XPCOMUtils.defineLazyModuleGetters(this, {
-  AppConstants: "resource://gre/modules/AppConstants.jsm",
-  ShortcutUtils: "resource://gre/modules/ShortcutUtils.jsm",
-  ExtensionShortcutKeyMap: "resource://gre/modules/ExtensionShortcuts.jsm",
+const { AppConstants } = ChromeUtils.importESModule(
+  "resource://gre/modules/AppConstants.sys.mjs"
+);
+
+ChromeUtils.defineESModuleGetters(this, {
+  ExtensionShortcutKeyMap: "resource://gre/modules/ExtensionShortcuts.sys.mjs",
+  ShortcutUtils: "resource://gre/modules/ShortcutUtils.sys.mjs",
 });
 
 {
@@ -502,8 +505,10 @@ XPCOMUtils.defineLazyModuleGetters(this, {
       }
 
       if (extension.shortcuts) {
-        let card = document.importNode(templates.card.content, true)
-          .firstElementChild;
+        let card = document.importNode(
+          templates.card.content,
+          true
+        ).firstElementChild;
         let icon = AddonManager.getPreferredIconURL(addon, 24, window);
         card.setAttribute("addon-id", addon.id);
         card.setAttribute("addon-name", addon.name);
@@ -540,8 +545,10 @@ XPCOMUtils.defineLazyModuleGetters(this, {
         for (let i = 0; i < commands.length; i++) {
           let command = commands[i];
 
-          let row = document.importNode(templates.row.content, true)
-            .firstElementChild;
+          let row = document.importNode(
+            templates.row.content,
+            true
+          ).firstElementChild;
 
           if (willHideCommands && i >= limit) {
             row.setAttribute("hide-before-expand", "true");

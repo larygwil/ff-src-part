@@ -37,17 +37,26 @@
   outline-offset: var(--focus-outline-offset);
 }
 
+#label-box {
+  min-width: 0;
+  pointer-events: none;
+}
+
 #label-box:not([native]) {
-  -moz-box-align: center;
-  -moz-box-pack: center;
+  align-items: center;
+  justify-content: center;
   font-weight: 600;
 }
 
+dropmarker {
+  pointer-events: none;
+}
+
 dropmarker:not([native]) {
-  display: -moz-box;
+  display: flex;
   appearance: none;
   width: 12px;
-  height: 12px;
+  height: unset;
 }
 
 dropmarker:not([native])::part(icon) {

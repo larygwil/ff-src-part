@@ -22,6 +22,9 @@ class LocalAccessible;
 }
 %}
 
+[ptr] native InternalAccessible(mozilla::a11y::Accessible);
+[ptr] native InternalLocalAccessible(mozilla::a11y::LocalAccessible);
+
 /**
  * A cross-platform interface that supports platform-specific
  * accessibility APIs like MSAA and ATK. Contains the sum of what's needed
@@ -163,13 +166,6 @@ interface nsIAccessible : nsISupports
    *                      (see nsIAccessibleStates::EXT_STATE_* constants)
    */
   void getState(out unsigned long aState, out unsigned long aExtraState);
-
-  /**
-   * Help text associated with node
-   *
-   * @note As of now, this just returns empty string.
-   */
-  readonly attribute AString help;
 
   /**
    * Focused accessible child of node
@@ -342,10 +338,14 @@ interface nsIAccessible : nsISupports
    */
   void announce(in AString announcement, in unsigned short priority);
 
-  %{C++
-  virtual mozilla::a11y::LocalAccessible* ToInternalAccessible() const = 0;
-  virtual mozilla::a11y::Accessible* ToInternalGeneric() const = 0;
-  %}
+  /**
+   * Get the role of this Accessible as an ARIA role token. This might have been
+   * set explicitly (e.g. role="button") or it might be implicit in native
+   * markup (e.g. <button> returns "button").
+   */
+  readonly attribute AString computedARIARole;
+
+  [notxpcom, nostdcall] InternalLocalAccessible toInternalAccessible();
+  [notxpcom, nostdcall] InternalAccessible toInternalGeneric();
 
 };
-

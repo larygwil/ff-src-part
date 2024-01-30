@@ -7,9 +7,9 @@
 const {
   Component,
   createFactory,
-} = require("devtools/client/shared/vendor/react");
-const PropTypes = require("devtools/client/shared/vendor/react-prop-types");
-const { LocalizationHelper } = require("devtools/shared/l10n");
+} = require("resource://devtools/client/shared/vendor/react.js");
+const PropTypes = require("resource://devtools/client/shared/vendor/react-prop-types.js");
+const { LocalizationHelper } = require("resource://devtools/shared/l10n.js");
 
 const l10n = new LocalizationHelper(
   "devtools/client/locales/components.properties"
@@ -18,12 +18,15 @@ const dbgL10n = new LocalizationHelper(
   "devtools/client/locales/debugger.properties"
 );
 const Frames = createFactory(
-  require("devtools/client/debugger/src/components/SecondaryPanes/Frames/index")
+  require("resource://devtools/client/debugger/src/components/SecondaryPanes/Frames/index.js")
     .Frames
 );
 const {
   annotateFrames,
-} = require("devtools/client/debugger/src/utils/pause/frames/annotateFrames");
+} = require("resource://devtools/client/debugger/src/utils/pause/frames/annotateFrames.js");
+const {
+  getDisplayURL,
+} = require("resource://devtools/client/debugger/src/utils/sources-tree/getURL.js");
 
 class SmartTrace extends Component {
   static get propTypes() {
@@ -71,7 +74,8 @@ class SmartTrace extends Component {
     return { l10n: dbgL10n };
   }
 
-  componentWillMount() {
+  // FIXME: https://bugzilla.mozilla.org/show_bug.cgi?id=1774507
+  UNSAFE_componentWillMount() {
     if (this.props.sourceMapURLService) {
       this.sourceMapURLServiceUnsubscriptions = [];
       const sourceMapInit = Promise.all(
@@ -266,6 +270,7 @@ class SmartTrace extends Component {
             location,
             source: {
               url: location.sourceUrl,
+              displayURL: getDisplayURL(location.sourceUrl),
             },
           };
         }

@@ -6,6 +6,9 @@
 #include "nsISupports.idl"
 
 /**
+ * TODO(1737205,1819414) Fold this interface into nsIWebAuthnController when we
+ * remove the legacy U2F DOM API.
+ *
  * nsIU2FTokenManager
  *
  * An interface to the U2FTokenManager singleton.

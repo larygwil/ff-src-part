@@ -6,13 +6,19 @@
 
 /* global ExtensionCommon, ExtensionAPI, Services, XPCOMUtils, ExtensionUtils */
 
-const { AddonManager } = ChromeUtils.import(
-  "resource://gre/modules/AddonManager.jsm"
+const { AddonManager } = ChromeUtils.importESModule(
+  "resource://gre/modules/AddonManager.sys.mjs"
 );
-const { WebRequest } = ChromeUtils.import(
-  "resource://gre/modules/WebRequest.jsm"
+const { WebRequest } = ChromeUtils.importESModule(
+  "resource://gre/modules/WebRequest.sys.mjs"
 );
+const lazy = {};
 
+ChromeUtils.defineESModuleGetters(lazy, {
+  AddonSearchEngine: "resource://gre/modules/AddonSearchEngine.sys.mjs",
+});
+
+// eslint-disable-next-line mozilla/reject-importGlobalProperties
 XPCOMUtils.defineLazyGlobalGetters(this, ["ChannelWrapper"]);
 
 XPCOMUtils.defineLazyGetter(this, "searchInitialized", () => {
@@ -54,7 +60,10 @@ this.addonsSearchDetection = class extends ExtensionAPI {
             const visibleEngines = await Services.search.getEngines();
 
             visibleEngines.forEach(engine => {
-              const { _extensionID, _urls } = engine;
+              if (!(engine instanceof lazy.AddonSearchEngine)) {
+                return;
+              }
+              const { _extensionID, _urls } = engine.wrappedJSObject;
 
               if (!_extensionID) {
                 // OpenSearch engines don't have an extension ID.
@@ -89,7 +98,7 @@ this.addonsSearchDetection = class extends ExtensionAPI {
                 });
             });
           } catch (err) {
-            Cu.reportError(err);
+            console.error(err);
           }
 
           return patterns;
@@ -109,7 +118,7 @@ this.addonsSearchDetection = class extends ExtensionAPI {
           try {
             return Services.eTLD.getBaseDomain(Services.io.newURI(url));
           } catch (err) {
-            Cu.reportError(err);
+            console.error(err);
             return null;
           }
         },
@@ -187,7 +196,7 @@ this.addonsSearchDetection = class extends ExtensionAPI {
                   ?.QueryInterface(Ci.nsIPropertyBag)
                   ?.getProperty("redirectedByExtension");
               } catch (err) {
-                Cu.reportError(err);
+                console.error(err);
               }
 
               const firstUrl = this.firstMatchedUrls[requestId];

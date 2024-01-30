@@ -4,7 +4,6 @@
 
 import {
   hasInScopeLines,
-  getLocationSource,
   getSourceTextContent,
   getVisibleSelectedFrame,
 } from "../../selectors";
@@ -28,13 +27,16 @@ function getOutOfScopeLines(outOfScopeLocations) {
   return uniqueLines;
 }
 
-async function getInScopeLines(cx, location, { dispatch, getState, parser }) {
-  const source = getLocationSource(getState(), location);
-  const sourceTextContent = getSourceTextContent(getState(), source.id);
+async function getInScopeLines(
+  cx,
+  location,
+  { dispatch, getState, parserWorker }
+) {
+  const sourceTextContent = getSourceTextContent(getState(), location);
 
   let locations = null;
-  if (location.line && source && !source.isWasm) {
-    locations = await parser.findOutOfScopeLocations(source.id, location);
+  if (location.line && parserWorker.isLocationSupported(location)) {
+    locations = await parserWorker.findOutOfScopeLocations(location);
   }
 
   const linesOutOfScope = getOutOfScopeLines(locations);
@@ -74,10 +76,7 @@ export function setInScopeLines(cx) {
     }
 
     const { location } = visibleFrame;
-    const sourceTextContent = getSourceTextContent(
-      getState(),
-      location.sourceId
-    );
+    const sourceTextContent = getSourceTextContent(getState(), location);
 
     if (hasInScopeLines(getState(), location) || !sourceTextContent) {
       return;

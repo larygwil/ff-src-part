@@ -4,11 +4,12 @@
 
 "use strict";
 
-XPCOMUtils.defineLazyModuleGetters(this, {
-  AddonManagerPrivate: "resource://gre/modules/AddonManager.jsm",
-  ExtensionStorage: "resource://gre/modules/ExtensionStorage.jsm",
-  ExtensionStorageIDB: "resource://gre/modules/ExtensionStorageIDB.jsm",
-  NativeManifests: "resource://gre/modules/NativeManifests.jsm",
+ChromeUtils.defineESModuleGetters(this, {
+  AddonManagerPrivate: "resource://gre/modules/AddonManager.sys.mjs",
+  ExtensionStorage: "resource://gre/modules/ExtensionStorage.sys.mjs",
+  ExtensionStorageIDB: "resource://gre/modules/ExtensionStorageIDB.sys.mjs",
+  NativeManifests: "resource://gre/modules/NativeManifests.sys.mjs",
+  extensionStorageSession: "resource://gre/modules/ExtensionStorage.sys.mjs",
 });
 
 var { ExtensionError } = ExtensionUtils;
@@ -16,11 +17,16 @@ var { ignoreEvent } = ExtensionCommon;
 
 XPCOMUtils.defineLazyGetter(this, "extensionStorageSync", () => {
   // TODO bug 1637465: Remove Kinto-based implementation.
-  let url = Services.prefs.getBoolPref("webextensions.storage.sync.kinto")
-    ? "resource://gre/modules/ExtensionStorageSyncKinto.jsm"
-    : "resource://gre/modules/ExtensionStorageSync.jsm";
+  if (Services.prefs.getBoolPref("webextensions.storage.sync.kinto")) {
+    const { extensionStorageSyncKinto } = ChromeUtils.importESModule(
+      "resource://gre/modules/ExtensionStorageSyncKinto.sys.mjs"
+    );
+    return extensionStorageSyncKinto;
+  }
 
-  const { extensionStorageSync } = ChromeUtils.import(url);
+  const { extensionStorageSync } = ChromeUtils.importESModule(
+    "resource://gre/modules/ExtensionStorageSync.sys.mjs"
+  );
   return extensionStorageSync;
 });
 
@@ -67,18 +73,35 @@ this.storage = class extends ExtensionAPIPersistent {
   }
 
   PERSISTENT_EVENTS = {
-    onChanged({ fire }) {
+    onChanged({ context, fire }) {
       let unregisterLocal = this.registerLocalChangedListener(changes => {
         // |changes| is already serialized. Send the raw value, so that it can
         // be deserialized by the onChanged handler in child/ext-storage.js.
         fire.raw(changes, "local");
       });
+
+      // Session storage is not exposed to content scripts, and `context` does
+      // not exist while setting up persistent listeners for an event page.
+      let unregisterSession;
+      if (
+        !context ||
+        context.envType === "addon_parent" ||
+        context.envType === "devtools_parent"
+      ) {
+        unregisterSession = extensionStorageSession.registerListener(
+          this.extension,
+          changes => fire.async(changes, "session")
+        );
+      }
+
       let unregisterSync = this.registerSyncChangedListener(changes => {
         fire.async(changes, "sync");
       });
+
       return {
         unregister() {
           unregisterLocal();
+          unregisterSession?.();
           unregisterSync();
         },
         convert(_fire) {
@@ -92,6 +115,19 @@ this.storage = class extends ExtensionAPIPersistent {
         // be deserialized by the onChanged handler in child/ext-storage.js.
         fire.raw(changes);
       });
+      return {
+        unregister,
+        convert(_fire) {
+          fire = _fire;
+        },
+      };
+    },
+    "session.onChanged"({ fire }) {
+      let unregister = extensionStorageSession.registerListener(
+        this.extension,
+        changes => fire.async(changes)
+      );
+
       return {
         unregister,
         convert(_fire) {
@@ -246,6 +282,27 @@ this.storage = class extends ExtensionAPIPersistent {
           }).api(),
         },
 
+        session: {
+          get(items) {
+            return extensionStorageSession.get(extension, items);
+          },
+          set(items) {
+            extensionStorageSession.set(extension, items);
+          },
+          remove(keys) {
+            extensionStorageSession.remove(extension, keys);
+          },
+          clear() {
+            extensionStorageSession.clear(extension);
+          },
+          onChanged: new EventManager({
+            context,
+            module: "storage",
+            event: "session.onChanged",
+            extensionApi: this,
+          }).api(),
+        },
+
         sync: {
           get(spec) {
             enforceNoTemporaryAddon(extension.id);
@@ -291,7 +348,7 @@ this.storage = class extends ExtensionAPIPersistent {
                 message: "Managed storage manifest not found",
               });
             }
-            return ExtensionStorage._filterProperties(data, keys);
+            return ExtensionStorage._filterProperties(extension.id, data, keys);
           },
           // managed storage is currently initialized once.
           onChanged: ignoreEvent(context, "storage.managed.onChanged"),

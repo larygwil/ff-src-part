@@ -35,8 +35,6 @@
 
 "use strict";
 
-const Services = require("Services");
-
 const Curl = {
   /**
    * Generates a cURL command string which can be used from the command line etc.
@@ -57,7 +55,7 @@ const Curl = {
    * @return string
    *         A cURL command.
    */
-  generateCommand: function(data, platform) {
+  generateCommand(data, platform) {
     const utils = CurlUtils;
 
     let command = ["curl"];
@@ -128,6 +126,11 @@ const Curl = {
     // curl generates the host header itself based on the given URL
     ignoredHeaders.add("host");
 
+    // Add --compressed if the response is compressed
+    if (utils.isContentEncodedResponse(data)) {
+      addParam("--compressed");
+    }
+
     // Add -I (HEAD)
     // For servers that supports HEAD.
     // This will fetch the header of a document only.
@@ -177,7 +180,7 @@ const CurlUtils = {
    * @return boolean
    *         True if the request is URL encoded, false otherwise.
    */
-  isUrlEncodedRequest: function(data) {
+  isUrlEncodedRequest(data) {
     let postDataText = data.postDataText;
     if (!postDataText) {
       return false;
@@ -206,7 +209,7 @@ const CurlUtils = {
    * @return boolean
    *         True if the request is multipart reqeust, false otherwise.
    */
-  isMultipartRequest: function(data) {
+  isMultipartRequest(data) {
     let postDataText = data.postDataText;
     if (!postDataText) {
       return false;
@@ -225,6 +228,18 @@ const CurlUtils = {
   },
 
   /**
+   * Check if the response of an URL has content encoding header.
+   *
+   * @param object data
+   *        The data source. See the description in the Curl object.
+   * @return boolean
+   *         True if the response is compressed, false otherwise.
+   */
+  isContentEncodedResponse(data) {
+    return !!this.findHeader(data.responseHeaders, "content-encoding");
+  },
+
+  /**
    * Write out paramters from post data text.
    *
    * @param object postDataText
@@ -232,7 +247,7 @@ const CurlUtils = {
    * @return string
    *         Post data parameters.
    */
-  writePostDataTextParams: function(postDataText) {
+  writePostDataTextParams(postDataText) {
     if (!postDataText) {
       return "";
     }
@@ -250,7 +265,7 @@ const CurlUtils = {
    * @return string
    *         The found header value or null if not found.
    */
-  findHeader: function(headers, name) {
+  findHeader(headers, name) {
     if (!headers) {
       return null;
     }
@@ -273,7 +288,7 @@ const CurlUtils = {
    * @return string
    *         The boundary string for the request.
    */
-  getMultipartBoundary: function(data) {
+  getMultipartBoundary(data) {
     const boundaryRe = /\bboundary=(-{3,}\w+)/i;
 
     // Get the boundary string from the Content-Type request header.
@@ -302,7 +317,7 @@ const CurlUtils = {
    * @return string
    *         The multipart text without the binary data.
    */
-  removeBinaryDataFromMultipartText: function(multipartText, boundary) {
+  removeBinaryDataFromMultipartText(multipartText, boundary) {
     let result = "";
     boundary = "--" + boundary;
     const parts = multipartText.split(boundary);
@@ -337,7 +352,7 @@ const CurlUtils = {
    * @return array
    *         An array of header objects {name:x, value:x}
    */
-  getHeadersFromMultipartText: function(multipartText) {
+  getHeadersFromMultipartText(multipartText) {
     const headers = [];
     if (!multipartText || multipartText.startsWith("---")) {
       return headers;
@@ -386,7 +401,7 @@ const CurlUtils = {
    * Escape util function for POSIX oriented operating systems.
    * Credit: Google DevTools
    */
-  escapeStringPosix: function(str) {
+  escapeStringPosix(str) {
     function escapeCharacter(x) {
       let code = x.charCodeAt(0);
       if (code < 256) {
@@ -422,7 +437,7 @@ const CurlUtils = {
    * Escape util function for Windows systems.
    * Credit: Google DevTools
    */
-  escapeStringWin: function(str) {
+  escapeStringWin(str) {
     /*
       Because cmd.exe parser and MS Crt arguments parsers use some of the
       same escape characters, they can interact with each other in

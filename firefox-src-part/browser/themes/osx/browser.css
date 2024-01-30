@@ -10,12 +10,6 @@
 :root {
   --toolbar-non-lwt-bgcolor: -moz-dialog;
   --toolbar-non-lwt-textcolor: -moz-dialogtext;
-  --toolbar-non-lwt-bgimage: none;
-
-  --toolbarbutton-vertical-text-padding: calc(var(--toolbarbutton-inner-padding) + 1px);
-  --toolbarbutton-border-radius: 4px;
-
-  --panel-separator-color: hsla(210,4%,10%,.14);
 
   --arrowpanel-field-background: rgba(249,249,250,.3);
 
@@ -27,7 +21,6 @@
 }
 
 :root[lwt-popup-brighttext] {
-  --panel-separator-color: rgba(249,249,250,.1);
   --arrowpanel-field-background: rgba(12,12,13,.3);
 }
 
@@ -61,7 +54,7 @@
 */
 #navigator-toolbox::after {
   content: "";
-  display: -moz-box;
+  display: flex;
   appearance: auto;
   -moz-default-appearance: toolbox;
   height: 1px;
@@ -73,7 +66,7 @@
 
 #titlebar {
   /* Centrally align content items vertically */
-  -moz-box-pack: center;
+  justify-content: center;
 }
 
 .titlebar-button {
@@ -81,7 +74,7 @@
 }
 
 .titlebar-buttonbox-container {
-  -moz-box-align: center;
+  align-items: center;
 }
 
 /* Hide window controls in fullscreen */
@@ -142,7 +135,7 @@
 
 #nav-bar-customization-target > #wrapper-personal-bookmarks > #personal-bookmarks {
   min-height: 32px;
-  -moz-box-align: center;
+  align-items: center;
 }
 
 /* Workaround for native menubar inheritance */
@@ -171,19 +164,6 @@
 #BMB_bookmarksToolbar,
 #panelMenu_bookmarksToolbar {
   list-style-image: url("chrome://browser/skin/places/bookmarksToolbar.svg");
-}
-
-#PlacesToolbar menupopup[placespopup=true]::part(content) {
-  border: 1px solid var(--arrowpanel-border-color) !important;
-}
-
-#PlacesToolbar menupopup > menu .menu-iconic-icon,
-#PlacesToolbar menupopup > menuitem .menu-iconic-icon {
-  margin-inline-end: 0;
-}
-
-#PlacesToolbar menu menupopup {
-  margin-top: -8px;
 }
 
 /* Inactive elements are faded out on OSX */
@@ -226,12 +206,6 @@
   }
 }
 
-/* Ensure diacritics and other edge-of-font-box glyphs do not get clipped,
- * even in non-Latin scripts. */
-#urlbar-input {
-  line-height: 1.745em;
-}
-
 /* Move the margin to the parent element to properly position the ::after badge */
 moz-input-box > menupopup .context-menu-add-engine > .menu-iconic-left > .menu-iconic-icon {
   margin-inline: 0;
@@ -246,62 +220,12 @@ moz-input-box > menupopup .context-menu-add-engine > .menu-iconic-left {
   border-top: 1px solid #C7C7C7;
 }
 
-#BMB_bookmarksPopup[side="top"],
-#BMB_bookmarksPopup[side="bottom"] {
-  margin-inline: -17px;
-}
-
-#BMB_bookmarksPopup[side="left"],
-#BMB_bookmarksPopup[side="right"] {
-  margin-block: -17px;
-}
-
 /* Bookmarking panel */
-
 
 /* The following elements come from editBookmarkPanel.inc.xhtml. Styling that's
    specific to the editBookmarkPanel should be in browser.css. Styling that
    should be shared by all editBookmarkPanel.inc.xhtml consumers should be in
    editBookmark.css. */
-
-#editBMPanel_newFolderBox {
-  background-color: var(--arrowpanel-field-background);
-  color: inherit;
-  border: 1px solid var(--panel-separator-color);
-  border-radius: 0 0 2px 2px;
-  margin: 0;
-  padding: 0;
-  height: 24px;
-}
-
-#editBMPanel_newFolderButton {
-  appearance: none;
-  -moz-box-flex: 1;
-  -moz-context-properties: fill, fill-opacity;
-  fill: currentColor;
-  fill-opacity: 0.8;
-  border: none;
-  border-radius: 0;
-  padding: 0 9px;
-  margin: 0;
-  min-height: 24px;
-  height: 24px;
-  color: inherit;
-  list-style-image: url("chrome://global/skin/icons/plus.svg");
-}
-
-#editBMPanel_newFolderButton:hover {
-  background-color: var(--arrowpanel-dimmed);
-}
-
-#editBMPanel_newFolderButton:hover:active {
-  background-color: var(--arrowpanel-dimmed-further);
-}
-
-#editBMPanel_newFolderButton .button-text {
-  -moz-box-flex: 1; /* push the button icon to the start side */
-  text-align: start;
-}
 
 /**** folder tree and tag selector ****/
 
@@ -408,9 +332,11 @@ moz-input-box > menupopup .context-menu-add-engine > .menu-iconic-left {
 }
 
 #tabbrowser-tabs {
-  -moz-box-align: stretch;
+  /* overriding tabbox.css */
+  align-items: stretch;
   margin-bottom: 0;
   position: static;
+  z-index: auto;
 }
 
 /* Bookmark drag and drop styles */
@@ -440,26 +366,18 @@ moz-input-box > menupopup .context-menu-add-engine > .menu-iconic-left {
   }
 }
 
-#statuspanel:not([mirror]) > #statuspanel-inner > #statuspanel-label:-moz-locale-dir(ltr),
-#statuspanel[mirror] > #statuspanel-inner > #statuspanel-label:-moz-locale-dir(rtl) {
+#statuspanel:not([mirror]) > #statuspanel-label:-moz-locale-dir(ltr),
+#statuspanel[mirror] > #statuspanel-label:-moz-locale-dir(rtl) {
   border-right-style: solid;
   border-top-right-radius: .3em;
   margin-right: 1em;
 }
 
-#statuspanel:not([mirror]) > #statuspanel-inner > #statuspanel-label:-moz-locale-dir(rtl),
-#statuspanel[mirror] > #statuspanel-inner > #statuspanel-label:-moz-locale-dir(ltr) {
+#statuspanel:not([mirror]) > #statuspanel-label:-moz-locale-dir(rtl),
+#statuspanel[mirror] > #statuspanel-label:-moz-locale-dir(ltr) {
   border-left-style: solid;
   border-top-left-radius: .3em;
   margin-left: 1em;
-}
-
-/* On mac, the popup notification contents are indented by default and so
-  the default closebutton margins from notification.css require adjustment */
-
-.click-to-play-plugins-notification-description-box > .popup-notification-closebutton {
-  margin-inline-end: -6px;
-  margin-top: -7px;
 }
 
 #UITourTooltipDescription {
@@ -470,13 +388,4 @@ moz-input-box > menupopup .context-menu-add-engine > .menu-iconic-left {
 #UITourTooltipClose {
   margin-inline-end: -10px;
   margin-top: -14px;
-}
-
-.cui-widget-panelview[id^=PanelUI-webext-] {
-  border-radius: var(--arrowpanel-border-radius);
-}
-
-.webextension-popup-browser,
-.webextension-popup-stack {
-  border-radius: inherit;
 }

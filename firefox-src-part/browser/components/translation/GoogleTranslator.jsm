@@ -6,15 +6,12 @@
 
 var EXPORTED_SYMBOLS = ["GoogleTranslator"];
 
-const { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm");
-const { PromiseUtils } = ChromeUtils.import(
-  "resource://gre/modules/PromiseUtils.jsm"
+const { PromiseUtils } = ChromeUtils.importESModule(
+  "resource://gre/modules/PromiseUtils.sys.mjs"
 );
-const { httpRequest } = ChromeUtils.import("resource://gre/modules/Http.jsm");
-const { XPCOMUtils } = ChromeUtils.import(
-  "resource://gre/modules/XPCOMUtils.jsm"
+const { httpRequest } = ChromeUtils.importESModule(
+  "resource://gre/modules/Http.sys.mjs"
 );
-XPCOMUtils.defineLazyGlobalGetters(this, ["DOMParser"]);
 
 // The maximum amount of net data allowed per request on Google's API.
 const MAX_REQUEST_DATA = 5000; // XXX This is the Bing value
@@ -42,7 +39,7 @@ const URL = "https://translation.googleapis.com/language/translate/v2";
  * @returns {Promise}          A promise that will resolve when the translation
  *                             task is finished.
  */
-var GoogleTranslator = function(
+var GoogleTranslator = function (
   translationDocument,
   sourceLanguage,
   targetLanguage

@@ -2,13 +2,13 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+// XPCNativeWrapper is not defined globally in ESLint as it may be going away.
+// See bug 1481337.
 /* global XPCNativeWrapper */
 
 "use strict";
 
-const EventEmitter = require("devtools/shared/event-emitter");
-const { Ci } = require("chrome");
-const ChromeUtils = require("ChromeUtils");
+const EventEmitter = require("resource://devtools/shared/event-emitter.js");
 
 /**
  * About "navigationStart - ${WILL_NAVIGATE_TIME_SHIFT}ms":

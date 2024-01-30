@@ -7,8 +7,7 @@
 const {
   getAdHocFrontOrPrimitiveGrip,
   // eslint-disable-next-line mozilla/reject-some-requires
-} = require("devtools/client/fronts/object");
-const { Cu } = require("chrome");
+} = require("resource://devtools/client/fronts/object.js");
 
 /**
  * For now, this class is mostly a wrapper around webExtInspectedWindow actor.
@@ -135,7 +134,7 @@ class InspectedWindowCommand {
       return result;
     } catch (e) {
       this._reloadPending = false;
-      Cu.reportError(e);
+      console.error(e);
       return Promise.reject({
         message: "An unexpected error occurred",
       });

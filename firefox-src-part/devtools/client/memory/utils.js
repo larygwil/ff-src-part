@@ -4,22 +4,21 @@
 
 "use strict";
 
-const { Cc, Ci } = require("chrome");
-
-const { LocalizationHelper } = require("devtools/shared/l10n");
+const { LocalizationHelper } = require("resource://devtools/shared/l10n.js");
 const STRINGS_URI = "devtools/client/locales/memory.properties";
 const L10N = (exports.L10N = new LocalizationHelper(STRINGS_URI));
 
-const { OS } = require("resource://gre/modules/osfile.jsm");
-const { assert } = require("devtools/shared/DevToolsUtils");
-const { Preferences } = require("resource://gre/modules/Preferences.jsm");
+const { assert } = require("resource://devtools/shared/DevToolsUtils.js");
+const { Preferences } = ChromeUtils.importESModule(
+  "resource://gre/modules/Preferences.sys.mjs"
+);
 const CUSTOM_CENSUS_DISPLAY_PREF = "devtools.memory.custom-census-displays";
 const CUSTOM_LABEL_DISPLAY_PREF = "devtools.memory.custom-label-displays";
 const CUSTOM_TREE_MAP_DISPLAY_PREF = "devtools.memory.custom-tree-map-displays";
 const BYTES = 1024;
 const KILOBYTES = Math.pow(BYTES, 2);
 const MEGABYTES = Math.pow(BYTES, 3);
-const DevToolsUtils = require("devtools/shared/DevToolsUtils");
+const DevToolsUtils = require("resource://devtools/shared/DevToolsUtils.js");
 const {
   snapshotState: states,
   diffingState,
@@ -27,7 +26,7 @@ const {
   treeMapState,
   dominatorTreeState,
   individualsState,
-} = require("devtools/client/memory/constants");
+} = require("resource://devtools/client/memory/constants.js");
 
 /**
  * Takes a snapshot object and returns the localized form of its timestamp to be
@@ -36,14 +35,14 @@ const {
  * @param {Snapshot} snapshot
  * @return {String}
  */
-exports.getSnapshotTitle = function(snapshot) {
+exports.getSnapshotTitle = function (snapshot) {
   if (!snapshot.creationTime) {
     return L10N.getStr("snapshot-title.loading");
   }
 
   if (snapshot.imported) {
     // Strip out the extension if it's the expected ".fxsnapshot"
-    return OS.Path.basename(snapshot.path.replace(/\.fxsnapshot$/, ""));
+    return PathUtils.filename(snapshot.path.replace(/\.fxsnapshot$/, ""));
   }
 
   const date = new Date(snapshot.creationTime / 1000);
@@ -73,7 +72,7 @@ function getCustomDisplaysHelper(pref) {
  *
  * @return {Object}
  */
-exports.getCustomCensusDisplays = function() {
+exports.getCustomCensusDisplays = function () {
   return getCustomDisplaysHelper(CUSTOM_CENSUS_DISPLAY_PREF);
 };
 
@@ -83,7 +82,7 @@ exports.getCustomCensusDisplays = function() {
  *
  * @return {Object}
  */
-exports.getCustomLabelDisplays = function() {
+exports.getCustomLabelDisplays = function () {
   return getCustomDisplaysHelper(CUSTOM_LABEL_DISPLAY_PREF);
 };
 
@@ -93,7 +92,7 @@ exports.getCustomLabelDisplays = function() {
  *
  * @return {Object}
  */
-exports.getCustomTreeMapDisplays = function() {
+exports.getCustomTreeMapDisplays = function () {
   return getCustomDisplaysHelper(CUSTOM_TREE_MAP_DISPLAY_PREF);
 };
 
@@ -105,7 +104,7 @@ exports.getCustomTreeMapDisplays = function() {
  * @return {String}
  */
 // eslint-disable-next-line complexity
-exports.getStatusText = function(state) {
+exports.getStatusText = function (state) {
   assert(state, "Must have a state");
 
   switch (state) {
@@ -181,7 +180,7 @@ exports.getStatusText = function(state) {
  * @return {String}
  */
 // eslint-disable-next-line complexity
-exports.getStatusTextFull = function(state) {
+exports.getStatusTextFull = function (state) {
   assert(!!state, "Must have a state");
 
   switch (state) {
@@ -284,7 +283,7 @@ exports.getSnapshot = function getSnapshot(state, id) {
  *
  * @returns {SnapshotId|null}
  */
-exports.findSelectedSnapshot = function(state) {
+exports.findSelectedSnapshot = function (state) {
   const found = state.snapshots.find(s => s.selected);
   return found ? found.id : null;
 };
@@ -330,7 +329,7 @@ exports.createSnapshot = function createSnapshot(state) {
  *
  * @returns {Boolean}
  */
-exports.censusIsUpToDate = function(filter, display, census) {
+exports.censusIsUpToDate = function (filter, display, census) {
   return (
     census &&
     // Filter could be null == undefined so use loose equality.
@@ -346,7 +345,7 @@ exports.censusIsUpToDate = function(filter, display, census) {
  * @param {Boolean} Assert that the snapshot must be in a ready state.
  * @returns {Boolean}
  */
-exports.canTakeCensus = function(snapshot) {
+exports.canTakeCensus = function (snapshot) {
   return (
     snapshot.state === states.READ &&
     (!snapshot.census ||
@@ -363,7 +362,7 @@ exports.canTakeCensus = function(snapshot) {
  * @param {SnapshotModel} snapshot
  * @returns {Boolean}
  */
-exports.dominatorTreeIsComputed = function(snapshot) {
+exports.dominatorTreeIsComputed = function (snapshot) {
   return (
     snapshot.dominatorTree &&
     (snapshot.dominatorTree.state === dominatorTreeState.COMPUTED ||
@@ -379,7 +378,7 @@ exports.dominatorTreeIsComputed = function(snapshot) {
  * @param {SnapshotModel} snapshot
  * @returns {Object|null} Either the census, or null if one hasn't completed
  */
-exports.getSavedCensus = function(snapshot) {
+exports.getSavedCensus = function (snapshot) {
   if (snapshot.treeMap && snapshot.treeMap.state === treeMapState.SAVED) {
     return snapshot.treeMap;
   }
@@ -396,7 +395,7 @@ exports.getSavedCensus = function(snapshot) {
  * @param {CensusModel} census
  * @return {Object}
  */
-exports.getSnapshotTotals = function(census) {
+exports.getSnapshotTotals = function (census) {
   let bytes = 0;
   let count = 0;
 
@@ -426,7 +425,7 @@ exports.getSnapshotTotals = function(census) {
  * @return {Promise<?nsIFile>}
  *        The file selected by the user, or null, if cancelled.
  */
-exports.openFilePicker = function({ title, filters, defaultName, mode }) {
+exports.openFilePicker = function ({ title, filters, defaultName, mode }) {
   let fpMode;
   if (mode === "save") {
     fpMode = Ci.nsIFilePicker.modeSave;
@@ -464,7 +463,7 @@ exports.openFilePicker = function({ title, filters, defaultName, mode }) {
  * @param {Number} number
  * @param {Boolean} showSign (defaults to false)
  */
-exports.formatNumber = function(number, showSign = false) {
+exports.formatNumber = function (number, showSign = false) {
   const rounded = Math.round(number);
   // eslint-disable-next-line no-compare-neg-zero
   if (rounded === 0 || rounded === -0) {
@@ -489,7 +488,7 @@ exports.formatNumber = function(number, showSign = false) {
  * @param {Number} percent
  * @param {Boolean} showSign (defaults to false)
  */
-exports.formatPercent = function(percent, showSign = false) {
+exports.formatPercent = function (percent, showSign = false) {
   return exports.L10N.getFormatStr(
     "tree-item.percent2",
     exports.formatNumber(percent, showSign)
@@ -508,7 +507,7 @@ exports.formatPercent = function(percent, showSign = false) {
  *         hue values ranged between [0 - 1]
  * @return {type}
  */
-exports.hslToStyle = function(h, s, l) {
+exports.hslToStyle = function (h, s, l) {
   h = parseInt(h * 360, 10);
   s = parseInt(s * 100, 10);
   l = parseInt(l * 100, 10);
@@ -525,7 +524,7 @@ exports.hslToStyle = function(h, s, l) {
  *        A value of 0 returns a, and 1 returns b
  * @return {Number}
  */
-exports.lerp = function(a, b, t) {
+exports.lerp = function (a, b, t) {
   return a * (1 - t) + b * t;
 };
 
@@ -536,7 +535,7 @@ exports.lerp = function(a, b, t) {
  *         Number of bytes
  * @return {String}
  */
-exports.formatAbbreviatedBytes = function(n) {
+exports.formatAbbreviatedBytes = function (n) {
   if (n < BYTES) {
     return n + "B";
   } else if (n < KILOBYTES) {

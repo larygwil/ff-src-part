@@ -6,22 +6,15 @@
 
 "use strict";
 
-ChromeUtils.defineModuleGetter(
-  this,
-  "PrivateBrowsingUtils",
-  "resource://gre/modules/PrivateBrowsingUtils.jsm"
-);
-
-ChromeUtils.defineModuleGetter(
-  this,
-  "PlacesUtils",
-  "resource://gre/modules/PlacesUtils.jsm"
-);
+ChromeUtils.defineESModuleGetters(this, {
+  PlacesUtils: "resource://gre/modules/PlacesUtils.sys.mjs",
+  PrivateBrowsingUtils: "resource://gre/modules/PrivateBrowsingUtils.sys.mjs",
+});
 
 var { DefaultMap, ExtensionError, parseMatchPatterns } = ExtensionUtils;
 
-var { ExtensionParent } = ChromeUtils.import(
-  "resource://gre/modules/ExtensionParent.jsm"
+var { ExtensionParent } = ChromeUtils.importESModule(
+  "resource://gre/modules/ExtensionParent.sys.mjs"
 );
 
 var { IconDetails, StartupCache } = ExtensionParent;
@@ -166,11 +159,8 @@ var gMenuBuilder = {
         );
       }
     } else if (contextData.webExtContextData) {
-      let {
-        extensionId,
-        showDefaults,
-        overrideContext,
-      } = contextData.webExtContextData;
+      let { extensionId, showDefaults, overrideContext } =
+        contextData.webExtContextData;
       if (extensionId === root.extension.id) {
         rootElements = this.buildTopLevelElements(
           root,
@@ -604,7 +594,7 @@ var gMenuBuilder = {
 };
 
 // Called from pageAction or browserAction popup.
-global.actionContextMenu = function(contextData) {
+global.actionContextMenu = function (contextData) {
   contextData.tab = tabTracker.activeTab;
   contextData.pageUrl = contextData.tab.linkedBrowser.currentURI.spec;
   gMenuBuilder.build(contextData);
@@ -1134,9 +1124,8 @@ const menuTracker = {
     if (window.SidebarUI.currentID === "viewBookmarksSidebar") {
       let sidebarBrowser = window.SidebarUI.browser;
       sidebarBrowser.removeEventListener("load", this.onSidebarShown);
-      const menu = sidebarBrowser.contentDocument.getElementById(
-        "placesContext"
-      );
+      const menu =
+        sidebarBrowser.contentDocument.getElementById("placesContext");
       menu.removeEventListener("popupshowing", this.onBookmarksContextMenu);
     }
   },
@@ -1156,9 +1145,8 @@ const menuTracker = {
         });
         return;
       }
-      const menu = sidebarBrowser.contentDocument.getElementById(
-        "placesContext"
-      );
+      const menu =
+        sidebarBrowser.contentDocument.getElementById("placesContext");
       menu.addEventListener("popupshowing", menuTracker.onBookmarksContextMenu);
     }
   },

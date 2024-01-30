@@ -3,38 +3,22 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 "use strict";
 
-ChromeUtils.defineModuleGetter(
-  this,
-  "RemoteSettings",
-  "resource://services-settings/remote-settings.js"
-);
+const lazy = {};
 
-ChromeUtils.defineModuleGetter(
-  this,
-  "Utils",
-  "resource://services-settings/Utils.jsm"
-);
+ChromeUtils.defineESModuleGetters(lazy, {
+  NewTabUtils: "resource://gre/modules/NewTabUtils.sys.mjs",
+  RemoteSettings: "resource://services-settings/remote-settings.sys.mjs",
+  Utils: "resource://services-settings/Utils.sys.mjs",
+});
 
-ChromeUtils.defineModuleGetter(
-  this,
-  "NewTabUtils",
-  "resource://gre/modules/NewTabUtils.jsm"
-);
-
-const { XPCOMUtils } = ChromeUtils.import(
-  "resource://gre/modules/XPCOMUtils.jsm"
-);
-
-XPCOMUtils.defineLazyGlobalGetters(this, ["fetch"]);
-
-const { BasePromiseWorker } = ChromeUtils.import(
-  "resource://gre/modules/PromiseWorker.jsm"
+const { BasePromiseWorker } = ChromeUtils.importESModule(
+  "resource://gre/modules/PromiseWorker.sys.mjs"
 );
 
 const RECIPE_NAME = "personality-provider-recipe";
 const MODELS_NAME = "personality-provider-models";
 
-this.PersonalityProvider = class PersonalityProvider {
+class PersonalityProvider {
   constructor(modelKeys) {
     this.modelKeys = modelKeys;
     this.onSync = this.onSync.bind(this);
@@ -68,7 +52,7 @@ this.PersonalityProvider = class PersonalityProvider {
     if (this._baseAttachmentsURL) {
       return this._baseAttachmentsURL;
     }
-    const server = Utils.SERVER_URL;
+    const server = lazy.Utils.SERVER_URL;
     const serverInfo = await (
       await fetch(`${server}/`, {
         credentials: "omit",
@@ -97,11 +81,11 @@ this.PersonalityProvider = class PersonalityProvider {
   }
 
   setupSyncAttachment(collection) {
-    RemoteSettings(collection).on("sync", this.onSync);
+    lazy.RemoteSettings(collection).on("sync", this.onSync);
   }
 
   teardownSyncAttachment(collection) {
-    RemoteSettings(collection).off("sync", this.onSync);
+    lazy.RemoteSettings(collection).off("sync", this.onSync);
   }
 
   onSync(event) {
@@ -122,7 +106,7 @@ this.PersonalityProvider = class PersonalityProvider {
    */
   async getRecipe() {
     if (!this.recipes || !this.recipes.length) {
-      const result = await RemoteSettings(RECIPE_NAME).get();
+      const result = await lazy.RemoteSettings(RECIPE_NAME).get();
       this.recipes = await Promise.all(
         result.map(async record => ({
           ...(await this.getAttachment(record)),
@@ -146,7 +130,7 @@ this.PersonalityProvider = class PersonalityProvider {
     });
     sql += " LIMIT 30000";
 
-    const { activityStreamProvider } = NewTabUtils;
+    const { activityStreamProvider } = lazy.NewTabUtils;
     const history = await activityStreamProvider.executePlacesQuery(sql, {
       columns,
       params: {},
@@ -197,7 +181,7 @@ this.PersonalityProvider = class PersonalityProvider {
   }
 
   async fetchModels() {
-    const models = await RemoteSettings(MODELS_NAME).get();
+    const models = await lazy.RemoteSettings(MODELS_NAME).get();
     return this.personalityProviderWorker.post("fetchModels", [models]);
   }
 
@@ -293,6 +277,6 @@ this.PersonalityProvider = class PersonalityProvider {
       interestVector: this.interestVector,
     };
   }
-};
+}
 
 const EXPORTED_SYMBOLS = ["PersonalityProvider"];

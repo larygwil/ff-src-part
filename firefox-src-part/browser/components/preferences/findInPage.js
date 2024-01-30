@@ -44,6 +44,11 @@ var gSearchResultsPane = {
     this.searchInput.hidden = !Services.prefs.getBoolPref(
       "browser.preferences.search"
     );
+
+    window.addEventListener("resize", () => {
+      this._recomputeTooltipPositions();
+    });
+
     if (!this.searchInput.hidden) {
       this.searchInput.addEventListener("input", this);
       this.searchInput.addEventListener("command", this);
@@ -53,11 +58,6 @@ var gSearchResultsPane = {
         window.requestIdleCallback(() => this.initializeCategories());
       });
     }
-    let helpUrl =
-      Services.urlFormatter.formatURLPref("app.support.baseURL") +
-      "preferences";
-    let helpContainer = document.getElementById("need-help");
-    helpContainer.querySelector("a").href = helpUrl;
     ensureScrollPadding();
   },
 
@@ -73,8 +73,8 @@ var gSearchResultsPane = {
    */
   fixInputPosition() {
     let innerContainer = document.querySelector(".sticky-inner-container");
-    let width = window.windowUtils.getBoundsWithoutFlushing(innerContainer)
-      .width;
+    let width =
+      window.windowUtils.getBoundsWithoutFlushing(innerContainer).width;
     innerContainer.style.maxWidth = width + "px";
   },
 
@@ -576,7 +576,7 @@ var gSearchResultsPane = {
       // add it to the list of subitems. The items that don't match the search term
       // will be hidden.
       if (
-        child instanceof Element &&
+        Element.isInstance(child) &&
         (child.classList.contains("featureGate") ||
           child.classList.contains("mozilla-product-item"))
       ) {
@@ -681,19 +681,48 @@ var gSearchResultsPane = {
     anchorNode.parentElement.classList.add("search-tooltip-parent");
     anchorNode.parentElement.appendChild(searchTooltip);
 
-    this.calculateTooltipPosition(anchorNode);
+    this._applyTooltipPosition(
+      searchTooltip,
+      this._computeTooltipPosition(anchorNode, searchTooltip)
+    );
   },
 
-  calculateTooltipPosition(anchorNode) {
-    let searchTooltip = anchorNode.tooltipNode;
+  _recomputeTooltipPositions() {
+    let positions = [];
+    for (let anchorNode of this.listSearchTooltips) {
+      let searchTooltip = anchorNode.tooltipNode;
+      if (!searchTooltip) {
+        continue;
+      }
+      let position = this._computeTooltipPosition(anchorNode, searchTooltip);
+      positions.push({ searchTooltip, position });
+    }
+    for (let { searchTooltip, position } of positions) {
+      this._applyTooltipPosition(searchTooltip, position);
+    }
+  },
+
+  _applyTooltipPosition(searchTooltip, position) {
+    searchTooltip.style.left = position.left + "px";
+    searchTooltip.style.top = position.top + "px";
+  },
+
+  _computeTooltipPosition(anchorNode, searchTooltip) {
     // In order to get the up-to-date position of each of the nodes that we're
-    // putting tooltips on, we have to flush layout intentionally, and that
-    // this is the result of a XUL limitation (bug 1363730).
+    // putting tooltips on, we have to flush layout intentionally. Once
+    // menulists don't use XUL layout we can remove this and use plain CSS to
+    // position them, see bug 1363730.
+    let anchorRect = anchorNode.getBoundingClientRect();
+    let containerRect = anchorNode.parentElement.getBoundingClientRect();
     let tooltipRect = searchTooltip.getBoundingClientRect();
-    searchTooltip.style.setProperty(
-      "left",
-      `calc(50% - ${tooltipRect.width / 2}px)`
-    );
+
+    let left =
+      anchorRect.left -
+      containerRect.left +
+      anchorRect.width / 2 -
+      tooltipRect.width / 2;
+    let top = anchorRect.top - containerRect.top;
+    return { left, top };
   },
 
   /**

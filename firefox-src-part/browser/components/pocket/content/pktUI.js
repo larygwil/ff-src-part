@@ -44,66 +44,42 @@
 /* eslint-disable no-shadow */
 /* eslint-env mozilla/browser-window */
 
-ChromeUtils.defineModuleGetter(
-  this,
-  "PrivateBrowsingUtils",
-  "resource://gre/modules/PrivateBrowsingUtils.jsm"
-);
-ChromeUtils.defineModuleGetter(
-  this,
-  "ReaderMode",
-  "resource://gre/modules/ReaderMode.jsm"
-);
-ChromeUtils.defineModuleGetter(
-  this,
-  "pktApi",
-  "chrome://pocket/content/pktApi.jsm"
-);
-ChromeUtils.defineModuleGetter(
-  this,
-  "SaveToPocket",
-  "chrome://pocket/content/SaveToPocket.jsm"
-);
-ChromeUtils.defineModuleGetter(
-  this,
-  "pktTelemetry",
-  "chrome://pocket/content/pktTelemetry.jsm"
-);
-ChromeUtils.defineModuleGetter(
-  this,
-  "ExperimentAPI",
-  "resource://nimbus/ExperimentAPI.jsm"
-);
-XPCOMUtils.defineLazyModuleGetters(this, {
-  NimbusFeatures: "resource://nimbus/ExperimentAPI.jsm",
+ChromeUtils.defineESModuleGetters(this, {
+  ExperimentAPI: "resource://nimbus/ExperimentAPI.sys.mjs",
+  NimbusFeatures: "resource://nimbus/ExperimentAPI.sys.mjs",
+  pktApi: "chrome://pocket/content/pktApi.sys.mjs",
+  pktTelemetry: "chrome://pocket/content/pktTelemetry.sys.mjs",
+  PrivateBrowsingUtils: "resource://gre/modules/PrivateBrowsingUtils.sys.mjs",
+  ReaderMode: "resource://gre/modules/ReaderMode.sys.mjs",
+  SaveToPocket: "chrome://pocket/content/SaveToPocket.sys.mjs",
 });
 
 const POCKET_ONSAVERECS_PREF = "extensions.pocket.onSaveRecs";
 const POCKET_ONSAVERECS_LOCLES_PREF = "extensions.pocket.onSaveRecs.locales";
 const POCKET_HOME_PREF = "extensions.pocket.showHome";
 
-var pktUI = (function() {
+var pktUI = (function () {
   let _titleToSave = "";
   let _urlToSave = "";
 
   // Initial sizes are only here to help visual load jank before the panel is ready.
   const initialPanelSize = {
     signup: {
-      control: { height: 450, width: 300 },
-      refresh: { height: 315, width: 328 },
+      height: 315,
+      width: 328,
     },
     saved: {
-      control: { height: 132, width: 350 },
-      refresh: { height: 110, width: 350 },
+      height: 110,
+      width: 350,
     },
     home: {
-      control: { height: 477, width: 328 },
-      refresh: { height: 251, width: 328 },
+      height: 251,
+      width: 328,
     },
     // This is for non English sizes, this is not for an AB experiment.
     home_no_topics: {
-      control: { height: 247, width: 328 },
-      refresh: { height: 86, width: 328 },
+      height: 86,
+      width: 328,
     },
   };
 
@@ -162,7 +138,7 @@ var pktUI = (function() {
    * Show the sign-up panel
    */
   function showSignUp() {
-    getFirefoxAccountSignedInUser(function(userdata) {
+    getFirefoxAccountSignedInUser(function (userdata) {
       showPanel(
         "about:pocket-signup?" +
           "emailButton=" +
@@ -193,7 +169,7 @@ var pktUI = (function() {
    * Show the logged-out state / sign-up panel
    */
   function saveAndShowConfirmation() {
-    getFirefoxAccountSignedInUser(function(userdata) {
+    getFirefoxAccountSignedInUser(function (userdata) {
       showPanel(
         "about:pocket-saved?premiumStatus=" +
           (pktApi.isPremiumUser() ? "1" : "0") +
@@ -208,9 +184,8 @@ var pktUI = (function() {
    * Show the Pocket home panel state
    */
   function showPocketHome() {
-    const hideRecentSaves = NimbusFeatures.saveToPocket.getVariable(
-      "hideRecentSaves"
-    );
+    const hideRecentSaves =
+      NimbusFeatures.saveToPocket.getVariable("hideRecentSaves");
     const locale = getUILocale();
     let panel = `home_no_topics`;
     if (locale.startsWith("en-")) {
@@ -224,34 +199,41 @@ var pktUI = (function() {
    */
   function showPanel(urlString, panel) {
     const locale = getUILocale();
-    let variant = `control`;
-    const layoutRefresh = NimbusFeatures.saveToPocket.getVariable(
-      "layoutRefresh"
-    );
-    if (layoutRefresh) {
-      variant = `refresh`;
-    }
+    const options = initialPanelSize[panel];
 
-    const options = initialPanelSize[panel][variant];
     resizePanel({
       width: options.width,
       height: options.height,
     });
-    const saveToPocketExperiment = ExperimentAPI.getExperiment({
+
+    const saveToPocketExperiment = ExperimentAPI.getExperimentMetaData({
       featureId: "saveToPocket",
     });
-    const pocketNewtabExperiment = ExperimentAPI.getExperiment({
+
+    const saveToPocketRollout = ExperimentAPI.getRolloutMetaData({
+      featureId: "saveToPocket",
+    });
+
+    const pocketNewtabExperiment = ExperimentAPI.getExperimentMetaData({
       featureId: "pocketNewtab",
     });
 
+    const pocketNewtabRollout = ExperimentAPI.getRolloutMetaData({
+      featureId: "pocketNewtab",
+    });
+
+    // We want to know if the user is in a Pocket related experiment or rollout,
+    // but we have 2 Pocket related features, so we prioritize the saveToPocket feature,
+    // and experiments over rollouts.
+    const experimentMetaData =
+      saveToPocketExperiment ||
+      pocketNewtabExperiment ||
+      saveToPocketRollout ||
+      pocketNewtabRollout;
+
     let utmSource = "firefox_pocket_save_button";
-    // We want to know if the user is in a Pocket related experiment,
-    // but we have 2 Pocket related features, so we prioritize the saveToPocket feature.
-    let utmCampaign =
-      saveToPocketExperiment?.slug || pocketNewtabExperiment?.slug;
-    let utmContent =
-      saveToPocketExperiment?.branch?.slug ||
-      pocketNewtabExperiment?.branch?.slug;
+    let utmCampaign = experimentMetaData?.slug;
+    let utmContent = experimentMetaData?.branch?.slug;
 
     const url = new URL(urlString);
     // A set of params shared across all panels.
@@ -260,7 +242,6 @@ var pktUI = (function() {
       url.searchParams.append("utmCampaign", utmCampaign);
       url.searchParams.append("utmContent", utmContent);
     }
-    url.searchParams.append("layoutRefresh", layoutRefresh);
     url.searchParams.append("locale", locale);
 
     // We don't have to hide and show the panel again if it's already shown
@@ -301,10 +282,7 @@ var pktUI = (function() {
       })
     );
 
-    if (
-      NimbusFeatures.saveToPocket.getVariable("layoutRefresh") &&
-      !NimbusFeatures.saveToPocket.getVariable("hideRecentSaves")
-    ) {
+    if (!NimbusFeatures.saveToPocket.getVariable("hideRecentSaves")) {
       let recentSaves = await pktApi.getRecentSavesCache();
       if (recentSaves) {
         // We have cache, so we can use those.
@@ -381,17 +359,25 @@ var pktUI = (function() {
         pktUIMessaging.sendMessageToPanel(saveLinkMessageId, successResponse);
         SaveToPocket.itemSaved();
 
-        if (
-          item?.resolved_id &&
-          item?.resolved_id !== "0" &&
-          NimbusFeatures.saveToPocket.getVariable("layoutRefresh") &&
-          !NimbusFeatures.saveToPocket.getVariable("hideRecentSaves")
-        ) {
-          pktApi.getArticleInfo(item.resolved_url, {
-            success(data) {
-              pktUIMessaging.sendMessageToPanel("PKT_renderSavedStory", data);
-            },
-          });
+        if (!NimbusFeatures.saveToPocket.getVariable("hideRecentSaves")) {
+          // Articles saved for the first time (by anyone) won't have a resolved_id
+          if (item?.resolved_id && item?.resolved_id !== "0") {
+            pktApi.getArticleInfo(item.resolved_url, {
+              success(data) {
+                pktUIMessaging.sendMessageToPanel(
+                  "PKT_articleInfoFetched",
+                  data
+                );
+              },
+              done() {
+                pktUIMessaging.sendMessageToPanel(
+                  "PKT_getArticleInfoAttempted"
+                );
+              },
+            });
+          } else {
+            pktUIMessaging.sendMessageToPanel("PKT_getArticleInfoAttempted");
+          }
         }
 
         getAndShowRecsForItem(item, {
@@ -466,7 +452,7 @@ var pktUI = (function() {
   function openTabWithUrl(url, aTriggeringPrincipal, aCsp) {
     let recentWindow = Services.wm.getMostRecentWindow("navigator:browser");
     if (!recentWindow) {
-      Cu.reportError("Pocket: No open browser windows to openTabWithUrl");
+      console.error("Pocket: No open browser windows to openTabWithUrl");
       return;
     }
     closePanel();
@@ -581,9 +567,7 @@ var pktUI = (function() {
   function closePanel() {
     // The panel frame doesn't exist until the Pocket panel is showing.
     // So we ensure it is open before attempting to hide it.
-    getPanelFrame()
-      ?.closest("panel")
-      ?.hidePopup();
+    getPanelFrame()?.closest("panel")?.hidePopup();
   }
 
   var toolbarPanelFrame;
@@ -644,7 +628,7 @@ var pktUI = (function() {
 })();
 
 // -- Communication to Background -- //
-var pktUIMessaging = (function() {
+var pktUIMessaging = (function () {
   /**
    * Send a message to the panel's frame
    */
@@ -655,9 +639,8 @@ var pktUIMessaging = (function() {
       return;
     }
 
-    const aboutPocketActor = panelFrame?.browsingContext?.currentWindowGlobal?.getActor(
-      "AboutPocket"
-    );
+    const aboutPocketActor =
+      panelFrame?.browsingContext?.currentWindowGlobal?.getActor("AboutPocket");
 
     // Send message to panel
     aboutPocketActor?.sendAsyncMessage(messageId, payload);

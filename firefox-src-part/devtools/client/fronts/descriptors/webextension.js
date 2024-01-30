@@ -5,18 +5,19 @@
 
 const {
   webExtensionDescriptorSpec,
-} = require("devtools/shared/specs/descriptors/webextension");
+} = require("resource://devtools/shared/specs/descriptors/webextension.js");
 const {
   FrontClassWithSpec,
   registerFront,
-} = require("devtools/shared/protocol");
+} = require("resource://devtools/shared/protocol.js");
 const {
   DescriptorMixin,
-} = require("devtools/client/fronts/descriptors/descriptor-mixin");
+} = require("resource://devtools/client/fronts/descriptors/descriptor-mixin.js");
+const DESCRIPTOR_TYPES = require("resource://devtools/client/fronts/descriptors/descriptor-types.js");
 loader.lazyRequireGetter(
   this,
   "WindowGlobalTargetFront",
-  "devtools/client/fronts/targets/window-global",
+  "resource://devtools/client/fronts/targets/window-global.js",
   true
 );
 
@@ -27,6 +28,8 @@ class WebExtensionDescriptorFront extends DescriptorMixin(
     super(client, targetFront, parentFront);
     this.traits = {};
   }
+
+  descriptorType = DESCRIPTOR_TYPES.EXTENSION;
 
   form(json) {
     this.actorID = json.actor;

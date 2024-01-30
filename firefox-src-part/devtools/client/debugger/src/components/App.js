@@ -4,10 +4,9 @@
 
 import React, { Component } from "react";
 import PropTypes from "prop-types";
-import classnames from "classnames";
-
 import { connect } from "../utils/connect";
-import { prefs, features } from "../utils/prefs";
+import { prefs } from "../utils/prefs";
+import { primaryPaneTabs } from "../constants";
 import actions from "../actions";
 import A11yIntention from "./A11yIntention";
 import { ShortcutsModal } from "./ShortcutsModal";
@@ -24,12 +23,7 @@ const KeyShortcuts = require("devtools/client/shared/key-shortcuts");
 const SplitBox = require("devtools/client/shared/components/splitter/SplitBox");
 const AppErrorBoundary = require("devtools/client/shared/components/AppErrorBoundary");
 
-import Services from "devtools-services";
 const shortcuts = new KeyShortcuts({ window });
-
-const { appinfo } = Services;
-
-const isMacOS = appinfo.OS === "Darwin";
 
 const horizontalLayoutBreakpoint = window.matchMedia("(min-width: 800px)");
 const verticalLayoutBreakpoint = window.matchMedia(
@@ -41,7 +35,6 @@ import "./App.css";
 
 import "./shared/menu.css";
 
-import ProjectSearch from "./ProjectSearch";
 import PrimaryPanes from "./PrimaryPanes";
 import Editor from "./Editor";
 import SecondaryPanes from "./SecondaryPanes";
@@ -64,7 +57,6 @@ class App extends Component {
     return {
       activeSearch: PropTypes.oneOf(["file", "project"]),
       closeActiveSearch: PropTypes.func.isRequired,
-      closeProjectSearch: PropTypes.func.isRequired,
       closeQuickOpen: PropTypes.func.isRequired,
       endPanelCollapsed: PropTypes.bool.isRequired,
       fluentBundles: PropTypes.array.isRequired,
@@ -74,6 +66,7 @@ class App extends Component {
       selectedSource: PropTypes.object,
       setActiveSearch: PropTypes.func.isRequired,
       setOrientation: PropTypes.func.isRequired,
+      setPrimaryPaneTab: PropTypes.func.isRequired,
       startPanelCollapsed: PropTypes.bool.isRequired,
       toolboxDoc: PropTypes.object.isRequired,
     };
@@ -97,14 +90,18 @@ class App extends Component {
       this.toggleQuickOpenModal(e, "@")
     );
 
-    const searchKeys = [
+    [
       L10N.getStr("sources.search.key2"),
       L10N.getStr("sources.search.alt.key"),
-    ];
-    searchKeys.forEach(key => shortcuts.on(key, this.toggleQuickOpenModal));
+    ].forEach(key => shortcuts.on(key, this.toggleQuickOpenModal));
 
     shortcuts.on(L10N.getStr("gotoLineModal.key3"), e =>
       this.toggleQuickOpenModal(e, ":")
+    );
+
+    shortcuts.on(
+      L10N.getStr("projectTextSearch.key"),
+      this.jumpToProjectSearch
     );
 
     shortcuts.on("Escape", this.onEscape);
@@ -119,17 +116,27 @@ class App extends Component {
       this.toggleQuickOpenModal
     );
 
-    const searchKeys = [
+    [
       L10N.getStr("sources.search.key2"),
       L10N.getStr("sources.search.alt.key"),
-    ];
-    searchKeys.forEach(key => shortcuts.off(key, this.toggleQuickOpenModal));
+    ].forEach(key => shortcuts.off(key, this.toggleQuickOpenModal));
 
     shortcuts.off(L10N.getStr("gotoLineModal.key3"), this.toggleQuickOpenModal);
+
+    shortcuts.off(
+      L10N.getStr("projectTextSearch.key"),
+      this.jumpToProjectSearch
+    );
 
     shortcuts.off("Escape", this.onEscape);
     shortcuts.off("CmdOrCtrl+/", this.onCommandSlash);
   }
+
+  jumpToProjectSearch = e => {
+    e.preventDefault();
+    this.props.setPrimaryPaneTab(primaryPaneTabs.PROJECT_SEARCH);
+    this.props.setActiveSearch(primaryPaneTabs.PROJECT_SEARCH);
+  };
 
   onEscape = e => {
     const {
@@ -218,7 +225,6 @@ class App extends Component {
             />
           ) : null}
           <EditorFooter horizontal={horizontal} />
-          <ProjectSearch />
         </div>
       </div>
     );
@@ -277,26 +283,10 @@ class App extends Component {
     );
   };
 
-  renderShortcutsModal() {
-    const additionalClass = isMacOS ? "mac" : "";
-
-    if (!features.shortcuts) {
-      return;
-    }
-
-    return (
-      <ShortcutsModal
-        additionalClass={additionalClass}
-        enabled={this.state.shortcutsModalEnabled}
-        handleClose={() => this.toggleShortcutsModal()}
-      />
-    );
-  }
-
   render() {
     const { quickOpenEnabled } = this.props;
     return (
-      <div className={classnames("debugger")}>
+      <div className="debugger">
         <AppErrorBoundary
           componentName="Debugger"
           panel={L10N.getStr("ToolboxDebugger.label")}
@@ -309,7 +299,10 @@ class App extends Component {
                 toggleShortcutsModal={() => this.toggleShortcutsModal()}
               />
             )}
-            {this.renderShortcutsModal()}
+            <ShortcutsModal
+              enabled={this.state.shortcutsModalEnabled}
+              handleClose={() => this.toggleShortcutsModal()}
+            />
           </A11yIntention>
         </AppErrorBoundary>
       </div>
@@ -336,8 +329,8 @@ const mapStateToProps = state => ({
 export default connect(mapStateToProps, {
   setActiveSearch: actions.setActiveSearch,
   closeActiveSearch: actions.closeActiveSearch,
-  closeProjectSearch: actions.closeProjectSearch,
   openQuickOpen: actions.openQuickOpen,
   closeQuickOpen: actions.closeQuickOpen,
   setOrientation: actions.setOrientation,
+  setPrimaryPaneTab: actions.setPrimaryPaneTab,
 })(App);

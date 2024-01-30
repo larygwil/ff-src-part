@@ -4,13 +4,14 @@
 
 "use strict";
 
-const { ActorClassWithSpec, Actor } = require("devtools/shared/protocol");
+const { Actor } = require("resource://devtools/shared/protocol.js");
 const {
   threadConfigurationSpec,
-} = require("devtools/shared/specs/thread-configuration");
+} = require("resource://devtools/shared/specs/thread-configuration.js");
+
 const {
   SessionDataHelpers,
-} = require("devtools/server/actors/watcher/SessionDataHelpers.jsm");
+} = require("resource://devtools/server/actors/watcher/SessionDataHelpers.jsm");
 const {
   SUPPORTED_DATA: { THREAD_CONFIGURATION },
 } = SessionDataHelpers;
@@ -21,8 +22,6 @@ const SUPPORTED_OPTIONS = {
   pauseOnExceptions: true,
   // Disable pausing on caught exceptions.
   ignoreCaughtExceptions: true,
-  // Shows the pause overlay.
-  shouldShowOverlay: true,
   // Include previously saved stack frames when paused.
   shouldIncludeSavedFrames: true,
   // Include async stack frames when paused.
@@ -50,11 +49,11 @@ const SUPPORTED_OPTIONS = {
  * @constructor
  *
  */
-const ThreadConfigurationActor = ActorClassWithSpec(threadConfigurationSpec, {
-  initialize(watcherActor) {
+class ThreadConfigurationActor extends Actor {
+  constructor(watcherActor) {
+    super(watcherActor.conn, threadConfigurationSpec);
     this.watcherActor = watcherActor;
-    Actor.prototype.initialize.call(this, this.watcherActor.conn);
-  },
+  }
 
   async updateConfiguration(configuration) {
     const configArray = Object.keys(configuration)
@@ -68,7 +67,7 @@ const ThreadConfigurationActor = ActorClassWithSpec(threadConfigurationSpec, {
       .map(key => ({ key, value: configuration[key] }));
 
     await this.watcherActor.addDataEntry(THREAD_CONFIGURATION, configArray);
-  },
-});
+  }
+}
 
 exports.ThreadConfigurationActor = ThreadConfigurationActor;

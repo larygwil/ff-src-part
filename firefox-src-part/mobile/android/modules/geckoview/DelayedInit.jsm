@@ -7,17 +7,6 @@
 
 var EXPORTED_SYMBOLS = ["DelayedInit"];
 
-const { XPCOMUtils } = ChromeUtils.import(
-  "resource://gre/modules/XPCOMUtils.jsm"
-);
-
-XPCOMUtils.defineLazyServiceGetter(
-  this,
-  "MessageLoop",
-  "@mozilla.org/message-loop;1",
-  "nsIMessageLoop"
-);
-
 /**
  * Use DelayedInit to schedule initializers to run some time after startup.
  * Initializers are added to a list of pending inits. Whenever the main thread
@@ -96,10 +85,9 @@ var Impl = {
 
     if (nextDue !== undefined) {
       // Schedule the next idle, if we still have pending inits.
-      MessageLoop.postIdleTask(
-        () => this.onIdle(),
-        Math.max(0, nextDue - time)
-      );
+      ChromeUtils.idleDispatch(() => this.onIdle(), {
+        timeout: Math.max(0, nextDue - time),
+      });
     }
   },
 
@@ -121,7 +109,7 @@ var Impl = {
 
     if (!this.pendingInits.length) {
       // Schedule for the first idle.
-      MessageLoop.postIdleTask(() => this.onIdle(), wait);
+      ChromeUtils.idleDispatch(() => this.onIdle(), { timeout: wait });
     }
     this.pendingInits.push(init);
     return init;

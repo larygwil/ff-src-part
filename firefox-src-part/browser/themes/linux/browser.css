@@ -15,36 +15,23 @@
  */
 
 :root {
-  --toolbar-non-lwt-bgcolor: -moz-dialog;
+  --toolbar-non-lwt-bgcolor: color-mix(in srgb, -moz-dialog 85%, white);
   --toolbar-non-lwt-textcolor: -moz-dialogtext;
-  --toolbar-non-lwt-bgimage: linear-gradient(rgba(255,255,255,.075), rgba(255,255,255,.075));
-  --tab-selected-non-lwt-bgimage: linear-gradient(rgba(255,255,255,.15), rgba(255,255,255,.15));
-
-  --toolbarbutton-border-radius: 4px;
-  --toolbarbutton-vertical-text-padding: calc(var(--toolbarbutton-inner-padding) - 1px);
-
-  --panel-separator-color: ThreeDShadow;
 
   --chrome-content-separator-color: ThreeDShadow;
 }
 
-#TabsToolbar:not(:-moz-lwtheme),
-#TabsToolbar[brighttext]:not(:-moz-lwtheme) {
-  --attention-icon-color: -moz-accent-color;
+:root:not(:-moz-lwtheme),
+toolbar[brighttext]:not(:-moz-lwtheme) {
+  --tab-attention-icon-color: AccentColor;
 }
 
 :root:-moz-lwtheme {
   --chrome-content-separator-color: rgba(0,0,0,.3);
-
-  --panel-separator-color: hsla(210,4%,10%,.14);
-}
-
-:root[lwt-popup-brighttext] {
-  --panel-separator-color: rgba(249,249,250,.1);
 }
 
 #menubar-items {
-  -moz-box-orient: vertical; /* for flex hack */
+  flex-direction: column; /* for flex hack */
 }
 
 #navigator-toolbox {
@@ -59,7 +46,6 @@
 
 .browser-toolbar:not(.titlebar-color) {
   background-color: var(--toolbar-bgcolor);
-  background-image: var(--toolbar-bgimage);
   color: var(--toolbar-color);
   appearance: none;
   border-style: none;
@@ -71,11 +57,6 @@
   position: relative;
 }
 
-#browser-bottombox {
-  /* opaque for layers optimization */
-  background-color: -moz-Dialog;
-}
-
 /* Bookmark menus */
 menu.bookmark-item,
 menuitem.bookmark-item {
@@ -85,10 +66,6 @@ menuitem.bookmark-item {
 
 .bookmark-item:not(.subviewbutton) > .menu-iconic-left {
   margin-block: 0;
-}
-
-.bookmark-item > .menu-iconic-left > .menu-iconic-icon {
-  padding-inline-start: 0;
 }
 
 /* Bookmark drag and drop styles */
@@ -105,10 +82,6 @@ menuitem.bookmark-item {
 .bookmark-item[cutting] > .toolbarbutton-text,
 .bookmark-item[cutting] > .menu-iconic-left > .menu-iconic-text {
   opacity: 0.7;
-}
-
-#PlacesToolbar menu menupopup {
-  margin-top: -12px;
 }
 
 /* Address bar */
@@ -167,10 +140,23 @@ menuitem.bookmark-item {
   min-height: 0;
 }
 
-#TabsToolbar:not(:-moz-lwtheme) {
-  appearance: auto;
-  -moz-default-appearance: menubar;
-  color: -moz-menubartext;
+#titlebar {
+  background-color: ActiveCaption;
+  color: CaptionText;
+}
+
+#titlebar:-moz-window-inactive {
+  background-color: InactiveCaption;
+  color: InactiveCaptionText;
+}
+
+#TabsToolbar,
+#toolbar-menubar,
+#main-menubar,
+#titlebar:-moz-lwtheme {
+  appearance: none;
+  background-color: transparent;
+  color: inherit;
 }
 
 #context_reloadTab {
@@ -218,15 +204,15 @@ menuitem.bookmark-item {
   }
 }
 
-#statuspanel:not([mirror]) > #statuspanel-inner > #statuspanel-label:-moz-locale-dir(ltr),
-#statuspanel[mirror] > #statuspanel-inner > #statuspanel-label:-moz-locale-dir(rtl) {
+#statuspanel:not([mirror]) > #statuspanel-label:-moz-locale-dir(ltr),
+#statuspanel[mirror] > #statuspanel-label:-moz-locale-dir(rtl) {
   border-right-style: solid;
   border-top-right-radius: .3em;
   margin-right: 1em;
 }
 
-#statuspanel:not([mirror]) > #statuspanel-inner > #statuspanel-label:-moz-locale-dir(rtl),
-#statuspanel[mirror] > #statuspanel-inner > #statuspanel-label:-moz-locale-dir(ltr) {
+#statuspanel:not([mirror]) > #statuspanel-label:-moz-locale-dir(rtl),
+#statuspanel[mirror] > #statuspanel-label:-moz-locale-dir(ltr) {
   border-left-style: solid;
   border-top-left-radius: .3em;
   margin-left: 1em;
@@ -266,15 +252,6 @@ menuitem.bookmark-item {
   /* override toolkit/themes/linux/global/menu.css */
   padding-inline-end: 0 !important;
   margin-inline-end: 0 !important;
-}
-
-.cui-widget-panelview[id^=PanelUI-webext-] {
-  border-radius: var(--arrowpanel-border-radius);
-}
-
-.webextension-popup-browser,
-.webextension-popup-stack {
-  border-radius: inherit;
 }
 
 /**
@@ -317,18 +294,6 @@ menuitem.bookmark-item {
     background-color: transparent;
   }
 
-  :root[tabsintitlebar] #titlebar {
-    color: CaptionText;
-  }
-
-  :root[tabsintitlebar] #titlebar:-moz-window-inactive {
-    color: InactiveCaptionText;
-  }
-
-  :root[tabsintitlebar] #titlebar:-moz-lwtheme {
-    color: inherit;
-  }
-
   :root[tabsintitlebar] #navigator-toolbox-background {
     appearance: auto;
     -moz-default-appearance: -moz-window-titlebar-maximized;
@@ -338,8 +303,13 @@ menuitem.bookmark-item {
     -moz-default-appearance: -moz-window-titlebar;
   }
 
+  :root[tabsintitlebar] #titlebar {
+    /* Use the toolbox background */
+    background-color: transparent;
+  }
+
   :root[tabsintitlebar][sizemode="normal"]:not([gtktiledwindow="true"]) #navigator-toolbox:-moz-lwtheme,
-  :root[tabsintitlebar][sizemode="normal"]:not([gtktiledwindow="true"]) ::backdrop {
+  :root[tabsintitlebar][sizemode="normal"]:not([gtktiledwindow="true"]) dialog::backdrop {
     border-top-left-radius: env(-moz-gtk-csd-titlebar-radius);
     border-top-right-radius: env(-moz-gtk-csd-titlebar-radius);
   }
@@ -350,25 +320,13 @@ menuitem.bookmark-item {
     height: calc(var(--tab-min-height) + 2 * var(--tab-block-margin));
   }
 
-  /* Make #TabsToolbar transparent as we style underlying #titlebar with
-   * -moz-window-titlebar (Gtk+ theme). */
-  :root[tabsintitlebar] #TabsToolbar,
-  :root[tabsintitlebar] #toolbar-menubar {
-    appearance: none;
-    color: inherit;
-  }
-
-  :root[tabsintitlebar] #main-menubar {
-    color: inherit;
-  }
-
   /* The button box must appear on top of the navigator-toolbox in order for
    * click and hover mouse events to work properly for the button in the restored
    * window state. Otherwise, elements in the navigator-toolbox, like the menubar,
    * can swallow those events. */
   .titlebar-buttonbox {
     z-index: 1;
-    -moz-box-align: center;
+    align-items: center;
   }
 
   /* Render titlebar command buttons according to system config.
@@ -376,22 +334,22 @@ menuitem.bookmark-item {
   .titlebar-min {
     appearance: auto;
     -moz-default-appearance: -moz-window-button-minimize;
-    -moz-box-ordinal-group: env(-moz-gtk-csd-minimize-button-position);
+    order: env(-moz-gtk-csd-minimize-button-position);
   }
   .titlebar-max {
     appearance: auto;
     -moz-default-appearance: -moz-window-button-maximize;
-    -moz-box-ordinal-group: env(-moz-gtk-csd-maximize-button-position);
+    order: env(-moz-gtk-csd-maximize-button-position);
   }
   .titlebar-restore {
     appearance: auto;
     -moz-default-appearance: -moz-window-button-restore;
-    -moz-box-ordinal-group: env(-moz-gtk-csd-maximize-button-position);
+    order: env(-moz-gtk-csd-maximize-button-position);
   }
   .titlebar-close {
     appearance: auto;
     -moz-default-appearance: -moz-window-button-close;
-    -moz-box-ordinal-group: env(-moz-gtk-csd-close-button-position);
+    order: env(-moz-gtk-csd-close-button-position);
   }
 
   /* When using lightweight themes, use our own buttons since native ones might
@@ -450,7 +408,7 @@ menuitem.bookmark-item {
 
   @media (-moz-gtk-csd-reversed-placement) {
     .titlebar-buttonbox-container {
-      -moz-box-ordinal-group: 0;
+      order: -1;
     }
   }
 }

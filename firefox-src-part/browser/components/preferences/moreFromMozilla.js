@@ -19,7 +19,7 @@ var gMoreFromMozillaPane = {
       return;
     }
 
-    if (value === "default" || value === "simple" || value === "advanced") {
+    if (value === "default" || value === "simple") {
       this._option = value;
     }
   },
@@ -46,7 +46,6 @@ var gMoreFromMozillaPane = {
     const utm_content = {
       default: "default",
       simple: "fxvt-113-a",
-      advanced: "fxvt-113-b",
     };
 
     const experiment_params = {
@@ -58,7 +57,7 @@ var gMoreFromMozillaPane = {
       pageUrl.searchParams.append(key, val);
     }
 
-    // Append region by product to utm_cotent and also
+    // Append region by product to utm_content and also
     // append '-email' when URL is opened
     // from send email link in QRCode box
     if (option) {
@@ -69,7 +68,7 @@ var gMoreFromMozillaPane = {
     }
 
     // Add experiments params when user is shown an experimental UI
-    // with template value as 'simple' or 'advanced' set via Nimbus
+    // with template value as 'simple' set via Nimbus
     if (option !== "default") {
       pageUrl.searchParams.set(
         "entrypoint_experiment",
@@ -129,19 +128,19 @@ var gMoreFromMozillaPane = {
       products.push(vpn);
     }
 
-    if (BrowserUtils.shouldShowRallyPromo()) {
-      const rally = {
-        id: "mozilla-rally",
-        title_string_id: "more-from-moz-mozilla-rally-title",
-        description_string_id: "more-from-moz-mozilla-rally-description",
-        region: "na",
+    if (BrowserUtils.shouldShowPromo(BrowserUtils.PromoType.RELAY)) {
+      const relay = {
+        id: "firefox-relay",
+        title_string_id: "more-from-moz-firefox-relay-title",
+        description_string_id: "more-from-moz-firefox-relay-description",
+        region: "global",
         button: {
-          id: "mozillaRally",
-          label_string_id: "more-from-moz-button-mozilla-rally-2",
-          actionURL: "https://rally.mozilla.org/",
+          id: "firefoxRelay",
+          label_string_id: "more-from-moz-firefox-relay-button",
+          actionURL: "https://relay.firefox.com/",
         },
       };
-      products.push(rally);
+      products.push(relay);
     }
 
     this._productsContainer = document.getElementById(
@@ -163,22 +162,7 @@ var gMoreFromMozillaPane = {
       title.setAttribute("data-l10n-id", product.title_string_id);
       title.id = product.id;
 
-      // Handle advanced template display of product details
-      if (this.option === "advanced") {
-        // So that we can build a selector that applies to .product-info differently
-        // for different products.
-        template.querySelector(
-          ".mozilla-product-item.advanced"
-        ).id = `${product.id}-div`;
-
-        template.querySelector(".product-img").id = `${product.id}-image`;
-        desc.setAttribute(
-          "data-l10n-id",
-          `${product.description_string_id}-advanced`
-        );
-      } else {
-        desc.setAttribute("data-l10n-id", product.description_string_id);
-      }
+      desc.setAttribute("data-l10n-id", product.description_string_id);
 
       let isLink = product.button.type === "link";
       let actionElement = template.querySelector(
@@ -198,9 +182,8 @@ var gMoreFromMozillaPane = {
             "href",
             this.getURL(product.button.actionURL, product.region, this.option)
           );
-          actionElement.setAttribute("target", "_blank");
         } else {
-          actionElement.addEventListener("click", function() {
+          actionElement.addEventListener("click", function () {
             let mainWindow = window.windowRoot.ownerGlobal;
             mainWindow.openTrustedLinkIn(
               gMoreFromMozillaPane.getURL(
@@ -249,10 +232,9 @@ var gMoreFromMozillaPane = {
         // So the telemetry includes info about which option is being used
         qrc_link.id = `${this.option}-${product.qrcode.button.id}`;
 
-        // For supported locales, this link allows users to send themselves a download link by email. It should be hidden for unsupported locales.
-        if (!BrowserUtils.sendToDeviceEmailsSupported()) {
-          qrc_link.classList.add("hidden");
-        } else {
+        // For supported locales, this link allows users to send themselves a
+        // download link by email. It should be hidden for unsupported locales.
+        if (BrowserUtils.sendToDeviceEmailsSupported()) {
           qrc_link.setAttribute(
             "data-l10n-id",
             product.qrcode.button.label.string_id
@@ -263,6 +245,7 @@ var gMoreFromMozillaPane = {
             this.option,
             true
           );
+          qrc_link.hidden = false;
         }
       }
 

@@ -11,7 +11,6 @@
 
 // Worker contexts do not support Services; in that case we have to rely
 // on the support URL redirection.
-const Services = require("Services");
 
 loader.lazyGetter(this, "supportBaseURL", () => {
   // Fallback URL used for worker targets, as well as when app.support.baseURL
@@ -47,7 +46,6 @@ const ErrorDocs = {
   JSMSG_STMT_AFTER_RETURN: "Stmt_after_return",
   JSMSG_NOT_A_CODEPOINT: "Not_a_codepoint",
   JSMSG_BAD_SORT_ARG: "Array_sort_argument",
-  JSMSG_BAD_WITHSORTED_ARG: "Array_withSorted_argument",
   JSMSG_UNEXPECTED_TYPE: "Unexpected_type",
   JSMSG_NOT_DEFINED: "Not_defined",
   JSMSG_NOT_FUNCTION: "Not_a_function",

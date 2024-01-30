@@ -6,10 +6,8 @@ import { createSelector } from "reselect";
 
 import {
   getViewport,
-  getSource,
   getSelectedSource,
   getSelectedSourceTextContent,
-  getBreakpointPositions,
   getBreakpointPositionsForSource,
 } from "./index";
 import { getVisibleBreakpoints } from "./visibleBreakpoints";
@@ -58,9 +56,10 @@ function findBreakpoint(location, breakpointMap) {
   const { line, column } = location;
   const breakpoints = breakpointMap[line]?.[column];
 
-  if (breakpoints) {
-    return breakpoints[0];
+  if (!breakpoints) {
+    return null;
   }
+  return breakpoints[0];
 }
 
 function filterByLineCount(positions, selectedSource) {
@@ -152,19 +151,15 @@ export function getColumnBreakpoints(
 }
 
 const getVisibleBreakpointPositions = createSelector(
-  getSelectedSource,
-  getBreakpointPositions,
-  (source, positions) => {
+  state => {
+    const source = getSelectedSource(state);
     if (!source) {
-      return [];
+      return null;
     }
-
-    const sourcePositions = positions[source.id];
-    if (!sourcePositions) {
-      return [];
-    }
-
-    return convertToList(sourcePositions);
+    return getBreakpointPositionsForSource(state, source.id);
+  },
+  sourcePositions => {
+    return convertToList(sourcePositions || []);
   }
 );
 
@@ -177,15 +172,14 @@ export const visibleColumnBreakpoints = createSelector(
   getColumnBreakpoints
 );
 
-export function getFirstBreakpointPosition(state, { line, sourceId }) {
-  const positions = getBreakpointPositionsForSource(state, sourceId);
-  const source = getSource(state, sourceId);
-
-  if (!source || !positions) {
-    return;
+export function getFirstBreakpointPosition(state, location) {
+  const positions = getBreakpointPositionsForSource(state, location.sourceId);
+  if (!positions) {
+    return null;
   }
 
-  return sortSelectedLocations(convertToList(positions), source).find(
-    position => getSelectedLocation(position, source).line == line
+  return sortSelectedLocations(convertToList(positions), location.source).find(
+    position =>
+      getSelectedLocation(position, location.source).line == location.line
   );
 }

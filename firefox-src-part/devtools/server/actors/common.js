@@ -4,45 +4,45 @@
 
 "use strict";
 
-/**
- * A SourceLocation represents a location in a source.
- *
- * @param SourceActor actor
- *        A SourceActor representing a source.
- * @param Number line
- *        A line within the given source.
- * @param Number column
- *        A column within the given line.
- */
-function SourceLocation(actor, line, column) {
-  this._connection = actor ? actor.conn : null;
-  this._actorID = actor ? actor.actorID : undefined;
-  this._line = line;
-  this._column = column;
-}
+class SourceLocation {
+  /**
+   * A SourceLocation represents a location in a source.
+   *
+   * @param SourceActor actor
+   *        A SourceActor representing a source.
+   * @param Number line
+   *        A line within the given source.
+   * @param Number column
+   *        A column within the given line.
+   */
+  constructor(actor, line, column) {
+    this._connection = actor ? actor.conn : null;
+    this._actorID = actor ? actor.actorID : undefined;
+    this._line = line;
+    this._column = column;
+  }
 
-SourceLocation.prototype = {
   get sourceActor() {
     return this._connection ? this._connection.getActor(this._actorID) : null;
-  },
+  }
 
   get url() {
     return this.sourceActor.url;
-  },
+  }
 
   get line() {
     return this._line;
-  },
+  }
 
   get column() {
     return this._column;
-  },
+  }
 
   get sourceUrl() {
     return this.sourceActor.url;
-  },
+  }
 
-  equals: function(other) {
+  equals(other) {
     return (
       this.sourceActor.url == other.sourceActor.url &&
       this.line === other.line &&
@@ -50,16 +50,16 @@ SourceLocation.prototype = {
         other.column === undefined ||
         this.column === other.column)
     );
-  },
+  }
 
-  toJSON: function() {
+  toJSON() {
     return {
       source: this.sourceActor.form(),
       line: this.line,
       column: this.column,
     };
-  },
-};
+  }
+}
 
 exports.SourceLocation = SourceLocation;
 
@@ -82,7 +82,7 @@ exports.SourceLocation = SourceLocation;
  *          The decorated method.
  */
 function expectState(expectedState, methodFunc, activity) {
-  return function(...args) {
+  return function (...args) {
     if (this.state !== expectedState) {
       const msg =
         `Wrong state while ${activity}:` +
@@ -103,7 +103,7 @@ exports.expectState = expectState;
  * to an instance of this class.
  */
 function actorBridgeWithSpec(methodName) {
-  return function() {
+  return function () {
     return this.bridge[methodName].apply(this.bridge, arguments);
   };
 }

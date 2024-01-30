@@ -4,10 +4,12 @@
 
 "use strict";
 
-const EventEmitter = require("devtools/shared/event-emitter");
+const EventEmitter = require("resource://devtools/shared/event-emitter.js");
 const Debugger = require("Debugger");
 
-const { reportException } = require("devtools/shared/DevToolsUtils");
+const {
+  reportException,
+} = require("resource://devtools/shared/DevToolsUtils.js");
 
 /**
  * Multiple actors that use a |Debugger| instance come in a few versions, each
@@ -71,25 +73,25 @@ module.exports = function makeDebugger({
 
   dbg.uncaughtExceptionHook = reportDebuggerHookException;
 
-  const onNewGlobalObject = function(global) {
+  const onNewGlobalObject = function (global) {
     if (shouldAddNewGlobalAsDebuggee(global)) {
       safeAddDebuggee(this, global);
     }
   };
 
   dbg.onNewGlobalObject = onNewGlobalObject;
-  dbg.addDebuggees = function() {
+  dbg.addDebuggees = function () {
     for (const global of findDebuggees(this)) {
       safeAddDebuggee(this, global);
     }
   };
 
-  dbg.disable = function() {
+  dbg.disable = function () {
     dbg.removeAllDebuggees();
     dbg.onNewGlobalObject = undefined;
   };
 
-  dbg.enable = function() {
+  dbg.enable = function () {
     dbg.addDebuggees();
     dbg.onNewGlobalObject = onNewGlobalObject;
   };

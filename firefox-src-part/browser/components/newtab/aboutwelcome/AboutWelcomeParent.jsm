@@ -5,41 +5,43 @@
 "use strict";
 
 const EXPORTED_SYMBOLS = ["AboutWelcomeParent"];
-const { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm");
 
-const { XPCOMUtils } = ChromeUtils.import(
-  "resource://gre/modules/XPCOMUtils.jsm"
+const { XPCOMUtils } = ChromeUtils.importESModule(
+  "resource://gre/modules/XPCOMUtils.sys.mjs"
 );
 
-XPCOMUtils.defineLazyModuleGetters(this, {
-  AddonManager: "resource://gre/modules/AddonManager.jsm",
-  BrowserUtils: "resource://gre/modules/BrowserUtils.jsm",
-  BuiltInThemes: "resource:///modules/BuiltInThemes.jsm",
-  FxAccounts: "resource://gre/modules/FxAccounts.jsm",
-  MigrationUtils: "resource:///modules/MigrationUtils.jsm",
+const lazy = {};
+
+ChromeUtils.defineESModuleGetters(lazy, {
+  AddonManager: "resource://gre/modules/AddonManager.sys.mjs",
+  BrowserUtils: "resource://gre/modules/BrowserUtils.sys.mjs",
+  BuiltInThemes: "resource:///modules/BuiltInThemes.sys.mjs",
+  FxAccounts: "resource://gre/modules/FxAccounts.sys.mjs",
+  LangPackMatcher: "resource://gre/modules/LangPackMatcher.sys.mjs",
+  ShellService: "resource:///modules/ShellService.sys.mjs",
   SpecialMessageActions:
-    "resource://messaging-system/lib/SpecialMessageActions.jsm",
+    "resource://messaging-system/lib/SpecialMessageActions.sys.mjs",
+});
+
+XPCOMUtils.defineLazyModuleGetters(lazy, {
   AboutWelcomeTelemetry:
     "resource://activity-stream/aboutwelcome/lib/AboutWelcomeTelemetry.jsm",
   AboutWelcomeDefaults:
     "resource://activity-stream/aboutwelcome/lib/AboutWelcomeDefaults.jsm",
-  PromiseUtils: "resource://gre/modules/PromiseUtils.jsm",
-  Region: "resource://gre/modules/Region.jsm",
-  ShellService: "resource:///modules/ShellService.jsm",
-  LangPackMatcher: "resource://gre/modules/LangPackMatcher.jsm",
+  AWScreenUtils: "resource://activity-stream/lib/AWScreenUtils.jsm",
 });
 
-XPCOMUtils.defineLazyGetter(this, "log", () => {
-  const { Logger } = ChromeUtils.import(
-    "resource://messaging-system/lib/Logger.jsm"
+XPCOMUtils.defineLazyGetter(lazy, "log", () => {
+  const { Logger } = ChromeUtils.importESModule(
+    "resource://messaging-system/lib/Logger.sys.mjs"
   );
   return new Logger("AboutWelcomeParent");
 });
 
 XPCOMUtils.defineLazyGetter(
-  this,
+  lazy,
   "Telemetry",
-  () => new AboutWelcomeTelemetry()
+  () => new lazy.AboutWelcomeTelemetry()
 );
 
 const DID_SEE_ABOUT_WELCOME_PREF = "trailhead.firstrun.didSeeAboutWelcome";
@@ -50,70 +52,29 @@ const AWTerminate = {
   ADDRESS_BAR_NAVIGATED: "address-bar-navigated",
 };
 const LIGHT_WEIGHT_THEMES = {
+  AUTOMATIC: "default-theme@mozilla.org",
   DARK: "firefox-compact-dark@mozilla.org",
   LIGHT: "firefox-compact-light@mozilla.org",
-  AUTOMATIC: "default-theme@mozilla.org",
   ALPENGLOW: "firefox-alpenglow@mozilla.org",
-  "ABSTRACT-SOFT": "abstract-soft-colorway@mozilla.org",
-  "ABSTRACT-BALANCED": "abstract-balanced-colorway@mozilla.org",
-  "ABSTRACT-BOLD": "abstract-bold-colorway@mozilla.org",
-  "CHEERS-SOFT": "cheers-soft-colorway@mozilla.org",
-  "CHEERS-BALANCED": "cheers-balanced-colorway@mozilla.org",
-  "CHEERS-BOLD": "cheers-bold-colorway@mozilla.org",
-  "ELEMENTAL-SOFT": "elemental-soft-colorway@mozilla.org",
-  "ELEMENTAL-BALANCED": "elemental-balanced-colorway@mozilla.org",
-  "ELEMENTAL-BOLD": "elemental-bold-colorway@mozilla.org",
-  "FOTO-SOFT": "foto-soft-colorway@mozilla.org",
-  "FOTO-BALANCED": "foto-balanced-colorway@mozilla.org",
-  "FOTO-BOLD": "foto-bold-colorway@mozilla.org",
-  "GRAFFITI-SOFT": "graffiti-soft-colorway@mozilla.org",
-  "GRAFFITI-BALANCED": "graffiti-balanced-colorway@mozilla.org",
-  "GRAFFITI-BOLD": "graffiti-bold-colorway@mozilla.org",
-  "LUSH-SOFT": "lush-soft-colorway@mozilla.org",
-  "LUSH-BALANCED": "lush-balanced-colorway@mozilla.org",
-  "LUSH-BOLD": "lush-bold-colorway@mozilla.org",
+  "PLAYMAKER-SOFT": "playmaker-soft-colorway@mozilla.org",
+  "PLAYMAKER-BALANCED": "playmaker-balanced-colorway@mozilla.org",
+  "PLAYMAKER-BOLD": "playmaker-bold-colorway@mozilla.org",
+  "EXPRESSIONIST-SOFT": "expressionist-soft-colorway@mozilla.org",
+  "EXPRESSIONIST-BALANCED": "expressionist-balanced-colorway@mozilla.org",
+  "EXPRESSIONIST-BOLD": "expressionist-bold-colorway@mozilla.org",
+  "VISIONARY-SOFT": "visionary-soft-colorway@mozilla.org",
+  "VISIONARY-BALANCED": "visionary-balanced-colorway@mozilla.org",
+  "VISIONARY-BOLD": "visionary-bold-colorway@mozilla.org",
+  "ACTIVIST-SOFT": "activist-soft-colorway@mozilla.org",
+  "ACTIVIST-BALANCED": "activist-balanced-colorway@mozilla.org",
+  "ACTIVIST-BOLD": "activist-bold-colorway@mozilla.org",
+  "DREAMER-SOFT": "dreamer-soft-colorway@mozilla.org",
+  "DREAMER-BALANCED": "dreamer-balanced-colorway@mozilla.org",
+  "DREAMER-BOLD": "dreamer-bold-colorway@mozilla.org",
+  "INNOVATOR-SOFT": "innovator-soft-colorway@mozilla.org",
+  "INNOVATOR-BALANCED": "innovator-balanced-colorway@mozilla.org",
+  "INNOVATOR-BOLD": "innovator-bold-colorway@mozilla.org",
 };
-
-async function getImportableSites() {
-  const sites = [];
-
-  // Just handle these chromium-based browsers for now
-  for (const browserId of ["chrome", "chromium-edge", "chromium"]) {
-    // Skip if there's no profile data.
-    const migrator = await MigrationUtils.getMigrator(browserId);
-    if (!migrator) {
-      continue;
-    }
-
-    // Check each profile for top sites
-    const dataPath = await migrator.wrappedJSObject._getChromeUserDataPathIfExists();
-    for (const profile of await migrator.getSourceProfiles()) {
-      let path = PathUtils.join(dataPath, profile.id, "Top Sites");
-      // Skip if top sites data is missing
-      if (!(await IOUtils.exists(path))) {
-        Cu.reportError(`Missing file at ${path}`);
-        continue;
-      }
-
-      try {
-        for (const row of await MigrationUtils.getRowsFromDBWithoutLocks(
-          path,
-          `Importable ${browserId} top sites`,
-          `SELECT url
-           FROM top_sites
-           ORDER BY url_rank`
-        )) {
-          sites.push(row.getString(0));
-        }
-      } catch (ex) {
-        Cu.reportError(
-          `Failed to get importable top sites from ${browserId} ${ex}`
-        );
-      }
-    }
-  }
-  return sites;
-}
 
 class AboutWelcomeObserver {
   constructor() {
@@ -152,7 +113,7 @@ class AboutWelcomeObserver {
   }
 
   stop() {
-    log.debug(`Terminate reason is ${this.terminateReason}`);
+    lazy.log.debug(`Terminate reason is ${this.terminateReason}`);
     Services.obs.removeObserver(this, "quit-application");
     if (!this.win) {
       return;
@@ -160,40 +121,6 @@ class AboutWelcomeObserver {
     this.win.removeEventListener("TabClose", this.onTabClose);
     this.win.removeEventListener("unload", this.onWindowClose);
     this.win = null;
-  }
-}
-
-class RegionHomeObserver {
-  observe(aSubject, aTopic, aData) {
-    switch (aTopic) {
-      case Region.REGION_TOPIC:
-        Services.obs.removeObserver(this, Region.REGION_TOPIC);
-        this.regionHomeDeferred.resolve(Region.home);
-        this.regionHomeDeferred = null;
-        break;
-    }
-  }
-
-  promiseRegionHome() {
-    // Add observer and create promise that should be resolved
-    // with region or rejected inside didDestroy if user exits
-    // before region is available
-    if (!this.regionHomeDeferred) {
-      Services.obs.addObserver(this, Region.REGION_TOPIC);
-      this.regionHomeDeferred = PromiseUtils.defer();
-    }
-    return this.regionHomeDeferred.promise;
-  }
-
-  stop() {
-    if (this.regionHomeDeferred) {
-      Services.obs.removeObserver(this, Region.REGION_TOPIC);
-      // Reject unresolved deferred promise on exit
-      this.regionHomeDeferred.reject(
-        new Error("Unresolved region home promise")
-      );
-      this.regionHomeDeferred = null;
-    }
   }
 }
 
@@ -206,11 +133,11 @@ class AboutWelcomeParent extends JSWindowActorParent {
   // Static methods that calls into ShellService to check
   // if Firefox is pinned or already default
   static doesAppNeedPin() {
-    return ShellService.doesAppNeedPin();
+    return lazy.ShellService.doesAppNeedPin();
   }
 
   static isDefaultBrowser() {
-    return ShellService.isDefaultBrowser();
+    return lazy.ShellService.isDefaultBrowser();
   }
 
   didDestroy() {
@@ -219,7 +146,7 @@ class AboutWelcomeParent extends JSWindowActorParent {
     }
     this.RegionHomeObserver?.stop();
 
-    Telemetry.sendTelemetry({
+    lazy.Telemetry.sendTelemetry({
       event: "SESSION_END",
       event_context: {
         reason: this.AboutWelcomeObserver.terminateReason,
@@ -237,52 +164,45 @@ class AboutWelcomeParent extends JSWindowActorParent {
    * @param {Browser} the xul:browser rendering the page
    */
   async onContentMessage(type, data, browser) {
-    log.debug(`Received content event: ${type}`);
+    lazy.log.debug(`Received content event: ${type}`);
     switch (type) {
       case "AWPage:SET_WELCOME_MESSAGE_SEEN":
         this.AWMessageId = data;
         try {
           Services.prefs.setBoolPref(DID_SEE_ABOUT_WELCOME_PREF, true);
         } catch (e) {
-          log.debug(`Fails to set ${DID_SEE_ABOUT_WELCOME_PREF}.`);
+          lazy.log.debug(`Fails to set ${DID_SEE_ABOUT_WELCOME_PREF}.`);
         }
         break;
       case "AWPage:SPECIAL_ACTION":
-        SpecialMessageActions.handleAction(data, browser);
-        break;
+        return lazy.SpecialMessageActions.handleAction(data, browser);
       case "AWPage:FXA_METRICS_FLOW_URI":
-        return FxAccounts.config.promiseMetricsFlowURI("aboutwelcome");
-      case "AWPage:IMPORTABLE_SITES":
-        return getImportableSites();
+        return lazy.FxAccounts.config.promiseMetricsFlowURI("aboutwelcome");
       case "AWPage:TELEMETRY_EVENT":
-        Telemetry.sendTelemetry(data);
+        lazy.Telemetry.sendTelemetry(data);
         break;
       case "AWPage:GET_ATTRIBUTION_DATA":
-        let attributionData = await AboutWelcomeDefaults.getAttributionContent();
+        let attributionData =
+          await lazy.AboutWelcomeDefaults.getAttributionContent();
         return attributionData;
       case "AWPage:SELECT_THEME":
-        await BuiltInThemes.ensureBuiltInThemes();
-        return AddonManager.getAddonByID(
-          LIGHT_WEIGHT_THEMES[data]
-        ).then(addon => addon.enable());
+        await lazy.BuiltInThemes.ensureBuiltInThemes();
+        return lazy.AddonManager.getAddonByID(LIGHT_WEIGHT_THEMES[data]).then(
+          addon => addon.enable()
+        );
       case "AWPage:GET_SELECTED_THEME":
-        let themes = await AddonManager.getAddonsByTypes(["theme"]);
+        let themes = await lazy.AddonManager.getAddonsByTypes(["theme"]);
         let activeTheme = themes.find(addon => addon.isActive);
-
+        // Store the current theme ID so user can restore their previous theme.
+        if (activeTheme?.id) {
+          LIGHT_WEIGHT_THEMES.AUTOMATIC = activeTheme.id;
+        }
         // convert this to the short form name that the front end code
         // expects
         let themeShortName = Object.keys(LIGHT_WEIGHT_THEMES).find(
           key => LIGHT_WEIGHT_THEMES[key] === activeTheme?.id
         );
         return themeShortName?.toLowerCase();
-      case "AWPage:GET_REGION":
-        if (Region.home !== null) {
-          return Region.home;
-        }
-        if (!this.RegionHomeObserver) {
-          this.RegionHomeObserver = new RegionHomeObserver(this);
-        }
-        return this.RegionHomeObserver.promiseRegionHome();
       case "AWPage:DOES_APP_NEED_PIN":
         return AboutWelcomeParent.doesAppNeedPin();
       case "AWPage:NEED_DEFAULT":
@@ -292,31 +212,36 @@ class AboutWelcomeParent extends JSWindowActorParent {
           !AboutWelcomeParent.isDefaultBrowser()
         );
       case "AWPage:WAIT_FOR_MIGRATION_CLOSE":
-        return new Promise(resolve =>
-          Services.ww.registerNotification(function observer(subject, topic) {
-            if (
-              topic === "domwindowclosed" &&
-              subject.document.documentURI ===
-                "chrome://browser/content/migration/migration.xhtml"
-            ) {
-              Services.ww.unregisterNotification(observer);
-              resolve();
-            }
-          })
-        );
+        // Support multiples types of migration: 1) content modal 2) old
+        // migration modal 3) standalone content modal
+        return new Promise(resolve => {
+          const topics = [
+            "MigrationWizard:Closed",
+            "MigrationWizard:Destroyed",
+          ];
+          const observer = () => {
+            topics.forEach(t => Services.obs.removeObserver(observer, t));
+            resolve();
+          };
+          topics.forEach(t => Services.obs.addObserver(observer, t));
+        });
       case "AWPage:GET_APP_AND_SYSTEM_LOCALE_INFO":
-        return LangPackMatcher.getAppAndSystemLocaleInfo();
+        return lazy.LangPackMatcher.getAppAndSystemLocaleInfo();
+      case "AWPage:EVALUATE_SCREEN_TARGETING":
+        return lazy.AWScreenUtils.evaluateTargetingAndRemoveScreens(data);
+      case "AWPage:ADD_SCREEN_IMPRESSION":
+        return lazy.AWScreenUtils.addScreenImpression(data);
       case "AWPage:NEGOTIATE_LANGPACK":
-        return LangPackMatcher.negotiateLangPackForLanguageMismatch(data);
+        return lazy.LangPackMatcher.negotiateLangPackForLanguageMismatch(data);
       case "AWPage:ENSURE_LANG_PACK_INSTALLED":
-        return LangPackMatcher.ensureLangPackInstalled(data);
+        return lazy.LangPackMatcher.ensureLangPackInstalled(data);
       case "AWPage:SET_REQUESTED_LOCALES":
-        return LangPackMatcher.setRequestedAppLocales(data);
+        return lazy.LangPackMatcher.setRequestedAppLocales(data);
       case "AWPage:SEND_TO_DEVICE_EMAILS_SUPPORTED": {
-        return BrowserUtils.sendToDeviceEmailsSupported();
+        return lazy.BrowserUtils.sendToDeviceEmailsSupported();
       }
       default:
-        log.debug(`Unexpected event ${type} was not handled.`);
+        lazy.log.debug(`Unexpected event ${type} was not handled.`);
     }
 
     return undefined;
@@ -335,7 +260,7 @@ class AboutWelcomeParent extends JSWindowActorParent {
       return this.onContentMessage(name, data, browser);
     }
 
-    log.warn(`Not handling ${name} because the browser doesn't exist.`);
+    lazy.log.warn(`Not handling ${name} because the browser doesn't exist.`);
     return null;
   }
 }

@@ -7,6 +7,10 @@
 
 /* exported ArrayBuffer_transfer, Library, SubprocessConstants */
 
+// ctypes is either already available in the chrome worker scope, or defined
+// in scope via loadSubScript.
+/* global ctypes */
+
 /**
  * Returns a new ArrayBuffer whose contents have been taken from the `buffer`'s
  * data and then is either truncated or zero-extended by `size`. If `size` is
@@ -17,7 +21,7 @@
  * @param {integer} [size = buffer.byteLength]
  * @returns {ArrayBuffer}
  */
-var ArrayBuffer_transfer = function(buffer, size = buffer.byteLength) {
+var ArrayBuffer_transfer = function (buffer, size = buffer.byteLength) {
   let u8out = new Uint8Array(size);
   let u8buffer = new Uint8Array(buffer, 0, Math.min(size, buffer.byteLength));
   u8out.set(u8buffer);
@@ -69,6 +73,7 @@ var Library = class Library {
 
 /**
  * Holds constants which apply to various Subprocess operations.
+ *
  * @namespace
  * @lends Subprocess
  */

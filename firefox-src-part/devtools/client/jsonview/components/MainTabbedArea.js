@@ -4,7 +4,7 @@
 
 "use strict";
 
-define(function(require, exports, module) {
+define(function (require, exports, module) {
   const { Component } = require("devtools/client/shared/vendor/react");
   const PropTypes = require("devtools/client/shared/vendor/react-prop-types");
   const { createFactories } = require("devtools/client/shared/react-utils");
@@ -69,6 +69,7 @@ define(function(require, exports, module) {
         {
           activeTab: this.state.activeTab,
           onAfterChange: this.onTabChanged,
+          tall: true,
         },
         TabPanel(
           {

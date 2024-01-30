@@ -6,12 +6,6 @@
 
 "use strict";
 
-ChromeUtils.defineModuleGetter(
-  this,
-  "Services",
-  "resource://gre/modules/Services.jsm"
-);
-
 var { withHandlingUserInput } = ExtensionCommon;
 
 var { ExtensionError } = ExtensionUtils;
@@ -258,8 +252,8 @@ this.menusInternal = class extends ExtensionAPI {
               pendingMenuEvent = null;
               Services.obs.removeObserver(this, "on-prepare-contextmenu");
               subject = subject.wrappedJSObject;
-              if (context.principal.subsumes(subject.context.principal)) {
-                subject.webExtContextData = this.webExtContextData;
+              if (context.principal.subsumes(subject.principal)) {
+                subject.setWebExtContextData(this.webExtContextData);
               }
             },
             run() {

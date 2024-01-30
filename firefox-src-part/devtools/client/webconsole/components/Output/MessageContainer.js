@@ -5,33 +5,36 @@
 "use strict";
 
 // React & Redux
-const { Component } = require("devtools/client/shared/vendor/react");
+const {
+  Component,
+} = require("resource://devtools/client/shared/vendor/react.js");
 loader.lazyRequireGetter(
   this,
   "PropTypes",
-  "devtools/client/shared/vendor/react-prop-types"
+  "resource://devtools/client/shared/vendor/react-prop-types.js"
 );
 loader.lazyRequireGetter(
   this,
   "isWarningGroup",
-  "devtools/client/webconsole/utils/messages",
+  "resource://devtools/client/webconsole/utils/messages.js",
   true
 );
 
 const {
   MESSAGE_SOURCE,
   MESSAGE_TYPE,
-} = require("devtools/client/webconsole/constants");
+} = require("resource://devtools/client/webconsole/constants.js");
 
-const ConsoleApiCall = require("devtools/client/webconsole/components/Output/message-types/ConsoleApiCall");
-const ConsoleCommand = require("devtools/client/webconsole/components/Output/message-types/ConsoleCommand");
-const CSSWarning = require("devtools/client/webconsole/components/Output/message-types/CSSWarning");
-const DefaultRenderer = require("devtools/client/webconsole/components/Output/message-types/DefaultRenderer");
-const EvaluationResult = require("devtools/client/webconsole/components/Output/message-types/EvaluationResult");
-const NetworkEventMessage = require("devtools/client/webconsole/components/Output/message-types/NetworkEventMessage");
-const PageError = require("devtools/client/webconsole/components/Output/message-types/PageError");
-const SimpleTable = require("devtools/client/webconsole/components/Output/message-types/SimpleTable");
-const WarningGroup = require("devtools/client/webconsole/components/Output/message-types/WarningGroup");
+const ConsoleApiCall = require("resource://devtools/client/webconsole/components/Output/message-types/ConsoleApiCall.js");
+const ConsoleCommand = require("resource://devtools/client/webconsole/components/Output/message-types/ConsoleCommand.js");
+const CSSWarning = require("resource://devtools/client/webconsole/components/Output/message-types/CSSWarning.js");
+const DefaultRenderer = require("resource://devtools/client/webconsole/components/Output/message-types/DefaultRenderer.js");
+const EvaluationResult = require("resource://devtools/client/webconsole/components/Output/message-types/EvaluationResult.js");
+const NavigationMarker = require("resource://devtools/client/webconsole/components/Output/message-types/NavigationMarker.js");
+const NetworkEventMessage = require("resource://devtools/client/webconsole/components/Output/message-types/NetworkEventMessage.js");
+const PageError = require("resource://devtools/client/webconsole/components/Output/message-types/PageError.js");
+const SimpleTable = require("resource://devtools/client/webconsole/components/Output/message-types/SimpleTable.js");
+const WarningGroup = require("resource://devtools/client/webconsole/components/Output/message-types/WarningGroup.js");
 
 class MessageContainer extends Component {
   static get propTypes() {
@@ -47,6 +50,7 @@ class MessageContainer extends Component {
       networkMessageUpdate: PropTypes.object,
       getMessage: PropTypes.func.isRequired,
       inWarningGroup: PropTypes.bool,
+      disabled: PropTypes.bool,
     };
   }
 
@@ -59,6 +63,7 @@ class MessageContainer extends Component {
       "networkMessageUpdate",
       "badge",
       "inWarningGroup",
+      "disabled",
     ];
 
     return triggeringUpdateProps.some(
@@ -107,6 +112,9 @@ function getMessageComponent(message) {
       }
       if (message.type === MESSAGE_TYPE.SIMPLE_TABLE) {
         return SimpleTable;
+      }
+      if (message.type === MESSAGE_TYPE.NAVIGATION_MARKER) {
+        return NavigationMarker;
       }
       break;
   }

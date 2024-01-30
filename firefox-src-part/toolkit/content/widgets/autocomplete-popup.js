@@ -8,7 +8,9 @@
 // leaking to window scope.
 {
   const MozPopupElement = MozElements.MozElementMixin(XULPopupElement);
-  MozElements.MozAutocompleteRichlistboxPopup = class MozAutocompleteRichlistboxPopup extends MozPopupElement {
+  MozElements.MozAutocompleteRichlistboxPopup = class MozAutocompleteRichlistboxPopup extends (
+    MozPopupElement
+  ) {
     constructor() {
       super();
 
@@ -69,9 +71,8 @@
 
             switch (event.type) {
               case "mousedown":
-                this._disabledItemClicked = !!event.target.closest(
-                  "richlistitem"
-                )?.disabled;
+                this._disabledItemClicked =
+                  !!event.target.closest("richlistitem")?.disabled;
                 break;
               case "mouseup":
                 // Don't call onPopupClick for the scrollbar buttons, thumb,
@@ -127,7 +128,7 @@
 
     static get markup() {
       return `
-      <richlistbox class="autocomplete-richlistbox" flex="1"/>
+      <richlistbox class="autocomplete-richlistbox"/>
     `;
     }
 
@@ -294,7 +295,7 @@
       }
 
       if (this.mPopupOpen) {
-        delete this._adjustHeightOnPopupShown;
+        this._adjustHeightOnPopupShown = false;
         this._adjustHeightRAFToken = requestAnimationFrame(() =>
           this.adjustHeight()
         );
@@ -353,12 +354,9 @@
 
       this._collapseUnusedItems();
 
-      this.richlistbox.style.removeProperty("height");
-      // We need to get the ceiling of the calculated value to ensure that the box fully contains
-      // all of its contents and doesn't cause a scrollbar since nsIBoxObject only expects a
-      // `long`. e.g. if `height` is 99.5 the richlistbox would render at height 99px with a
-      // scrollbar for the extra 0.5px.
-      this.richlistbox.height = Math.ceil(height);
+      // We need to get the ceiling of the calculated value to ensure that the
+      // box fully contains all of its contents and doesn't cause a scrollbar.
+      this.richlistbox.style.height = Math.ceil(height) + "px";
     }
 
     _appendCurrentResult(invalidateReason) {
@@ -406,6 +404,7 @@
             "autofill-clear-button",
             "autofill-insecureWarning",
             "generatedPassword",
+            "generic",
             "importableLearnMore",
             "importableLogins",
             "insecureWarning",
@@ -437,6 +436,9 @@
               break;
             case "autofill-insecureWarning":
               options = { is: "autocomplete-creditcard-insecure-field" };
+              break;
+            case "generic":
+              options = { is: "autocomplete-generic-richlistitem" };
               break;
             case "importableLearnMore":
               options = {
@@ -575,7 +577,7 @@
 
       this.addEventListener("popupshown", event => {
         if (this._adjustHeightOnPopupShown) {
-          delete this._adjustHeightOnPopupShown;
+          this._adjustHeightOnPopupShown = false;
           this.adjustHeight();
         }
       });

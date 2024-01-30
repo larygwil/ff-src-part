@@ -17,8 +17,8 @@ import { getDocument } from "../../utils/editor";
 class Exceptions extends Component {
   static get propTypes() {
     return {
-      exceptions: PropTypes.array.isRequired,
-      selectedSource: PropTypes.object.isRequired,
+      exceptions: PropTypes.array,
+      selectedSource: PropTypes.object,
     };
   }
 
@@ -38,7 +38,7 @@ class Exceptions extends Component {
             exception={exc}
             doc={doc}
             key={`${exc.sourceActorId}:${exc.lineNumber}`}
-            selectedSourceId={selectedSource.id}
+            selectedSource={selectedSource}
           />
         ))}
       </>
@@ -46,7 +46,22 @@ class Exceptions extends Component {
   }
 }
 
-export default connect(state => ({
-  exceptions: getSelectedSourceExceptions(state),
-  selectedSource: getSelectedSource(state),
-}))(Exceptions);
+export default connect(state => {
+  const selectedSource = getSelectedSource(state);
+
+  // Avoid calling getSelectedSourceExceptions when there is no source selected.
+  if (!selectedSource) {
+    return {};
+  }
+
+  // Avoid causing any update until we start having exceptions
+  const exceptions = getSelectedSourceExceptions(state);
+  if (!exceptions.length) {
+    return {};
+  }
+
+  return {
+    exceptions: getSelectedSourceExceptions(state),
+    selectedSource,
+  };
+})(Exceptions);

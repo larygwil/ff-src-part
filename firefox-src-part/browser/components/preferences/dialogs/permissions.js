@@ -2,34 +2,46 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-var { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm");
-var { AppConstants } = ChromeUtils.import(
-  "resource://gre/modules/AppConstants.jsm"
+var { AppConstants } = ChromeUtils.importESModule(
+  "resource://gre/modules/AppConstants.sys.mjs"
+);
+
+var { XPCOMUtils } = ChromeUtils.importESModule(
+  "resource://gre/modules/XPCOMUtils.sys.mjs"
+);
+
+const lazy = {};
+
+XPCOMUtils.defineLazyServiceGetter(
+  lazy,
+  "contentBlockingAllowList",
+  "@mozilla.org/content-blocking-allow-list;1",
+  "nsIContentBlockingAllowList"
 );
 
 const permissionExceptionsL10n = {
   trackingprotection: {
-    window: "permissions-exceptions-etp-window",
-    description: "permissions-exceptions-etp-desc",
+    window: "permissions-exceptions-etp-window2",
+    description: "permissions-exceptions-manage-etp-desc",
   },
   cookie: {
-    window: "permissions-exceptions-cookie-window",
+    window: "permissions-exceptions-cookie-window2",
     description: "permissions-exceptions-cookie-desc",
   },
   popup: {
-    window: "permissions-exceptions-popup-window",
+    window: "permissions-exceptions-popup-window2",
     description: "permissions-exceptions-popup-desc",
   },
   "login-saving": {
-    window: "permissions-exceptions-saved-logins-window",
+    window: "permissions-exceptions-saved-logins-window2",
     description: "permissions-exceptions-saved-logins-desc",
   },
   "https-only-load-insecure": {
-    window: "permissions-exceptions-https-only-window",
+    window: "permissions-exceptions-https-only-window2",
     description: "permissions-exceptions-https-only-desc",
   },
   install: {
-    window: "permissions-exceptions-addons-window",
+    window: "permissions-exceptions-addons-window2",
     description: "permissions-exceptions-addons-desc",
   },
 };
@@ -72,6 +84,7 @@ var gPermissionManager = {
 
     this._btnCookieSession = document.getElementById("btnCookieSession");
     this._btnBlock = document.getElementById("btnBlock");
+    this._btnDisableETP = document.getElementById("btnDisableETP");
     this._btnAllow = document.getElementById("btnAllow");
     this._btnHttpsOnlyOff = document.getElementById("btnHttpsOnlyOff");
     this._btnHttpsOnlyOffTmp = document.getElementById("btnHttpsOnlyOffTmp");
@@ -83,7 +96,10 @@ var gPermissionManager = {
     document.l10n.setAttributes(document.documentElement, l10n.window);
 
     let urlFieldVisible =
-      params.blockVisible || params.sessionVisible || params.allowVisible;
+      params.blockVisible ||
+      params.sessionVisible ||
+      params.allowVisible ||
+      params.disableETPVisible;
 
     this._urlField = document.getElementById("url");
     this._urlField.value = params.prefilledHost;
@@ -94,6 +110,7 @@ var gPermissionManager = {
       document.documentElement,
     ]);
 
+    document.getElementById("btnDisableETP").hidden = !params.disableETPVisible;
     document.getElementById("btnBlock").hidden = !params.blockVisible;
     document.getElementById("btnCookieSession").hidden = !(
       params.sessionVisible && this._type == "cookie"
@@ -305,7 +322,13 @@ var gPermissionManager = {
         });
       return;
     }
-
+    // In case of an ETP exception we compute the contentBlockingAllowList principal
+    // to align with the allow list behavior triggered by the protections panel
+    if (this._type == "trackingprotection") {
+      principals = principals.map(
+        lazy.contentBlockingAllowList.computeContentBlockingAllowListPrincipal
+      );
+    }
     for (let principal of principals) {
       this._addOrModifyPermission(principal, capability);
     }
@@ -355,16 +378,15 @@ var gPermissionManager = {
     let richlistitem = document.createXULElement("richlistitem");
     richlistitem.setAttribute("origin", permission.origin);
     let row = document.createXULElement("hbox");
-    row.setAttribute("flex", "1");
+    row.setAttribute("style", "flex: 1");
 
     let hbox = document.createXULElement("hbox");
     let website = document.createXULElement("label");
     website.setAttribute("disabled", disabledByPolicy);
     website.setAttribute("class", "website-name-value");
     website.setAttribute("value", permission.origin);
-    hbox.setAttribute("width", "0");
     hbox.setAttribute("class", "website-name");
-    hbox.setAttribute("flex", "3");
+    hbox.setAttribute("style", "flex: 3 3; width: 0");
     hbox.appendChild(website);
     row.appendChild(hbox);
 
@@ -377,9 +399,8 @@ var gPermissionManager = {
         capability,
         this._getCapabilityL10nId(permission.capability)
       );
-      hbox.setAttribute("width", "0");
       hbox.setAttribute("class", "website-name");
-      hbox.setAttribute("flex", "1");
+      hbox.setAttribute("style", "flex: 1; width: 0");
       hbox.appendChild(capability);
       row.appendChild(hbox);
     }
@@ -422,6 +443,8 @@ var gPermissionManager = {
         document.getElementById("btnBlock").click();
       } else if (!document.getElementById("btnHttpsOnlyOff").hidden) {
         document.getElementById("btnHttpsOnlyOff").click();
+      } else if (!document.getElementById("btnDisableETP").hidden) {
+        document.getElementById("btnDisableETP").click();
       }
     }
   },
@@ -434,6 +457,8 @@ var gPermissionManager = {
     this._btnHttpsOnlyOffTmp.disabled =
       this._btnHttpsOnlyOffTmp.hidden || !siteField.value;
     this._btnBlock.disabled = this._btnBlock.hidden || !siteField.value;
+    this._btnDisableETP.disabled =
+      this._btnDisableETP.hidden || !siteField.value;
     this._btnAllow.disabled = this._btnAllow.hidden || !siteField.value;
   },
 

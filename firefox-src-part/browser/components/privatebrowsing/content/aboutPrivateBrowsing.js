@@ -2,17 +2,14 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-/* eslint-env mozilla/frame-script */
+/* eslint-env mozilla/remote-page */
 
 /**
  * Determines whether a given value is a fluent id or plain text and adds it to an element
  * @param {Array<[HTMLElement, string]>} items An array of [element, value] where value is
  *                                       a fluent id starting with "fluent:" or plain text
  */
-async function translateElements(container, items) {
-  // We need to wait for fluent to initialize
-  await document.l10n.ready;
-
+function translateElements(items) {
   items.forEach(([element, value]) => {
     // Skip empty text or elements
     if (!element || !value) {
@@ -26,11 +23,9 @@ async function translateElements(container, items) {
       element.removeAttribute("data-l10n-id");
     }
   });
-
-  document.l10n.translateFragment(container);
 }
 
-async function renderInfo({
+function renderInfo({
   infoEnabled = false,
   infoTitle,
   infoTitleEnabled,
@@ -40,7 +35,7 @@ async function renderInfo({
   infoIcon,
 } = {}) {
   const container = document.querySelector(".info");
-  if (infoEnabled === false) {
+  if (!infoEnabled) {
     container.remove();
     return;
   }
@@ -57,7 +52,7 @@ async function renderInfo({
     titleEl.remove();
   }
 
-  await translateElements(container, [
+  translateElements([
     [titleEl, infoTitle],
     [bodyEl, infoBody],
     [linkEl, infoLinkText],
@@ -82,7 +77,6 @@ async function renderPromo({
   promoTitle,
   promoTitleEnabled,
   promoLinkText,
-  promoLinkUrl,
   promoLinkType,
   promoSectionStyle,
   promoHeader,
@@ -98,27 +92,23 @@ async function renderPromo({
     return false;
   }
 
-  const titleEl = document.getElementById("private-browsing-vpn-text");
-  let linkEl = document.getElementById("private-browsing-vpn-link");
+  const titleEl = document.getElementById("private-browsing-promo-text");
+  const linkEl = document.getElementById("private-browsing-promo-link");
   const promoHeaderEl = document.getElementById("promo-header");
   const infoContainerEl = document.querySelector(".info");
   const promoImageLargeEl = document.querySelector(".promo-image-large img");
   const promoImageSmallEl = document.querySelector(".promo-image-small img");
   const dismissBtn = document.querySelector("#dismiss-btn");
 
-  if (promoLinkType === "button") {
-    linkEl.classList.add("button");
+  if (promoLinkType === "link") {
+    linkEl.classList.remove("primary");
+    linkEl.classList.add("text-link", "promo-link");
   }
 
-  if (promoLinkUrl) {
-    linkEl.setAttribute("href", promoLinkUrl);
-    linkEl.setAttribute("target", "_blank");
-    linkEl.addEventListener("click", () => {
-      window.PrivateBrowsingRecordClick("promo_link");
-    });
-  } else if (promoButton?.action) {
+  if (promoButton?.action) {
     linkEl.addEventListener("click", async event => {
       event.preventDefault();
+
       // Record promo click telemetry and set metrics as allow for spotlight
       // modal opened on promo click if user is enrolled in an experiment
       let isExperiment = window.PrivateBrowsingRecordClick("promo_link");
@@ -133,7 +123,7 @@ async function renderPromo({
       await RPMSendQuery("SpecialMessageActionDispatch", promoButton.action);
     });
   } else {
-    // If the link is undefined, remove the promo completely
+    // If the action doesn't exist, remove the promo completely
     container.remove();
     return false;
   }
@@ -185,7 +175,7 @@ async function renderPromo({
     promoHeaderEl.remove();
   }
 
-  await translateElements(container, [
+  translateElements([
     [titleEl, promoTitle],
     [linkEl, promoLinkText],
     [promoHeaderEl, promoHeader],
@@ -228,7 +218,7 @@ function recordOnceVisible(message) {
 }
 
 // The PB newtab may be pre-rendered. Once the tab is visible, check to make sure the message wasn't blocked after the initial render. If it was, remove the promo.
-async function handlePromoOnPreload(message) {
+function handlePromoOnPreload(message) {
   async function removePromoIfBlocked() {
     if (document.visibilityState === "visible") {
       let blocked = await RPMSendQuery("IsPromoBlocked", message);
@@ -245,15 +235,10 @@ async function handlePromoOnPreload(message) {
   }
 }
 
-async function setupFeatureConfig() {
-  let config = null;
+async function setupMessageConfig(config = null) {
   let message = null;
 
-  try {
-    config = window.PrivateBrowsingFeatureConfig();
-  } catch (e) {}
-
-  if (!Object.keys(config).length) {
+  if (!config) {
     let hideDefault = window.PrivateBrowsingShouldHideDefault();
     try {
       let response = await window.ASRouterMessage({
@@ -266,31 +251,49 @@ async function setupFeatureConfig() {
     } catch (e) {}
   }
 
-  await renderInfo(config);
+  renderInfo(config);
   let hasRendered = await renderPromo(config);
   if (hasRendered && message) {
     recordOnceVisible(message);
-    await handlePromoOnPreload(message);
+    handlePromoOnPreload(message);
   }
   // For tests
   document.documentElement.setAttribute("PrivateBrowsingRenderComplete", true);
 }
 
-document.addEventListener("DOMContentLoaded", function() {
+let SHOW_DEVTOOLS_MESSAGE = "ShowDevToolsMessage";
+
+function showDevToolsMessage(msg) {
+  msg.data.content.messageId = "DEVTOOLS_MESSAGE";
+  setupMessageConfig(msg?.data?.content);
+  RPMRemoveMessageListener(SHOW_DEVTOOLS_MESSAGE, showDevToolsMessage);
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+  // check the url to see if we're rendering a devtools message
+  if (document.location.toString().includes("debug")) {
+    RPMAddMessageListener(SHOW_DEVTOOLS_MESSAGE, showDevToolsMessage);
+    return;
+  }
   if (!RPMIsWindowPrivate()) {
     document.documentElement.classList.remove("private");
     document.documentElement.classList.add("normal");
     document
       .getElementById("startPrivateBrowsing")
-      .addEventListener("click", function() {
+      .addEventListener("click", function () {
         RPMSendAsyncMessage("OpenPrivateWindow");
       });
     return;
   }
 
+  let newLogoEnabled = window.PrivateBrowsingEnableNewLogo();
+  document
+    .getElementById("about-private-browsing-logo")
+    .toggleAttribute("legacy", !newLogoEnabled);
+
   // We don't do this setup until now, because we don't want to record any impressions until we're
   // sure we're actually running a private window, not just about:privatebrowsing in a normal window.
-  setupFeatureConfig();
+  setupMessageConfig();
 
   // Set up the private search banner.
   const privateSearchBanner = document.getElementById("search-banner");
@@ -397,22 +400,22 @@ document.addEventListener("DOMContentLoaded", function() {
       RPMAddMessageListener(DISABLE_SEARCH_TOPIC, disableSearch);
     }
   }
-  btn.addEventListener("focus", function() {
+  btn.addEventListener("focus", function () {
     handoffSearch();
   });
-  btn.addEventListener("click", function() {
+  btn.addEventListener("click", function () {
     handoffSearch();
   });
 
   // Hand-off any text that gets dropped or pasted
-  editable.addEventListener("drop", function(ev) {
+  editable.addEventListener("drop", function (ev) {
     ev.preventDefault();
     let text = ev.dataTransfer.getData("text");
     if (text) {
       handoffSearch(text);
     }
   });
-  editable.addEventListener("paste", function(ev) {
+  editable.addEventListener("paste", function (ev) {
     ev.preventDefault();
     handoffSearch(ev.clipboardData.getData("Text"));
   });

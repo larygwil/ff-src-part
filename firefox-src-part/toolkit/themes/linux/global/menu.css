@@ -17,59 +17,39 @@ menubar {
   font: menu;
 }
 
-
 menu,
 menuitem,
 menucaption {
-  appearance: auto;
-  -moz-default-appearance: menuitem;
-  -moz-box-align: center;
+  border-radius: calc(var(--panel-border-radius) / 2);
+  align-items: center;
+  flex-shrink: 0;
   padding: 4px 6px;
   max-width: 42em;
   list-style-image: none;
-  -moz-image-region: auto;
-
-  /* Specify our background to avoid triggering reflows on hover. This is an
-   * optimization, as backgrounds don't disable theming on XUL elements, but
-   * also papers over bug 1653832. */
-  background-color: initial;
 }
 
-menu[_moz-menuactive="true"],
-menuitem[_moz-menuactive="true"] {
+menu:where([_moz-menuactive]:not([disabled="true"])),
+menuitem:where([_moz-menuactive]:not([disabled="true"])) {
   color: -moz-menuhovertext;
   background-color: -moz-menuhover;
 }
 
-menuitem[customoptionstyling="true"] {
-  appearance: none;
-}
-
-menu[disabled="true"],
-menuitem[disabled="true"],
-menucaption[disabled="true"] {
+menu:where([disabled="true"]),
+menuitem:where([disabled="true"]),
+menucaption:where([disabled="true"]) {
   color: GrayText;
 }
 
 menubar > menu {
-  padding: 0 4px;
-}
-
-menubar:-moz-lwtheme > menu {
-  text-shadow: none;
-}
-
-menubar:-moz-lwtheme > menu:not([open]) {
-  text-shadow: inherit;
-}
-
-menubar > menu:not([open], [disabled="true"]) {
   color: inherit;
+  background-color: transparent;
+  border-radius: 0;
+  padding-bottom: 1px;
+  border-bottom: 3px solid transparent;
 }
 
 menubar > menu[open] {
-  color: -moz-menubarhovertext;
-  background-color: -moz-menuhover;
+  border-bottom-color: AccentColor;
 }
 
 menuitem[default="true"],
@@ -112,11 +92,11 @@ menulist > menupopup > :is(menuitem, menucaption, menu) {
 }
 
 .menu-accel-container {
-  -moz-box-pack: end;
+  justify-content: flex-end;
 }
 
 .menu-iconic-left {
-  width: 16px;
+  min-width: 16px;
   /* We can only hardcode this, to make the default GTK icon<->label spacing */
   padding-inline-end: 3px !important;
 }
@@ -135,7 +115,6 @@ menulist > menupopup > :is(menuitem, menucaption, menu) {
   height: 1ex;
   /* These next two rules are needed to prevent inheritance and thus ugliness */
   list-style-image: none;
-  -moz-image-region: auto;
   appearance: auto;
   -moz-default-appearance: menuarrow;
 }
@@ -151,28 +130,27 @@ menulist > menupopup > :is(menuitem, menucaption, menu) {
   margin: 0 1px !important;
 }
 
-
 menulist > menupopup > :is(menuitem, menucaption, menu) > .menu-iconic-left {
   display: none;
 }
 
-/* ::::: checkbox menuitem ::::: */
-
-menuitem:is([type="checkbox"], [checked="true"]) {
-  appearance: auto !important;
-  -moz-default-appearance: checkmenuitem !important;
+menuitem:is([type="checkbox"], [checked="true"]) .menu-iconic-icon {
+  appearance: auto;
+  -moz-default-appearance: checkbox;
 }
 
-/* ::::: radio menuitem ::::: */
-
-menuitem[type="radio"] {
-  appearance: auto !important;
-  -moz-default-appearance: radiomenuitem !important;
+menuitem[type="radio"] .menu-iconic-icon {
+  appearance: auto;
+  -moz-default-appearance: radio;
 }
-
-/* ::::: menuseparator ::::: */
 
 menuseparator {
-  appearance: auto !important;
-  -moz-default-appearance: menuseparator !important;
+  margin-block: 2px;
+  border-top: 1px solid color-mix(in srgb, currentColor 20%, transparent);
+}
+
+@media (prefers-contrast) {
+  menuseparator {
+    border-top-color: var(--panel-border-color);
+  }
 }

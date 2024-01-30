@@ -6,7 +6,6 @@
 <?xml-stylesheet href="chrome://global/skin/global.css"?>
 
 <?xml-stylesheet href="chrome://global/skin/in-content/common.css"?>
-<?xml-stylesheet href="chrome://global/skin/in-content/toggle-button.css"?>
 <?xml-stylesheet href="chrome://browser/skin/preferences/preferences.css"?>
 <?xml-stylesheet href="chrome://browser/content/preferences/dialogs/handlers.css"?>
 <?xml-stylesheet href="chrome://browser/skin/preferences/applications.css"?>
@@ -29,31 +28,33 @@
 
   <meta name="color-scheme" content="light dark" />
   <link rel="localization" href="branding/brand.ftl"/>
-  <link rel="localization" href="browser/branding/brandings.ftl"/>
-  <link rel="localization" href="browser/branding/sync-brand.ftl"/>
   <link rel="localization" href="browser/browser.ftl"/>
-  <link rel="localization" href="browser/preferences/preferences.ftl"/>
-  <link rel="localization" href="browser/preferences/moreFromMozilla.ftl"/>
-  <!-- Used by fontbuilder.js -->
+    <!-- Used by fontbuilder.js -->
   <link rel="localization" href="browser/preferences/fonts.ftl"/>
+  <link rel="localization" href="browser/preferences/moreFromMozilla.ftl"/>
+  <link rel="localization" href="browser/preferences/preferences.ftl"/>
+  <link rel="localization" href="toolkit/branding/accounts.ftl"/>
+  <link rel="localization" href="toolkit/branding/brandings.ftl"/>
   <link rel="localization" href="toolkit/featuregates/features.ftl"/>
 
   <!-- Links below are only used for search-l10n-ids into subdialogs -->
+  <link rel="localization" href="browser/aboutDialog.ftl"/>
   <link rel="localization" href="browser/preferences/addEngine.ftl"/>
   <link rel="localization" href="browser/preferences/blocklists.ftl"/>
   <link rel="localization" href="browser/preferences/clearSiteData.ftl"/>
   <link rel="localization" href="browser/preferences/colors.ftl"/>
   <link rel="localization" href="browser/preferences/connection.ftl"/>
+  <link rel="localization" href="browser/preferences/formAutofill.ftl"/>
   <link rel="localization" href="browser/preferences/languages.ftl"/>
   <link rel="localization" href="browser/preferences/permissions.ftl"/>
   <link rel="localization" href="browser/preferences/selectBookmark.ftl"/>
   <link rel="localization" href="browser/preferences/siteDataSettings.ftl"/>
-  <link rel="localization" href="browser/aboutDialog.ftl"/>
   <link rel="localization" href="browser/sanitize.ftl"/>
-  <link rel="localization" href="toolkit/updates/history.ftl"/>
-  <link rel="localization" href="security/certificates/deviceManager.ftl"/>
-  <link rel="localization" href="security/certificates/certManager.ftl"/>
+  <link rel="localization" href="browser/translations.ftl"/>
   <link rel="localization" href="preview/firefoxSuggest.ftl"/>
+  <link rel="localization" href="security/certificates/certManager.ftl"/>
+  <link rel="localization" href="security/certificates/deviceManager.ftl"/>
+  <link rel="localization" href="toolkit/updates/history.ftl"/>
 
   <link rel="shortcut icon" href="chrome://global/skin/icons/settings.svg"/>
 
@@ -62,6 +63,9 @@
   <script src="chrome://browser/content/preferences/preferences.js"/>
   <script src="chrome://browser/content/preferences/extensionControlled.js"/>
   <script src="chrome://browser/content/preferences/findInPage.js"/>
+  <script type="module" src="chrome://global/content/elements/moz-support-link.mjs"/>
+  <script src="chrome://browser/content/migration/migration-wizard.mjs" type="module"></script>
+  <script type="module" src="chrome://global/content/elements/moz-toggle.mjs"/>
 </head>
 
 <html:body xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
@@ -171,7 +175,8 @@
           <image class="sidebar-footer-icon addons-icon"/>
           <label class="sidebar-footer-label" flex="1" data-l10n-id="addons-button-label"></label>
         </html:a>
-        <html:a id="helpButton" class="sidebar-footer-link" target="_blank">
+        <html:a id="helpButton" class="sidebar-footer-link" target="_blank"
+                is="moz-support-link" support-page="preferences">
           <image class="sidebar-footer-icon help-icon"/>
           <label class="sidebar-footer-label" flex="1" data-l10n-id="help-button-label"></label>
         </html:a>
@@ -188,7 +193,7 @@
           <hbox class="sticky-inner-container" pack="end" align="start">
             <hbox id="policies-container" class="info-box-container smaller-font-size" flex="1" hidden="true">
               <hbox class="info-icon-container">
-                <image class="info-icon"></image>
+                <html:img class="info-icon"></html:img>
               </hbox>
               <hbox align="center" flex="1">
                 <html:a href="about:policies" target="_blank" data-l10n-id="managed-notice"/>
@@ -233,5 +238,7 @@
     </vbox>
   </vbox>
   </stack>
+
+  <html:dialog id="migrationWizardDialog"></html:dialog>
 </html:body>
 </html>

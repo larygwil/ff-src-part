@@ -16,7 +16,7 @@ class AboutWelcome extends React.PureComponent {
   }
 
   async fetchFxAFlowUri() {
-    this.setState({ metricsFlowUri: await window.AWGetFxAMetricsFlowURI() });
+    this.setState({ metricsFlowUri: await window.AWGetFxAMetricsFlowURI?.() });
   }
 
   componentDidMount() {
@@ -70,11 +70,13 @@ class AboutWelcome extends React.PureComponent {
     return (
       <MultiStageAboutWelcome
         message_id={props.messageId}
-        screens={props.screens}
+        defaultScreens={props.screens}
+        updateHistory={!props.disableHistoryUpdates}
         metricsFlowUri={this.state.metricsFlowUri}
         utm_term={props.UTMTerm}
         transitions={props.transitions}
         backdrop={props.backdrop}
+        startScreen={props.startScreen || 0}
         appAndSystemLocaleInfo={props.appAndSystemLocaleInfo}
       />
     );
@@ -87,14 +89,14 @@ function ComputeTelemetryInfo(welcomeContent, experimentId, branchId) {
     welcomeContent.template === "return_to_amo"
       ? `RTAMO_DEFAULT_WELCOME_${welcomeContent.type.toUpperCase()}`
       : "DEFAULT_ID";
-  let UTMTerm = "default";
+  let UTMTerm = "aboutwelcome-default";
 
   if (welcomeContent.id) {
     messageId = welcomeContent.id.toUpperCase();
   }
 
   if (experimentId && branchId) {
-    UTMTerm = `${experimentId}-${branchId}`.toLowerCase();
+    UTMTerm = `aboutwelcome-${experimentId}-${branchId}`.toLowerCase();
   }
   return {
     messageId,
@@ -130,7 +132,7 @@ async function mount() {
       UTMTerm={UTMTerm}
       {...aboutWelcomeProps}
     />,
-    document.getElementById("root")
+    document.getElementById("multi-stage-message-root")
   );
 }
 

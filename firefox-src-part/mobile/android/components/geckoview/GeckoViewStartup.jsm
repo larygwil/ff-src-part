@@ -5,19 +5,22 @@
 
 var EXPORTED_SYMBOLS = ["GeckoViewStartup"];
 
-const { XPCOMUtils } = ChromeUtils.import(
-  "resource://gre/modules/XPCOMUtils.jsm"
-);
-const { GeckoViewUtils } = ChromeUtils.import(
-  "resource://gre/modules/GeckoViewUtils.jsm"
+const { GeckoViewUtils } = ChromeUtils.importESModule(
+  "resource://gre/modules/GeckoViewUtils.sys.mjs"
 );
 
-XPCOMUtils.defineLazyModuleGetters(this, {
-  ActorManagerParent: "resource://gre/modules/ActorManagerParent.jsm",
-  EventDispatcher: "resource://gre/modules/Messaging.jsm",
-  Preferences: "resource://gre/modules/Preferences.jsm",
-  Services: "resource://gre/modules/Services.jsm",
+const lazy = {};
+
+ChromeUtils.defineESModuleGetters(lazy, {
+  ActorManagerParent: "resource://gre/modules/ActorManagerParent.sys.mjs",
+  EventDispatcher: "resource://gre/modules/Messaging.sys.mjs",
+  PdfJs: "resource://pdf.js/PdfJs.sys.mjs",
+  Preferences: "resource://gre/modules/Preferences.sys.mjs",
 });
+
+const { XPCOMUtils } = ChromeUtils.importESModule(
+  "resource://gre/modules/XPCOMUtils.sys.mjs"
+);
 
 const { debug, warn } = GeckoViewUtils.initLogging("Startup");
 
@@ -32,10 +35,11 @@ function InitLater(fn, object, name) {
 const JSPROCESSACTORS = {
   GeckoViewPermissionProcess: {
     parent: {
-      moduleURI: "resource:///actors/GeckoViewPermissionProcessParent.jsm",
+      esModuleURI:
+        "resource:///actors/GeckoViewPermissionProcessParent.sys.mjs",
     },
     child: {
-      moduleURI: "resource:///actors/GeckoViewPermissionProcessChild.jsm",
+      esModuleURI: "resource:///actors/GeckoViewPermissionProcessChild.sys.mjs",
       observers: [
         "getUserMedia:ask-device-permission",
         "getUserMedia:request",
@@ -49,26 +53,26 @@ const JSPROCESSACTORS = {
 const JSWINDOWACTORS = {
   LoadURIDelegate: {
     parent: {
-      moduleURI: "resource:///actors/LoadURIDelegateParent.jsm",
+      esModuleURI: "resource:///actors/LoadURIDelegateParent.sys.mjs",
     },
     child: {
-      moduleURI: "resource:///actors/LoadURIDelegateChild.jsm",
+      esModuleURI: "resource:///actors/LoadURIDelegateChild.sys.mjs",
     },
     messageManagerGroups: ["browsers"],
   },
   GeckoViewPermission: {
     parent: {
-      moduleURI: "resource:///actors/GeckoViewPermissionParent.jsm",
+      esModuleURI: "resource:///actors/GeckoViewPermissionParent.sys.mjs",
     },
     child: {
-      moduleURI: "resource:///actors/GeckoViewPermissionChild.jsm",
+      esModuleURI: "resource:///actors/GeckoViewPermissionChild.sys.mjs",
     },
     allFrames: true,
     includeChrome: true,
   },
   GeckoViewPrompt: {
     child: {
-      moduleURI: "resource:///actors/GeckoViewPromptChild.jsm",
+      esModuleURI: "resource:///actors/GeckoViewPromptChild.sys.mjs",
       events: {
         click: { capture: false, mozSystemGroup: true },
         contextmenu: { capture: false, mozSystemGroup: true },
@@ -83,13 +87,40 @@ const JSWINDOWACTORS = {
   },
   GeckoViewFormValidation: {
     child: {
-      moduleURI: "resource:///actors/GeckoViewFormValidationChild.jsm",
+      esModuleURI: "resource:///actors/GeckoViewFormValidationChild.sys.mjs",
       events: {
         MozInvalidForm: {},
       },
     },
     allFrames: true,
     messageManagerGroups: ["browsers"],
+  },
+  GeckoViewClipboardPermission: {
+    parent: {
+      esModuleURI:
+        "resource:///actors/GeckoViewClipboardPermissionParent.sys.mjs",
+    },
+    child: {
+      esModuleURI:
+        "resource:///actors/GeckoViewClipboardPermissionChild.sys.mjs",
+      events: {
+        MozClipboardReadPaste: {},
+        deactivate: { mozSystemGroup: true },
+        mousedown: { capture: true, mozSystemGroup: true },
+        mozvisualscroll: { mozSystemGroup: true },
+        pagehide: { capture: true, mozSystemGroup: true },
+      },
+    },
+    allFrames: true,
+  },
+  GeckoViewPdfjs: {
+    parent: {
+      esModuleURI: "resource://pdf.js/GeckoViewPdfjsParent.sys.mjs",
+    },
+    child: {
+      esModuleURI: "resource://pdf.js/GeckoViewPdfjsChild.sys.mjs",
+    },
+    allFrames: true,
   },
 };
 
@@ -101,11 +132,11 @@ class GeckoViewStartup {
       case "content-process-ready-for-script":
       case "app-startup": {
         GeckoViewUtils.addLazyGetter(this, "GeckoViewConsole", {
-          module: "resource://gre/modules/GeckoViewConsole.jsm",
+          module: "resource://gre/modules/GeckoViewConsole.sys.mjs",
         });
 
         GeckoViewUtils.addLazyGetter(this, "GeckoViewStorageController", {
-          module: "resource://gre/modules/GeckoViewStorageController.jsm",
+          module: "resource://gre/modules/GeckoViewStorageController.sys.mjs",
           ged: [
             "GeckoView:ClearData",
             "GeckoView:ClearSessionContextData",
@@ -115,11 +146,14 @@ class GeckoViewStartup {
             "GeckoView:GetPermissionsByURI",
             "GeckoView:SetPermission",
             "GeckoView:SetPermissionByURI",
+            "GeckoView:GetCookieBannerModeForDomain",
+            "GeckoView:SetCookieBannerModeForDomain",
+            "GeckoView:RemoveCookieBannerModeForDomain",
           ],
         });
 
         GeckoViewUtils.addLazyGetter(this, "GeckoViewPushController", {
-          module: "resource://gre/modules/GeckoViewPushController.jsm",
+          module: "resource://gre/modules/GeckoViewPushController.sys.mjs",
           ged: ["GeckoView:PushEvent", "GeckoView:PushSubscriptionChanged"],
         });
 
@@ -137,11 +171,21 @@ class GeckoViewStartup {
         if (
           Services.appinfo.processType == Services.appinfo.PROCESS_TYPE_DEFAULT
         ) {
-          ActorManagerParent.addJSWindowActors(JSWINDOWACTORS);
-          ActorManagerParent.addJSProcessActors(JSPROCESSACTORS);
+          lazy.ActorManagerParent.addJSWindowActors(JSWINDOWACTORS);
+          lazy.ActorManagerParent.addJSProcessActors(JSPROCESSACTORS);
+
+          if (Services.appinfo.sessionHistoryInParent) {
+            GeckoViewUtils.addLazyGetter(this, "GeckoViewSessionStore", {
+              module: "resource://gre/modules/GeckoViewSessionStore.sys.mjs",
+              observers: [
+                "browsing-context-did-set-embedder",
+                "browsing-context-discarded",
+              ],
+            });
+          }
 
           GeckoViewUtils.addLazyGetter(this, "GeckoViewWebExtension", {
-            module: "resource://gre/modules/GeckoViewWebExtension.jsm",
+            module: "resource://gre/modules/GeckoViewWebExtension.sys.mjs",
             ged: [
               "GeckoView:ActionDelegate:Attached",
               "GeckoView:BrowserAction:Click",
@@ -170,11 +214,11 @@ class GeckoViewStartup {
           });
 
           GeckoViewUtils.addLazyGetter(this, "ChildCrashHandler", {
-            module: "resource://gre/modules/ChildCrashHandler.jsm",
+            module: "resource://gre/modules/ChildCrashHandler.sys.mjs",
             observers: ["ipc:content-shutdown", "compositor:process-aborted"],
           });
 
-          EventDispatcher.instance.registerListener(this, [
+          lazy.EventDispatcher.instance.registerListener(this, [
             "GeckoView:StorageDelegate:Attached",
           ]);
         }
@@ -183,7 +227,7 @@ class GeckoViewStartup {
 
       case "profile-after-change": {
         GeckoViewUtils.addLazyGetter(this, "GeckoViewRemoteDebugger", {
-          module: "resource://gre/modules/GeckoViewRemoteDebugger.jsm",
+          module: "resource://gre/modules/GeckoViewRemoteDebugger.sys.mjs",
           init: gvrd => gvrd.onInit(),
         });
 
@@ -198,20 +242,23 @@ class GeckoViewStartup {
         );
 
         GeckoViewUtils.addLazyGetter(this, "DownloadTracker", {
-          module: "resource://gre/modules/GeckoViewWebExtension.jsm",
+          module: "resource://gre/modules/GeckoViewWebExtension.sys.mjs",
           ged: ["GeckoView:WebExtension:DownloadChanged"],
         });
 
-        ChromeUtils.import("resource://gre/modules/NotificationDB.jsm");
+        ChromeUtils.importESModule(
+          "resource://gre/modules/NotificationDB.sys.mjs"
+        );
 
         // Listen for global EventDispatcher messages
-        EventDispatcher.instance.registerListener(this, [
+        lazy.EventDispatcher.instance.registerListener(this, [
           "GeckoView:ResetUserPrefs",
           "GeckoView:SetDefaultPrefs",
           "GeckoView:SetLocale",
         ]);
 
         Services.obs.addObserver(this, "browser-idle-startup-tasks-finished");
+        Services.obs.addObserver(this, "handlersvc-store-initialized");
 
         Services.obs.notifyObservers(null, "geckoview-startup-complete");
         break;
@@ -226,6 +273,19 @@ class GeckoViewStartup {
         Services.startup.trackStartupCrashEnd();
         break;
       }
+      case "handlersvc-store-initialized": {
+        // Initialize PdfJs when running in-process and remote. This only
+        // happens once since PdfJs registers global hooks. If the PdfJs
+        // extension is installed the init method below will be overridden
+        // leaving initialization to the extension.
+        // parent only: configure default prefs, set up pref observers, register
+        // pdf content handler, and initializes parent side message manager
+        // shim for privileged api access.
+        try {
+          lazy.PdfJs.init(this._isNewProfile);
+        } catch {}
+        break;
+      }
     }
   }
 
@@ -234,12 +294,12 @@ class GeckoViewStartup {
 
     switch (aEvent) {
       case "GeckoView:ResetUserPrefs": {
-        const prefs = new Preferences();
+        const prefs = new lazy.Preferences();
         prefs.reset(aData.names);
         break;
       }
       case "GeckoView:SetDefaultPrefs": {
-        const prefs = new Preferences({ defaultBranch: true });
+        const prefs = new lazy.Preferences({ defaultBranch: true });
         for (const name of Object.keys(aData)) {
           try {
             prefs.set(name, aData[name]);

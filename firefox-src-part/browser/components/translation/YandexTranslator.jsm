@@ -6,17 +6,15 @@
 
 var EXPORTED_SYMBOLS = ["YandexTranslator"];
 
-const { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm");
-const { PromiseUtils } = ChromeUtils.import(
-  "resource://gre/modules/PromiseUtils.jsm"
+const { PromiseUtils } = ChromeUtils.importESModule(
+  "resource://gre/modules/PromiseUtils.sys.mjs"
 );
-const { Async } = ChromeUtils.import("resource://services-common/async.js");
-const { httpRequest } = ChromeUtils.import("resource://gre/modules/Http.jsm");
-const { XPCOMUtils } = ChromeUtils.import(
-  "resource://gre/modules/XPCOMUtils.jsm"
+const { Async } = ChromeUtils.importESModule(
+  "resource://services-common/async.sys.mjs"
 );
-
-XPCOMUtils.defineLazyGlobalGetters(this, ["XMLHttpRequest"]);
+const { httpRequest } = ChromeUtils.importESModule(
+  "resource://gre/modules/Http.sys.mjs"
+);
 
 // The maximum amount of net data allowed per request on Bing's API.
 const MAX_REQUEST_DATA = 5000; // Documentation says 10000 but anywhere
@@ -59,7 +57,7 @@ const YANDEX_PERMANENT_ERRORS = [
  * @returns {Promise}          A promise that will resolve when the translation
  *                             task is finished.
  */
-var YandexTranslator = function(
+var YandexTranslator = function (
   translationDocument,
   sourceLanguage,
   targetLanguage

@@ -4,9 +4,10 @@
 
 "use strict";
 
-const { ONBOARDING_CHOICE } = ChromeUtils.import(
-  "resource:///modules/UrlbarQuickSuggest.jsm"
+const { QuickSuggest } = ChromeUtils.importESModule(
+  "resource:///modules/QuickSuggest.sys.mjs"
 );
+const { ONBOARDING_CHOICE } = QuickSuggest;
 
 const VARIATION_MAP = {
   a: {

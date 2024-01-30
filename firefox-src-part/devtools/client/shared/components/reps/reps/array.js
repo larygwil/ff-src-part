@@ -5,7 +5,7 @@
 "use strict";
 
 // Make this available to both AMD and CJS environments
-define(function(require, exports, module) {
+define(function (require, exports, module) {
   // Dependencies
   const { span } = require("devtools/client/shared/vendor/react-dom-factories");
   const PropTypes = require("devtools/client/shared/vendor/react-prop-types");
@@ -34,7 +34,7 @@ define(function(require, exports, module) {
 
     let brackets;
     let items;
-    const needSpace = function(space) {
+    const needSpace = function (space) {
       return space ? { left: "[ ", right: " ]" } : { left: "[", right: "]" };
     };
 
@@ -55,7 +55,7 @@ define(function(require, exports, module) {
       brackets = needSpace(false);
     } else {
       items = arrayIterator(props, object, maxLengthMap.get(mode));
-      brackets = needSpace(items.length > 0);
+      brackets = needSpace(!!items.length);
     }
 
     return span(
@@ -137,8 +137,8 @@ define(function(require, exports, module) {
       {},
       Rep({
         ...props,
-        object: object,
-        mode: mode,
+        object,
+        mode,
       }),
       delim
     );

@@ -10,13 +10,9 @@
 
 // Wrap in a block to prevent leaking to window scope.
 (() => {
-  const { Services } = ChromeUtils.import(
-    "resource://gre/modules/Services.jsm"
-  );
-
   function sendMessageToBrowser(msgName, data) {
-    let { AutoCompleteParent } = ChromeUtils.import(
-      "resource://gre/actors/AutoCompleteParent.jsm"
+    let { AutoCompleteParent } = ChromeUtils.importESModule(
+      "resource://gre/actors/AutoCompleteParent.sys.mjs"
     );
 
     let actor = AutoCompleteParent.getCurrentActor();
@@ -80,7 +76,9 @@
     }
   }
 
-  MozElements.MozAutocompleteProfileListitem = class MozAutocompleteProfileListitem extends MozAutocompleteProfileListitemBase {
+  MozElements.MozAutocompleteProfileListitem = class MozAutocompleteProfileListitem extends (
+    MozAutocompleteProfileListitemBase
+  ) {
     static get markup() {
       return `
         <div xmlns="http://www.w3.org/1999/xhtml" class="autofill-item-box">
@@ -209,7 +207,7 @@
        * the exact category that we're going to fill in.
        *
        * @private
-       * @param {Object} data
+       * @param {object} data
        *        Message data
        * @param {string[]} data.categories
        *        The categories of all the fields contained in the selected address.
@@ -241,9 +239,8 @@
               ),
             ];
 
-        let separator = this._stringBundle.GetStringFromName(
-          "fieldNameSeparator"
-        );
+        let separator =
+          this._stringBundle.GetStringFromName("fieldNameSeparator");
         let warningTextTmplKey = hasExtraCategories
           ? "phishingWarningMessage"
           : "phishingWarningMessage2";
@@ -253,10 +250,10 @@
           )
           .join(separator);
 
-        this._warningTextBox.textContent = this._stringBundle.formatStringFromName(
-          warningTextTmplKey,
-          [categoriesText]
-        );
+        this._warningTextBox.textContent =
+          this._stringBundle.formatStringFromName(warningTextTmplKey, [
+            categoriesText,
+          ]);
         this.parentNode.parentNode.adjustHeight();
       };
 
@@ -265,8 +262,8 @@
 
     _onCollapse() {
       if (this.showWarningText) {
-        let { FormAutofillParent } = ChromeUtils.import(
-          "resource://autofill/FormAutofillParent.jsm"
+        let { FormAutofillParent } = ChromeUtils.importESModule(
+          "resource://autofill/FormAutofillParent.sys.mjs"
         );
         FormAutofillParent.removeMessageObserver(this);
       }
@@ -276,10 +273,6 @@
     _adjustAcItem() {
       this._adjustAutofillItemLayout();
       this.setAttribute("formautofillattached", "true");
-
-      let { AppConstants } = ChromeUtils.import(
-        "resource://gre/modules/AppConstants.jsm"
-      );
 
       let buttonTextBundleKey;
       if (this._itemBox.getAttribute("size") == "small") {
@@ -294,9 +287,8 @@
             : "autocompleteFooterOption2";
       }
 
-      let buttonText = this._stringBundle.GetStringFromName(
-        buttonTextBundleKey
-      );
+      let buttonText =
+        this._stringBundle.GetStringFromName(buttonTextBundleKey);
       this._optionButton.textContent = buttonText;
 
       let value = JSON.parse(this.getAttribute("ac-value"));
@@ -306,8 +298,8 @@
       this.showWarningText = this._allFieldCategories && this._focusedCategory;
 
       if (this.showWarningText) {
-        let { FormAutofillParent } = ChromeUtils.import(
-          "resource://autofill/FormAutofillParent.jsm"
+        let { FormAutofillParent } = ChromeUtils.importESModule(
+          "resource://autofill/FormAutofillParent.sys.mjs"
         );
         FormAutofillParent.addMessageObserver(this);
         this.updateWarningNote();
@@ -404,9 +396,8 @@
       this._adjustAutofillItemLayout();
       this.setAttribute("formautofillattached", "true");
 
-      let clearFormBtnLabel = this._stringBundle.GetStringFromName(
-        "clearFormBtnLabel2"
-      );
+      let clearFormBtnLabel =
+        this._stringBundle.GetStringFromName("clearFormBtnLabel2");
       this._clearBtn.textContent = clearFormBtnLabel;
     }
   }

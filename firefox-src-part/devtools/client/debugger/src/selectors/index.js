@@ -14,7 +14,6 @@ export { getBreakpointSources } from "./breakpointSources";
 export * from "./event-listeners";
 export * from "./exceptions";
 export * from "./expressions";
-export * from "./file-search";
 export { getCallStackFrames } from "./getCallStackFrames";
 export { isLineInScope } from "./isLineInScope";
 export { isSelectedFrameVisible } from "./isSelectedFrameVisible";
@@ -24,8 +23,9 @@ export * from "./preview";
 export * from "./project-text-search";
 export * from "./quick-open";
 export * from "./source-actors";
-export * from "./source-tree";
+export * from "./source-blackbox";
 export * from "./sources-content";
+export * from "./sources-tree";
 export * from "./sources";
 export * from "./tabs";
 export * from "./threads";
@@ -40,7 +40,7 @@ import { objectInspector } from "devtools/client/shared/components/reps/index";
 
 const { reducer } = objectInspector;
 
-Object.keys(reducer).forEach(function(key) {
+Object.keys(reducer).forEach(function (key) {
   if (key === "default" || key === "__esModule") {
     return;
   }

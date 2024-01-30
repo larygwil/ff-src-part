@@ -4,81 +4,87 @@
 
 "use strict";
 
-const Services = require("Services");
 const {
   Component,
   createFactory,
-} = require("devtools/client/shared/vendor/react");
+} = require("resource://devtools/client/shared/vendor/react.js");
 const {
   connect,
-} = require("devtools/client/shared/redux/visibility-handler-connect");
-const Actions = require("devtools/client/netmonitor/src/actions/index");
-const PropTypes = require("devtools/client/shared/vendor/react-prop-types");
-const dom = require("devtools/client/shared/vendor/react-dom-factories");
+} = require("resource://devtools/client/shared/redux/visibility-handler-connect.js");
+const Actions = require("resource://devtools/client/netmonitor/src/actions/index.js");
+const PropTypes = require("resource://devtools/client/shared/vendor/react-prop-types.js");
+const dom = require("resource://devtools/client/shared/vendor/react-dom-factories.js");
 const {
   getFormattedIPAndPort,
   getFormattedSize,
   getRequestPriorityAsText,
-} = require("devtools/client/netmonitor/src/utils/format-utils");
-const { L10N } = require("devtools/client/netmonitor/src/utils/l10n");
+} = require("resource://devtools/client/netmonitor/src/utils/format-utils.js");
+const {
+  L10N,
+} = require("resource://devtools/client/netmonitor/src/utils/l10n.js");
 const {
   getHeadersURL,
   getTrackingProtectionURL,
   getHTTPStatusCodeURL,
-} = require("devtools/client/netmonitor/src/utils/doc-utils");
+} = require("resource://devtools/client/netmonitor/src/utils/doc-utils.js");
 const {
   fetchNetworkUpdatePacket,
   writeHeaderText,
-} = require("devtools/client/netmonitor/src/utils/request-utils");
+  getRequestHeadersRawText,
+} = require("resource://devtools/client/netmonitor/src/utils/request-utils.js");
 const {
   HeadersProvider,
   HeaderList,
-} = require("devtools/client/netmonitor/src/utils/headers-provider");
+} = require("resource://devtools/client/netmonitor/src/utils/headers-provider.js");
 const {
   FILTER_SEARCH_DELAY,
-} = require("devtools/client/netmonitor/src/constants");
+} = require("resource://devtools/client/netmonitor/src/constants.js");
 // Components
 const PropertiesView = createFactory(
-  require("devtools/client/netmonitor/src/components/request-details/PropertiesView")
+  require("resource://devtools/client/netmonitor/src/components/request-details/PropertiesView.js")
 );
 const SearchBox = createFactory(
-  require("devtools/client/shared/components/SearchBox")
+  require("resource://devtools/client/shared/components/SearchBox.js")
 );
 const Accordion = createFactory(
-  require("devtools/client/shared/components/Accordion")
+  require("resource://devtools/client/shared/components/Accordion.js")
 );
 const UrlPreview = createFactory(
-  require("devtools/client/netmonitor/src/components/previews/UrlPreview")
+  require("resource://devtools/client/netmonitor/src/components/previews/UrlPreview.js")
 );
-const HeadersPanelContextMenu = require("devtools/client/netmonitor/src/widgets/HeadersPanelContextMenu");
+const HeadersPanelContextMenu = require("resource://devtools/client/netmonitor/src/widgets/HeadersPanelContextMenu.js");
 const StatusCode = createFactory(
-  require("devtools/client/netmonitor/src/components/StatusCode")
+  require("resource://devtools/client/netmonitor/src/components/StatusCode.js")
 );
 
-loader.lazyGetter(this, "MDNLink", function() {
-  return createFactory(require("devtools/client/shared/components/MdnLink"));
-});
-loader.lazyGetter(this, "Rep", function() {
-  return require("devtools/client/shared/components/reps/index").REPS.Rep;
-});
-loader.lazyGetter(this, "MODE", function() {
-  return require("devtools/client/shared/components/reps/index").MODE;
-});
-loader.lazyGetter(this, "TreeRow", function() {
+loader.lazyGetter(this, "MDNLink", function () {
   return createFactory(
-    require("devtools/client/shared/components/tree/TreeRow")
+    require("resource://devtools/client/shared/components/MdnLink.js")
+  );
+});
+loader.lazyGetter(this, "Rep", function () {
+  return require("resource://devtools/client/shared/components/reps/index.js")
+    .REPS.Rep;
+});
+loader.lazyGetter(this, "MODE", function () {
+  return require("resource://devtools/client/shared/components/reps/index.js")
+    .MODE;
+});
+loader.lazyGetter(this, "TreeRow", function () {
+  return createFactory(
+    require("resource://devtools/client/shared/components/tree/TreeRow.js")
   );
 });
 loader.lazyRequireGetter(
   this,
   "showMenu",
-  "devtools/client/shared/components/menu/utils",
+  "resource://devtools/client/shared/components/menu/utils.js",
   true
 );
 loader.lazyRequireGetter(
   this,
   "openContentLink",
-  "devtools/client/shared/link",
+  "resource://devtools/client/shared/link.js",
   true
 );
 
@@ -168,7 +174,8 @@ class HeadersPanel extends Component {
     ]);
   }
 
-  componentWillReceiveProps(nextProps) {
+  // FIXME: https://bugzilla.mozilla.org/show_bug.cgi?id=1774507
+  UNSAFE_componentWillReceiveProps(nextProps) {
     const { request, connector } = nextProps;
     fetchNetworkUpdatePacket(connector.requestData, request, [
       "requestHeaders",
@@ -366,13 +373,12 @@ class HeadersPanel extends Component {
       const rawHeaderType = this.getRawHeaderType(path);
       switch (rawHeaderType) {
         case "REQUEST":
-          const hostHeader = requestHeaders.headers.find(
-            ele => ele.name === "Host"
+          value = getRequestHeadersRawText(
+            method,
+            httpVersion,
+            requestHeaders,
+            urlDetails
           );
-          preHeaderText = `${method} ${
-            hostHeader ? urlDetails.url.split(hostHeader.value)[1] : "<unknown>"
-          } ${httpVersion}`;
-          value = writeHeaderText(requestHeaders.headers, preHeaderText).trim();
           break;
         case "RESPONSE":
           preHeaderText = `${httpVersion} ${status} ${statusText}`;
@@ -400,6 +406,9 @@ class HeadersPanel extends Component {
           key: path,
           role: "treeitem",
           className: "raw-headers-container",
+          onClick: event => {
+            event.stopPropagation();
+          },
         },
         td(
           {
@@ -407,8 +416,8 @@ class HeadersPanel extends Component {
           },
           textarea({
             className: "raw-headers",
-            rows: rows,
-            value: value,
+            rows,
+            value,
             readOnly: true,
           })
         )
@@ -836,7 +845,6 @@ module.exports = connect(
     openHTTPCustomRequestTab: () =>
       dispatch(Actions.openHTTPCustomRequest(true)),
     cloneRequest: id => dispatch(Actions.cloneRequest(id)),
-    sendCustomRequest: () =>
-      dispatch(Actions.sendCustomRequest(props.connector)),
+    sendCustomRequest: () => dispatch(Actions.sendCustomRequest()),
   })
 )(HeadersPanel);

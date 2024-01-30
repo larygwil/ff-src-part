@@ -34,15 +34,7 @@ interface nsIEventTarget : nsISupports
    */
   const unsigned long DISPATCH_NORMAL = 0;
 
-  /**
-   * This flag specifies the synchronous mode of event dispatch, in which the
-   * dispatch method does not return until the event has been processed.
-   *
-   * NOTE: passing this flag to dispatch may have the side-effect of causing
-   * other events on the current thread to be processed while waiting for the
-   * given event to be processed.
-   */
-  const unsigned long DISPATCH_SYNC = 1;
+  // NOTE: 1 used to be DISPATCH_SYNC
 
   /**
    * This flag specifies that the dispatch is occurring from a running event
@@ -64,6 +56,15 @@ interface nsIEventTarget : nsISupports
    * CPU-intensive work.
    */
   const unsigned long DISPATCH_EVENT_MAY_BLOCK = 4;
+
+  /**
+   * This flag specifies that the dispatched event should be delivered to the
+   * target thread even if the thread has been configured to block dispatching
+   * of runnables. This is generally done for threads which have their own
+   * internal event loop, such as thread pools or the timer thread, and will not
+   * service runnables dispatched to them until shutdown.
+   */
+  const unsigned long DISPATCH_IGNORE_BLOCK_DISPATCH = 8;
 
   /**
    * IsOnCurrentThread() should return true if events dispatched to this target
@@ -213,9 +214,9 @@ public:
 %{C++
 // convenient aliases:
 #define NS_DISPATCH_NORMAL nsIEventTarget::DISPATCH_NORMAL
-#define NS_DISPATCH_SYNC   nsIEventTarget::DISPATCH_SYNC
 #define NS_DISPATCH_AT_END nsIEventTarget::DISPATCH_AT_END
 #define NS_DISPATCH_EVENT_MAY_BLOCK nsIEventTarget::DISPATCH_EVENT_MAY_BLOCK
+#define NS_DISPATCH_IGNORE_BLOCK_DISPATCH nsIEventTarget::DISPATCH_IGNORE_BLOCK_DISPATCH
 
 // Convenient NS_DECL variant that includes some C++-only methods.
 #define NS_DECL_NSIEVENTTARGET_FULL                                   \

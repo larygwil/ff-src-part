@@ -5,22 +5,29 @@
 import React, { PureComponent } from "react";
 import PropTypes from "prop-types";
 import { connect } from "../../utils/connect";
-import classnames from "classnames";
+import { createLocation } from "../../utils/location";
 import actions from "../../actions";
 import {
   getSelectedSource,
+  getSelectedLocation,
   getSelectedSourceTextContent,
   getPrettySource,
   getPaneCollapse,
   getContext,
   getGeneratedSource,
+  isSourceBlackBoxed,
   canPrettyPrintSource,
+  getPrettyPrintMessage,
+  isSourceOnSourceMapIgnoreList,
+  isSourceMapIgnoreListEnabled,
 } from "../../selectors";
 
 import { isPretty, getFilename, shouldBlackbox } from "../../utils/source";
 
 import { PaneToggleButton } from "../shared/Button";
 import AccessibleImage from "../shared/AccessibleImage";
+
+const classnames = require("devtools/client/shared/classnames.js");
 
 import "./Footer.css";
 
@@ -34,16 +41,19 @@ class SourceFooter extends PureComponent {
   static get propTypes() {
     return {
       canPrettyPrint: PropTypes.bool.isRequired,
+      prettyPrintMessage: PropTypes.string.isRequired,
       cx: PropTypes.object.isRequired,
       endPanelCollapsed: PropTypes.bool.isRequired,
       horizontal: PropTypes.bool.isRequired,
       jumpToMappedLocation: PropTypes.func.isRequired,
       mappedSource: PropTypes.object,
       selectedSource: PropTypes.object,
+      isSelectedSourceBlackBoxed: PropTypes.bool.isRequired,
       sourceLoaded: PropTypes.bool.isRequired,
       toggleBlackBox: PropTypes.func.isRequired,
       togglePaneCollapse: PropTypes.func.isRequired,
       togglePrettyPrint: PropTypes.func.isRequired,
+      isSourceOnIgnoreList: PropTypes.bool.isRequired,
     };
   }
 
@@ -76,12 +86,13 @@ class SourceFooter extends PureComponent {
       cx,
       selectedSource,
       canPrettyPrint,
+      prettyPrintMessage,
       togglePrettyPrint,
       sourceLoaded,
     } = this.props;
 
     if (!selectedSource) {
-      return;
+      return null;
     }
 
     if (!sourceLoaded && selectedSource.isPrettyPrinted) {
@@ -92,23 +103,23 @@ class SourceFooter extends PureComponent {
       );
     }
 
-    if (!canPrettyPrint) {
-      return;
-    }
-
-    const tooltip = L10N.getStr("sourceTabs.prettyPrint");
-
     const type = "prettyPrint";
     return (
       <button
-        onClick={() => togglePrettyPrint(cx, selectedSource.id)}
+        onClick={() => {
+          if (!canPrettyPrint) {
+            return;
+          }
+          togglePrettyPrint(cx, selectedSource.id);
+        }}
         className={classnames("action", type, {
-          active: sourceLoaded,
+          active: sourceLoaded && canPrettyPrint,
           pretty: isPretty(selectedSource),
         })}
         key={type}
-        title={tooltip}
-        aria-label={tooltip}
+        title={prettyPrintMessage}
+        aria-label={prettyPrintMessage}
+        disabled={!canPrettyPrint}
       >
         <AccessibleImage className={type} />
       </button>
@@ -116,21 +127,26 @@ class SourceFooter extends PureComponent {
   }
 
   blackBoxButton() {
-    const { cx, selectedSource, toggleBlackBox, sourceLoaded } = this.props;
+    const {
+      cx,
+      selectedSource,
+      isSelectedSourceBlackBoxed,
+      toggleBlackBox,
+      sourceLoaded,
+      isSourceOnIgnoreList,
+    } = this.props;
 
-    if (!selectedSource) {
-      return;
+    if (!selectedSource || !shouldBlackbox(selectedSource)) {
+      return null;
     }
 
-    if (!shouldBlackbox(selectedSource)) {
-      return;
-    }
-
-    const blackboxed = selectedSource.isBlackBoxed;
-
-    const tooltip = blackboxed
+    let tooltip = isSelectedSourceBlackBoxed
       ? L10N.getStr("sourceFooter.unignore")
       : L10N.getStr("sourceFooter.ignore");
+
+    if (isSourceOnIgnoreList) {
+      tooltip = L10N.getStr("sourceFooter.ignoreList");
+    }
 
     const type = "black-box";
 
@@ -139,11 +155,12 @@ class SourceFooter extends PureComponent {
         onClick={() => toggleBlackBox(cx, selectedSource)}
         className={classnames("action", type, {
           active: sourceLoaded,
-          blackboxed,
+          blackboxed: isSelectedSourceBlackBoxed || isSourceOnIgnoreList,
         })}
         key={type}
         title={tooltip}
         aria-label={tooltip}
+        disabled={isSourceOnIgnoreList}
       >
         <AccessibleImage className="blackBox" />
       </button>
@@ -152,7 +169,7 @@ class SourceFooter extends PureComponent {
 
   renderToggleButton() {
     if (this.props.horizontal) {
-      return;
+      return null;
     }
 
     return (
@@ -175,12 +192,8 @@ class SourceFooter extends PureComponent {
   }
 
   renderSourceSummary() {
-    const {
-      cx,
-      mappedSource,
-      jumpToMappedLocation,
-      selectedSource,
-    } = this.props;
+    const { cx, mappedSource, jumpToMappedLocation, selectedSource } =
+      this.props;
 
     if (!mappedSource || !selectedSource || !selectedSource.isOriginal) {
       return null;
@@ -192,11 +205,11 @@ class SourceFooter extends PureComponent {
       filename
     );
     const title = L10N.getFormatStr("sourceFooter.mappedSource", filename);
-    const mappedSourceLocation = {
-      sourceId: selectedSource.id,
+    const mappedSourceLocation = createLocation({
+      source: selectedSource,
       line: 1,
       column: 1,
-    };
+    });
     return (
       <button
         className="mapped-source"
@@ -253,11 +266,18 @@ class SourceFooter extends PureComponent {
 
 const mapStateToProps = state => {
   const selectedSource = getSelectedSource(state);
+  const selectedLocation = getSelectedLocation(state);
   const sourceTextContent = getSelectedSourceTextContent(state);
 
   return {
     cx: getContext(state),
     selectedSource,
+    isSelectedSourceBlackBoxed: selectedSource
+      ? isSourceBlackBoxed(state, selectedSource)
+      : null,
+    isSourceOnIgnoreList:
+      isSourceMapIgnoreListEnabled(state) &&
+      isSourceOnSourceMapIgnoreList(state, selectedSource),
     sourceLoaded: !!sourceTextContent,
     mappedSource: getGeneratedSource(state, selectedSource),
     prettySource: getPrettySource(
@@ -265,9 +285,12 @@ const mapStateToProps = state => {
       selectedSource ? selectedSource.id : null
     ),
     endPanelCollapsed: getPaneCollapse(state, "end"),
-    canPrettyPrint: selectedSource
-      ? canPrettyPrintSource(state, selectedSource.id)
+    canPrettyPrint: selectedLocation
+      ? canPrettyPrintSource(state, selectedLocation)
       : false,
+    prettyPrintMessage: selectedLocation
+      ? getPrettyPrintMessage(state, selectedLocation)
+      : null,
   };
 };
 

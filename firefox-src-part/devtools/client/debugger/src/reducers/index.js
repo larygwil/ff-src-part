@@ -8,23 +8,22 @@
  */
 
 import expressions, { initialExpressionState } from "./expressions";
-import sourceActors from "./source-actors";
+import sourceActors, { initialSourceActorsState } from "./source-actors";
 import sources, { initialSourcesState } from "./sources";
+import sourceBlackBox, { initialSourceBlackBoxState } from "./source-blackbox";
 import sourcesContent, { initialSourcesContentState } from "./sources-content";
 import tabs, { initialTabState } from "./tabs";
 import breakpoints, { initialBreakpointsState } from "./breakpoints";
 import pendingBreakpoints from "./pending-breakpoints";
-import asyncRequests from "./async-requests";
 import pause, { initialPauseState } from "./pause";
 import ui, { initialUIState } from "./ui";
-import fileSearch, { initialFileSearchState } from "./file-search";
 import ast, { initialASTState } from "./ast";
 import preview, { initialPreviewState } from "./preview";
 import projectTextSearch, {
   initialProjectTextSearchState,
 } from "./project-text-search";
 import quickOpen, { initialQuickOpenState } from "./quick-open";
-import sourceTree, { initialSourcesTreeState } from "./source-tree";
+import sourcesTree, { initialSourcesTreeState } from "./sources-tree";
 import threads, { initialThreadsState } from "./threads";
 import eventListenerBreakpoints, {
   initialEventListenerState,
@@ -43,18 +42,17 @@ export function initialState() {
     sources: initialSourcesState(),
     sourcesContent: initialSourcesContentState(),
     expressions: initialExpressionState(),
-    sourceActors: new Map(),
+    sourceActors: initialSourceActorsState(),
+    sourceBlackBox: initialSourceBlackBoxState(),
     tabs: initialTabState(),
     breakpoints: initialBreakpointsState(),
     pendingBreakpoints: {},
-    asyncRequests: [],
     pause: initialPauseState(),
     ui: initialUIState(),
-    fileSearch: initialFileSearchState(),
     ast: initialASTState(),
     projectTextSearch: initialProjectTextSearchState(),
     quickOpen: initialQuickOpenState(),
-    sourceTree: initialSourcesTreeState(),
+    sourcesTree: initialSourcesTreeState(),
     threads: initialThreadsState(),
     objectInspector: objectInspector.reducer.initialOIState(),
     eventListenerBreakpoints: initialEventListenerState(),
@@ -66,19 +64,18 @@ export function initialState() {
 export default {
   expressions,
   sourceActors,
+  sourceBlackBox,
   sourcesContent,
   sources,
   tabs,
   breakpoints,
   pendingBreakpoints,
-  asyncRequests,
   pause,
   ui,
-  fileSearch,
   ast,
   projectTextSearch,
   quickOpen,
-  sourceTree,
+  sourcesTree,
   threads,
   objectInspector: objectInspector.reducer.default,
   eventListenerBreakpoints,

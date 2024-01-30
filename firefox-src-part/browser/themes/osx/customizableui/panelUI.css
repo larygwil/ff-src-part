@@ -4,30 +4,18 @@
 
 @import "chrome://browser/skin/customizableui/panelUI-shared.css";
 
-#customizationui-widget-panel[viewId="PanelUI-profiler"][type="arrow"][side="top"],
-#customizationui-widget-panel[viewId="PanelUI-profiler"][type="arrow"][side="bottom"] {
-  margin-inline: -8px;
-}
-
-#customizationui-widget-panel[viewId="PanelUI-profiler"][type="arrow"][side="left"],
-#customizationui-widget-panel[viewId="PanelUI-profiler"][type="arrow"][side="right"] {
-  margin-block: -8px;
-}
-
 #downloadsPanel,
 #widget-overflow,
 #appMenu-popup,
 #customizationui-widget-panel,
 #identity-popup,
 #permission-popup,
+#translations-panel,
 #protections-popup,
 #appMenu-notification-popup,
+#BMB_bookmarksPopup,
 #editBookmarkPanel {
-  margin-top: -1px; /* Overrides value from panelUI-shared.css */
-}
-
-#BMB_bookmarksPopup {
-  margin-top: -4px; /* Overrides value from panelUI-shared.css */
+  margin-top: -1px;
 }
 
 .panel-subview-body {
@@ -40,20 +28,6 @@
 
 .subviewbutton:not([image],[targetURI],.bookmark-item) > .menu-iconic-left {
   display: none;
-}
-
-#BMB_bookmarksPopup .subviewbutton > .menu-iconic-left {
-  margin-inline-end: 3px;
-}
-
-#BMB_bookmarksPopup .subviewbutton > .menu-iconic-text {
-  padding-inline-start: 0;
-}
-
-/* Override OSX-specific toolkit styles for the bookmarks panel */
-menu.subviewbutton > .menu-right {
-  margin-inline-end: -4px;
-  appearance: none;
 }
 
 .PanelUI-remotetabs-clientcontainer > label[itemtype="client"] {

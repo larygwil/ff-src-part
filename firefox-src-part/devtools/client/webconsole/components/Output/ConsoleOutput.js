@@ -7,17 +7,20 @@ const {
   Component,
   createElement,
   createRef,
-} = require("devtools/client/shared/vendor/react");
-const dom = require("devtools/client/shared/vendor/react-dom-factories");
+} = require("resource://devtools/client/shared/vendor/react.js");
+const dom = require("resource://devtools/client/shared/vendor/react-dom-factories.js");
 const {
   connect,
-} = require("devtools/client/shared/redux/visibility-handler-connect");
-const { initialize } = require("devtools/client/webconsole/actions/ui");
-const LazyMessageList = require("devtools/client/webconsole/components/Output/LazyMessageList");
+} = require("resource://devtools/client/shared/redux/visibility-handler-connect.js");
+const {
+  initialize,
+} = require("resource://devtools/client/webconsole/actions/ui.js");
+const LazyMessageList = require("resource://devtools/client/webconsole/components/Output/LazyMessageList.js");
 
 const {
   getMutableMessagesById,
   getAllMessagesUiById,
+  getAllDisabledMessagesById,
   getAllCssMessagesMatchingElements,
   getAllNetworkMessagesUpdateById,
   getLastMessageId,
@@ -25,22 +28,24 @@ const {
   getAllRepeatById,
   getAllWarningGroupsById,
   isMessageInWarningGroup,
-} = require("devtools/client/webconsole/selectors/messages");
+} = require("resource://devtools/client/webconsole/selectors/messages.js");
 
 loader.lazyRequireGetter(
   this,
   "PropTypes",
-  "devtools/client/shared/vendor/react-prop-types"
+  "resource://devtools/client/shared/vendor/react-prop-types.js"
 );
 loader.lazyRequireGetter(
   this,
   "MessageContainer",
-  "devtools/client/webconsole/components/Output/MessageContainer",
+  "resource://devtools/client/webconsole/components/Output/MessageContainer.js",
   true
 );
-loader.lazyRequireGetter(this, "flags", "devtools/shared/flags");
+loader.lazyRequireGetter(this, "flags", "resource://devtools/shared/flags.js");
 
-const { MESSAGE_TYPE } = require("devtools/client/webconsole/constants");
+const {
+  MESSAGE_TYPE,
+} = require("resource://devtools/client/webconsole/constants.js");
 
 class ConsoleOutput extends Component {
   static get propTypes() {
@@ -49,6 +54,7 @@ class ConsoleOutput extends Component {
       mutableMessages: PropTypes.object.isRequired,
       messageCount: PropTypes.number.isRequired,
       messagesUi: PropTypes.array.isRequired,
+      disabledMessages: PropTypes.array.isRequired,
       serviceContainer: PropTypes.shape({
         attachRefToWebConsoleUI: PropTypes.func.isRequired,
         openContextMenu: PropTypes.func.isRequired,
@@ -98,7 +104,7 @@ class ConsoleOutput extends Component {
       return;
     }
 
-    if (this.props.visibleMessages.length > 0) {
+    if (this.props.visibleMessages.length) {
       this.scrollToBottom();
     }
 
@@ -134,7 +140,8 @@ class ConsoleOutput extends Component {
     });
   }
 
-  componentWillUpdate(nextProps, nextState) {
+  // FIXME: https://bugzilla.mozilla.org/show_bug.cgi?id=1774507
+  UNSAFE_componentWillUpdate(nextProps, nextState) {
     this.isUpdating = true;
     if (nextProps.cacheGeneration !== this.props.cacheGeneration) {
       this.messageIdsToKeepAlive = new Set();
@@ -264,6 +271,7 @@ class ConsoleOutput extends Component {
       cacheGeneration,
       dispatch,
       visibleMessages,
+      disabledMessages,
       mutableMessages,
       messagesUi,
       cssMatchingElements,
@@ -284,6 +292,7 @@ class ConsoleOutput extends Component {
         open: messagesUi.includes(messageId),
         cssMatchingElements: cssMatchingElements.get(messageId),
         timestampsVisible,
+        disabled: disabledMessages.includes(messageId),
         repeat: messagesRepeat[messageId],
         badge: warningGroups.has(messageId)
           ? warningGroups.get(messageId).length
@@ -355,6 +364,7 @@ function mapStateToProps(state, props) {
     mutableMessages,
     lastMessageId: getLastMessageId(state),
     visibleMessages: getVisibleMessages(state),
+    disabledMessages: getAllDisabledMessagesById(state),
     messagesUi: getAllMessagesUiById(state),
     cssMatchingElements: getAllCssMessagesMatchingElements(state),
     messagesRepeat: getAllRepeatById(state),

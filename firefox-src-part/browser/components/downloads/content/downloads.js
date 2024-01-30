@@ -31,46 +31,30 @@
 
 "use strict";
 
-var { XPCOMUtils } = ChromeUtils.import(
-  "resource://gre/modules/XPCOMUtils.jsm"
+var { XPCOMUtils } = ChromeUtils.importESModule(
+  "resource://gre/modules/XPCOMUtils.sys.mjs"
 );
-var { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm");
 
-ChromeUtils.defineModuleGetter(
-  this,
-  "DownloadsViewUI",
-  "resource:///modules/DownloadsViewUI.jsm"
-);
-ChromeUtils.defineModuleGetter(
-  this,
-  "DownloadsSubview",
-  "resource:///modules/DownloadsSubview.jsm"
-);
-ChromeUtils.defineModuleGetter(
-  this,
-  "FileUtils",
-  "resource://gre/modules/FileUtils.jsm"
-);
+ChromeUtils.defineESModuleGetters(this, {
+  DownloadsViewUI: "resource:///modules/DownloadsViewUI.sys.mjs",
+  FileUtils: "resource://gre/modules/FileUtils.sys.mjs",
+  PlacesUtils: "resource://gre/modules/PlacesUtils.sys.mjs",
+});
 ChromeUtils.defineModuleGetter(
   this,
   "NetUtil",
   "resource://gre/modules/NetUtil.jsm"
 );
-ChromeUtils.defineModuleGetter(
-  this,
-  "PlacesUtils",
-  "resource://gre/modules/PlacesUtils.jsm"
-);
 
-const { Integration } = ChromeUtils.import(
-  "resource://gre/modules/Integration.jsm"
+const { Integration } = ChromeUtils.importESModule(
+  "resource://gre/modules/Integration.sys.mjs"
 );
 
 /* global DownloadIntegration */
-Integration.downloads.defineModuleGetter(
+Integration.downloads.defineESModuleGetter(
   this,
   "DownloadIntegration",
-  "resource://gre/modules/DownloadIntegration.jsm"
+  "resource://gre/modules/DownloadIntegration.sys.mjs"
 );
 
 // DownloadsPanel
@@ -119,16 +103,10 @@ var DownloadsPanel = {
       "Attempting to initialize DownloadsPanel for a window."
     );
 
-    // Allow the download spam protection module to notify DownloadsView
-    // if it's been created.
-    if (
-      DownloadIntegration.downloadSpamProtection &&
-      !DownloadIntegration.downloadSpamProtection.spamList._views.has(
-        DownloadsView
-      )
-    ) {
-      DownloadIntegration.downloadSpamProtection.spamList.addView(
-        DownloadsView
+    if (DownloadIntegration.downloadSpamProtection) {
+      DownloadIntegration.downloadSpamProtection.register(
+        DownloadsView,
+        window
       );
     }
 
@@ -191,9 +169,7 @@ var DownloadsPanel = {
     this._unattachEventListeners();
 
     if (DownloadIntegration.downloadSpamProtection) {
-      DownloadIntegration.downloadSpamProtection.spamList.removeView(
-        DownloadsView
-      );
+      DownloadIntegration.downloadSpamProtection.unregister(window);
     }
 
     this._state = this.kStateUninitialized;
@@ -359,9 +335,8 @@ var DownloadsPanel = {
     DownloadsView.richListBox.removeAttribute("force-focus-visible");
 
     // Since at most one popup is open at any given time, we can set globally.
-    DownloadsCommon.getIndicatorData(
-      window
-    ).attentionSuppressed &= ~DownloadsCommon.SUPPRESS_PANEL_OPEN;
+    DownloadsCommon.getIndicatorData(window).attentionSuppressed &=
+      ~DownloadsCommon.SUPPRESS_PANEL_OPEN;
 
     // Allow the anchor to be hidden.
     DownloadsButton.releaseAnchor();
@@ -470,10 +445,11 @@ var DownloadsPanel = {
       // If the last element in the list is selected, or the footer is already
       // focused, focus the footer.
       if (
-        richListBox.selectedItem === richListBox.lastElementChild ||
-        document
-          .getElementById("downloadsFooter")
-          .contains(document.activeElement)
+        DownloadsView.canChangeSelectedItem &&
+        (richListBox.selectedItem === richListBox.lastElementChild ||
+          document
+            .getElementById("downloadsFooter")
+            .contains(document.activeElement))
       ) {
         richListBox.selectedIndex = -1;
         DownloadsFooter.focus();
@@ -495,7 +471,7 @@ var DownloadsPanel = {
       Ci.nsITransferable
     );
     trans.init(null);
-    let flavors = ["text/x-moz-url", "text/unicode"];
+    let flavors = ["text/x-moz-url", "text/plain"];
     flavors.forEach(trans.addDataFlavor);
     Services.clipboard.getData(trans, Services.clipboard.kGlobalClipboard);
     // Getting the data or creating the nsIURI might fail
@@ -537,12 +513,21 @@ var DownloadsPanel = {
       return;
     }
 
-    if (document.activeElement && this.panel.contains(document.activeElement)) {
+    if (
+      document.activeElement &&
+      (this.panel.contains(document.activeElement) ||
+        this.panel.shadowRoot.contains(document.activeElement))
+    ) {
       return;
     }
-    let focusOptions = { preventFocusRing: !!this._preventFocusRing };
+    let focusOptions = {};
+    if (this._preventFocusRing) {
+      focusOptions.focusVisible = false;
+    }
     if (DownloadsView.richListBox.itemCount > 0) {
-      DownloadsView.richListBox.selectedIndex = 0;
+      if (DownloadsView.canChangeSelectedItem) {
+        DownloadsView.richListBox.selectedIndex = 0;
+      }
       DownloadsView.richListBox.focus(focusOptions);
     } else {
       DownloadsFooter.focus(focusOptions);
@@ -630,7 +615,7 @@ var DownloadsPanel = {
     // do these checks on a background thread, and don't prevent the panel to
     // be displayed while these checks are being performed.
     for (let viewItem of DownloadsView._visibleViewItems.values()) {
-      viewItem.download.refresh().catch(Cu.reportError);
+      viewItem.download.refresh().catch(console.error);
     }
 
     DownloadsCommon.log("Opening downloads panel popup.");
@@ -643,13 +628,13 @@ var DownloadsPanel = {
       PanelMultiView.openPopup(
         this.panel,
         anchor,
-        "bottomcenter topright",
+        "bottomright topright",
         0,
         0,
         false,
         null
       ).catch(e => {
-        Cu.reportError(e);
+        console.error(e);
         this._state = this.kStateHidden;
       });
 
@@ -743,9 +728,8 @@ var DownloadsView = {
    */
   get downloadsHistory() {
     delete this.downloadsHistory;
-    return (this.downloadsHistory = document.getElementById(
-      "downloadsHistory"
-    ));
+    return (this.downloadsHistory =
+      document.getElementById("downloadsHistory"));
   },
 
   // Callback functions from DownloadsData
@@ -917,13 +901,7 @@ var DownloadsView = {
         }
       }
       // Toggle opening the file after the download has completed
-      if (
-        !download.stopped &&
-        command.startsWith("downloadsCmd_open") &&
-        Services.prefs.getBoolPref(
-          "browser.download.improvements_to_download_panel"
-        )
-      ) {
+      if (!download.stopped && command.startsWith("downloadsCmd_open")) {
         download.launchWhenSucceeded = !download.launchWhenSucceeded;
         download._launchedFromPanel = download.launchWhenSucceeded;
       }
@@ -982,6 +960,15 @@ var DownloadsView = {
   },
 
   /**
+   * Whether it's possible to change the currently selected item.
+   */
+  get canChangeSelectedItem() {
+    // When the context menu or a subview are open, the selected item should
+    // not change.
+    return !this.contextMenuOpen && !this.subViewOpen;
+  },
+
+  /**
    * Mouse listeners to handle selection on hover.
    */
   onDownloadMouseOver(aEvent) {
@@ -999,7 +986,7 @@ var DownloadsView = {
       aEvent.target.closest(".downloadMainArea")
     );
 
-    if (!this.contextMenuOpen && !this.subViewOpen) {
+    if (this.canChangeSelectedItem) {
       this.richListBox.selectedItem = item;
     }
   },
@@ -1016,21 +1003,20 @@ var DownloadsView = {
 
     // If the destination element is outside of the richlistitem, clear the
     // selection.
-    if (
-      !this.contextMenuOpen &&
-      !this.subViewOpen &&
-      !item.contains(aEvent.relatedTarget)
-    ) {
+    if (this.canChangeSelectedItem && !item.contains(aEvent.relatedTarget)) {
       this.richListBox.selectedIndex = -1;
     }
   },
 
   onDownloadContextMenu(aEvent) {
-    let element = this.richListBox.selectedItem;
+    let element = aEvent.originalTarget.closest("richlistitem");
     if (!element) {
+      aEvent.preventDefault();
       return;
     }
-
+    // Ensure the selected item is the expected one, so commands and the
+    // context menu are updated appropriately.
+    this.richListBox.selectedItem = element;
     DownloadsViewController.updateCommands();
 
     DownloadsViewUI.updateContextMenuForElement(this.contextMenu, element);
@@ -1038,9 +1024,8 @@ var DownloadsView = {
     // this here instead of in DownloadsViewUI because DownloadsPlacesView
     // allows selecting multiple downloads, so in that view the menuitem will be
     // shown according to whether at least one of the selected items has a URL.
-    this.contextMenu.querySelector(
-      ".downloadCopyLocationMenuItem"
-    ).hidden = !element._shell.download.source?.url;
+    this.contextMenu.querySelector(".downloadCopyLocationMenuItem").hidden =
+      !element._shell.download.source?.url;
   },
 
   onDownloadDragStart(aEvent) {
@@ -1173,7 +1158,7 @@ class DownloadsViewItem extends DownloadsViewUI.DownloadElementShell {
 
   downloadsCmd_unblockAndOpen() {
     DownloadsPanel.hidePanel();
-    this.unblockAndOpenDownload().catch(Cu.reportError);
+    this.unblockAndOpenDownload().catch(console.error);
   }
   downloadsCmd_unblockAndSave() {
     DownloadsPanel.hidePanel();
@@ -1237,7 +1222,7 @@ class DownloadsViewItem extends DownloadsViewUI.DownloadElementShell {
     // So the remaining view item needs to be refreshed to hide the "Delete" option.
     // That example only concerns 2 duplicate view items but you can have an arbitrary number, so iterate over all items...
     for (let viewItem of DownloadsView._visibleViewItems.values()) {
-      viewItem.download.refresh().catch(Cu.reportError);
+      viewItem.download.refresh().catch(console.error);
     }
     // Don't use DownloadsPanel.hidePanel for this method because it will remove
     // the view item from the list, which is already sufficient feedback.

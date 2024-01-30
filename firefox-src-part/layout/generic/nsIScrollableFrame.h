@@ -23,11 +23,7 @@
 #include "Units.h"
 #include "FrameMetrics.h"
 
-#define NS_DEFAULT_VERTICAL_SCROLL_DISTANCE 3
-#define NS_DEFAULT_HORIZONTAL_SCROLL_DISTANCE 5
-
 class gfxContext;
-class nsBoxLayoutState;
 class nsIScrollPositionListener;
 class nsIFrame;
 class nsPresContext;
@@ -36,6 +32,7 @@ class nsIContent;
 namespace mozilla {
 class DisplayItemClip;
 class nsDisplayListBuilder;
+enum class StyleScrollSnapAlignKeyword : uint8_t;
 
 namespace layers {
 struct ScrollMetadata;
@@ -54,11 +51,14 @@ class ScrollAnchorContainer;
  */
 class nsIScrollableFrame : public nsIScrollbarMediator {
  public:
-  typedef mozilla::CSSIntPoint CSSIntPoint;
-  typedef mozilla::layers::ScrollSnapInfo ScrollSnapInfo;
-  typedef mozilla::layout::ScrollAnchorContainer ScrollAnchorContainer;
-  typedef mozilla::ScrollMode ScrollMode;
-  typedef mozilla::ScrollOrigin ScrollOrigin;
+  using CSSIntPoint = mozilla::CSSIntPoint;
+  using ScrollSnapInfo = mozilla::layers::ScrollSnapInfo;
+  using ScrollAnchorContainer = mozilla::layout::ScrollAnchorContainer;
+  using ScrollMode = mozilla::ScrollMode;
+  using ScrollOrigin = mozilla::ScrollOrigin;
+  using PhysicalScrollSnapAlign =
+      std::pair<mozilla::StyleScrollSnapAlignKeyword,
+                mozilla::StyleScrollSnapAlignKeyword>;
 
   NS_DECL_QUERYFRAME_TARGET(nsIScrollableFrame)
 
@@ -132,14 +132,7 @@ class nsIScrollableFrame : public nsIScrollbarMediator {
    * be visible due to overflowing content, are. This can be called during
    * reflow of the scrolled contents.
    */
-  virtual nsMargin GetDesiredScrollbarSizes(nsBoxLayoutState* aState) = 0;
-  /**
-   * Return the sizes of all scrollbars assuming that any scrollbars that could
-   * be visible due to overflowing content, are. This can be called during
-   * reflow of the scrolled contents.
-   */
-  virtual nsMargin GetDesiredScrollbarSizes(nsPresContext* aPresContext,
-                                            gfxContext* aRC) = 0;
+  virtual nsMargin GetDesiredScrollbarSizes() const = 0;
   /**
    * Return the width for non-disappearing scrollbars.
    */
@@ -294,7 +287,8 @@ class nsIScrollableFrame : public nsIScrollbarMediator {
    * number of layer pixels (so the operation is fast and looks clean).
    */
   virtual void ScrollToCSSPixelsForApz(
-      const mozilla::CSSPoint& aScrollPosition) = 0;
+      const mozilla::CSSPoint& aScrollPosition,
+      mozilla::ScrollSnapTargetIds&& aLastSnapTargetIds) = 0;
 
   /**
    * Returns the scroll position in integer CSS pixels, rounded to the nearest
@@ -369,13 +363,13 @@ class nsIScrollableFrame : public nsIScrollbarMediator {
    * This basically means that we should allocate resources in the
    * expectation that scrolling is going to happen.
    */
-  virtual bool IsScrollingActive() = 0;
+  virtual bool IsScrollingActive() const = 0;
 
   /**
    * Returns true if this scroll frame might be scrolled
    * asynchronously by the compositor.
    */
-  virtual bool IsMaybeAsynchronouslyScrolled() = 0;
+  virtual bool IsMaybeAsynchronouslyScrolled() const = 0;
 
   /**
    * Was the current presentation state for this frame restored from history?
@@ -396,7 +390,7 @@ class nsIScrollableFrame : public nsIScrollbarMediator {
    * Determine if the passed in rect is nearly visible according to the frame
    * visibility heuristics for how close it is to the visible scrollport.
    */
-  virtual bool IsRectNearlyVisible(const nsRect& aRect) = 0;
+  virtual bool IsRectNearlyVisible(const nsRect& aRect) const = 0;
   /**
    * Expand the given rect taking into account which directions we can scroll
    * and how far we want to expand for frame visibility purposes.
@@ -407,12 +401,12 @@ class nsIScrollableFrame : public nsIScrollbarMediator {
    * ScrollOrigin::Apz when the compositor's replica frame metrics includes the
    * latest instant scroll.
    */
-  virtual ScrollOrigin LastScrollOrigin() = 0;
+  virtual ScrollOrigin LastScrollOrigin() const = 0;
 
   /**
    * Gets the async scroll animation state of this scroll frame.
    *
-   * There are four possible kinds that can overlap.
+   * There are five possible kinds that can overlap.
    * MainThread means async scroll animated by the main thread.
    * APZ scroll animations that are requested from the main thread go through
    * three states: 1) pending, when the main thread has recorded that it wants
@@ -420,13 +414,17 @@ class nsIScrollableFrame : public nsIScrollbarMediator {
    * the request to the compositor (but it hasn't necessarily arrived yet), and
    * 3) in progress, after apz has responded to the main thread that it got the
    * request.
+   * TriggeredByScript means that the async scroll animation was triggered by
+   * script, e.g. Element.scrollTo().
    */
   enum class AnimationState {
-    MainThread,    // mAsyncScroll || mAsyncSmoothMSDScroll
-    APZPending,    // mScrollUpdates.LastElement() is Smooth or SmoothMsd
-    APZRequested,  // mApzAnimationRequested
-    APZInProgress  // mCurrentAPZScrollAnimationType !=
-                   // APZScrollAniationType::No
+    MainThread,        // mAsyncScroll || mAsyncSmoothMSDScroll
+    APZPending,        // mScrollUpdates.LastElement() is Smooth or SmoothMsd
+    APZRequested,      // mApzAnimationRequested
+    APZInProgress,     // mCurrentAPZScrollAnimationType !=
+                       // APZScrollAniationType::No
+    TriggeredByScript  // The animation was triggered with
+                       // ScrollTriggeredByScript::Yes
   };
   virtual mozilla::EnumSet<AnimationState> ScrollAnimationState() const = 0;
 
@@ -456,6 +454,8 @@ class nsIScrollableFrame : public nsIScrollbarMediator {
    * the last call to NotifyApzTransaction().
    */
   virtual bool HasScrollUpdates() const = 0;
+
+  enum class InScrollingGesture : bool { No, Yes };
   /**
    * Clears the "origin of last scroll" property stored in this frame, if
    * the generation counter passed in matches the current scroll generation
@@ -466,7 +466,8 @@ class nsIScrollableFrame : public nsIScrollbarMediator {
   virtual void ResetScrollInfoIfNeeded(
       const mozilla::MainThreadScrollGeneration& aGeneration,
       const mozilla::APZScrollGeneration& aGenerationOnApz,
-      mozilla::APZScrollAnimationType aAPZScrollAnimationType) = 0;
+      mozilla::APZScrollAnimationType aAPZScrollAnimationType,
+      InScrollingGesture aInScrollingGesture) = 0;
   /**
    * Determine whether it is desirable to be able to asynchronously scroll this
    * scroll frame.
@@ -572,7 +573,24 @@ class nsIScrollableFrame : public nsIScrollbarMediator {
   /**
    * Returns information required to determine where to snap to after a scroll.
    */
-  virtual ScrollSnapInfo GetScrollSnapInfo() const = 0;
+  virtual ScrollSnapInfo GetScrollSnapInfo() = 0;
+
+  virtual void TryResnap() = 0;
+  /**
+   * Post a pending re-snap request if the given |aFrame| is one of the snap
+   * points on the last scroll operation.
+   */
+  virtual void PostPendingResnapIfNeeded(const nsIFrame* aFrame) = 0;
+  virtual void PostPendingResnap() = 0;
+
+  /**
+   * Returns a pair of the scroll-snap-align property value both on X and Y axes
+   * for the given |aFrame| considering the scroll-snap-type of this scroll
+   * container. For example, if the scroll-snap-type is `none`, the pair of
+   * scroll-snap-align is also `none none`.
+   */
+  virtual PhysicalScrollSnapAlign GetScrollSnapAlignFor(
+      const nsIFrame* aFrame) const = 0;
 
   /**
    * Given the drag event aEvent, determine whether the mouse is near the edge
@@ -592,6 +610,20 @@ class nsIScrollableFrame : public nsIScrollbarMediator {
    * all (ie XUL documents) even though they may contain other scroll frames.
    */
   virtual bool IsRootScrollFrameOfDocument() const = 0;
+
+  /**
+   * Returns the paint sequence number if this scroll frame was the first
+   * scrollable frame for the paint.
+   */
+  virtual mozilla::Maybe<uint32_t> IsFirstScrollableFrameSequenceNumber()
+      const = 0;
+
+  /**
+   * Set the paint sequence number for the paint in which this was the first
+   * scrollable frame that was encountered.
+   */
+  virtual void SetIsFirstScrollableFrameSequenceNumber(
+      mozilla::Maybe<uint32_t> aValue) = 0;
 
   /**
    * Returns the scroll anchor associated with this scrollable frame. This is

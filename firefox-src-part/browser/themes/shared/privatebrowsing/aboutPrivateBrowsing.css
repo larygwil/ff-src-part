@@ -57,15 +57,26 @@ p {
 }
 
 .logo {
-  background: url("chrome://branding/content/about-logo.png") no-repeat center center;
+  /* The new private browsing logo, shown for
+  "browser.privatebrowsing.enable-new-logo" == true */
+  background: url("chrome://branding/content/about-logo-private.png") no-repeat center center;
   background-size: 96px;
   display: inline-block;
   height: 96px;
   width: 96px;
 }
 
+.logo[legacy] {
+  /* The legacy private browsing logo, shown for
+  "browser.privatebrowsing.enable-new-logo" == false */
+  background-image: url("chrome://branding/content/about-logo.png");
+}
+
 @media (min-resolution: 2x) {
   .logo {
+    background-image: url('chrome://branding/content/about-logo-private@2x.png');
+  }
+  .logo[legacy] {
     background-image: url('chrome://branding/content/about-logo@2x.png');
   }
 }
@@ -387,11 +398,53 @@ p {
   align-items: center;
 }
 
-.promo-cta .primary.button {
-  padding-block: 11px;
+/* The colors for .promo-cta .primary must be kept in sync with the dark mode
+   primary button colors from common-shared.cs */
+.promo-cta .primary {
+  padding: 0.54em 1.15em;
   margin: 8px 0;
   font-weight: 600;
   cursor: pointer;
+  background-color: rgb(0,221,255);
+  color: rgb(43,42,51);
+}
+
+.promo-cta .primary:focus-visible {
+  outline-color: rgb(0,221,255);
+}
+
+.promo-cta .primary:hover {
+  background-color: rgb(128,235,255) !important;
+  color: rgb(43,42,51) !important;
+}
+
+.promo-cta .primary:hover:active {
+  background-color: rgb(170,242,255) !important;
+  color: rgb(43,42,51) !important;
+}
+
+@media (prefers-contrast) {
+  .promo-cta .primary {
+    background-color: ButtonText;
+    color: ButtonFace;
+    border-color: ButtonFace;
+  }
+
+  .promo-cta .primary:focus-visible {
+    outline-color: -moz-DialogText;
+  }
+
+  .promo-cta .primary:hover {
+    background-color: SelectedItem !important;
+    color: SelectedItemText !important;
+    border-color: SelectedItemText;
+  }
+
+  .promo-cta .primary:hover:active {
+    background-color: SelectedItemText !important;
+    color: SelectedItem !important;
+    border-color: SelectedItem;
+  }
 }
 
 .promo.bottom .promo-cta {
@@ -437,4 +490,11 @@ p {
 
 .promo.top > .promo-content {
   padding: 10px 6px;
+}
+
+.promo-link {
+  margin: 0;
+  cursor: pointer;
+  color: var(--in-content-link-color-active);
+  text-decoration: underline;
 }

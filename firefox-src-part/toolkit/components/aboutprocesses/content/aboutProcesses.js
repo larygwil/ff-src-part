@@ -27,22 +27,21 @@ const ONE_GIGA = 1024 * 1024 * 1024;
 const ONE_MEGA = 1024 * 1024;
 const ONE_KILO = 1024;
 
-const { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm");
-const { XPCOMUtils } = ChromeUtils.import(
-  "resource://gre/modules/XPCOMUtils.jsm"
+const { XPCOMUtils } = ChromeUtils.importESModule(
+  "resource://gre/modules/XPCOMUtils.sys.mjs"
 );
-const { AppConstants } = ChromeUtils.import(
-  "resource://gre/modules/AppConstants.jsm"
+const { AppConstants } = ChromeUtils.importESModule(
+  "resource://gre/modules/AppConstants.sys.mjs"
 );
 
-XPCOMUtils.defineLazyModuleGetters(this, {
+ChromeUtils.defineESModuleGetters(this, {
   ContextualIdentityService:
-    "resource://gre/modules/ContextualIdentityService.jsm",
+    "resource://gre/modules/ContextualIdentityService.sys.mjs",
 });
 
-XPCOMUtils.defineLazyGetter(this, "ProfilerPopupBackground", function() {
+XPCOMUtils.defineLazyGetter(this, "ProfilerPopupBackground", function () {
   return ChromeUtils.import(
-    "resource://devtools/client/performance-new/popup/background.jsm.js"
+    "resource://devtools/client/performance-new/shared/background.jsm.js"
   );
 });
 
@@ -547,18 +546,15 @@ var View = {
         let origin = fluentArgs.origin;
         let privateBrowsingId, userContextId;
         try {
-          ({
-            privateBrowsingId,
-            userContextId,
-          } = ChromeUtils.createOriginAttributesFromOrigin(origin));
+          ({ privateBrowsingId, userContextId } =
+            ChromeUtils.createOriginAttributesFromOrigin(origin));
           fluentArgs.origin = origin.slice(0, origin.indexOf("^"));
         } catch (e) {
           // createOriginAttributesFromOrigin can throw NS_ERROR_FAILURE for incorrect origin strings.
         }
         if (userContextId) {
-          let identityLabel = ContextualIdentityService.getUserContextLabel(
-            userContextId
-          );
+          let identityLabel =
+            ContextualIdentityService.getUserContextLabel(userContextId);
           if (identityLabel) {
             fluentArgs.origin += ` — ${identityLabel}`;
           }
@@ -588,6 +584,7 @@ var View = {
       }
       document.l10n.setAttributes(processNameElement, fluentName, fluentArgs);
       nameCell.className = ["type", "favicon", ...classNames].join(" ");
+      nameCell.setAttribute("id", data.pid + "-label");
 
       let image;
       switch (data.type) {
@@ -759,18 +756,27 @@ var View = {
     let span;
     if (!nameCell.firstChild) {
       nameCell.className = "name indent";
-      // Create the nodes
-      let img = document.createElement("span");
-      img.className = "twisty";
-      nameCell.appendChild(img);
+      // Create the nodes:
+      let imgBtn = document.createElement("span");
+      // Provide markup for an accessible disclosure button:
+      imgBtn.className = "twisty";
+      imgBtn.setAttribute("role", "button");
+      imgBtn.setAttribute("tabindex", "0");
+      // Label to include both summary and details texts
+      imgBtn.setAttribute("aria-labelledby", `${data.pid}-label ${rowId}`);
+      if (!imgBtn.hasAttribute("aria-expanded")) {
+        imgBtn.setAttribute("aria-expanded", "false");
+      }
+      nameCell.appendChild(imgBtn);
 
       span = document.createElement("span");
+      span.setAttribute("id", rowId);
       nameCell.appendChild(span);
     } else {
       // The only thing that can change is the thread count.
-      let img = nameCell.firstChild;
-      isOpen = img.classList.contains("open");
-      span = img.nextSibling;
+      let imgBtn = nameCell.firstChild;
+      isOpen = imgBtn.classList.contains("open");
+      span = imgBtn.nextSibling;
     }
     document.l10n.setAttributes(span, fluentName, fluentArgs);
 
@@ -852,6 +858,40 @@ var View = {
     }
   },
 
+  utilityActorNameToFluentName(actorName) {
+    let fluentName;
+    switch (actorName) {
+      case "audioDecoder_Generic":
+        fluentName = "about-processes-utility-actor-audio-decoder-generic";
+        break;
+
+      case "audioDecoder_AppleMedia":
+        fluentName = "about-processes-utility-actor-audio-decoder-applemedia";
+        break;
+
+      case "audioDecoder_WMF":
+        fluentName = "about-processes-utility-actor-audio-decoder-wmf";
+        break;
+
+      case "mfMediaEngineCDM":
+        fluentName = "about-processes-utility-actor-mf-media-engine";
+        break;
+
+      case "jSOracle":
+        fluentName = "about-processes-utility-actor-js-oracle";
+        break;
+
+      case "windowsUtils":
+        fluentName = "about-processes-utility-actor-windows-utils";
+        break;
+
+      default:
+        fluentName = "about-processes-utility-actor-unknown";
+        break;
+    }
+    return fluentName;
+  },
+
   displayUtilityActorRow(data, parent) {
     const cellCount = 2;
     // The actor name is expected to be unique within a given utility process.
@@ -862,17 +902,8 @@ var View = {
 
     // Column: name
     let nameCell = row.firstChild;
-    let fluentName;
+    let fluentName = this.utilityActorNameToFluentName(data.actorName);
     let fluentArgs = {};
-    switch (data.actorName) {
-      case "audioDecoder":
-        fluentName = "about-processes-utility-actor-audio-decoder";
-        break;
-
-      default:
-        fluentName = "about-processes-utility-actor-unknown";
-        break;
-    }
     this._fillCell(nameCell, {
       fluentName,
       fluentArgs,
@@ -1002,38 +1033,24 @@ var Control = {
     this._initHangReports();
 
     // Start prefetching units.
-    this._promisePrefetchedUnits = (async function() {
-      let [
-        ns,
-        us,
-        ms,
-        s,
-        m,
-        h,
-        d,
-        B,
-        KB,
-        MB,
-        GB,
-        TB,
-        PB,
-        EB,
-      ] = await document.l10n.formatValues([
-        { id: "duration-unit-ns" },
-        { id: "duration-unit-us" },
-        { id: "duration-unit-ms" },
-        { id: "duration-unit-s" },
-        { id: "duration-unit-m" },
-        { id: "duration-unit-h" },
-        { id: "duration-unit-d" },
-        { id: "memory-unit-B" },
-        { id: "memory-unit-KB" },
-        { id: "memory-unit-MB" },
-        { id: "memory-unit-GB" },
-        { id: "memory-unit-TB" },
-        { id: "memory-unit-PB" },
-        { id: "memory-unit-EB" },
-      ]);
+    this._promisePrefetchedUnits = (async function () {
+      let [ns, us, ms, s, m, h, d, B, KB, MB, GB, TB, PB, EB] =
+        await document.l10n.formatValues([
+          { id: "duration-unit-ns" },
+          { id: "duration-unit-us" },
+          { id: "duration-unit-ms" },
+          { id: "duration-unit-s" },
+          { id: "duration-unit-m" },
+          { id: "duration-unit-h" },
+          { id: "duration-unit-d" },
+          { id: "memory-unit-B" },
+          { id: "memory-unit-KB" },
+          { id: "memory-unit-MB" },
+          { id: "memory-unit-GB" },
+          { id: "memory-unit-TB" },
+          { id: "memory-unit-PB" },
+          { id: "memory-unit-EB" },
+        ]);
       return {
         duration: { ns, us, ms, s, m, h, d },
         memory: { B, KB, MB, GB, TB, PB, EB },
@@ -1044,54 +1061,25 @@ var Control = {
 
     // Single click:
     // - show or hide the contents of a twisty;
+    // - close a process;
+    // - profile a process;
     // - change selection.
     tbody.addEventListener("click", event => {
       this._updateLastMouseEvent();
 
-      // Handle showing or hiding subitems of a row.
-      let target = event.target;
-      if (target.classList.contains("twisty")) {
-        this._handleTwisty(target);
-        return;
-      }
-      if (target.classList.contains("close-icon")) {
-        this._handleKill(target);
-        return;
-      }
+      this._handleActivate(event.target);
+    });
 
-      if (target.classList.contains("profiler-icon")) {
-        if (Services.profiler.IsActive()) {
-          return;
-        }
-        Services.profiler.StartProfiler(
-          10000000,
-          1,
-          ["default", "ipcmessages"],
-          ["pid:" + target.parentNode.parentNode.process.pid]
-        );
-        target.classList.add("profiler-active");
-        setTimeout(() => {
-          ProfilerPopupBackground.captureProfile("aboutprofiling");
-          target.classList.remove("profiler-active");
-        }, PROFILE_DURATION * 1000);
-        return;
+    // Enter or Space keypress:
+    // - show or hide the contents of a twisty;
+    // - close a process;
+    // - profile a process;
+    // - change selection.
+    tbody.addEventListener("keypress", event => {
+      // Handle showing or hiding subitems of a row, when keyboard is used.
+      if (event.key === "Enter" || event.key === " ") {
+        this._handleActivate(event.target);
       }
-
-      // Handle selection changes
-      let row = target.closest("tr");
-      if (!row) {
-        return;
-      }
-      if (this.selectedRow) {
-        this.selectedRow.removeAttribute("selected");
-        if (this.selectedRow.rowId == row.rowId) {
-          // Clicking the same row again clears the selection.
-          this.selectedRow = null;
-          return;
-        }
-      }
-      row.setAttribute("selected", "true");
-      this.selectedRow = row;
     });
 
     // Double click:
@@ -1424,18 +1412,39 @@ var Control = {
     }
   },
 
+  // Handle events on image controls.
+  _handleActivate(target) {
+    if (target.classList.contains("twisty")) {
+      this._handleTwisty(target);
+      return;
+    }
+    if (target.classList.contains("close-icon")) {
+      this._handleKill(target);
+      return;
+    }
+
+    if (target.classList.contains("profiler-icon")) {
+      this._handleProfiling(target);
+      return;
+    }
+
+    this._handleSelection(target);
+  },
+
   // Open/close list of threads.
   _handleTwisty(target) {
     let row = target.parentNode.parentNode;
     if (target.classList.toggle("open")) {
+      target.setAttribute("aria-expanded", "true");
       this._showThreads(row, this._maxSlopeCpu);
       View.insertAfterRow(row);
     } else {
+      target.setAttribute("aria-expanded", "false");
       this._removeSubtree(row);
     }
   },
 
-  // Kill process/close tab/close subframe
+  // Kill process/close tab/close subframe.
   _handleKill(target) {
     let row = target.parentNode;
     if (row.process) {
@@ -1501,9 +1510,45 @@ var Control = {
       }
     }
   },
+
+  // Handle profiling of a process.
+  _handleProfiling(target) {
+    if (Services.profiler.IsActive()) {
+      return;
+    }
+    Services.profiler.StartProfiler(
+      10000000,
+      1,
+      ["default", "ipcmessages", "power"],
+      ["pid:" + target.parentNode.parentNode.process.pid]
+    );
+    target.classList.add("profiler-active");
+    setTimeout(() => {
+      ProfilerPopupBackground.captureProfile("aboutprofiling");
+      target.classList.remove("profiler-active");
+    }, PROFILE_DURATION * 1000);
+  },
+
+  // Handle selection changes.
+  _handleSelection(target) {
+    let row = target.closest("tr");
+    if (!row) {
+      return;
+    }
+    if (this.selectedRow) {
+      this.selectedRow.removeAttribute("selected");
+      if (this.selectedRow.rowId == row.rowId) {
+        // Clicking the same row again clears the selection.
+        this.selectedRow = null;
+        return;
+      }
+    }
+    row.setAttribute("selected", "true");
+    this.selectedRow = row;
+  },
 };
 
-window.onload = async function() {
+window.onload = async function () {
   Control.init();
 
   // Display immediately the list of processes. CPU values will be missing.

@@ -7,13 +7,13 @@
 const {
   FrontClassWithSpec,
   registerFront,
-} = require("devtools/shared/protocol");
+} = require("resource://devtools/shared/protocol.js");
 const {
   privatePropertiesIteratorSpec,
-} = require("devtools/shared/specs/private-properties-iterator");
+} = require("resource://devtools/shared/specs/private-properties-iterator.js");
 const {
   getAdHocFrontOrPrimitiveGrip,
-} = require("devtools/client/fronts/object");
+} = require("resource://devtools/client/fronts/object.js");
 
 class PrivatePropertiesIteratorFront extends FrontClassWithSpec(
   privatePropertiesIteratorSpec
@@ -46,9 +46,8 @@ class PrivatePropertiesIteratorFront extends FrontClassWithSpec(
       if (item?.descriptor) {
         for (const gripKey of gripKeys) {
           if (item.descriptor.hasOwnProperty(gripKey)) {
-            result.privateProperties[i].descriptor[
-              gripKey
-            ] = getAdHocFrontOrPrimitiveGrip(item.descriptor[gripKey], this);
+            result.privateProperties[i].descriptor[gripKey] =
+              getAdHocFrontOrPrimitiveGrip(item.descriptor[gripKey], this);
           }
         }
       }

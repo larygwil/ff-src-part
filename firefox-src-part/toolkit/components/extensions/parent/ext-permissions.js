@@ -4,8 +4,8 @@
 
 "use strict";
 
-XPCOMUtils.defineLazyModuleGetters(this, {
-  ExtensionPermissions: "resource://gre/modules/ExtensionPermissions.jsm",
+ChromeUtils.defineESModuleGetters(this, {
+  ExtensionPermissions: "resource://gre/modules/ExtensionPermissions.sys.mjs",
 });
 
 var { ExtensionError } = ExtensionUtils;
@@ -118,7 +118,7 @@ this.permissions = class extends ExtensionAPIPersistent {
                   browser,
                   name: context.extension.name,
                   id: context.extension.id,
-                  icon: context.extension.iconURL,
+                  icon: context.extension.getPreferredIcon(32),
                   permissions: { permissions, origins },
                   resolve,
                 },

@@ -7,10 +7,9 @@
 
 var EXPORTED_SYMBOLS = ["ProcessHangMonitor"];
 
-const { AppConstants } = ChromeUtils.import(
-  "resource://gre/modules/AppConstants.jsm"
+const { AppConstants } = ChromeUtils.importESModule(
+  "resource://gre/modules/AppConstants.sys.mjs"
 );
-const { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm");
 
 /**
  * Elides the middle of a string by replacing it with an elipsis if it is
@@ -375,7 +374,7 @@ var ProcessHangMonitor = {
             uri_type = "content";
           }
         } catch (ex) {
-          Cu.reportError(ex);
+          console.error(ex);
           uri_type = "unknown";
         }
       }
@@ -407,7 +406,7 @@ var ProcessHangMonitor = {
         }
       );
     } catch (ex) {
-      Cu.reportError(ex);
+      console.error(ex);
     }
   },
 
@@ -513,8 +512,7 @@ var ProcessHangMonitor = {
 
       buttons.unshift({
         label: bundle.getString("processHang.add-on.learn-more.text"),
-        link:
-          "https://support.mozilla.org/kb/warning-unresponsive-script#w_other-causes",
+        link: "https://support.mozilla.org/kb/warning-unresponsive-script#w_other-causes",
       });
     } else {
       let scriptBrowser = report.scriptBrowser;
@@ -524,9 +522,8 @@ var ProcessHangMonitor = {
           brandShortName,
         ]);
       } else {
-        let tab = scriptBrowser?.ownerGlobal.gBrowser?.getTabForBrowser(
-          scriptBrowser
-        );
+        let tab =
+          scriptBrowser?.ownerGlobal.gBrowser?.getTabForBrowser(scriptBrowser);
         if (!tab) {
           notificationTag = "nonspecific_tab";
           message = bundle.getFormattedString(
@@ -545,9 +542,8 @@ var ProcessHangMonitor = {
       }
     }
 
-    let notification = win.gNotificationBox.getNotificationWithValue(
-      "process-hang"
-    );
+    let notification =
+      win.gNotificationBox.getNotificationWithValue("process-hang");
     if (notificationTag == notification?.getAttribute("notification-tag")) {
       return;
     }
@@ -558,7 +554,12 @@ var ProcessHangMonitor = {
       return;
     }
 
-    if (AppConstants.MOZ_DEV_EDITION) {
+    // Show the "debug script" button unconditionally if we are in Developer edition,
+    // or, if DevTools are opened on the slow tab.
+    if (
+      AppConstants.MOZ_DEV_EDITION ||
+      report.scriptBrowser.browsingContext.watchedByDevTools
+    ) {
       buttons.push({
         label: bundle.getString("processHang.button_debug.label"),
         accessKey: bundle.getString("processHang.button_debug.accessKey"),
@@ -590,9 +591,8 @@ var ProcessHangMonitor = {
    * Ensure that no hang notifications are visible in |win|.
    */
   hideNotification(win) {
-    let notification = win.gNotificationBox.getNotificationWithValue(
-      "process-hang"
-    );
+    let notification =
+      win.gNotificationBox.getNotificationWithValue("process-hang");
     if (notification) {
       win.gNotificationBox.removeNotification(notification);
     }

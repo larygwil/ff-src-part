@@ -4,10 +4,7 @@
 
 "use strict";
 
-const Services = require("Services");
-const { throttle } = require("devtools/shared/throttle");
-
-const BROWSERTOOLBOX_FISSION_ENABLED = "devtools.browsertoolbox.fission";
+const { throttle } = require("resource://devtools/shared/throttle.js");
 
 let gLastResourceId = 0;
 
@@ -77,6 +74,34 @@ class ResourceCommand {
     this._cache.set(cacheKey(resourceType, resourceId), resource);
   }
 
+  /**
+   * Clear all the resources related to specifed resource types.
+   * Should also trigger clearing of the caches that exists on the related
+   * serverside resource watchers.
+   *
+   * @param {Array:string} resourceTypes
+   *                       A list of all the resource types whose
+   *                       resources shouled be cleared.
+   */
+  async clearResources(resourceTypes) {
+    if (!Array.isArray(resourceTypes)) {
+      throw new Error("clearResources expects a list of resources types");
+    }
+    // Clear the cached resources of the type.
+    for (const [key, resource] of this._cache) {
+      if (resourceTypes.includes(resource.resourceType)) {
+        // NOTE: To anyone paranoid like me, yes it is okay to delete from a Map while iterating it.
+        this._cache.delete(key);
+      }
+    }
+
+    const resourcesToClear = resourceTypes.filter(resourceType =>
+      this.hasResourceCommandSupport(resourceType)
+    );
+    if (resourcesToClear.length) {
+      this.watcherFront.clearResources(resourcesToClear);
+    }
+  }
   /**
    * Return all specified resources cached in this watcher.
    *
@@ -266,7 +291,7 @@ class ResourceCommand {
     }
     this._watchers = this._watchers.filter(entry => {
       // Remove entries entirely if it isn't watching for any resource type
-      return entry.resources.length > 0;
+      return !!entry.resources.length;
     });
 
     // Stop listening to all resources for which we removed the last watcher
@@ -327,6 +352,18 @@ class ResourceCommand {
       onAvailable,
     });
     return { onResource: promise };
+  }
+
+  /**
+   * Check if there are any watchers for the specified resource.
+   *
+   * @param {String} resourceType
+   *         One of ResourceCommand.TYPES
+   * @return {Boolean}
+   *         If the resources type is beibg watched.
+   */
+  isResourceWatched(resourceType) {
+    return this._listenedResources.has(resourceType);
   }
 
   /**
@@ -401,10 +438,13 @@ class ResourceCommand {
   /**
    * Method called by the TargetCommand for each already existing or target which has just been created.
    *
-   * @param {Front} targetFront
+   * @param {Object} arg
+   * @param {Front} arg.targetFront
    *        The Front of the target that is available.
    *        This Front inherits from TargetMixin and is typically
    *        composed of a WindowGlobalTargetFront or ContentProcessTargetFront.
+   * @param {Boolean} arg.isTargetSwitching
+   *         true when the new target was created because of a target switching.
    */
   async _onTargetAvailable({ targetFront, isTargetSwitching }) {
     const resources = [];
@@ -519,8 +559,8 @@ class ResourceCommand {
     // and only become true when doing a bfcache navigation.
     // (only server side targets follow the WindowGlobal lifecycle)
     // When server side targets are enabled, this will always be true.
-    const isServerSideTarget = this.targetCommand.targetFront.targetForm
-      .followWindowGlobalLifeCycle;
+    const isServerSideTarget =
+      this.targetCommand.targetFront.targetForm.followWindowGlobalLifeCycle;
     if (isServerSideTarget) {
       // For top-level targets created from the server, only restart legacy
       // listeners.
@@ -534,9 +574,13 @@ class ResourceCommand {
 
   /**
    * Method called by the TargetCommand when a target has just been destroyed
-   * See _onTargetAvailable for arguments, they are the same.
+   * @param {Object} arg
+   * @param {Front} arg.targetFront
+   *        The Front of the target that was destroyed
+   * @param {Boolean} arg.isModeSwitching
+   *         true when this is called as the result of a change to the devtools.browsertoolbox.scope pref.
    */
-  _onTargetDestroyed({ targetFront }) {
+  _onTargetDestroyed({ targetFront, isModeSwitching }) {
     // Clear the map of legacy listeners for this target.
     this._existingLegacyListeners.set(targetFront, []);
     this._offTargetFrontListeners.delete(targetFront);
@@ -545,6 +589,8 @@ class ResourceCommand {
     // Top level BrowsingContext target will be purge via DOCUMENT_EVENT will-navigate events.
     // If we were to clean resources from target-destroyed, we will clear resources
     // happening between will-navigate and target-destroyed. Typically the navigation request
+    // At the moment, isModeSwitching can only be true when targetFront.isTopLevel isn't true,
+    // so we don't need to add a specific check for isModeSwitching.
     if (!targetFront.isTopLevel || !targetFront.isBrowsingContext) {
       for (const [key, resource] of this._cache) {
         if (resource.targetFront === targetFront) {
@@ -554,10 +600,19 @@ class ResourceCommand {
       }
     }
 
-    //TODO: Is there a point in doing anything else?
-    //
-    // We could remove the available/destroyed event, but as the target is destroyed
-    // its listeners will be destroyed anyway.
+    // Purge "available" pendingEvents for resources from the destroyed target when switching
+    // mode as we want to ignore those.
+    if (isModeSwitching) {
+      for (const watcherEntry of this._watchers) {
+        for (const pendingEvent of watcherEntry.pendingEvents) {
+          if (pendingEvent.callbackType == "available") {
+            pendingEvent.updates = pendingEvent.updates.filter(
+              update => update.targetFront !== targetFront
+            );
+          }
+        }
+      }
+    }
   }
 
   /**
@@ -583,13 +638,22 @@ class ResourceCommand {
 
       if (watcherFront) {
         targetFront = await this._getTargetForWatcherResource(resource);
+        // When we receive resources from the Watcher actor,
+        // there is no guarantee that the target front is fully initialized.
+        // The Target Front is initialized by the TargetCommand, by calling TargetFront.attachAndInitThread.
+        // We have to wait for its completion as resources watchers are expecting it to be completed.
+        //
+        // But when navigating, we may receive resources packets for a destroyed target.
+        // Or, in the context of the browser toolbox, they may not relate to any target.
+        if (targetFront) {
+          await targetFront.initialized;
+        }
       }
 
       // isAlreadyExistingResource indicates that the resources already existed before
       // the resource command started watching for this type of resource.
-      resource.isAlreadyExistingResource = this._processingExistingResources.has(
-        resourceType
-      );
+      resource.isAlreadyExistingResource =
+        this._processingExistingResources.has(resourceType);
 
       // Put the targetFront on the resource for easy retrieval.
       // (Resources from the legacy listeners may already have the attribute set)
@@ -704,6 +768,20 @@ class ResourceCommand {
         console.warn(`Expected resource ${resourceType} to have a resourceId`);
       }
 
+      // See _onResourceAvailable()
+      // We also need to wait for the related targetFront to be initialized
+      // otherwise we would notify about the udpate *before* the available
+      // and the resource won't be in _cache.
+      if (watcherFront) {
+        targetFront = await this._getTargetForWatcherResource(update);
+        // When we receive the navigation request, the target front has already been
+        // destroyed, but this is fine. The cached resource has the reference to
+        // the (destroyed) target front and it is fully initialized.
+        if (targetFront) {
+          await targetFront.initialized;
+        }
+      }
+
       const existingResource = this._cache.get(
         cacheKey(resourceType, resourceId)
       );
@@ -754,7 +832,7 @@ class ResourceCommand {
         continue;
       }
       // If we receive a new event of the same type, accumulate the new update in the last event
-      if (pendingEvents.length > 0) {
+      if (pendingEvents.length) {
         const lastEvent = pendingEvents[pendingEvents.length - 1];
         if (lastEvent.callbackType == callbackType) {
           lastEvent.updates.push(update);
@@ -777,12 +855,8 @@ class ResourceCommand {
    */
   _notifyWatchers() {
     for (const watcherEntry of this._watchers) {
-      const {
-        onAvailable,
-        onUpdated,
-        onDestroyed,
-        pendingEvents,
-      } = watcherEntry;
+      const { onAvailable, onUpdated, onDestroyed, pendingEvents } =
+        watcherEntry;
       // Immediately clear the buffer in order to avoid possible races, where an event listener
       // would end up somehow adding a new throttled resource
       watcherEntry.pendingEvents = [];
@@ -856,16 +930,6 @@ class ResourceCommand {
    * @return {Boolean} True, if the server supports this type.
    */
   hasResourceCommandSupport(resourceType) {
-    // If we're in the browser console or browser toolbox and the browser
-    // toolbox fission pref is disabled, we don't want to use watchers
-    // (even if traits on the server are enabled).
-    if (
-      this.targetCommand.descriptorFront.isBrowserProcessDescriptor &&
-      !Services.prefs.getBoolPref(BROWSERTOOLBOX_FISSION_ENABLED, false)
-    ) {
-      return false;
-    }
-
     return this.watcherFront?.traits?.resources?.[resourceType];
   }
 
@@ -952,10 +1016,7 @@ class ResourceCommand {
    * being fetched from these targets.
    */
   _shouldRunLegacyListenerEvenWithWatcherSupport(resourceType) {
-    return (
-      resourceType == ResourceCommand.TYPES.SOURCE ||
-      resourceType == ResourceCommand.TYPES.THREAD_STATE
-    );
+    return WORKER_RESOURCE_TYPES.includes(resourceType);
   }
 
   async _forwardExistingResources(resourceTypes, onAvailable) {
@@ -965,7 +1026,7 @@ class ResourceCommand {
         existingResources.push(resource);
       }
     }
-    if (existingResources.length > 0) {
+    if (existingResources.length) {
       await onAvailable(existingResources, { areExistingResources: true });
     }
   }
@@ -982,6 +1043,17 @@ class ResourceCommand {
     if (this._hasResourceCommandSupportForTarget(resourceType, targetFront)) {
       // This resource / target pair should already be handled by the watcher,
       // no need to start legacy listeners.
+      return;
+    }
+
+    // All workers target types are still not supported by the watcher
+    // so that we have to spawn legacy listener for all their resources.
+    // But some resources are irrelevant to workers, like network events.
+    // And we removed the related legacy listener as they are no longer used.
+    if (
+      targetFront.targetType.endsWith("worker") &&
+      !WORKER_RESOURCE_TYPES.includes(resourceType)
+    ) {
       return;
     }
 
@@ -1064,9 +1136,8 @@ class ResourceCommand {
         this.watcherFront.unwatchResources([resourceType]);
       }
 
-      const shouldRunLegacyListeners = this._shouldRunLegacyListenerEvenWithWatcherSupport(
-        resourceType
-      );
+      const shouldRunLegacyListeners =
+        this._shouldRunLegacyListenerEvenWithWatcherSupport(resourceType);
       if (!shouldRunLegacyListeners) {
         return;
       }
@@ -1119,8 +1190,6 @@ ResourceCommand.TYPES = ResourceCommand.prototype.TYPES = {
   CSS_MESSAGE: "css-message",
   ERROR_MESSAGE: "error-message",
   PLATFORM_MESSAGE: "platform-message",
-  // Legacy listener only. Can be removed in Bug 1625937.
-  CLONED_CONTENT_PROCESS_MESSAGE: "cloned-content-process-message",
   DOCUMENT_EVENT: "document-event",
   ROOT_NODE: "root-node",
   STYLESHEET: "stylesheet",
@@ -1136,12 +1205,24 @@ ResourceCommand.TYPES = ResourceCommand.prototype.TYPES = {
   REFLOW: "reflow",
   SOURCE: "source",
   THREAD_STATE: "thread-state",
+  TRACING_STATE: "tracing-state",
   SERVER_SENT_EVENT: "server-sent-event",
+  LAST_PRIVATE_CONTEXT_EXIT: "last-private-context-exit",
 };
 ResourceCommand.ALL_TYPES = ResourceCommand.prototype.ALL_TYPES = Object.values(
   ResourceCommand.TYPES
 );
 module.exports = ResourceCommand;
+
+// This is the list of resource types supported by workers.
+// We need such list to know when forcing to run the legacy listeners
+// and when to avoid try to spawn some unsupported ones for workers.
+const WORKER_RESOURCE_TYPES = [
+  ResourceCommand.TYPES.CONSOLE_MESSAGE,
+  ResourceCommand.TYPES.ERROR_MESSAGE,
+  ResourceCommand.TYPES.SOURCE,
+  ResourceCommand.TYPES.THREAD_STATE,
+];
 
 // Backward compat code for each type of resource.
 // Each section added here should eventually be removed once the equivalent server
@@ -1168,107 +1249,49 @@ const LegacyListeners = {
 loader.lazyRequireGetter(
   LegacyListeners,
   ResourceCommand.TYPES.CONSOLE_MESSAGE,
-  "devtools/shared/commands/resource/legacy-listeners/console-messages"
+  "resource://devtools/shared/commands/resource/legacy-listeners/console-messages.js"
 );
 loader.lazyRequireGetter(
   LegacyListeners,
   ResourceCommand.TYPES.CSS_CHANGE,
-  "devtools/shared/commands/resource/legacy-listeners/css-changes"
+  "resource://devtools/shared/commands/resource/legacy-listeners/css-changes.js"
 );
 loader.lazyRequireGetter(
   LegacyListeners,
   ResourceCommand.TYPES.CSS_MESSAGE,
-  "devtools/shared/commands/resource/legacy-listeners/css-messages"
+  "resource://devtools/shared/commands/resource/legacy-listeners/css-messages.js"
 );
 loader.lazyRequireGetter(
   LegacyListeners,
   ResourceCommand.TYPES.ERROR_MESSAGE,
-  "devtools/shared/commands/resource/legacy-listeners/error-messages"
+  "resource://devtools/shared/commands/resource/legacy-listeners/error-messages.js"
 );
 loader.lazyRequireGetter(
   LegacyListeners,
   ResourceCommand.TYPES.PLATFORM_MESSAGE,
-  "devtools/shared/commands/resource/legacy-listeners/platform-messages"
-);
-loader.lazyRequireGetter(
-  LegacyListeners,
-  ResourceCommand.TYPES.CLONED_CONTENT_PROCESS_MESSAGE,
-  "devtools/shared/commands/resource/legacy-listeners/cloned-content-process-messages"
+  "resource://devtools/shared/commands/resource/legacy-listeners/platform-messages.js"
 );
 loader.lazyRequireGetter(
   LegacyListeners,
   ResourceCommand.TYPES.ROOT_NODE,
-  "devtools/shared/commands/resource/legacy-listeners/root-node"
+  "resource://devtools/shared/commands/resource/legacy-listeners/root-node.js"
 );
-loader.lazyRequireGetter(
-  LegacyListeners,
-  ResourceCommand.TYPES.STYLESHEET,
-  "devtools/shared/commands/resource/legacy-listeners/stylesheet"
-);
-loader.lazyRequireGetter(
-  LegacyListeners,
-  ResourceCommand.TYPES.NETWORK_EVENT,
-  "devtools/shared/commands/resource/legacy-listeners/network-events"
-);
-loader.lazyRequireGetter(
-  LegacyListeners,
-  ResourceCommand.TYPES.WEBSOCKET,
-  "devtools/shared/commands/resource/legacy-listeners/websocket"
-);
-loader.lazyRequireGetter(
-  LegacyListeners,
-  ResourceCommand.TYPES.COOKIE,
-  "devtools/shared/commands/resource/legacy-listeners/cookie"
-);
-loader.lazyRequireGetter(
-  LegacyListeners,
-  ResourceCommand.TYPES.CACHE_STORAGE,
-  "devtools/shared/commands/resource/legacy-listeners/cache-storage"
-);
-loader.lazyRequireGetter(
-  LegacyListeners,
-  ResourceCommand.TYPES.LOCAL_STORAGE,
-  "devtools/shared/commands/resource/legacy-listeners/local-storage"
-);
-loader.lazyRequireGetter(
-  LegacyListeners,
-  ResourceCommand.TYPES.SESSION_STORAGE,
-  "devtools/shared/commands/resource/legacy-listeners/session-storage"
-);
-loader.lazyRequireGetter(
-  LegacyListeners,
-  ResourceCommand.TYPES.EXTENSION_STORAGE,
-  "devtools/shared/commands/resource/legacy-listeners/extension-storage"
-);
-loader.lazyRequireGetter(
-  LegacyListeners,
-  ResourceCommand.TYPES.INDEXED_DB,
-  "devtools/shared/commands/resource/legacy-listeners/indexed-db"
-);
-loader.lazyRequireGetter(
-  LegacyListeners,
-  ResourceCommand.TYPES.NETWORK_EVENT_STACKTRACE,
-  "devtools/shared/commands/resource/legacy-listeners/network-event-stacktraces"
-);
+
 loader.lazyRequireGetter(
   LegacyListeners,
   ResourceCommand.TYPES.SOURCE,
-  "devtools/shared/commands/resource/legacy-listeners/source"
+  "resource://devtools/shared/commands/resource/legacy-listeners/source.js"
 );
 loader.lazyRequireGetter(
   LegacyListeners,
   ResourceCommand.TYPES.THREAD_STATE,
-  "devtools/shared/commands/resource/legacy-listeners/thread-states"
+  "resource://devtools/shared/commands/resource/legacy-listeners/thread-states.js"
 );
-loader.lazyRequireGetter(
-  LegacyListeners,
-  ResourceCommand.TYPES.SERVER_SENT_EVENT,
-  "devtools/shared/commands/resource/legacy-listeners/server-sent-events"
-);
+
 loader.lazyRequireGetter(
   LegacyListeners,
   ResourceCommand.TYPES.REFLOW,
-  "devtools/shared/commands/resource/legacy-listeners/reflow"
+  "resource://devtools/shared/commands/resource/legacy-listeners/reflow.js"
 );
 
 // Optional transformers for each type of resource.
@@ -1276,48 +1299,54 @@ loader.lazyRequireGetter(
 // and perform some transformation on the resource before it will be emitted.
 // This is a good place to handle backward compatibility and manual resource marshalling.
 const ResourceTransformers = {};
+
 loader.lazyRequireGetter(
   ResourceTransformers,
   ResourceCommand.TYPES.CONSOLE_MESSAGE,
-  "devtools/shared/commands/resource/transformers/console-messages"
+  "resource://devtools/shared/commands/resource/transformers/console-messages.js"
 );
 loader.lazyRequireGetter(
   ResourceTransformers,
   ResourceCommand.TYPES.ERROR_MESSAGE,
-  "devtools/shared/commands/resource/transformers/error-messages"
+  "resource://devtools/shared/commands/resource/transformers/error-messages.js"
 );
 loader.lazyRequireGetter(
   ResourceTransformers,
   ResourceCommand.TYPES.CACHE_STORAGE,
-  "devtools/shared/commands/resource/transformers/storage-cache.js"
+  "resource://devtools/shared/commands/resource/transformers/storage-cache.js"
 );
 loader.lazyRequireGetter(
   ResourceTransformers,
   ResourceCommand.TYPES.COOKIE,
-  "devtools/shared/commands/resource/transformers/storage-cookie.js"
+  "resource://devtools/shared/commands/resource/transformers/storage-cookie.js"
+);
+loader.lazyRequireGetter(
+  ResourceTransformers,
+  ResourceCommand.TYPES.EXTENSION_STORAGE,
+  "resource://devtools/shared/commands/resource/transformers/storage-extension.js"
 );
 loader.lazyRequireGetter(
   ResourceTransformers,
   ResourceCommand.TYPES.INDEXED_DB,
-  "devtools/shared/commands/resource/transformers/storage-indexed-db.js"
+  "resource://devtools/shared/commands/resource/transformers/storage-indexed-db.js"
 );
 loader.lazyRequireGetter(
   ResourceTransformers,
   ResourceCommand.TYPES.LOCAL_STORAGE,
-  "devtools/shared/commands/resource/transformers/storage-local-storage.js"
+  "resource://devtools/shared/commands/resource/transformers/storage-local-storage.js"
 );
 loader.lazyRequireGetter(
   ResourceTransformers,
   ResourceCommand.TYPES.SESSION_STORAGE,
-  "devtools/shared/commands/resource/transformers/storage-session-storage.js"
+  "resource://devtools/shared/commands/resource/transformers/storage-session-storage.js"
 );
 loader.lazyRequireGetter(
   ResourceTransformers,
   ResourceCommand.TYPES.NETWORK_EVENT,
-  "devtools/shared/commands/resource/transformers/network-events"
+  "resource://devtools/shared/commands/resource/transformers/network-events.js"
 );
 loader.lazyRequireGetter(
   ResourceTransformers,
   ResourceCommand.TYPES.THREAD_STATE,
-  "devtools/shared/commands/resource/transformers/thread-states"
+  "resource://devtools/shared/commands/resource/transformers/thread-states.js"
 );

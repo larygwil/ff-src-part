@@ -64,18 +64,14 @@ class Preview extends PureComponent {
   }
 
   onTokenEnter = ({ target, tokenPos }) => {
-    const {
-      cx,
-      editor,
-      updatePreview,
-      highlightedCalls,
-      setExceptionPreview,
-    } = this.props;
+    const { cx, editor, updatePreview, highlightedCalls, setExceptionPreview } =
+      this.props;
 
     const isTargetException = target.classList.contains(EXCEPTION_MARKER);
 
     if (isTargetException) {
-      return setExceptionPreview(cx, target, tokenPos, editor.codeMirror);
+      setExceptionPreview(cx, target, tokenPos, editor.codeMirror);
+      return;
     }
 
     if (
@@ -91,14 +87,12 @@ class Preview extends PureComponent {
   onMouseUp = () => {
     if (this.props.isPaused) {
       this.setState({ selecting: false });
-      return true;
     }
   };
 
   onMouseDown = () => {
     if (this.props.isPaused) {
       this.setState({ selecting: true });
-      return true;
     }
   };
 

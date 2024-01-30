@@ -7,10 +7,6 @@
 // This is loaded into all XUL windows. Wrap in a block to prevent
 // leaking to window scope.
 {
-  const { Services } = ChromeUtils.import(
-    "resource://gre/modules/Services.jsm"
-  );
-
   class MozArrowScrollbox extends MozElements.BaseControl {
     static get inheritedAttributes() {
       return {
@@ -44,9 +40,8 @@
 
       this.scrollbox = this.shadowRoot.querySelector("scrollbox");
       this._scrollButtonUp = this.shadowRoot.getElementById("scrollbutton-up");
-      this._scrollButtonDown = this.shadowRoot.getElementById(
-        "scrollbutton-down"
-      );
+      this._scrollButtonDown =
+        this.shadowRoot.getElementById("scrollbutton-down");
 
       this._arrowScrollAnim = {
         scrollbox: this,
@@ -611,15 +606,15 @@
             if (this.isRTLScrollbox) {
               [startElement, endElement] = [endElement, startElement];
             }
-            if (startElement && isAtEdge(startElement, /* start = */ true)) {
-              scrolledToStart = !this.isRTLScrollbox;
-              scrolledToEnd = this.isRTLScrollbox;
-            } else if (
-              endElement &&
-              isAtEdge(endElement, /* start = */ false)
-            ) {
-              scrolledToStart = this.isRTLScrollbox;
-              scrolledToEnd = !this.isRTLScrollbox;
+            scrolledToStart =
+              startElement && isAtEdge(startElement, /* start = */ true);
+            scrolledToEnd =
+              endElement && isAtEdge(endElement, /* start = */ false);
+            if (this.isRTLScrollbox) {
+              [scrolledToStart, scrolledToEnd] = [
+                scrolledToEnd,
+                scrolledToStart,
+              ];
             }
           }
 

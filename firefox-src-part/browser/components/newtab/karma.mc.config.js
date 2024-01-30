@@ -4,6 +4,7 @@
 
 const path = require("path");
 const webpack = require("webpack");
+const { ResourceUriPlugin } = require("./tools/resourceUriPlugin");
 
 const PATHS = {
   // Where is the entry point for the unit tests?
@@ -29,7 +30,7 @@ preprocessors[PATHS.testFilesPattern] = [
   "sourcemap", // require("karma-sourcemap-loader")
 ];
 
-module.exports = function(config) {
+module.exports = function (config) {
   const isTDD = config.tdd;
   const browsers = isTDD ? ["Firefox"] : ["FirefoxHeadless"]; // require("karma-firefox-launcher")
   config.set({
@@ -78,7 +79,7 @@ module.exports = function(config) {
             "lib/AboutPreferences.jsm": {
               statements: 98,
               lines: 98,
-              functions: 100,
+              functions: 94,
               branches: 66,
             },
             "lib/ASRouter.jsm": {
@@ -96,14 +97,14 @@ module.exports = function(config) {
             "content-src/asrouter/asrouter-utils.js": {
               statements: 66,
               lines: 66,
-              functions: 100,
+              functions: 78,
               branches: 63,
             },
             "lib/TelemetryFeed.jsm": {
               statements: 99,
               lines: 99,
               functions: 100,
-              branches: 96,
+              branches: 95,
             },
             "lib/ASRouterParentProcessMessageHandler.jsm": {
               statements: 98,
@@ -129,7 +130,7 @@ module.exports = function(config) {
               functions: 100,
               branches: 84,
             },
-            "lib/UTEventReporting.jsm": {
+            "lib/UTEventReporting.sys.mjs": {
               statements: 100,
               lines: 100,
               functions: 100,
@@ -144,13 +145,13 @@ module.exports = function(config) {
             "lib/Screenshots.jsm": {
               statements: 94,
               lines: 94,
-              functions: 100,
+              functions: 75,
               branches: 84,
             },
             "lib/*.jsm": {
               statements: 100,
               lines: 100,
-              functions: 100,
+              functions: 99,
               branches: 84,
             },
             "content-src/components/DiscoveryStreamComponents/**/*.jsx": {
@@ -186,7 +187,7 @@ module.exports = function(config) {
             "content-src/lib/aboutwelcome-utils.js": {
               statements: 50,
               lines: 50,
-              functions: 100,
+              functions: 50,
               branches: 0,
             },
             "content-src/lib/link-menu-options.js": {
@@ -202,10 +203,18 @@ module.exports = function(config) {
               functions: 0,
               branches: 0,
             },
+            "content-src/aboutwelcome/components/EmbeddedMigrationWizard.jsx": {
+              // This file is covered by the mochitest: browser_aboutwelcome_multistage_mr.js
+              // Can't be unit tested because it relies on the migration-wizard custom element
+              statements: 0,
+              lines: 0,
+              functions: 0,
+              branches: 0,
+            },
             "content-src/aboutwelcome/**/*.jsx": {
               statements: 62,
               lines: 60,
-              functions: 65,
+              functions: 50,
               branches: 50,
             },
             "content-src/components/**/*.jsx": {
@@ -237,6 +246,12 @@ module.exports = function(config) {
         },
       },
       plugins: [
+        // The ResourceUriPlugin handles translating resource URIs in import
+        // statements in .mjs files, in a similar way to what
+        // babel-jsm-to-commonjs does for jsm files.
+        new ResourceUriPlugin({
+          resourcePathRegEx: PATHS.resourcePathRegEx,
+        }),
         new webpack.DefinePlugin({
           "process.env.NODE_ENV": JSON.stringify("development"),
         }),
@@ -261,13 +276,13 @@ module.exports = function(config) {
                   plugins: [
                     // Converts .jsm files into common-js modules
                     [
-                      "jsm-to-commonjs",
+                      "./tools/babel-jsm-to-commonjs.js",
                       {
                         basePath: PATHS.resourcePathRegEx,
                         removeOtherImports: true,
                         replace: true,
                       },
-                    ], // require("babel-plugin-jsm-to-commonjs")
+                    ],
                     "@babel/plugin-proposal-nullish-coalescing-operator",
                     "@babel/plugin-proposal-optional-chaining",
                     "@babel/plugin-proposal-class-properties",
@@ -278,8 +293,13 @@ module.exports = function(config) {
           },
           {
             test: /\.js$/,
-            exclude: [/node_modules\/(?!(fluent|fluent-react)\/).*/, /test/],
+            exclude: [/node_modules\/(?!@fluent\/).*/, /test/],
             loader: "babel-loader",
+            options: {
+              // This is a workaround for bug 1787278. It can be removed once
+              // that bug is fixed.
+              plugins: ["@babel/plugin-proposal-optional-chaining"],
+            },
           },
           {
             test: /\.jsx$/,
@@ -300,7 +320,7 @@ module.exports = function(config) {
           {
             enforce: "post",
             test: /\.js[mx]?$/,
-            loader: "istanbul-instrumenter-loader",
+            loader: "@jsdevtools/coverage-istanbul-loader",
             options: { esModules: true },
             include: [
               path.resolve("content-src"),
@@ -313,7 +333,7 @@ module.exports = function(config) {
               path.resolve("lib/ASRouterTargeting.jsm"),
               path.resolve("lib/ASRouterTriggerListeners.jsm"),
               path.resolve("lib/OnboardingMessageProvider.jsm"),
-              path.resolve("lib/CFRMessageProvider.jsm"),
+              path.resolve("lib/CFRMessageProvider.sys.mjs"),
               path.resolve("lib/CFRPageActions.jsm"),
             ],
           },

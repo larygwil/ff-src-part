@@ -9,7 +9,7 @@
 /* Hide arrow buttons when there's nothing to scroll in that direction */
 .menupopup-arrowscrollbox[scrolledtostart="true"]::part(scrollbutton-up),
 .menupopup-arrowscrollbox[scrolledtoend="true"]::part(scrollbutton-down) {
-  visibility: collapse;
+  display: none;
 }
 
 /* Prevent the scrolled contents of the menupopup from jumping vertically when
@@ -32,5 +32,5 @@
    * scrollbox so that nothing is shown behind the arrow button even if the
    * button is transparent.
    */
-  overflow: hidden;
+  overflow: clip;
 }

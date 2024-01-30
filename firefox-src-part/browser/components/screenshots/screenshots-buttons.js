@@ -8,13 +8,10 @@
 // This is loaded into chrome windows with the subscript loader. Wrap in
 // a block to prevent accidentally leaking globals onto `window`.
 {
-  const { Services } = ChromeUtils.import(
-    "resource://gre/modules/Services.jsm"
-  );
-
   class ScreenshotsButtons extends MozXULElement {
     static get markup() {
       return `
+      <html:link rel="stylesheet" href="chrome://global/skin/in-content/common.css"/>
       <html:link rel="stylesheet" href="chrome://browser/content/screenshots/screenshots-buttons.css"/>
       <html:div id="screenshots-buttons" class="all-buttons-container">
         <html:button class="visible-page" data-l10n-id="screenshots-save-visible-button"></html:button>
@@ -31,7 +28,7 @@
       this.shadowRoot.append(fragment);
 
       let button1 = shadowRoot.querySelector(".visible-page");
-      button1.onclick = function() {
+      button1.onclick = function () {
         Services.obs.notifyObservers(
           gBrowser.ownerGlobal,
           "screenshots-take-screenshot",
@@ -40,7 +37,7 @@
       };
 
       let button2 = shadowRoot.querySelector(".full-page");
-      button2.onclick = function() {
+      button2.onclick = function () {
         Services.obs.notifyObservers(
           gBrowser.ownerGlobal,
           "screenshots-take-screenshot",
@@ -51,6 +48,10 @@
 
     disconnectedCallback() {
       document.l10n.disconnectRoot(this.shadowRoot);
+    }
+
+    focusFirst(focusOptions) {
+      this.shadowRoot.querySelector("button:enabled").focus(focusOptions);
     }
   }
   customElements.define("screenshots-buttons", ScreenshotsButtons, {

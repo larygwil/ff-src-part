@@ -4,7 +4,7 @@
 
 "use strict";
 
-const { throttle } = require("devtools/shared/throttle");
+const { throttle } = require("resource://devtools/shared/throttle.js");
 
 class RootResourceCommand {
   /**
@@ -147,7 +147,7 @@ class RootResourceCommand {
       }
     }
     this._watchers = this._watchers.filter(entry => {
-      return entry.resources.length > 0;
+      return !!entry.resources.length;
     });
 
     for (const resource of resources) {
@@ -158,6 +158,20 @@ class RootResourceCommand {
       if (!isResourceWatched && this._listenedResources.has(resource)) {
         this._stopListening(resource);
       }
+    }
+  }
+
+  clearResources(resourceTypes) {
+    if (!Array.isArray(resourceTypes)) {
+      throw new Error("clearResources expects an array of resource types");
+    }
+    // Clear the cached resources of the type.
+    this._cache = this._cache.filter(
+      cachedResource => !resourceTypes.includes(cachedResource.resourceType)
+    );
+
+    if (resourceTypes.length) {
+      this.rootFront.clearResources(resourceTypes);
     }
   }
 
@@ -188,9 +202,8 @@ class RootResourceCommand {
     for (const resource of resources) {
       const { resourceType } = resource;
 
-      resource.isAlreadyExistingResource = this._processingExistingResources.has(
-        resourceType
-      );
+      resource.isAlreadyExistingResource =
+        this._processingExistingResources.has(resourceType);
 
       this._queueResourceEvent("available", resourceType, resource);
 
@@ -232,7 +245,7 @@ class RootResourceCommand {
       if (!resources.includes(resourceType)) {
         continue;
       }
-      if (pendingEvents.length > 0) {
+      if (pendingEvents.length) {
         const lastEvent = pendingEvents[pendingEvents.length - 1];
         if (lastEvent.callbackType == callbackType) {
           lastEvent.updates.push(update);
@@ -301,7 +314,7 @@ class RootResourceCommand {
     const existingResources = this._cache.filter(resource =>
       resourceTypes.includes(resource.resourceType)
     );
-    if (existingResources.length > 0) {
+    if (existingResources.length) {
       await onAvailable(existingResources, { areExistingResources: true });
     }
   }
@@ -330,7 +343,6 @@ class RootResourceCommand {
 RootResourceCommand.TYPES = RootResourceCommand.prototype.TYPES = {
   EXTENSIONS_BGSCRIPT_STATUS: "extensions-backgroundscript-status",
 };
-RootResourceCommand.ALL_TYPES = RootResourceCommand.prototype.ALL_TYPES = Object.values(
-  RootResourceCommand.TYPES
-);
+RootResourceCommand.ALL_TYPES = RootResourceCommand.prototype.ALL_TYPES =
+  Object.values(RootResourceCommand.TYPES);
 module.exports = RootResourceCommand;

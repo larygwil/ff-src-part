@@ -4,8 +4,6 @@
 
 "use strict";
 
-const InspectorUtils = require("InspectorUtils");
-
 const MAX_DATA_URL_LENGTH = 40;
 /**
  * Provide access to the style information in a page.
@@ -17,21 +15,19 @@ const MAX_DATA_URL_LENGTH = 40;
  * @constructor
  */
 
-const Services = require("Services");
-
 loader.lazyRequireGetter(
   this,
   "getCSSLexer",
-  "devtools/shared/css/lexer",
+  "resource://devtools/shared/css/lexer.js",
   true
 );
 loader.lazyRequireGetter(
   this,
   "getTabPrefs",
-  "devtools/shared/indentation",
+  "resource://devtools/shared/indentation.js",
   true
 );
-const { LocalizationHelper } = require("devtools/shared/l10n");
+const { LocalizationHelper } = require("resource://devtools/shared/l10n.js");
 const styleInspectorL10N = new LocalizationHelper(
   "devtools/shared/locales/styleinspector.properties"
 );
@@ -63,23 +59,38 @@ exports.STATUS = {
 };
 
 /**
- * Mapping of CSSRule type value to CSSRule type name.
- * @see https://developer.mozilla.org/en-US/docs/Web/API/CSSRule
+ * Mapping of CSS at-Rule className to CSSRule type name.
  */
-exports.CSSRuleTypeName = {
-  1: "", // Regular CSS style rule has no name
-  3: "@import",
-  4: "@media",
-  5: "@font-face",
-  6: "@page",
-  7: "@keyframes",
-  8: "@keyframe",
-  10: "@namespace",
-  11: "@counter-style",
-  12: "@supports",
-  13: "@document",
-  14: "@font-feature-values",
-  15: "@viewport",
+exports.CSSAtRuleClassNameType = {
+  CSSContainerRule: "container",
+  CSSCounterStyleRule: "counter-style",
+  CSSDocumentRule: "document",
+  CSSFontFaceRule: "font-face",
+  CSSFontFeatureValuesRule: "font-feature-values",
+  CSSImportRule: "import",
+  CSSKeyframeRule: "keyframe",
+  CSSKeyframesRule: "keyframes",
+  CSSLayerBlockRule: "layer",
+  CSSMediaRule: "media",
+  CSSNamespaceRule: "namespace",
+  CSSPageRule: "page",
+  CSSSupportsRule: "supports",
+};
+
+/**
+ * Get Rule type as human-readable string (ex: "@media", "@container", …)
+ *
+ * @param {CSSRule} cssRule
+ * @returns {String}
+ */
+exports.getCSSAtRuleTypeName = function (cssRule) {
+  const ruleClassName = ChromeUtils.getClassName(cssRule);
+  const atRuleTypeName = exports.CSSAtRuleClassNameType[ruleClassName];
+  if (atRuleTypeName) {
+    return "@" + atRuleTypeName;
+  }
+
+  return "";
 };
 
 /**
@@ -98,7 +109,7 @@ exports.l10n = name => styleInspectorL10N.getStr(name);
  * @return {boolean} true if the given stylesheet is an author stylesheet,
  * false otherwise.
  */
-exports.isAuthorStylesheet = function(sheet) {
+exports.isAuthorStylesheet = function (sheet) {
   return sheet.parsingMode === "author";
 };
 
@@ -109,7 +120,7 @@ exports.isAuthorStylesheet = function(sheet) {
  * @return {boolean} true if the given stylesheet is a user stylesheet,
  * false otherwise.
  */
-exports.isUserStylesheet = function(sheet) {
+exports.isUserStylesheet = function (sheet) {
   return sheet.parsingMode === "user";
 };
 
@@ -120,7 +131,7 @@ exports.isUserStylesheet = function(sheet) {
  * @return {boolean} true if the given stylesheet is a agent stylesheet,
  * false otherwise.
  */
-exports.isAgentStylesheet = function(sheet) {
+exports.isAgentStylesheet = function (sheet) {
   return sheet.parsingMode === "agent";
 };
 
@@ -129,7 +140,7 @@ exports.isAgentStylesheet = function(sheet) {
  *
  * @param {CSSStyleSheet} sheet the DOM object for the style sheet.
  */
-exports.shortSource = function(sheet) {
+exports.shortSource = function (sheet) {
   if (!sheet) {
     return exports.l10n("rule.sourceInline");
   }
@@ -166,6 +177,25 @@ exports.shortSource = function(sheet) {
 
   if (url.query) {
     return url.query;
+  }
+
+  return sheet.href;
+};
+
+/**
+ * Return the style sheet's source, handling element, inline and constructed stylesheets.
+ *
+ * @param {CSSStyleSheet} sheet the DOM object for the style sheet.
+ */
+exports.longSource = function (sheet) {
+  if (!sheet) {
+    return exports.l10n("rule.sourceInline");
+  }
+
+  if (!sheet.href) {
+    return exports.l10n(
+      sheet.constructed ? "rule.sourceConstructed" : "rule.sourceInline"
+    );
   }
 
   return sheet.href;
@@ -222,10 +252,7 @@ function prettifyCSS(text, ruleCount) {
   // before and after). Remove those first. Don't do anything there aren't any.
   const trimmed = text.trim();
   if (trimmed.startsWith("<!--")) {
-    text = trimmed
-      .replace(/^<!--/, "")
-      .replace(/-->$/, "")
-      .trim();
+    text = trimmed.replace(/^<!--/, "").replace(/-->$/, "").trim();
   }
 
   const originalText = text;
@@ -506,8 +533,8 @@ function getBindingElementAndPseudo(node) {
     pseudo = "::after";
   }
   return {
-    bindingElement: bindingElement,
-    pseudo: pseudo,
+    bindingElement,
+    pseudo,
   };
 }
 exports.getBindingElementAndPseudo = getBindingElementAndPseudo;
@@ -532,10 +559,10 @@ function hasVisitedState(node) {
     return false;
   }
 
-  const NS_EVENT_STATE_VISITED = 1 << 19;
+  const ELEMENT_STATE_VISITED = 1 << 19;
 
   return (
-    !!(InspectorUtils.getContentState(node) & NS_EVENT_STATE_VISITED) ||
+    !!(InspectorUtils.getContentState(node) & ELEMENT_STATE_VISITED) ||
     InspectorUtils.hasPseudoClassLock(node, ":visited")
   );
 }
@@ -588,7 +615,7 @@ function findNodeAndContainer(node) {
  *   - ele.containingDocOrShadow.querySelector(reply) === ele
  *   - ele.containingDocOrShadow.querySelectorAll(reply).length === 1
  */
-const findCssSelector = function(ele) {
+const findCssSelector = function (ele) {
   const { node, containingDocOrShadow } = findNodeAndContainer(ele);
   ele = node;
 

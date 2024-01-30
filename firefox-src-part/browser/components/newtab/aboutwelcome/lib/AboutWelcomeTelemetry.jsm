@@ -4,31 +4,43 @@
 "use strict";
 
 const EXPORTED_SYMBOLS = ["AboutWelcomeTelemetry"];
-const { XPCOMUtils } = ChromeUtils.import(
-  "resource://gre/modules/XPCOMUtils.jsm"
+const { XPCOMUtils } = ChromeUtils.importESModule(
+  "resource://gre/modules/XPCOMUtils.sys.mjs"
 );
 
-XPCOMUtils.defineLazyModuleGetters(this, {
+const lazy = {};
+
+ChromeUtils.defineESModuleGetters(lazy, {
+  AttributionCode: "resource:///modules/AttributionCode.sys.mjs",
+  ClientID: "resource://gre/modules/ClientID.sys.mjs",
+  TelemetrySession: "resource://gre/modules/TelemetrySession.sys.mjs",
+});
+
+XPCOMUtils.defineLazyModuleGetters(lazy, {
   PingCentre: "resource:///modules/PingCentre.jsm",
-  ClientID: "resource://gre/modules/ClientID.jsm",
-  Services: "resource://gre/modules/Services.jsm",
-  TelemetrySession: "resource://gre/modules/TelemetrySession.jsm",
-  AttributionCode: "resource:///modules/AttributionCode.jsm",
 });
 XPCOMUtils.defineLazyPreferenceGetter(
-  this,
+  lazy,
   "structuredIngestionEndpointBase",
   "browser.newtabpage.activity-stream.telemetry.structuredIngestion.endpoint",
   ""
 );
-XPCOMUtils.defineLazyGetter(this, "telemetryClientId", () =>
-  ClientID.getClientID()
+XPCOMUtils.defineLazyGetter(lazy, "telemetryClientId", () =>
+  lazy.ClientID.getClientID()
 );
 XPCOMUtils.defineLazyGetter(
-  this,
+  lazy,
   "browserSessionId",
-  () => TelemetrySession.getMetadata("").sessionId
+  () => lazy.TelemetrySession.getMetadata("").sessionId
 );
+
+XPCOMUtils.defineLazyGetter(lazy, "log", () => {
+  const { Logger } = ChromeUtils.importESModule(
+    "resource://messaging-system/lib/Logger.sys.mjs"
+  );
+  return new Logger("AboutWelcomeTelemetry");
+});
+
 const TELEMETRY_TOPIC = "about:welcome";
 const PING_TYPE = "onboarding";
 const PING_VERSION = "1";
@@ -49,7 +61,7 @@ class AboutWelcomeTelemetry {
    */
   get pingCentre() {
     Object.defineProperty(this, "pingCentre", {
-      value: new PingCentre({ topic: TELEMETRY_TOPIC }),
+      value: new lazy.PingCentre({ topic: TELEMETRY_TOPIC }),
     });
     return this.pingCentre;
   }
@@ -60,7 +72,7 @@ class AboutWelcomeTelemetry {
     // because it contains leading and trailing braces. Need to trim them first.
     const docID = uuid.slice(1, -1);
     const extension = `${STRUCTURED_INGESTION_NAMESPACE_MS}/${PING_TYPE}/${PING_VERSION}/${docID}`;
-    return `${structuredIngestionEndpointBase}/${extension}`;
+    return `${lazy.structuredIngestionEndpointBase}/${extension}`;
   }
 
   /**
@@ -76,7 +88,7 @@ class AboutWelcomeTelemetry {
    * read the cached results for the most if not all of the pings.
    */
   _maybeAttachAttribution(ping) {
-    const attribution = AttributionCode.getCachedAttributionData();
+    const attribution = lazy.AttributionCode.getCachedAttributionData();
     if (attribution && Object.keys(attribution).length) {
       ping.attribution = attribution;
     }
@@ -91,22 +103,140 @@ class AboutWelcomeTelemetry {
       ...event,
       addon_version: Services.appinfo.appBuildID,
       locale: Services.locale.appLocaleAsBCP47,
-      client_id: await telemetryClientId,
-      browser_session_id: browserSessionId,
+      client_id: await lazy.telemetryClientId,
+      browser_session_id: lazy.browserSessionId,
     };
 
     return this._maybeAttachAttribution(ping);
   }
 
+  /**
+   * Augment the provided event with some metadata and then send it
+   * to the messaging-system's onboarding endpoint.
+   *
+   * Is sometimes used by non-onboarding events.
+   *
+   * @param event - an object almost certainly from an onboarding flow (though
+   *                there is a case where spotlight may use this, too)
+   *                containing a nested structure of data for reporting as
+   *                telemetry, as documented in
+   * https://firefox-source-docs.mozilla.org/browser/components/newtab/docs/v2-system-addon/data_events.html
+   *                Does not have all of its data (`_createPing` will augment
+   *                with ids and attribution if available).
+   */
   async sendTelemetry(event) {
     if (!this.telemetryEnabled) {
       return;
     }
 
     const ping = await this._createPing(event);
+
+    try {
+      this.submitGleanPingForPing(ping);
+    } catch (e) {
+      // Though Glean APIs are forbidden to throw, it may be possible that a
+      // mismatch between the shape of `ping` and the defined metrics is not
+      // adequately handled.
+      Glean.messagingSystem.gleanPingForPingFailures.add(1);
+    }
+
     this.pingCentre.sendStructuredIngestionPing(
       ping,
-      this._generateStructuredIngestionEndpoint()
+      this._generateStructuredIngestionEndpoint(),
+      STRUCTURED_INGESTION_NAMESPACE_MS
     );
+  }
+
+  /**
+   * Tries to infer appropriate Glean metrics on the "messaging-system" ping,
+   * sets them, and submits a "messaging-system" ping.
+   *
+   * Does not check if telemetry is enabled.
+   * (Though Glean will check the global prefs).
+   *
+   * Note: This is a very unusual use of Glean that is specific to the use-
+   *       cases of Messaging System. Please do not copy this pattern.
+   */
+  submitGleanPingForPing(ping) {
+    lazy.log.debug(`Submitting Glean ping for ${JSON.stringify(ping)}`);
+    // event.event_context is an object, but it may have been stringified.
+    let event_context = ping?.event_context;
+    if (typeof event_context === "string") {
+      try {
+        event_context = JSON.parse(event_context);
+      } catch (e) {
+        Glean.messagingSystem.eventContextParseError.add(1);
+      }
+    }
+
+    // We echo certain properties from event_context into their own metrics
+    // to aid analysis.
+    if (event_context?.reason) {
+      Glean.messagingSystem.eventReason.set(event_context.reason);
+    }
+    if (event_context?.page) {
+      Glean.messagingSystem.eventPage.set(event_context.page);
+    }
+    if (event_context?.source) {
+      Glean.messagingSystem.eventSource.set(event_context.source);
+    }
+
+    // The event_context is also provided as-is as stringified JSON.
+    if (event_context) {
+      Glean.messagingSystem.eventContext.set(JSON.stringify(event_context));
+    }
+
+    if ("attribution" in ping) {
+      for (const [key, value] of Object.entries(ping.attribution)) {
+        const camelKey = this._snakeToCamelCase(key);
+        try {
+          Glean.messagingSystemAttribution[camelKey].set(value);
+        } catch (e) {
+          // We here acknowledge that we don't know the full breadth of data
+          // being collected. Ideally AttributionCode will later centralize
+          // definition and reporting of attribution data and we can be rid of
+          // this fail-safe for collecting the names of unknown keys.
+          Glean.messagingSystemAttribution.unknownKeys[camelKey].add(1);
+        }
+      }
+    }
+
+    // List of keys handled above.
+    const handledKeys = ["event_context", "attribution"];
+
+    for (const [key, value] of Object.entries(ping)) {
+      if (handledKeys.includes(key)) {
+        continue;
+      }
+      const camelKey = this._snakeToCamelCase(key);
+      try {
+        // We here acknowledge that even known keys might have non-scalar
+        // values. We're pretty sure we handled them all with handledKeys,
+        // but we might not have.
+        // Ideally this can later be removed after running for a version or two
+        // with no values seen in messaging_system.invalid_nested_data
+        if (typeof value === "object") {
+          Glean.messagingSystem.invalidNestedData[camelKey].add(1);
+        } else {
+          Glean.messagingSystem[camelKey].set(value);
+        }
+      } catch (e) {
+        // We here acknowledge that we don't know the full breadth of data being
+        // collected. Ideally we will later gain that confidence and can remove
+        // this fail-safe for collecting the names of unknown keys.
+        Glean.messagingSystem.unknownKeys[camelKey].add(1);
+        // TODO(bug 1600008): For testing, also record the overall count.
+        Glean.messagingSystem.unknownKeyCount.add(1);
+      }
+    }
+
+    // With all the metrics set, now it's time to submit this ping.
+    GleanPings.messagingSystem.submit();
+  }
+
+  _snakeToCamelCase(s) {
+    return s.toString().replace(/_([a-z])/gi, (_str, group) => {
+      return group.toUpperCase();
+    });
   }
 }

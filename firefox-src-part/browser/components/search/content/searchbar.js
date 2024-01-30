@@ -9,6 +9,14 @@
 // This is loaded into chrome windows with the subscript loader. Wrap in
 // a block to prevent accidentally leaking globals onto `window`.
 {
+  const lazy = {};
+
+  ChromeUtils.defineESModuleGetters(lazy, {
+    FormHistory: "resource://gre/modules/FormHistory.sys.mjs",
+    SearchSuggestionController:
+      "resource://gre/modules/SearchSuggestionController.sys.mjs",
+  });
+
   /**
    * Defines the search bar element.
    */
@@ -30,7 +38,7 @@
         </hbox>
         <html:input class="searchbar-textbox" is="autocomplete-input" type="search" data-l10n-id="searchbar-input" autocompletepopup="PopupSearchAutoComplete" autocompletesearch="search-autocomplete" autocompletesearchparam="searchbar-history" maxrows="10" completeselectedindex="true" minresultsforpopup="0"/>
         <menupopup class="textbox-contextmenu"></menupopup>
-        <hbox class="search-go-container">
+        <hbox class="search-go-container" align="center">
           <image class="search-go-button urlbar-icon" hidden="true" onclick="handleSearchCommand(event);" data-l10n-id="searchbar-submit"></image>
         </hbox>
       `;
@@ -88,6 +96,7 @@
       );
       if (storedWidth) {
         this.parentNode.setAttribute("width", storedWidth);
+        this.parentNode.style.width = storedWidth + "px";
       }
 
       this._stringBundle = this.querySelector("stringbundle");
@@ -100,13 +109,6 @@
       this._initTextbox();
 
       window.addEventListener("unload", this.destroy);
-
-      this.FormHistory = ChromeUtils.import(
-        "resource://gre/modules/FormHistory.jsm"
-      ).FormHistory;
-      this.SearchSuggestionController = ChromeUtils.import(
-        "resource://gre/modules/SearchSuggestionController.jsm"
-      ).SearchSuggestionController;
 
       Services.obs.addObserver(this.observer, "browser-search-engine-modified");
       Services.obs.addObserver(this.observer, "browser-search-service");
@@ -128,7 +130,7 @@
               BrowserSearch.updateOpenSearchBadge();
             })
             .catch(status =>
-              Cu.reportError(
+              console.error(
                 "Cannot initialize search service, bailing out: " + status
               )
             );
@@ -164,9 +166,15 @@
 
     set currentEngine(val) {
       if (PrivateBrowsingUtils.isWindowPrivate(window)) {
-        Services.search.defaultPrivateEngine = val;
+        Services.search.setDefaultPrivate(
+          val,
+          Ci.nsISearchService.CHANGE_REASON_USER_SEARCHBAR
+        );
       } else {
-        Services.search.defaultEngine = val;
+        Services.search.setDefault(
+          val,
+          Ci.nsISearchService.CHANGE_REASON_USER_SEARCHBAR
+        );
       }
     }
 
@@ -180,9 +188,12 @@
       // Return a dummy engine if there is no currentEngine
       return currentEngine || { name: "", uri: null };
     }
+
     /**
      * textbox is used by sanitize.js to clear the undo history when
      * clearing form information.
+     *
+     * @returns {HTMLInputElement}
      */
     get textbox() {
       return this._textbox;
@@ -321,7 +332,7 @@
         }
       } else {
         if (
-          (aEvent instanceof KeyboardEvent &&
+          (KeyboardEvent.isInstance(aEvent) &&
             (aEvent.altKey || aEvent.getModifierState("AltGraph"))) ^
             newTabPref &&
           !gBrowser.selectedTab.isEmpty
@@ -329,7 +340,7 @@
           where = "tab";
         }
         if (
-          aEvent instanceof MouseEvent &&
+          MouseEvent.isInstance(aEvent) &&
           (aEvent.button == 1 || aEvent.getModifierState("Accel"))
         ) {
           where = "tab";
@@ -355,9 +366,8 @@
       );
 
       if (selectedIndex == -1) {
-        isOneOff = this.textbox.popup.oneOffButtons.eventTargetIsAOneOff(
-          aEvent
-        );
+        isOneOff =
+          this.textbox.popup.oneOffButtons.eventTargetIsAOneOff(aEvent);
       }
 
       if (aWhere === "tab" && !!aParams.inBackground) {
@@ -384,24 +394,19 @@
       if (
         aData &&
         !PrivateBrowsingUtils.isWindowPrivate(window) &&
-        this.FormHistory.enabled &&
+        lazy.FormHistory.enabled &&
         aData.length <=
-          this.SearchSuggestionController.SEARCH_HISTORY_MAX_VALUE_LENGTH
+          lazy.SearchSuggestionController.SEARCH_HISTORY_MAX_VALUE_LENGTH
       ) {
-        this.FormHistory.update(
-          {
-            op: "bump",
-            fieldname: textBox.getAttribute("autocompletesearchparam"),
-            value: aData,
-            source: engine.name,
-          },
-          {
-            handleError(aError) {
-              Cu.reportError(
-                "Saving search to form history failed: " + aError.message
-              );
-            },
-          }
+        lazy.FormHistory.update({
+          op: "bump",
+          fieldname: textBox.getAttribute("autocompletesearchparam"),
+          value: aData,
+          source: engine.name,
+        }).catch(error =>
+          console.error(
+            "Saving search to form history failed: " + error.message
+          )
         );
       }
 
@@ -425,6 +430,9 @@
       // null parameter below specifies HTML response for search
       let params = {
         postData: submission.postData,
+        globalHistoryOptions: {
+          triggeringSearchEngine: engine.name,
+        },
       };
       if (aParams) {
         for (let key in aParams) {
@@ -592,7 +600,7 @@
           this._buildContextMenu();
         }
 
-        BrowserSearch.searchBar._textbox.closePopup();
+        this._textbox.closePopup();
 
         // Make sure the context menu isn't opened via keyboard shortcut. Check for text selection
         // before updating the state of any menu items.
@@ -603,9 +611,8 @@
         // Update disabled state of menu items
         for (let item of this._menupopup.querySelectorAll("menuitem[cmd]")) {
           let command = item.getAttribute("cmd");
-          let controller = document.commandDispatcher.getControllerForCommand(
-            command
-          );
+          let controller =
+            document.commandDispatcher.getControllerForCommand(command);
           item.disabled = !controller.isCommandEnabled(command);
         }
 
@@ -698,10 +705,8 @@
           let numItems = suggestionsHidden ? 0 : popup.matchCount;
           return popup.oneOffButtons.handleKeyDown(aEvent, numItems, true);
         } else if (aEvent.keyCode == KeyEvent.DOM_VK_ESCAPE) {
-          let undoCount = this.textbox.editor.transactionManager
-            .numberOfUndoItems;
-          if (undoCount) {
-            this.textbox.editor.undo(undoCount);
+          if (this.textbox.editor.canUndo) {
+            this.textbox.editor.undoAll();
           } else {
             this.textbox.select();
           }
@@ -744,18 +749,15 @@
 
           // Ensure the panel has a meaningful initial size and doesn't grow
           // unconditionally.
-          requestAnimationFrame(() => {
-            let { width } = window.windowUtils.getBoundsWithoutFlushing(this);
-            if (popup.oneOffButtons) {
-              // We have a min-width rule on search-panel-one-offs to show at
-              // least 4 buttons, so take that into account here.
-              width = Math.max(width, popup.oneOffButtons.buttonWidth * 4);
-            }
-            popup.style.setProperty("--panel-width", width + "px");
-          });
+          let { width } = window.windowUtils.getBoundsWithoutFlushing(this);
+          if (popup.oneOffButtons) {
+            // We have a min-width rule on search-panel-one-offs to show at
+            // least 4 buttons, so take that into account here.
+            width = Math.max(width, popup.oneOffButtons.buttonWidth * 4);
+          }
 
+          popup.style.setProperty("--panel-width", width + "px");
           popup._invalidate();
-
           popup.openPopup(this, "after_start");
         }
       };
@@ -787,7 +789,7 @@
 
       // override |onTextEntered| in autocomplete.xml
       this.textbox.onTextEntered = event => {
-        this.textbox.editor.transactionManager.clearUndoStack();
+        this.textbox.editor.clearUndoRedo();
 
         let engine;
         let oneOff = this.textbox.selectedButton;
@@ -867,22 +869,20 @@
       this._menupopup.addEventListener("command", event => {
         switch (event.originalTarget) {
           case this._pasteAndSearchMenuItem:
-            BrowserSearch.pasteAndSearch(event);
+            this.select();
+            goDoCommand("cmd_paste");
+            this.handleSearchCommand(event);
             break;
           case clearHistoryItem:
             let param = this.textbox.getAttribute("autocompletesearchparam");
-            BrowserSearch.searchBar.FormHistory.update(
-              { op: "remove", fieldname: param },
-              null
-            );
+            lazy.FormHistory.update({ op: "remove", fieldname: param });
             this.textbox.value = "";
             break;
           default:
             let cmd = event.originalTarget.getAttribute("cmd");
             if (cmd) {
-              let controller = document.commandDispatcher.getControllerForCommand(
-                cmd
-              );
+              let controller =
+                document.commandDispatcher.getControllerForCommand(cmd);
               controller.doCommand(cmd);
             }
             break;

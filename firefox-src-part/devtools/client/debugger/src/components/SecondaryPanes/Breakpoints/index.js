@@ -4,7 +4,6 @@
 
 import React, { Component } from "react";
 import PropTypes from "prop-types";
-import classnames from "classnames";
 import { connect } from "../../../utils/connect";
 
 import ExceptionOption from "./ExceptionOption";
@@ -18,7 +17,13 @@ import { createHeadlessEditor } from "../../../utils/editor/create-editor";
 
 import { makeBreakpointId } from "../../../utils/breakpoint";
 
-import { getSelectedSource, getBreakpointSources } from "../../../selectors";
+import {
+  getSelectedSource,
+  getBreakpointSources,
+  getBlackBoxRanges,
+} from "../../../selectors";
+
+const classnames = require("devtools/client/shared/classnames.js");
 
 import "./Breakpoints.css";
 
@@ -30,6 +35,7 @@ class Breakpoints extends Component {
       selectedSource: PropTypes.object,
       shouldPauseOnCaughtExceptions: PropTypes.bool.isRequired,
       shouldPauseOnExceptions: PropTypes.bool.isRequired,
+      blackboxedRanges: PropTypes.array.isRequired,
     };
   }
 
@@ -60,7 +66,7 @@ class Breakpoints extends Component {
       pauseOnExceptions,
     } = this.props;
 
-    const isEmpty = breakpointSources.length == 0;
+    const isEmpty = !breakpointSources.length;
 
     return (
       <div
@@ -90,7 +96,7 @@ class Breakpoints extends Component {
   }
 
   renderBreakpoints() {
-    const { breakpointSources, selectedSource } = this.props;
+    const { breakpointSources, selectedSource, blackboxedRanges } = this.props;
     if (!breakpointSources.length) {
       return null;
     }
@@ -111,6 +117,7 @@ class Breakpoints extends Component {
               <Breakpoint
                 breakpoint={breakpoint}
                 source={source}
+                blackboxedRangesForSource={blackboxedRanges[source.url]}
                 selectedSource={selectedSource}
                 editor={editor}
                 key={makeBreakpointId(
@@ -137,6 +144,7 @@ class Breakpoints extends Component {
 const mapStateToProps = state => ({
   breakpointSources: getBreakpointSources(state),
   selectedSource: getSelectedSource(state),
+  blackboxedRanges: getBlackBoxRanges(state),
 });
 
 export default connect(mapStateToProps, {

@@ -2,13 +2,23 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Localized } from "./MSLocalized";
-import { Colorways } from "./Colorways";
+import { Colorways } from "./MRColorways";
 import { MobileDownloads } from "./MobileDownloads";
+import { MultiSelect } from "./MultiSelect";
 import { Themes } from "./Themes";
-import { SecondaryCTA, StepsIndicator } from "./MultiStageAboutWelcome";
+import {
+  SecondaryCTA,
+  StepsIndicator,
+  ProgressBar,
+} from "./MultiStageAboutWelcome";
 import { LanguageSwitcher } from "./LanguageSwitcher";
+import { CTAParagraph } from "./CTAParagraph";
+import { HeroImage } from "./HeroImage";
+import { OnboardingVideo } from "./OnboardingVideo";
+import { AdditionalCTA } from "./AdditionalCTA";
+import { EmbeddedMigrationWizard } from "./EmbeddedMigrationWizard";
 
 export const MultiStageProtonScreen = props => {
   const { autoAdvance, handleAction, order } = props;
@@ -33,11 +43,14 @@ export const MultiStageProtonScreen = props => {
       id={props.id}
       order={props.order}
       activeTheme={props.activeTheme}
+      activeMultiSelect={props.activeMultiSelect}
+      setActiveMultiSelect={props.setActiveMultiSelect}
       totalNumberOfScreens={props.totalNumberOfScreens}
       handleAction={props.handleAction}
-      isFirstCenteredScreen={props.isFirstCenteredScreen}
-      isLastCenteredScreen={props.isLastCenteredScreen}
-      startsWithCorner={props.startsWithCorner}
+      isFirstScreen={props.isFirstScreen}
+      isLastScreen={props.isLastScreen}
+      isSingleScreen={props.isSingleScreen}
+      previousOrder={props.previousOrder}
       autoAdvance={props.autoAdvance}
       isRtamo={props.isRtamo}
       addonName={props.addonName}
@@ -50,31 +63,128 @@ export const MultiStageProtonScreen = props => {
   );
 };
 
+export const ProtonScreenActionButtons = props => {
+  const { content, addonName } = props;
+  const defaultValue = content.checkbox?.defaultValue;
+
+  const [isChecked, setIsChecked] = useState(defaultValue || false);
+
+  if (
+    !content.primary_button &&
+    !content.secondary_button &&
+    !content.additional_button
+  ) {
+    return null;
+  }
+
+  return (
+    <div
+      className={`action-buttons ${
+        content.additional_button ? "additional-cta-container" : ""
+      }`}
+      flow={content.additional_button?.flow}
+    >
+      <Localized text={content.primary_button?.label}>
+        <button
+          className="primary"
+          // Whether or not the checkbox is checked determines which action
+          // should be handled. By setting value here, we indicate to
+          // this.handleAction() where in the content tree it should take
+          // the action to execute from.
+          value={isChecked ? "checkbox" : "primary_button"}
+          disabled={content.primary_button?.disabled === true}
+          onClick={props.handleAction}
+          data-l10n-args={
+            addonName
+              ? JSON.stringify({
+                  "addon-name": addonName,
+                })
+              : ""
+          }
+        />
+      </Localized>
+      {content.additional_button ? (
+        <AdditionalCTA content={content} handleAction={props.handleAction} />
+      ) : null}
+      {content.checkbox ? (
+        <div className="checkbox-container">
+          <input
+            type="checkbox"
+            id="action-checkbox"
+            checked={isChecked}
+            onChange={() => {
+              setIsChecked(!isChecked);
+            }}
+          ></input>
+          <Localized text={content.checkbox.label}>
+            <label htmlFor="action-checkbox"></label>
+          </Localized>
+        </div>
+      ) : null}
+      {content.secondary_button ? (
+        <SecondaryCTA content={content} handleAction={props.handleAction} />
+      ) : null}
+    </div>
+  );
+};
+
 export class ProtonScreen extends React.PureComponent {
   componentDidMount() {
     this.mainContentHeader.focus();
   }
 
-  getLogoStyle({
-    imageURL = "chrome://branding/content/about-logo.svg",
-    height = "80px",
-  }) {
-    return {
-      background:
-        imageURL === "" ? null : `url(${imageURL}) no-repeat center / contain`,
-      height,
-    };
-  }
-
   getScreenClassName(
-    isFirstCenteredScreen,
-    isLastCenteredScreen,
-    includeNoodles
+    isFirstScreen,
+    isLastScreen,
+    includeNoodles,
+    isVideoOnboarding
   ) {
     const screenClass = `screen-${this.props.order % 2 !== 0 ? 1 : 2}`;
-    return `${isFirstCenteredScreen ? `dialog-initial` : ``} ${
-      isLastCenteredScreen ? `dialog-last` : ``
+
+    if (isVideoOnboarding) return "with-video";
+
+    return `${isFirstScreen ? `dialog-initial` : ``} ${
+      isLastScreen ? `dialog-last` : ``
     } ${includeNoodles ? `with-noodles` : ``} ${screenClass}`;
+  }
+
+  renderLogo({
+    imageURL = "chrome://branding/content/about-logo.svg",
+    darkModeImageURL,
+    reducedMotionImageURL,
+    darkModeReducedMotionImageURL,
+    alt = "",
+    height,
+  }) {
+    return (
+      <picture className="logo-container">
+        {darkModeReducedMotionImageURL ? (
+          <source
+            srcSet={darkModeReducedMotionImageURL}
+            media="(prefers-color-scheme: dark) and (prefers-reduced-motion: reduce)"
+          />
+        ) : null}
+        {darkModeImageURL ? (
+          <source
+            srcSet={darkModeImageURL}
+            media="(prefers-color-scheme: dark)"
+          />
+        ) : null}
+        {reducedMotionImageURL ? (
+          <source
+            srcSet={reducedMotionImageURL}
+            media="(prefers-reduced-motion: reduce)"
+          />
+        ) : null}
+        <img
+          className="brand-logo"
+          style={{ height }}
+          src={imageURL}
+          alt={alt}
+          role={alt ? null : "presentation"}
+        />
+      </picture>
+    );
   }
 
   renderContentTiles() {
@@ -107,18 +217,31 @@ export class ProtonScreen extends React.PureComponent {
             handleAction={this.props.handleAction}
           />
         ) : null}
+        {content.tiles &&
+        content.tiles.type === "multiselect" &&
+        content.tiles.data ? (
+          <MultiSelect
+            content={content}
+            activeMultiSelect={this.props.activeMultiSelect}
+            setActiveMultiSelect={this.props.setActiveMultiSelect}
+            handleAction={this.props.handleAction}
+          />
+        ) : null}
+        {content.tiles && content.tiles.type === "migration-wizard" ? (
+          <EmbeddedMigrationWizard handleAction={this.props.handleAction} />
+        ) : null}
       </React.Fragment>
     );
   }
 
-  renderNoodles(includeNoodles, isCornerPosition) {
+  renderNoodles() {
     return (
       <React.Fragment>
-        {includeNoodles ? <div className={`noodle orange-L`} /> : null}
-        {includeNoodles ? <div className={`noodle purple-C`} /> : null}
-        {isCornerPosition ? <div className={`noodle solid-L`} /> : null}
-        {includeNoodles ? <div className={`noodle outline-L`} /> : null}
-        {includeNoodles ? <div className={`noodle yellow-circle`} /> : null}
+        <div className={"noodle orange-L"} />
+        <div className={"noodle purple-C"} />
+        <div className={"noodle solid-L"} />
+        <div className={"noodle outline-L"} />
+        <div className={"noodle yellow-circle"} />
       </React.Fragment>
     );
   }
@@ -146,49 +269,62 @@ export class ProtonScreen extends React.PureComponent {
     );
   }
 
-  render() {
-    const {
-      autoAdvance,
-      content,
-      isRtamo,
-      isTheme,
-      isFirstCenteredScreen,
-      isLastCenteredScreen,
-      totalNumberOfScreens: total,
-    } = this.props;
-    const includeNoodles = content.has_noodles;
-    const isCornerPosition = content.position === "corner";
-    const hideStepsIndicator =
-      autoAdvance ||
-      isCornerPosition ||
-      (isFirstCenteredScreen && isLastCenteredScreen);
-    const textColorClass = content.text_color
-      ? `${content.text_color}-text`
-      : "";
-    // Assign proton screen style 'screen-1' or 'screen-2' to centered screens
-    // by checking if screen order is even or odd.
-    const screenClassName = isCornerPosition
-      ? ""
-      : this.getScreenClassName(
-          isFirstCenteredScreen,
-          isLastCenteredScreen,
-          includeNoodles
-        );
-
+  renderStepsIndicator() {
+    const currentStep = (this.props.order ?? 0) + 1;
+    const previousStep = (this.props.previousOrder ?? -1) + 1;
+    const { content, totalNumberOfScreens: total } = this.props;
     return (
-      <main
-        className={`screen ${this.props.id ||
-          ""} ${screenClassName} ${textColorClass}`}
-        role="dialog"
-        pos={content.position || "center"}
-        tabIndex="-1"
-        aria-labelledby="mainContentHeader"
-        ref={input => {
-          this.mainContentHeader = input;
-        }}
+      <div
+        id="steps"
+        className={`steps${content.progress_bar ? " progress-bar" : ""}`}
+        data-l10n-id={"onboarding-welcome-steps-indicator-label"}
+        data-l10n-args={JSON.stringify({
+          current: currentStep,
+          total: total ?? 0,
+        })}
+        data-l10n-attrs="aria-label"
+        role="progressbar"
+        aria-valuenow={currentStep}
+        aria-valuemin={1}
+        aria-valuemax={total}
       >
-        {isCornerPosition ? (
-          <div className="section-left">
+        {content.progress_bar ? (
+          <ProgressBar
+            step={currentStep}
+            previousStep={previousStep}
+            totalNumberOfScreens={total}
+          />
+        ) : (
+          <StepsIndicator
+            order={this.props.order}
+            totalNumberOfScreens={total}
+          />
+        )}
+      </div>
+    );
+  }
+
+  renderSecondarySection(content) {
+    return (
+      <div
+        className="section-secondary"
+        style={
+          content.background
+            ? {
+                background: content.background,
+                "--mr-secondary-background-position-y":
+                  content.split_narrow_bkg_position,
+              }
+            : {}
+        }
+      >
+        <Localized text={content.image_alt_text}>
+          <div className="sr-only image-alt" role="img" />
+        </Localized>
+        {content.hero_image ? (
+          <HeroImage url={content.hero_image.url} />
+        ) : (
+          <React.Fragment>
             <div className="message-text">
               <div className="spacer-top" />
               <Localized text={content.hero_text}>
@@ -199,9 +335,61 @@ export class ProtonScreen extends React.PureComponent {
             <Localized text={content.help_text}>
               <span className="attrib-text" />
             </Localized>
-          </div>
-        ) : null}
-        <div className="section-main">
+          </React.Fragment>
+        )}
+      </div>
+    );
+  }
+
+  render() {
+    const {
+      autoAdvance,
+      content,
+      isRtamo,
+      isTheme,
+      isFirstScreen,
+      isLastScreen,
+      isSingleScreen,
+    } = this.props;
+    const includeNoodles = content.has_noodles;
+    // The default screen position is "center"
+    const isCenterPosition = content.position === "center" || !content.position;
+    const hideStepsIndicator =
+      autoAdvance || content?.video_container || isSingleScreen;
+    const textColorClass = content.text_color
+      ? `${content.text_color}-text`
+      : "";
+    // Assign proton screen style 'screen-1' or 'screen-2' to centered screens
+    // by checking if screen order is even or odd.
+    const screenClassName = isCenterPosition
+      ? this.getScreenClassName(
+          isFirstScreen,
+          isLastScreen,
+          includeNoodles,
+          content?.video_container
+        )
+      : "";
+    const isEmbeddedMigration = content.tiles?.type === "migration-wizard";
+
+    return (
+      <main
+        className={`screen ${this.props.id || ""}
+          ${screenClassName} ${textColorClass}`}
+        role="alertdialog"
+        pos={content.position || "center"}
+        tabIndex="-1"
+        aria-labelledby="mainContentHeader"
+        ref={input => {
+          this.mainContentHeader = input;
+        }}
+      >
+        {isCenterPosition ? null : this.renderSecondarySection(content)}
+        <div
+          className={`section-main ${
+            isEmbeddedMigration ? "embedded-migration" : ""
+          }`}
+          role="document"
+        >
           {content.secondary_button_top ? (
             <SecondaryCTA
               content={content}
@@ -209,83 +397,74 @@ export class ProtonScreen extends React.PureComponent {
               position="top"
             />
           ) : null}
-          {this.renderNoodles(includeNoodles, isCornerPosition)}
+          {includeNoodles ? this.renderNoodles() : null}
           <div
             className={`main-content ${hideStepsIndicator ? "no-steps" : ""}`}
-            style={content.background ? { background: content.background } : {}}
+            style={
+              content.background && isCenterPosition
+                ? { background: content.background }
+                : {}
+            }
           >
-            {content.dismiss_button ? this.renderDismissButton() : null}
-            {content.logo ? (
-              <div
-                className={`brand-logo`}
-                style={this.getLogoStyle(content.logo)}
-              />
+            {content.logo ? this.renderLogo(content.logo) : null}
+
+            {isRtamo ? (
+              <div className="rtamo-icon">
+                <img
+                  className={`${isTheme ? "rtamo-theme-icon" : "brand-logo"}`}
+                  src={this.props.iconURL}
+                  role="presentation"
+                  alt=""
+                />
+              </div>
             ) : null}
-            <div className={`${isRtamo ? "rtamo-icon" : "hide-rtamo-icon"}`}>
-              <img
-                className={`${isTheme ? "rtamo-theme-icon" : ""}`}
-                src={this.props.iconURL}
-                role="presentation"
-                alt=""
-              />
-            </div>
+
             <div className="main-content-inner">
               <div className={`welcome-text ${content.title_style || ""}`}>
-                <Localized text={content.title}>
-                  <h1 id="mainContentHeader" />
-                </Localized>
-                <Localized text={content.subtitle}>
-                  <h2
-                    data-l10n-args={JSON.stringify({
-                      "addon-name": this.props.addonName,
-                      ...this.props.appAndSystemLocaleInfo?.displayNames,
-                    })}
-                  />
-                </Localized>
-              </div>
-              {this.renderContentTiles()}
-              {this.renderLanguageSwitcher()}
-              <div>
-                <Localized text={content.primary_button?.label}>
-                  <button
-                    className="primary"
-                    value="primary_button"
-                    disabled={content.primary_button?.disabled === true}
-                    onClick={this.props.handleAction}
-                  />
-                </Localized>
-                {content.secondary_button ? (
-                  <SecondaryCTA
-                    content={content}
+                {content.title ? (
+                  <Localized text={content.title}>
+                    <h1 id="mainContentHeader" />
+                  </Localized>
+                ) : null}
+                {content.subtitle ? (
+                  <Localized text={content.subtitle}>
+                    <h2
+                      data-l10n-args={JSON.stringify({
+                        "addon-name": this.props.addonName,
+                        ...this.props.appAndSystemLocaleInfo?.displayNames,
+                      })}
+                      aria-flowto={
+                        this.props.messageId?.includes("FEATURE_TOUR")
+                          ? "steps"
+                          : ""
+                      }
+                    />
+                  </Localized>
+                ) : null}
+                {content.cta_paragraph ? (
+                  <CTAParagraph
+                    content={content.cta_paragraph}
                     handleAction={this.props.handleAction}
                   />
                 ) : null}
               </div>
-            </div>
-            {hideStepsIndicator ? null : (
-              <nav
-                className="steps"
-                data-l10n-id={"onboarding-welcome-steps-indicator"}
-                data-l10n-args={JSON.stringify({
-                  current: this.props.order,
-                  total,
-                })}
-              >
-                {/* These empty elements are here to help trigger the nav for screen readers. */}
-                <br />
-                <p />
-                {/* If total doesn't include starting corner screen, reduce the screen order by 1 */}
-                <StepsIndicator
-                  order={
-                    this.props.startsWithCorner
-                      ? this.props.order - 1
-                      : this.props.order
-                  }
-                  totalNumberOfScreens={total}
+              {content.video_container ? (
+                <OnboardingVideo
+                  content={content.video_container}
+                  handleAction={this.props.handleAction}
                 />
-              </nav>
-            )}
+              ) : null}
+              {this.renderContentTiles()}
+              {this.renderLanguageSwitcher()}
+              <ProtonScreenActionButtons
+                content={content}
+                addonName={this.props.addonName}
+                handleAction={this.props.handleAction}
+              />
+            </div>
+            {!hideStepsIndicator ? this.renderStepsIndicator() : null}
           </div>
+          {content.dismiss_button ? this.renderDismissButton() : null}
         </div>
       </main>
     );

@@ -13,8 +13,10 @@
 #include "mozilla/dom/DispatcherTrait.h"
 #include "mozilla/dom/ServiceWorkerDescriptor.h"
 #include "mozilla/OriginTrials.h"
+#include "nsContentUtils.h"
 #include "nsHashKeys.h"
 #include "nsISupports.h"
+#include "nsRFPService.h"
 #include "nsStringFwd.h"
 #include "nsTArray.h"
 #include "nsTHashtable.h"
@@ -34,10 +36,14 @@ class nsPIDOMWindowInner;
 
 namespace mozilla {
 class DOMEventTargetHelper;
+class GlobalTeardownObserver;
+template <typename V, typename E>
+class Result;
 enum class StorageAccess;
 namespace dom {
 class VoidFunction;
 class DebuggerNotificationManager;
+class FontFaceSet;
 class Function;
 class Report;
 class ReportBody;
@@ -45,7 +51,12 @@ class ReportingObserver;
 class ServiceWorker;
 class ServiceWorkerRegistration;
 class ServiceWorkerRegistrationDescriptor;
+class StorageManager;
+enum class CallerType : uint32_t;
 }  // namespace dom
+namespace ipc {
+class PrincipalInfo;
+}  // namespace ipc
 }  // namespace mozilla
 
 namespace JS::loader {
@@ -57,11 +68,12 @@ class ModuleLoaderBase;
  */
 class nsIGlobalObject : public nsISupports,
                         public mozilla::dom::DispatcherTrait {
+ private:
   nsTArray<nsCString> mHostObjectURIs;
 
   // Raw pointers to bound DETH objects.  These are added by
-  // AddEventTargetObject().
-  mozilla::LinkedList<mozilla::DOMEventTargetHelper> mEventTargetObjects;
+  // AddGlobalTeardownObserver().
+  mozilla::LinkedList<mozilla::GlobalTeardownObserver> mGlobalTeardownObservers;
 
   bool mIsDying;
   bool mIsScriptForbidden;
@@ -72,6 +84,8 @@ class nsIGlobalObject : public nsISupports,
   nsIGlobalObject();
 
  public:
+  using RTPCallerType = mozilla::RTPCallerType;
+  using RFPTarget = mozilla::RFPTarget;
   NS_DECLARE_STATIC_IID_ACCESSOR(NS_IGLOBALOBJECT_IID)
 
   /**
@@ -128,7 +142,7 @@ class nsIGlobalObject : public nsISupports,
   bool HasJSGlobal() const { return GetGlobalJSObjectPreserveColor(); }
 
   // This method is not meant to be overridden.
-  nsIPrincipal* PrincipalOrNull();
+  nsIPrincipal* PrincipalOrNull() const;
 
   void RegisterHostObjectURI(const nsACString& aURI);
 
@@ -139,18 +153,18 @@ class nsIGlobalObject : public nsISupports,
   void UnlinkObjectsInGlobal();
   void TraverseObjectsInGlobal(nsCycleCollectionTraversalCallback& aCb);
 
-  // DETH objects must register themselves on the global when they
+  // GlobalTeardownObservers must register themselves on the global when they
   // bind to it in order to get the DisconnectFromOwner() method
-  // called correctly.  RemoveEventTargetObject() must be called
-  // before the DETH object is destroyed.
-  void AddEventTargetObject(mozilla::DOMEventTargetHelper* aObject);
-  void RemoveEventTargetObject(mozilla::DOMEventTargetHelper* aObject);
+  // called correctly.  RemoveGlobalTeardownObserver() must be called
+  // before the GlobalTeardownObserver is destroyed.
+  void AddGlobalTeardownObserver(mozilla::GlobalTeardownObserver* aObject);
+  void RemoveGlobalTeardownObserver(mozilla::GlobalTeardownObserver* aObject);
 
-  // Iterate the registered DETH objects and call the given function
+  // Iterate the registered GlobalTeardownObservers and call the given function
   // for each one.
-  void ForEachEventTargetObject(
-      const std::function<void(mozilla::DOMEventTargetHelper*, bool* aDoneOut)>&
-          aFunc) const;
+  void ForEachGlobalTeardownObserver(
+      const std::function<void(mozilla::GlobalTeardownObserver*,
+                               bool* aDoneOut)>& aFunc) const;
 
   virtual bool IsInSyncOperation() { return false; }
 
@@ -236,13 +250,13 @@ class nsIGlobalObject : public nsISupports,
    * Check whether we should avoid leaking distinguishing information to JS/CSS.
    * https://w3c.github.io/fingerprinting-guidance/
    */
-  virtual bool ShouldResistFingerprinting() const;
+  virtual bool ShouldResistFingerprinting(RFPTarget aTarget) const = 0;
 
-  /**
-   * Threadsafe way to get nsIPrincipal::GetHashValue for the associated
-   * principal.
-   */
-  virtual uint32_t GetPrincipalHashValue() const { return 0; }
+  // CallerType::System callers never have to resist fingerprinting.
+  bool ShouldResistFingerprinting(mozilla::dom::CallerType aCallerType,
+                                  RFPTarget aTarget) const;
+
+  RTPCallerType GetRTPCallerType() const;
 
   /**
    * Get the module loader to use for this global, if any. By default this
@@ -252,6 +266,15 @@ class nsIGlobalObject : public nsISupports,
     return nullptr;
   }
 
+  virtual mozilla::dom::FontFaceSet* GetFonts() { return nullptr; }
+
+  virtual mozilla::Result<mozilla::ipc::PrincipalInfo, nsresult>
+  GetStorageKey();
+  mozilla::Result<bool, nsresult> HasEqualStorageKey(
+      const mozilla::ipc::PrincipalInfo& aStorageKey);
+
+  virtual mozilla::dom::StorageManager* GetStorageManager() { return nullptr; }
+
  protected:
   virtual ~nsIGlobalObject();
 
@@ -260,7 +283,7 @@ class nsIGlobalObject : public nsISupports,
   void StartForbiddingScript() { mIsScriptForbidden = true; }
   void StopForbiddingScript() { mIsScriptForbidden = false; }
 
-  void DisconnectEventTargetObjects();
+  void DisconnectGlobalTeardownObservers();
 
   size_t ShallowSizeOfExcludingThis(mozilla::MallocSizeOf aSizeOf) const;
 

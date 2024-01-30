@@ -4,11 +4,9 @@
 
 "use strict";
 
-const Services = require("Services");
-
 const {
   TYPES: { EXTENSIONS_BGSCRIPT_STATUS },
-} = require("devtools/server/actors/resources/index");
+} = require("resource://devtools/server/actors/resources/index.js");
 
 class ExtensionsBackgroundScriptStatusWatcher {
   /**

@@ -4,12 +4,12 @@
 
 import { PureComponent } from "react";
 import PropTypes from "prop-types";
-import classnames from "classnames";
 import { showMenu } from "../../context-menu/menu";
 
 import { getDocument } from "../../utils/editor";
 import { breakpointItems, createBreakpointItems } from "./menus/breakpoints";
 import { getSelectedLocation } from "../../utils/selected-location";
+const classnames = require("devtools/client/shared/classnames.js");
 
 // eslint-disable-next-line max-len
 
@@ -84,7 +84,8 @@ export default class ColumnBreakpoint extends PureComponent {
     // disable column breakpoint on shift-click.
     if (event.shiftKey) {
       const breakpoint = columnBreakpoint.breakpoint;
-      return breakpointActions.toggleDisabledBreakpoint(cx, breakpoint);
+      breakpointActions.toggleDisabledBreakpoint(cx, breakpoint);
+      return;
     }
 
     if (columnBreakpoint.breakpoint) {

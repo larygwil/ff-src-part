@@ -4,16 +4,16 @@
 
 const {
   maybeEscapePropertyName,
-} = require("devtools/client/shared/components/reps/reps/rep-utils");
-const ArrayRep = require("devtools/client/shared/components/reps/reps/array");
-const GripArrayRep = require("devtools/client/shared/components/reps/reps/grip-array");
-const GripMap = require("devtools/client/shared/components/reps/reps/grip-map");
-const GripMapEntryRep = require("devtools/client/shared/components/reps/reps/grip-map-entry");
-const ErrorRep = require("devtools/client/shared/components/reps/reps/error");
-const BigIntRep = require("devtools/client/shared/components/reps/reps/big-int");
+} = require("resource://devtools/client/shared/components/reps/reps/rep-utils.js");
+const ArrayRep = require("resource://devtools/client/shared/components/reps/reps/array.js");
+const GripArrayRep = require("resource://devtools/client/shared/components/reps/reps/grip-array.js");
+const GripMap = require("resource://devtools/client/shared/components/reps/reps/grip-map.js");
+const GripEntryRep = require("resource://devtools/client/shared/components/reps/reps/grip-entry.js");
+const ErrorRep = require("resource://devtools/client/shared/components/reps/reps/error.js");
+const BigIntRep = require("resource://devtools/client/shared/components/reps/reps/big-int.js");
 const {
   isLongString,
-} = require("devtools/client/shared/components/reps/reps/string");
+} = require("resource://devtools/client/shared/components/reps/reps/string.js");
 
 const MAX_NUMERICAL_PROPERTIES = 100;
 
@@ -23,7 +23,6 @@ const NODE_TYPES = {
   ENTRIES: Symbol("<entries>"),
   GET: Symbol("<get>"),
   GRIP: Symbol("GRIP"),
-  JSONML: Symbol("JsonML"),
   MAP_ENTRY_KEY: Symbol("<key>"),
   MAP_ENTRY_VALUE: Symbol("<value>"),
   PROMISE_REASON: Symbol("<reason>"),
@@ -94,19 +93,11 @@ function nodeIsEntries(item) {
 }
 
 function nodeIsMapEntry(item) {
-  return GripMapEntryRep.supportsObject(getValue(item));
+  return GripEntryRep.supportsObject(getValue(item));
 }
 
 function nodeHasChildren(item) {
   return Array.isArray(item.contents);
-}
-
-function nodeHasCustomFormatter(item) {
-  return item?.contents?.value?.useCustomFormatter === true && Array.isArray(item?.contents?.value?.header);
-}
-
-function nodeHasCustomFormattedBody(item) {
-  return item?.contents?.value?.hasBody === true;
 }
 
 function nodeHasValue(item) {
@@ -278,12 +269,18 @@ function nodeHasEntries(item) {
     return false;
   }
 
+  const className = value.class;
   return (
-    value.class === "Map" ||
-    value.class === "Set" ||
-    value.class === "WeakMap" ||
-    value.class === "WeakSet" ||
-    value.class === "Storage"
+    className === "Map" ||
+    className === "Set" ||
+    className === "WeakMap" ||
+    className === "WeakSet" ||
+    className === "Storage" ||
+    className === "URLSearchParams" ||
+    className === "Headers" ||
+    className === "FormData" ||
+    className === "MIDIInputMap" ||
+    className === "MIDIOutputMap"
   );
 }
 
@@ -367,22 +364,6 @@ function makeNodesForProxyProperties(loadedProps, item) {
       name: "<handler>",
       contents: { value: proxyHandlerGrip, front: proxyHandlerFront },
       type: NODE_TYPES.PROXY_HANDLER,
-    }),
-  ];
-}
-
-function makeJsonMlNode(loadedProps, item) {
-  return [
-    createNode({
-      parent: item,
-      path: "body",
-      contents: {
-        value: {
-          header: loadedProps.customFormatterBody,
-          useCustomFormatter: true,
-        },
-      },
-      type: NODE_TYPES.JSONML,
     }),
   ];
 }
@@ -844,10 +825,6 @@ function getChildren(options) {
     return children;
   };
 
-  if (nodeHasCustomFormattedBody(item) && hasLoadedProps) {
-    return addToCache(makeJsonMlNode(loadedProps, item));
-  }
-
   // Nodes can either have children already, or be an object with
   // properties that we need to go and fetch.
   if (nodeHasChildren(item)) {
@@ -1022,15 +999,12 @@ module.exports = {
   getNonPrototypeParentGripValue,
   getNumericalPropertiesCount,
   getValue,
-  makeJsonMlNode,
   makeNodesForEntries,
   makeNodesForPromiseProperties,
   makeNodesForProperties,
   makeNumericalBuckets,
   nodeHasAccessors,
   nodeHasChildren,
-  nodeHasCustomFormattedBody,
-  nodeHasCustomFormatter,
   nodeHasEntries,
   nodeHasProperties,
   nodeHasGetter,

@@ -11,13 +11,76 @@ ChromeUtils.defineModuleGetter(
   "HomePage",
   "resource:///modules/HomePage.jsm"
 );
-ChromeUtils.defineModuleGetter(
-  this,
-  "PrivateBrowsingUtils",
-  "resource://gre/modules/PrivateBrowsingUtils.jsm"
-);
+ChromeUtils.defineESModuleGetters(this, {
+  PrivateBrowsingUtils: "resource://gre/modules/PrivateBrowsingUtils.sys.mjs",
+});
 
-var { promiseObserved } = ExtensionUtils;
+var { ExtensionError, promiseObserved } = ExtensionUtils;
+
+function sanitizePositionParams(params, window = null, positionOffset = 0) {
+  if (params.left === null && params.top === null) {
+    return;
+  }
+
+  if (params.left === null) {
+    const baseLeft = window ? window.screenX : 0;
+    params.left = baseLeft + positionOffset;
+  }
+  if (params.top === null) {
+    const baseTop = window ? window.screenY : 0;
+    params.top = baseTop + positionOffset;
+  }
+
+  // boundary check: don't put window out of visible area
+  const baseWidth = window ? window.outerWidth : 0;
+  const baseHeight = window ? window.outerHeight : 0;
+  // Secure minimum size of an window should be same to the one
+  // defined at nsGlobalWindowOuter::CheckSecurityWidthAndHeight.
+  const minWidth = 100;
+  const minHeight = 100;
+  const width = Math.max(
+    minWidth,
+    params.width !== null ? params.width : baseWidth
+  );
+  const height = Math.max(
+    minHeight,
+    params.height !== null ? params.height : baseHeight
+  );
+  const screenManager = Cc["@mozilla.org/gfx/screenmanager;1"].getService(
+    Ci.nsIScreenManager
+  );
+  const screen = screenManager.screenForRect(
+    params.left,
+    params.top,
+    width,
+    height
+  );
+  const availDeviceLeft = {};
+  const availDeviceTop = {};
+  const availDeviceWidth = {};
+  const availDeviceHeight = {};
+  screen.GetAvailRect(
+    availDeviceLeft,
+    availDeviceTop,
+    availDeviceWidth,
+    availDeviceHeight
+  );
+  const slopX = window?.screenEdgeSlopX || 0;
+  const slopY = window?.screenEdgeSlopY || 0;
+  const factor = screen.defaultCSSScaleFactor;
+  const availLeft = Math.floor(availDeviceLeft.value / factor) - slopX;
+  const availTop = Math.floor(availDeviceTop.value / factor) - slopY;
+  const availWidth = Math.floor(availDeviceWidth.value / factor) + slopX;
+  const availHeight = Math.floor(availDeviceHeight.value / factor) + slopY;
+  params.left = Math.min(
+    availLeft + availWidth - width,
+    Math.max(availLeft, params.left)
+  );
+  params.top = Math.min(
+    availTop + availHeight - height,
+    Math.max(availTop, params.top)
+  );
+}
 
 this.windows = class extends ExtensionAPIPersistent {
   windowEventRegistrar(event, listener) {
@@ -110,7 +173,7 @@ this.windows = class extends ExtensionAPIPersistent {
           extensionApi: this,
         }).api(),
 
-        get: function(windowId, getInfo) {
+        get: function (windowId, getInfo) {
           let window = windowTracker.getWindow(windowId, context);
           if (!window || !context.canAccessWindow(window)) {
             return Promise.reject({
@@ -120,7 +183,7 @@ this.windows = class extends ExtensionAPIPersistent {
           return Promise.resolve(windowManager.convert(window, getInfo));
         },
 
-        getCurrent: function(getInfo) {
+        getCurrent: function (getInfo) {
           let window = context.currentWindow || windowTracker.topWindow;
           if (!context.canAccessWindow(window)) {
             return Promise.reject({ message: `Invalid window` });
@@ -128,7 +191,7 @@ this.windows = class extends ExtensionAPIPersistent {
           return Promise.resolve(windowManager.convert(window, getInfo));
         },
 
-        getLastFocused: function(getInfo) {
+        getLastFocused: function (getInfo) {
           let window = windowTracker.topWindow;
           if (!context.canAccessWindow(window)) {
             return Promise.reject({ message: `Invalid window` });
@@ -136,7 +199,7 @@ this.windows = class extends ExtensionAPIPersistent {
           return Promise.resolve(windowManager.convert(window, getInfo));
         },
 
-        getAll: function(getInfo) {
+        getAll: function (getInfo) {
           let doNotCheckTypes =
             getInfo === null || getInfo.windowTypes === null;
           let windows = [];
@@ -149,23 +212,23 @@ this.windows = class extends ExtensionAPIPersistent {
           return windows;
         },
 
-        create: function(createData) {
+        create: async function (createData) {
           let needResize =
             createData.left !== null ||
             createData.top !== null ||
             createData.width !== null ||
             createData.height !== null;
           if (createData.incognito && !context.privateBrowsingAllowed) {
-            return Promise.reject({
-              message: "Extension does not have permission for incognito mode",
-            });
+            throw new ExtensionError(
+              "Extension does not have permission for incognito mode"
+            );
           }
 
           if (needResize) {
             if (createData.state !== null && createData.state != "normal") {
-              return Promise.reject({
-                message: `"state": "${createData.state}" may not be combined with "left", "top", "width", or "height"`,
-              });
+              throw new ExtensionError(
+                `"state": "${createData.state}" may not be combined with "left", "top", "width", or "height"`
+              );
             }
             createData.state = "normal";
           }
@@ -182,26 +245,40 @@ this.windows = class extends ExtensionAPIPersistent {
             Ci.nsIMutableArray
           );
 
+          // Whether there is only one URL to load, and it is a moz-extension:-URL.
+          let isOnlyMozExtensionUrl = false;
+
+          // Creating a new window allows one single triggering principal for all tabs that
+          // are created in the window.  Due to that, if we need a browser principal to load
+          // some urls, we fallback to using a content principal like we do in the tabs api.
+          // Throws if url is an array and any url can't be loaded by the extension principal.
           let principal = context.principal;
+          function setContentTriggeringPrincipal(url) {
+            principal = Services.scriptSecurityManager.createContentPrincipal(
+              Services.io.newURI(url),
+              {
+                // Note: privateBrowsingAllowed was already checked before.
+                privateBrowsingId: createData.incognito ? 1 : 0,
+              }
+            );
+          }
+
           if (createData.tabId !== null) {
             if (createData.url !== null) {
-              return Promise.reject({
-                message: "`tabId` may not be used in conjunction with `url`",
-              });
+              throw new ExtensionError(
+                "`tabId` may not be used in conjunction with `url`"
+              );
             }
 
             if (createData.allowScriptsToClose) {
-              return Promise.reject({
-                message:
-                  "`tabId` may not be used in conjunction with `allowScriptsToClose`",
-              });
+              throw new ExtensionError(
+                "`tabId` may not be used in conjunction with `allowScriptsToClose`"
+              );
             }
 
             let tab = tabTracker.getTab(createData.tabId);
             if (!context.canAccessWindow(tab.ownerGlobal)) {
-              return Promise.reject({
-                message: `Invalid tab ID: ${createData.tabId}`,
-              });
+              throw new ExtensionError(`Invalid tab ID: ${createData.tabId}`);
             }
             // Private browsing tabs can only be moved to private browsing
             // windows.
@@ -212,10 +289,9 @@ this.windows = class extends ExtensionAPIPersistent {
               createData.incognito !== null &&
               createData.incognito != incognito
             ) {
-              return Promise.reject({
-                message:
-                  "`incognito` property must match the incognito state of tab",
-              });
+              throw new ExtensionError(
+                "`incognito` property must match the incognito state of tab"
+              );
             }
             createData.incognito = incognito;
 
@@ -224,9 +300,9 @@ this.windows = class extends ExtensionAPIPersistent {
               createData.cookieStoreId !==
                 getCookieStoreIdForTab(createData, tab)
             ) {
-              return Promise.reject({
-                message: "`cookieStoreId` must match the tab's cookieStoreId",
-              });
+              throw new ExtensionError(
+                "`cookieStoreId` must match the tab's cookieStoreId"
+              );
             }
 
             args.appendElement(tab);
@@ -235,12 +311,34 @@ this.windows = class extends ExtensionAPIPersistent {
               let array = Cc["@mozilla.org/array;1"].createInstance(
                 Ci.nsIMutableArray
               );
-              for (let url of createData.url) {
+              for (let url of createData.url.map(u => context.uri.resolve(u))) {
+                // We can only provide a single triggering principal when
+                // opening a window, so if the extension cannot normally
+                // access a url, we fail.  This includes about and moz-ext
+                // urls.
+                if (!context.checkLoadURL(url, { dontReportErrors: true })) {
+                  return Promise.reject({ message: `Illegal URL: ${url}` });
+                }
                 array.appendElement(mkstr(url));
               }
               args.appendElement(array);
+              // TODO bug 1780583: support multiple triggeringPrincipals to
+              // avoid having to use the system principal here.
+              principal = Services.scriptSecurityManager.getSystemPrincipal();
             } else {
-              args.appendElement(mkstr(createData.url));
+              let url = context.uri.resolve(createData.url);
+              args.appendElement(mkstr(url));
+              isOnlyMozExtensionUrl = url.startsWith("moz-extension://");
+              if (!context.checkLoadURL(url, { dontReportErrors: true })) {
+                if (isOnlyMozExtensionUrl) {
+                  // For backwards-compatibility (also in tabs APIs), we allow
+                  // extensions to open other moz-extension:-URLs even if that
+                  // other resource is not listed in web_accessible_resources.
+                  setContentTriggeringPrincipal(url);
+                } else {
+                  throw new ExtensionError(`Illegal URL: ${url}`);
+                }
+              }
             }
           } else {
             let url =
@@ -249,18 +347,18 @@ this.windows = class extends ExtensionAPIPersistent {
                 ? "about:privatebrowsing"
                 : HomePage.get().split("|", 1)[0];
             args.appendElement(mkstr(url));
+            isOnlyMozExtensionUrl = url.startsWith("moz-extension://");
 
-            if (
-              url.startsWith("about:") &&
-              !context.checkLoadURL(url, { dontReportErrors: true })
-            ) {
+            if (!context.checkLoadURL(url, { dontReportErrors: true })) {
               // The extension principal cannot directly load about:-URLs,
-              // except for about:blank. So use the system principal instead.
-              principal = Services.scriptSecurityManager.getSystemPrincipal();
+              // except for about:blank, or other moz-extension:-URLs that are
+              // not in web_accessible_resources. Ensure any page set as a home
+              // page will load by using a content principal.
+              setContentTriggeringPrincipal(url);
             }
           }
 
-          args.appendElement(null); // unused
+          args.appendElement(null); // extraOptions
           args.appendElement(null); // referrerInfo
           args.appendElement(null); // postData
           args.appendElement(null); // allowThirdPartyFixup
@@ -275,6 +373,7 @@ this.windows = class extends ExtensionAPIPersistent {
               createData.cookieStoreId,
               createData.incognito
             );
+
             args.appendElement(userContextIdSupports); // userContextId
           } else {
             args.appendElement(null);
@@ -301,19 +400,20 @@ this.windows = class extends ExtensionAPIPersistent {
               "dialog",
               "resizable",
               "minimizable",
-              "centerscreen",
               "titlebar",
               "close"
             );
+            if (createData.left === null && createData.top === null) {
+              features.push("centerscreen");
+            }
           }
 
           if (createData.incognito !== null) {
             if (createData.incognito) {
               if (!PrivateBrowsingUtils.enabled) {
-                return Promise.reject({
-                  message:
-                    "`incognito` cannot be used if incognito mode is disabled",
-                });
+                throw new ExtensionError(
+                  "`incognito` cannot be used if incognito mode is disabled"
+                );
               }
               features.push("private");
             } else {
@@ -321,11 +421,9 @@ this.windows = class extends ExtensionAPIPersistent {
             }
           }
 
-          let { allowScriptsToClose, url } = createData;
-          if (allowScriptsToClose === null) {
-            allowScriptsToClose =
-              typeof url === "string" && url.startsWith("moz-extension://");
-          }
+          const baseWindow = windowTracker.getTopNormalWindow(context);
+          // 10px offset is same to Chromium
+          sanitizePositionParams(createData, baseWindow, 10);
 
           let window = Services.ww.openWindow(
             null,
@@ -340,42 +438,50 @@ this.windows = class extends ExtensionAPIPersistent {
 
           // TODO: focused, type
 
-          return new Promise(resolve => {
+          const contentLoaded = new Promise(resolve => {
             window.addEventListener(
               "DOMContentLoaded",
-              function() {
+              function () {
+                let { allowScriptsToClose } = createData;
+                if (allowScriptsToClose === null && isOnlyMozExtensionUrl) {
+                  allowScriptsToClose = true;
+                }
                 if (allowScriptsToClose) {
                   window.gBrowserAllowScriptsToCloseInitialTabs = true;
                 }
-                resolve(
-                  promiseObserved(
-                    "browser-delayed-startup-finished",
-                    win => win == window
-                  )
-                );
+                resolve();
               },
               { once: true }
             );
-          }).then(() => {
-            if (
-              [
-                "minimized",
-                "fullscreen",
-                "docked",
-                "normal",
-                "maximized",
-              ].includes(createData.state)
-            ) {
-              win.state = createData.state;
-            }
-            if (createData.titlePreface !== null) {
-              win.setTitlePreface(createData.titlePreface);
-            }
-            return win.convert({ populate: true });
           });
+
+          const startupFinished = promiseObserved(
+            "browser-delayed-startup-finished",
+            win => win == window
+          );
+
+          await contentLoaded;
+          await startupFinished;
+
+          if (
+            [
+              "minimized",
+              "fullscreen",
+              "docked",
+              "normal",
+              "maximized",
+            ].includes(createData.state)
+          ) {
+            await win.setState(createData.state);
+          }
+
+          if (createData.titlePreface !== null) {
+            win.setTitlePreface(createData.titlePreface);
+          }
+          return win.convert({ populate: true });
         },
 
-        update: function(windowId, updateInfo) {
+        update: async function (windowId, updateInfo) {
           if (updateInfo.state !== null && updateInfo.state != "normal") {
             if (
               updateInfo.left !== null ||
@@ -383,24 +489,22 @@ this.windows = class extends ExtensionAPIPersistent {
               updateInfo.width !== null ||
               updateInfo.height !== null
             ) {
-              return Promise.reject({
-                message: `"state": "${updateInfo.state}" may not be combined with "left", "top", "width", or "height"`,
-              });
+              throw new ExtensionError(
+                `"state": "${updateInfo.state}" may not be combined with "left", "top", "width", or "height"`
+              );
             }
           }
 
           let win = windowManager.get(windowId, context);
           if (!win) {
-            return Promise.reject({
-              message: `Invalid window ID: ${windowId}`,
-            });
+            throw new ExtensionError(`Invalid window ID: ${windowId}`);
           }
           if (updateInfo.focused) {
             win.window.focus();
           }
 
           if (updateInfo.state !== null) {
-            win.state = updateInfo.state;
+            await win.setState(updateInfo.state);
           }
 
           if (updateInfo.drawAttention) {
@@ -408,6 +512,7 @@ this.windows = class extends ExtensionAPIPersistent {
             win.window.getAttention();
           }
 
+          sanitizePositionParams(updateInfo, win.window);
           win.updateGeometry(updateInfo);
 
           if (updateInfo.titlePreface !== null) {
@@ -417,10 +522,10 @@ this.windows = class extends ExtensionAPIPersistent {
 
           // TODO: All the other properties, focused=false...
 
-          return Promise.resolve(win.convert());
+          return win.convert();
         },
 
-        remove: function(windowId) {
+        remove: function (windowId) {
           let window = windowTracker.getWindow(windowId, context);
           if (!context.canAccessWindow(window)) {
             return Promise.reject({

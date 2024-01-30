@@ -24,16 +24,19 @@ import {
   shouldBlackbox,
 } from "../../utils/source";
 import { getTabMenuItems } from "../../utils/tabs";
+import { createLocation } from "../../utils/location";
 
 import {
-  getSelectedSource,
+  getSelectedLocation,
   getActiveSearch,
   getSourcesForTabs,
-  getHasSiblingOfSameName,
+  isSourceBlackBoxed,
   getContext,
+  isSourceMapIgnoreListEnabled,
+  isSourceOnSourceMapIgnoreList,
 } from "../../selectors";
 
-import classnames from "classnames";
+const classnames = require("devtools/client/shared/classnames.js");
 
 class Tab extends PureComponent {
   static get propTypes() {
@@ -43,17 +46,19 @@ class Tab extends PureComponent {
       closeTabs: PropTypes.func.isRequired,
       copyToClipboard: PropTypes.func.isRequired,
       cx: PropTypes.object.isRequired,
-      hasSiblingOfSameName: PropTypes.bool.isRequired,
       onDragEnd: PropTypes.func.isRequired,
       onDragOver: PropTypes.func.isRequired,
       onDragStart: PropTypes.func.isRequired,
       selectSource: PropTypes.func.isRequired,
-      selectedSource: PropTypes.object,
+      selectedLocation: PropTypes.object,
       showSource: PropTypes.func.isRequired,
       source: PropTypes.object.isRequired,
+      sourceActor: PropTypes.object.isRequired,
       tabSources: PropTypes.array.isRequired,
       toggleBlackBox: PropTypes.func.isRequired,
       togglePrettyPrint: PropTypes.func.isRequired,
+      isBlackBoxed: PropTypes.bool.isRequired,
+      isSourceOnIgnoreList: PropTypes.bool.isRequired,
     };
   }
 
@@ -72,8 +77,10 @@ class Tab extends PureComponent {
       showSource,
       toggleBlackBox,
       togglePrettyPrint,
-      selectedSource,
+      selectedLocation,
       source,
+      isBlackBoxed,
+      isSourceOnIgnoreList,
     } = this.props;
 
     const tabCount = tabSources.length;
@@ -82,7 +89,7 @@ class Tab extends PureComponent {
     const tabURLs = tabSources.map(t => t.url);
     const otherTabURLs = otherTabs.map(t => t.url);
 
-    if (!sourceTab || !selectedSource) {
+    if (!sourceTab || !selectedLocation || !selectedLocation.sourceId) {
       return;
     }
 
@@ -126,31 +133,31 @@ class Tab extends PureComponent {
       {
         item: {
           ...tabMenuItems.copySource,
-          disabled: selectedSource.id !== tab,
+          disabled: selectedLocation.sourceId !== tab,
           click: () => copyToClipboard(sourceTab),
         },
       },
       {
         item: {
           ...tabMenuItems.copySourceUri2,
-          disabled: !selectedSource.url,
+          disabled: !selectedLocation.sourceUrl,
           click: () => copyToTheClipboard(getRawSourceURL(sourceTab.url)),
         },
       },
       {
         item: {
           ...tabMenuItems.showSource,
-          disabled: !selectedSource.url,
+          disabled: !selectedLocation.sourceUrl,
           click: () => showSource(cx, tab),
         },
       },
       {
         item: {
           ...tabMenuItems.toggleBlackBox,
-          label: source.isBlackBoxed
+          label: isBlackBoxed
             ? L10N.getStr("ignoreContextItem.unignore")
             : L10N.getStr("ignoreContextItem.ignore"),
-          disabled: !shouldBlackbox(source),
+          disabled: isSourceOnIgnoreList || !shouldBlackbox(source),
           click: () => toggleBlackBox(cx, source),
         },
       },
@@ -166,10 +173,6 @@ class Tab extends PureComponent {
     showMenu(e, buildMenu(items));
   }
 
-  isProjectSearchEnabled() {
-    return this.props.activeSearch === "project";
-  }
-
   isSourceSearchEnabled() {
     return this.props.activeSearch === "source";
   }
@@ -177,21 +180,20 @@ class Tab extends PureComponent {
   render() {
     const {
       cx,
-      selectedSource,
+      selectedLocation,
       selectSource,
       closeTab,
       source,
+      sourceActor,
       tabSources,
-      hasSiblingOfSameName,
       onDragOver,
       onDragStart,
       onDragEnd,
     } = this.props;
     const sourceId = source.id;
     const active =
-      selectedSource &&
-      sourceId == selectedSource.id &&
-      !this.isProjectSearchEnabled() &&
+      selectedLocation &&
+      sourceId == selectedLocation.sourceId &&
       !this.isSourceSearchEnabled();
     const isPrettyCode = isPretty(source);
 
@@ -203,16 +205,17 @@ class Tab extends PureComponent {
     function handleTabClick(e) {
       e.preventDefault();
       e.stopPropagation();
-      return selectSource(cx, sourceId);
+      return selectSource(cx, source, sourceActor);
     }
 
     const className = classnames("source-tab", {
       active,
       pretty: isPrettyCode,
+      blackboxed: this.props.isBlackBoxed,
     });
 
     const path = getDisplayPath(source, tabSources);
-    const query = hasSiblingOfSameName ? getSourceQueryString(source) : "";
+    const query = getSourceQueryString(source);
 
     return (
       <div
@@ -229,7 +232,8 @@ class Tab extends PureComponent {
         title={getFileURL(source, false)}
       >
         <SourceIcon
-          source={source}
+          location={createLocation({ source, sourceActor })}
+          forTab={true}
           modifier={icon =>
             ["file", "javascript"].includes(icon) ? null : icon
           }
@@ -248,14 +252,15 @@ class Tab extends PureComponent {
 }
 
 const mapStateToProps = (state, { source }) => {
-  const selectedSource = getSelectedSource(state);
-
   return {
     cx: getContext(state),
     tabSources: getSourcesForTabs(state),
-    selectedSource,
+    selectedLocation: getSelectedLocation(state),
+    isBlackBoxed: isSourceBlackBoxed(state, source),
+    isSourceOnIgnoreList:
+      isSourceMapIgnoreListEnabled(state) &&
+      isSourceOnSourceMapIgnoreList(state, source),
     activeSearch: getActiveSearch(state),
-    hasSiblingOfSameName: getHasSiblingOfSameName(state, source),
   };
 };
 

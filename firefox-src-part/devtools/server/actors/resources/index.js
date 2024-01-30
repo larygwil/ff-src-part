@@ -4,7 +4,7 @@
 
 "use strict";
 
-const Targets = require("devtools/server/actors/targets/index");
+const Targets = require("resource://devtools/server/actors/targets/index.js");
 
 const TYPES = {
   CONSOLE_MESSAGE: "console-message",
@@ -12,21 +12,26 @@ const TYPES = {
   CSS_MESSAGE: "css-message",
   DOCUMENT_EVENT: "document-event",
   ERROR_MESSAGE: "error-message",
-  PLATFORM_MESSAGE: "platform-message",
+  LAST_PRIVATE_CONTEXT_EXIT: "last-private-context-exit",
   NETWORK_EVENT: "network-event",
-  STYLESHEET: "stylesheet",
   NETWORK_EVENT_STACKTRACE: "network-event-stacktrace",
+  PLATFORM_MESSAGE: "platform-message",
   REFLOW: "reflow",
-  SOURCE: "source",
-  THREAD_STATE: "thread-state",
   SERVER_SENT_EVENT: "server-sent-event",
+  SOURCE: "source",
+  STYLESHEET: "stylesheet",
+  THREAD_STATE: "thread-state",
+  TRACING_STATE: "tracing-state",
   WEBSOCKET: "websocket",
+
   // storage types
   CACHE_STORAGE: "Cache",
   COOKIE: "cookies",
+  EXTENSION_STORAGE: "extension-storage",
   INDEXED_DB: "indexed-db",
   LOCAL_STORAGE: "local-storage",
   SESSION_STORAGE: "session-storage",
+
   // root types
   EXTENSIONS_BGSCRIPT_STATUS: "extensions-backgroundscript-status",
 };
@@ -94,6 +99,9 @@ const FrameTargetResources = augmentResourceDictionary({
   [TYPES.THREAD_STATE]: {
     path: "devtools/server/actors/resources/thread-states",
   },
+  [TYPES.TRACING_STATE]: {
+    path: "devtools/server/actors/resources/tracing-state",
+  },
   [TYPES.SERVER_SENT_EVENT]: {
     path: "devtools/server/actors/resources/server-sent-events",
   },
@@ -122,6 +130,9 @@ const ProcessTargetResources = augmentResourceDictionary({
   [TYPES.THREAD_STATE]: {
     path: "devtools/server/actors/resources/thread-states",
   },
+  [TYPES.TRACING_STATE]: {
+    path: "devtools/server/actors/resources/tracing-state",
+  },
 });
 
 // Worker target resources are spawned via a Worker Target Actor.
@@ -143,6 +154,9 @@ const WorkerTargetResources = augmentResourceDictionary({
   [TYPES.THREAD_STATE]: {
     path: "devtools/server/actors/resources/thread-states",
   },
+  [TYPES.TRACING_STATE]: {
+    path: "devtools/server/actors/resources/tracing-state",
+  },
 });
 
 // Parent process resources are spawned via the Watcher Actor.
@@ -157,11 +171,17 @@ const ParentProcessResources = augmentResourceDictionary({
   [TYPES.COOKIE]: {
     path: "devtools/server/actors/resources/storage-cookie",
   },
+  [TYPES.EXTENSION_STORAGE]: {
+    path: "devtools/server/actors/resources/storage-extension",
+  },
   [TYPES.INDEXED_DB]: {
     path: "devtools/server/actors/resources/storage-indexed-db",
   },
   [TYPES.DOCUMENT_EVENT]: {
     path: "devtools/server/actors/resources/parent-process-document-event",
+  },
+  [TYPES.LAST_PRIVATE_CONTEXT_EXIT]: {
+    path: "devtools/server/actors/resources/last-private-context-exit",
   },
 });
 
@@ -260,7 +280,11 @@ function getResourceTypeEntry(rootOrWatcherOrTargetActor, resourceType) {
  *            Via browsingContextID, windows, docShells attributes for the target actor.
  *            Via the `sessionContext` object for the watcher actor.
  *            (only for Watcher and Target actors. Root actor is context-less.)
- *          - exposes `notifyResourceAvailable` method to be notified about the available resources
+ *          - exposes `notifyResources` method to be notified about all the resources updates
+ *            This method will receive two arguments:
+ *            - {String} updateType, which can be "available", "updated", or "destroyed"
+ *            - {Array<Object>} resources, which will be the list of resource's forms
+ *              or special update object for "updated" scenario.
  * @param Array<String> resourceTypes
  *        List of all type of resource to listen to.
  */
@@ -284,11 +308,30 @@ async function watchResources(rootOrWatcherOrTargetActor, resourceTypes) {
       continue;
     }
 
+    // Don't watch for console messages from the worker target if worker messages are still
+    // being cloned to the main process, otherwise we'll get duplicated messages in the
+    // console output (See Bug 1778852).
+    if (
+      resourceType == TYPES.CONSOLE_MESSAGE &&
+      rootOrWatcherOrTargetActor.workerConsoleApiMessagesDispatchedToMainThread
+    ) {
+      continue;
+    }
+
     const watcher = new WatcherClass();
     await watcher.watch(rootOrWatcherOrTargetActor, {
-      onAvailable: rootOrWatcherOrTargetActor.notifyResourceAvailable,
-      onDestroyed: rootOrWatcherOrTargetActor.notifyResourceDestroyed,
-      onUpdated: rootOrWatcherOrTargetActor.notifyResourceUpdated,
+      onAvailable: rootOrWatcherOrTargetActor.notifyResources.bind(
+        rootOrWatcherOrTargetActor,
+        "available"
+      ),
+      onUpdated: rootOrWatcherOrTargetActor.notifyResources.bind(
+        rootOrWatcherOrTargetActor,
+        "updated"
+      ),
+      onDestroyed: rootOrWatcherOrTargetActor.notifyResources.bind(
+        rootOrWatcherOrTargetActor,
+        "destroyed"
+      ),
     });
     watchers.set(rootOrWatcherOrTargetActor, watcher);
   }
@@ -303,9 +346,8 @@ function getParentProcessResourceTypes(resourceTypes) {
 exports.getParentProcessResourceTypes = getParentProcessResourceTypes;
 
 function getResourceTypesForTargetType(resourceTypes, targetType) {
-  const resourceDictionnary = getResourceTypeDictionaryForTargetType(
-    targetType
-  );
+  const resourceDictionnary =
+    getResourceTypeDictionaryForTargetType(targetType);
   return resourceTypes.filter(resourceType => {
     return resourceType in resourceDictionnary;
   });
@@ -343,6 +385,30 @@ function unwatchResources(rootOrWatcherOrTargetActor, resourceTypes) {
   }
 }
 exports.unwatchResources = unwatchResources;
+
+/**
+ * Clear resources for a list of resource types.
+ *
+ * @param Actor rootOrWatcherOrTargetActor
+ *        The related actor, already passed to watchResources.
+ * @param Array<String> resourceTypes
+ *        List of all type of resource to clear.
+ */
+function clearResources(rootOrWatcherOrTargetActor, resourceTypes) {
+  for (const resourceType of resourceTypes) {
+    const { watchers } = getResourceTypeEntry(
+      rootOrWatcherOrTargetActor,
+      resourceType
+    );
+
+    const watcher = watchers.get(rootOrWatcherOrTargetActor);
+    if (watcher && typeof watcher.clear == "function") {
+      watcher.clear();
+    }
+  }
+}
+
+exports.clearResources = clearResources;
 
 /**
  * Stop watching for all watched resources on a given actor.

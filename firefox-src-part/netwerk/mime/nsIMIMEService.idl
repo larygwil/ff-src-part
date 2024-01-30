@@ -62,6 +62,17 @@ interface nsIMIMEService : nsISupports {
      */
     ACString getTypeFromURI(in nsIURI aURI);
 
+    /**
+     * Retrieves a ACString representation of the MIME type
+     * associated with this file extension.  Only the default
+     * builtin list is examined.  Unless you need a restricted
+     * set use getTypeFromURI.
+     *
+     * @param  The URI the user wants MIME info on.
+     * @return The MIME type, if any.
+     */
+    ACString getDefaultTypeFromURI(in nsIURI aURI);
+
     //
     ACString getTypeFromFile(in nsIFile aFile);
 
@@ -98,6 +109,14 @@ interface nsIMIMEService : nsISupports {
     nsIMIMEInfo getMIMEInfoFromOS(in ACString aType,
                                   in ACString aFileExtension,
                                   out boolean aFound);
+
+    /**
+     * Update the mime info's default app information based on OS
+     * lookups.
+     * Note: normally called automatically by nsIMIMEInfo. If you find
+     * yourself needing to call this from elsewhere, file a bug instead.
+     */
+    void updateDefaultAppInfo(in nsIMIMEInfo aMIMEInfo);
 
     /**
      * Default filename validation for getValidFileName and
@@ -221,7 +240,7 @@ interface nsIMIMEService : nsISupports {
 
     /**
      * Similar to getValidFileName, but used when a specific filename needs
-     * to be validated. The filename is modified as needed based on the 
+     * to be validated. The filename is modified as needed based on the
      * content type in the same manner as getValidFileName.
      *
      * If the filename came from a uri, it should not be escaped, that is,

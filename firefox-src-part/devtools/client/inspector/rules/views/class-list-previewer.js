@@ -4,14 +4,14 @@
 
 "use strict";
 
-const ClassList = require("devtools/client/inspector/rules/models/class-list");
+const ClassList = require("resource://devtools/client/inspector/rules/models/class-list.js");
 
-const { LocalizationHelper } = require("devtools/shared/l10n");
+const { LocalizationHelper } = require("resource://devtools/shared/l10n.js");
 const L10N = new LocalizationHelper(
   "devtools/client/locales/inspector.properties"
 );
-const AutocompletePopup = require("devtools/client/shared/autocomplete-popup");
-const { debounce } = require("devtools/shared/debounce");
+const AutocompletePopup = require("resource://devtools/client/shared/autocomplete-popup.js");
+const { debounce } = require("resource://devtools/shared/debounce.js");
 
 /**
  * This UI widget shows a textfield and a series of checkboxes in the rule-view. It is
@@ -244,9 +244,8 @@ class ClassListPreviewer {
     try {
       const classNames = await this.model.getClassNames(newValue);
       if (!this.autocompletePopup.isOpen) {
-        this._previewClassesBeforeAutocompletion = this.model.previewClasses.map(
-          previewClass => previewClass.className
-        );
+        this._previewClassesBeforeAutocompletion =
+          this.model.previewClasses.map(previewClass => previewClass.className);
       }
       items = classNames.map(className => {
         return {
@@ -260,10 +259,7 @@ class ClassListPreviewer {
       console.warn("Error when calling getClassNames", e);
     }
 
-    if (
-      items.length == 0 ||
-      (items.length == 1 && items[0].label === newValue)
-    ) {
+    if (!items.length || (items.length == 1 && items[0].label === newValue)) {
       this.autocompletePopup.clearItems();
       await this.autocompletePopup.hidePopup();
       this.model.previewClass(newValue);

@@ -4,7 +4,7 @@
 
 "use strict";
 
-const dom = require("devtools/client/shared/vendor/react-dom-factories");
+const dom = require("resource://devtools/client/shared/vendor/react-dom-factories.js");
 
 const INDENT_WIDTH = 12;
 
@@ -24,12 +24,12 @@ function getIndentElement(indent, className) {
 function MessageIndent(props) {
   const { indent, inWarningGroup } = props;
 
-  if (!indent) {
-    return null;
-  }
-
   if (inWarningGroup) {
     return IN_WARNING_GROUP_INDENT;
+  }
+
+  if (!indent) {
+    return null;
   }
 
   return CONSTANT_INDENTS[indent] || getIndentElement(indent);

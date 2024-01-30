@@ -72,7 +72,7 @@ this.VideoControlsWidget = class {
       return;
     }
     if (this.impl) {
-      this.impl.destructor();
+      this.impl.teardown();
       this.shadowRoot.firstChild.remove();
     }
     if (newImpl) {
@@ -90,11 +90,11 @@ this.VideoControlsWidget = class {
     }
   }
 
-  destructor() {
+  teardown() {
     if (!this.impl) {
       return;
     }
-    this.impl.destructor();
+    this.impl.teardown();
     this.shadowRoot.firstChild.remove();
     delete this.impl;
   }
@@ -109,7 +109,7 @@ this.VideoControlsWidget = class {
     this.impl.onPrefChange(prefName, prefValue);
   }
 
-  // If you change this, also change SEEK_TIME_SECS in PictureInPictureChild.jsm
+  // If you change this, also change SEEK_TIME_SECS in PictureInPictureChild.sys.mjs
   static SEEK_TIME_SECS = 5;
 
   static isPictureInPictureVideo(someVideo) {
@@ -150,6 +150,15 @@ this.VideoControlsWidget = class {
     someVideo,
     reflowedDimensions
   ) {
+    if (
+      prefs[
+        "media.videocontrols.picture-in-picture.respect-disablePictureInPicture"
+      ] &&
+      someVideo.getAttribute("disablePictureInPicture") === "true"
+    ) {
+      return false;
+    }
+
     if (isNaN(someVideo.duration)) {
       return false;
     }
@@ -174,10 +183,6 @@ this.VideoControlsWidget = class {
       reflowedDimensions.videoWidth < MIN_VIDEO_DIMENSION ||
       reflowedDimensions.videoHeight < MIN_VIDEO_DIMENSION
     ) {
-      return false;
-    }
-
-    if (!someVideo.mozHasAudio) {
       return false;
     }
 
@@ -292,12 +297,15 @@ this.VideoControlsImplWidget = class {
         "durationchange",
       ],
 
-      showHours: false,
       firstFrameShown: false,
       timeUpdateCount: 0,
       maxCurrentTimeSeen: 0,
       isPausedByDragging: false,
       _isAudioOnly: false,
+
+      get isAudioTag() {
+        return this.video.localName == "audio";
+      },
 
       get isAudioOnly() {
         return this._isAudioOnly;
@@ -398,7 +406,6 @@ this.VideoControlsImplWidget = class {
         );
         // It would be nice to retain maxCurrentTimeSeen, but it would be difficult
         // to determine if the media source changed while we were detached.
-        this.initPositionDurationBox();
         this.maxCurrentTimeSeen = currentTime;
         this.showPosition(currentTime, duration);
 
@@ -505,9 +512,8 @@ this.VideoControlsImplWidget = class {
               if (control.modifier) {
                 propertyName += "-" + control.modifier;
               }
-              let preDefinedSize = this.controlBarComputedStyles.getPropertyValue(
-                propertyName
-              );
+              let preDefinedSize =
+                this.controlBarComputedStyles.getPropertyValue(propertyName);
 
               // The stylesheet from <link> might not be loaded if the
               // element was inserted into a hidden iframe.
@@ -587,9 +593,12 @@ this.VideoControlsImplWidget = class {
           return;
         }
 
+        // We only want to show the toggle when the closed captions menu
+        // is closed, in order to avoid visual overlap.
         if (
           this.pipToggleEnabled &&
           !this.isShowingPictureInPictureMessage &&
+          this.textTrackListContainer.hidden &&
           VideoControlsWidget.shouldShowPictureInPictureToggle(
             this.prefs,
             this.video,
@@ -788,7 +797,7 @@ this.VideoControlsImplWidget = class {
             this.controlsSpacer.removeAttribute("aria-label");
             this.statusOverlay.removeAttribute("status");
             this.statusIcon.setAttribute("type", "throbber");
-            this.isAudioOnly = this.video.localName == "audio";
+            this.isAudioOnly = this.isAudioTag;
             this.setPlayButtonState(true);
             this.setupNewLoadState();
             this.setupStatusFader();
@@ -932,7 +941,20 @@ this.VideoControlsImplWidget = class {
             this.reflowTriggeringCallValidator.isReflowTriggeringPropsAllowed = true;
             this.updateReflowedDimensions();
             this.reflowTriggeringCallValidator.isReflowTriggeringPropsAllowed = false;
+
+            let scrubberWasHidden = this.scrubberStack.hidden;
             this.adjustControlSize();
+            if (scrubberWasHidden && !this.scrubberStack.hidden) {
+              // requestAnimationFrame + setTimeout of 0ms is a best effort way to avoid
+              // triggering reflows, but cannot fully guarantee a reflow will not happen.
+              this.window.requestAnimationFrame(() =>
+                this.window.setTimeout(() => {
+                  this.reflowTriggeringCallValidator.isReflowTriggeringPropsAllowed = true;
+                  this.updateReflowedDimensions();
+                  this.reflowTriggeringCallValidator.isReflowTriggeringPropsAllowed = false;
+                }, 0)
+              );
+            }
             this.updatePictureInPictureToggleDisplay();
             break;
           case "fullscreenchange":
@@ -1139,8 +1161,7 @@ this.VideoControlsImplWidget = class {
         this.statusOverlay.setAttribute("status", error);
       },
 
-      formatTime(aTime, showHours = false) {
-        // Format the duration as "h:mm:ss" or "m:ss"
+      formatTime(aTime) {
         aTime = Math.round(aTime / 1000);
         let hours = Math.floor(aTime / 3600);
         let mins = Math.floor((aTime % 3600) / 60);
@@ -1149,7 +1170,7 @@ this.VideoControlsImplWidget = class {
         if (secs < 10) {
           secs = "0" + secs;
         }
-        if (hours || showHours) {
+        if (hours) {
           if (mins < 10) {
             mins = "0" + mins;
           }
@@ -1158,50 +1179,6 @@ this.VideoControlsImplWidget = class {
           timeString = mins + ":" + secs;
         }
         return timeString;
-      },
-
-      initPositionDurationBox() {
-        const durationSpan = this.durationSpan;
-
-        durationSpan.classList.add("duration");
-        durationSpan.setAttribute("role", "none");
-        durationSpan.id = "durationSpan";
-        this.l10n.setAttributes(
-          this.positionDurationBox,
-          "videocontrols-position-and-duration-labels",
-          { position: "", duration: "" }
-        );
-      },
-
-      showDuration(duration) {
-        let isInfinite = duration == Infinity;
-        this.log("Duration is " + duration + "ms.\n");
-
-        if (isNaN(duration) || isInfinite) {
-          duration = this.maxCurrentTimeSeen;
-        }
-
-        // If the duration is over an hour, thumb should show h:mm:ss instead of mm:ss
-        this.showHours = duration >= 3600000;
-
-        // Format the duration as "h:mm:ss" or "m:ss"
-        let timeString = isInfinite ? "" : this.formatTime(duration);
-        this.positionDurationBox.duration = timeString;
-        this.l10n.setAttributes(
-          this.positionDurationBox,
-          "videocontrols-position-and-duration-labels",
-          {
-            position: this.positionDurationBox.position,
-            duration: timeString,
-          }
-        );
-
-        if (this.showHours) {
-          this.positionDurationBox.modifier = "long";
-          this.durationSpan.modifier = "long";
-        }
-
-        this.scrubber.max = duration;
       },
 
       pauseVideoDuringDragging() {
@@ -1221,6 +1198,7 @@ this.VideoControlsImplWidget = class {
 
         this.seekToPosition(time);
         this.showPosition(time, duration);
+        this.updateScrubberProgress();
 
         this.scrubber.isDragging = true;
         this.pauseVideoDuringDragging();
@@ -1257,54 +1235,84 @@ this.VideoControlsImplWidget = class {
         this.video.muted = false;
       },
 
-      showPosition(currentTime, duration) {
+      showPosition(currentTimeMs, durationMs) {
         // If the duration is unknown (because the server didn't provide
         // it, or the video is a stream), then we want to fudge the duration
         // by using the maximum playback position that's been seen.
-        if (currentTime > this.maxCurrentTimeSeen) {
-          this.maxCurrentTimeSeen = currentTime;
+        if (currentTimeMs > this.maxCurrentTimeSeen) {
+          this.maxCurrentTimeSeen = currentTimeMs;
         }
-        this.showDuration(duration);
+        this.log(
+          "time update @ " + currentTimeMs + "ms of " + durationMs + "ms"
+        );
 
-        this.log("time update @ " + currentTime + "ms of " + duration + "ms");
+        let durationIsInfinite = durationMs == Infinity;
+        if (isNaN(durationMs) || durationIsInfinite) {
+          durationMs = this.maxCurrentTimeSeen;
+        }
+        this.log("durationMs is " + durationMs + "ms.\n");
 
-        let positionTime = this.formatTime(currentTime, this.showHours);
+        let scrubberProgress = Math.abs(
+          currentTimeMs / durationMs - this.scrubber.value / this.scrubber.max
+        );
+        let devPxProgress =
+          scrubberProgress *
+          this.reflowedDimensions.scrubberWidth *
+          this.window.devicePixelRatio;
+        // Hack: if we haven't updated the scrubber width to be non-0, but
+        // the scrubber stack is visible, assume there is progress.
+        // This should be rectified by the next time we do layout (see handling
+        // of resizevideocontrols events in handleEvent).
+        if (
+          !this.reflowedDimensions.scrubberWidth &&
+          !this.scrubberStack.hidden
+        ) {
+          devPxProgress = 1;
+        }
+        // Update the scrubber only if it will move by at least 1 pixel
+        // Note that this.scrubber.max can be "" if unitialized,
+        // and either or both of currentTimeMs or durationMs can be 0, leading
+        // to NaN or Infinity values for devPxProgress.
+        if (!this.scrubber.max || isNaN(devPxProgress) || devPxProgress > 0.5) {
+          this.scrubber.max = durationMs;
+          this.scrubber.value = currentTimeMs;
+          this.updateScrubberProgress();
+        }
 
-        this.scrubber.value = currentTime;
-        this.positionDurationBox.position = positionTime;
+        // If the duration is over an hour, thumb should show h:mm:ss instead
+        // of mm:ss, which makes it bigger. We set the modifier prop which
+        // informs CSS custom properties used elsewhere to determine minimum
+        // widths we need to show stuff.
+        let modifier = durationMs >= 3600000 ? "long" : "";
+        this.positionDurationBox.modifier = this.durationSpan.modifier =
+          modifier;
+
+        // Update the text-based labels:
+        let position = this.formatTime(currentTimeMs);
+        let duration = durationIsInfinite ? "" : this.formatTime(durationMs);
+        if (
+          this.positionString != position ||
+          this.durationString != duration
+        ) {
+          // Only update the DOM if there is a visible change.
+          this._updatePositionLabels(position, duration);
+        }
+      },
+
+      _updatePositionLabels(position, duration) {
+        this.positionString = position;
+        this.durationString = duration;
 
         this.l10n.setAttributes(
           this.positionDurationBox,
           "videocontrols-position-and-duration-labels",
-          {
-            position: positionTime,
-            duration: this.positionDurationBox.duration,
-          }
+          { position, duration }
         );
-
-        // We use .formatValueSync here because .setAttribute doesn't update
-        // the DOM fast enough to use this.positionDurationBox.textContent and
-        // if we set the innterHTML on the positionDurationBox then we lose
-        // reference to the durationSpan element so it is easier to use
-        // .formatValueSync to just update the string for the aria-valuetext
-        let positionDurationMarkup = this.l10n.formatValueSync(
-          "videocontrols-position-and-duration-labels",
-          {
-            position: positionTime,
-            duration: this.positionDurationBox.duration,
-          }
+        this.l10n.setAttributes(
+          this.scrubber,
+          "videocontrols-scrubber-position-and-duration",
+          { position, duration }
         );
-
-        // It's possible that the string we get has markup to overlay into the
-        // DOM. We only want the raw text so we use DOMParser to strip any tags
-        let parser = new this.window.DOMParser();
-        let positionDurationString = parser.parseFromString(
-          positionDurationMarkup,
-          "text/html"
-        ).body.textContent;
-
-        this.scrubber.setAttribute("aria-valuetext", positionDurationString);
-        this.updateScrubberProgress();
       },
 
       showBuffered() {
@@ -1350,8 +1358,13 @@ this.VideoControlsImplWidget = class {
         if (index >= 0) {
           endTime = Math.round(buffered.end(index) * 1000);
         }
-        this.bufferBar.max = duration;
-        this.bufferBar.value = endTime;
+        if (this.duration == duration && this.buffered == endTime) {
+          // Avoid modifying the DOM if there is no update to show.
+          return;
+        }
+
+        this.bufferBar.max = this.duration = duration;
+        this.bufferBar.value = this.buffered = endTime;
         // Progress bars are automatically reported by screen readers even when
         // they aren't focused, which intrudes on the audio being played.
         // Ideally, we'd just change the a11y role of bufferBar, but there's
@@ -1706,7 +1719,7 @@ this.VideoControlsImplWidget = class {
 
       toggleFullscreen() {
         // audio tags cannot toggle fullscreen
-        if (!this.isAudioOnly) {
+        if (!this.isAudioTag) {
           this.isVideoInFullScreen
             ? this.document.exitFullscreen()
             : this.video.requestFullscreen();
@@ -1760,17 +1773,16 @@ this.VideoControlsImplWidget = class {
           }
           let dimenDiff = this.video.videoWidth - this.video.videoHeight;
           if (dimenDiff > 0) {
-            this.video.mozIsOrientationLocked = this.window.screen.mozLockOrientation(
-              "landscape"
-            );
+            this.video.mozIsOrientationLocked =
+              this.window.screen.mozLockOrientation("landscape");
           } else if (dimenDiff < 0) {
-            this.video.mozIsOrientationLocked = this.window.screen.mozLockOrientation(
-              "portrait"
-            );
+            this.video.mozIsOrientationLocked =
+              this.window.screen.mozLockOrientation("portrait");
           } else {
-            this.video.mozIsOrientationLocked = this.window.screen.mozLockOrientation(
-              this.window.screen.orientation
-            );
+            this.video.mozIsOrientationLocked =
+              this.window.screen.mozLockOrientation(
+                this.window.screen.orientation
+              );
           }
         } else {
           if (!this.video.mozIsOrientationLocked) {
@@ -1932,9 +1944,8 @@ this.VideoControlsImplWidget = class {
         // However, the native adjustment is too small, so we override it.
         try {
           const target = event.originalTarget;
-          const allTabbable = this.prefs[
-            "media.videocontrols.keyboard-tab-to-all-controls"
-          ];
+          const allTabbable =
+            this.prefs["media.videocontrols.keyboard-tab-to-all-controls"];
           switch (keystroke) {
             case "Space" /* Play */:
               if (target.localName === "button" && !target.disabled) {
@@ -2167,11 +2178,13 @@ this.VideoControlsImplWidget = class {
       hideClosedCaptionMenu() {
         this.textTrackListContainer.hidden = true;
         this.closedCaptionButton.setAttribute("aria-expanded", "false");
+        this.updatePictureInPictureToggleDisplay();
       },
 
       showClosedCaptionMenu() {
         this.textTrackListContainer.hidden = false;
         this.closedCaptionButton.setAttribute("aria-expanded", "true");
+        this.updatePictureInPictureToggleDisplay();
       },
 
       toggleClosedCaption() {
@@ -2306,7 +2319,7 @@ this.VideoControlsImplWidget = class {
           }
           let val = obj[prop];
           if (typeof val == "function") {
-            return function() {
+            return function () {
               return val.apply(obj, arguments);
             };
           }
@@ -2336,12 +2349,21 @@ this.VideoControlsImplWidget = class {
         // so that we don't run into bug 1495821 (see comment on adjustControlSize()
         // below)
         videocontrolsWidth: 0,
+
+        // Used to decide if updating the scrubber progress will make a visible
+        // change (ie. make it move by at least one pixel).
+        // The default value is set to Infinity so that any small change is
+        // assumed to cause a visible change until updateReflowedDimensions
+        // has been called. (See bug 1817604)
+        scrubberWidth: Infinity,
       },
 
       updateReflowedDimensions() {
         this.reflowedDimensions.videoHeight = this.video.clientHeight;
         this.reflowedDimensions.videoWidth = this.video.clientWidth;
-        this.reflowedDimensions.videocontrolsWidth = this.videocontrols.clientWidth;
+        this.reflowedDimensions.videocontrolsWidth =
+          this.videocontrols.clientWidth;
+        this.reflowedDimensions.scrubberWidth = this.scrubber.clientWidth;
       },
 
       /**
@@ -2436,7 +2458,7 @@ this.VideoControlsImplWidget = class {
 
         // Since the size of videocontrols is expanded with controlBar in <audio>, we
         // should fix the dimensions in order not to recursively trigger reflow afterwards.
-        if (this.video.localName == "audio") {
+        if (this.isAudioTag) {
           if (givenHeight) {
             // The height of controlBar should be capped with the bounds between controlBarMinHeight
             // and controlBarMinVisibleHeight.
@@ -2522,15 +2544,13 @@ this.VideoControlsImplWidget = class {
         this.shadowRoot = shadowRoot;
         this.prefs = prefs;
 
-        this.controlsContainer = this.shadowRoot.getElementById(
-          "controlsContainer"
-        );
+        this.controlsContainer =
+          this.shadowRoot.getElementById("controlsContainer");
         this.statusIcon = this.shadowRoot.getElementById("statusIcon");
         this.controlBar = this.shadowRoot.getElementById("controlBar");
         this.playButton = this.shadowRoot.getElementById("playButton");
-        this.controlBarSpacer = this.shadowRoot.getElementById(
-          "controlBarSpacer"
-        );
+        this.controlBarSpacer =
+          this.shadowRoot.getElementById("controlBarSpacer");
         this.muteButton = this.shadowRoot.getElementById("muteButton");
         this.volumeStack = this.shadowRoot.getElementById("volumeStack");
         this.volumeControl = this.shadowRoot.getElementById("volumeControl");
@@ -2542,17 +2562,15 @@ this.VideoControlsImplWidget = class {
         this.durationLabel = this.shadowRoot.getElementById("durationLabel");
         this.positionLabel = this.shadowRoot.getElementById("positionLabel");
         this.statusOverlay = this.shadowRoot.getElementById("statusOverlay");
-        this.controlsOverlay = this.shadowRoot.getElementById(
-          "controlsOverlay"
-        );
+        this.controlsOverlay =
+          this.shadowRoot.getElementById("controlsOverlay");
         this.pictureInPictureOverlay = this.shadowRoot.getElementById(
           "pictureInPictureOverlay"
         );
         this.controlsSpacer = this.shadowRoot.getElementById("controlsSpacer");
         this.clickToPlay = this.shadowRoot.getElementById("clickToPlay");
-        this.fullscreenButton = this.shadowRoot.getElementById(
-          "fullscreenButton"
-        );
+        this.fullscreenButton =
+          this.shadowRoot.getElementById("fullscreenButton");
         this.castingButton = this.shadowRoot.getElementById("castingButton");
         this.closedCaptionButton = this.shadowRoot.getElementById(
           "closedCaptionButton"
@@ -2596,7 +2614,7 @@ this.VideoControlsImplWidget = class {
           this.volumeStack,
         ];
 
-        this.isAudioOnly = this.video.localName == "audio";
+        this.isAudioOnly = this.isAudioTag;
         this.setupInitialState();
         this.setupNewLoadState();
         this.initTextTracks();
@@ -2830,14 +2848,11 @@ this.VideoControlsImplWidget = class {
   }
 
   generateContent() {
-    /*
-     * Pass the markup through XML parser purely for the reason of loading the localization DTD.
-     * Remove it when migrate to Fluent.
-     */
     const parser = new this.window.DOMParser();
     let parserDoc = parser.parseFromString(
       `<div class="videocontrols" xmlns="http://www.w3.org/1999/xhtml" role="none">
         <link rel="stylesheet" href="chrome://global/skin/media/videocontrols.css" />
+        <link rel="stylesheet" href="chrome://global/skin/media/pipToggle.css" />
 
         <div id="controlsContainer" class="controlsContainer" role="none">
           <div id="statusOverlay" class="statusOverlay stackItem" hidden="true">
@@ -2866,9 +2881,9 @@ this.VideoControlsImplWidget = class {
               <div class="pip-expanded clickable">
                 <span class="pip-icon-label clickable">
                   <span class="pip-icon"></span>
-                  <span class="pip-label" data-l10n-id="videocontrols-picture-in-picture-toggle-label"></span>
+                  <span class="pip-label" data-l10n-id="videocontrols-picture-in-picture-toggle-label2"></span>
                 </span>
-                <div class="pip-explainer clickable" data-l10n-id="videocontrols-picture-in-picture-explainer"></div>
+                <div class="pip-explainer clickable" data-l10n-id="videocontrols-picture-in-picture-explainer3"></div>
               </div>
               <div class="pip-icon clickable"></div>
             </button>
@@ -2888,12 +2903,13 @@ this.VideoControlsImplWidget = class {
                     <progress id="progressBar" class="progressBar" value="0" max="100" aria-hidden="true"></progress>
                   </div>
                 </div>
-                <input type="range" id="scrubber" class="scrubber" tabindex="-1" data-l10n-id="videocontrols-scrubber"/>
+                <input type="range" id="scrubber" class="scrubber" tabindex="-1" data-l10n-attrs="aria-valuetext" value="0"/>
               </div>
               <bdi id="positionLabel" class="positionLabel" role="presentation"></bdi>
               <bdi id="durationLabel" class="durationLabel" role="presentation"></bdi>
               <bdi id="positionDurationBox" class="positionDurationBox" aria-hidden="true">
-                <span data-l10n-name="position-duration-format"></span>
+                <span id="durationSpan" class="duration" role="none"
+                      data-l10n-name="position-duration-format"></span>
               </bdi>
               <div id="controlBarSpacer" class="controlBarSpacer" hidden="true" role="none"></div>
               <button id="muteButton"
@@ -2945,7 +2961,7 @@ this.VideoControlsImplWidget = class {
     return this.isShowingPictureInPictureMessage == elementInPiP;
   }
 
-  destructor() {
+  teardown() {
     this.Utils.terminate();
     this.TouchUtils.terminate();
     this.Utils.updateOrientationState(false);
@@ -3067,13 +3083,11 @@ this.NoControlsMobileImplWidget = class {
         this.window = this.document.defaultView;
         this.shadowRoot = shadowRoot;
 
-        this.controlsContainer = this.shadowRoot.getElementById(
-          "controlsContainer"
-        );
+        this.controlsContainer =
+          this.shadowRoot.getElementById("controlsContainer");
         this.clickToPlay = this.shadowRoot.getElementById("clickToPlay");
-        this.noControlsOverlay = this.shadowRoot.getElementById(
-          "controlsContainer"
-        );
+        this.noControlsOverlay =
+          this.shadowRoot.getElementById("controlsContainer");
 
         let isMobile = this.window.navigator.appVersion.includes("Android");
         if (isMobile) {
@@ -3112,7 +3126,7 @@ this.NoControlsMobileImplWidget = class {
     return true;
   }
 
-  destructor() {
+  teardown() {
     this.Utils.terminate();
   }
 
@@ -3121,10 +3135,6 @@ this.NoControlsMobileImplWidget = class {
   }
 
   generateContent() {
-    /*
-     * Pass the markup through XML parser purely for the reason of loading the localization DTD.
-     * Remove it when migrate to Fluent.
-     */
     const parser = new this.window.DOMParser();
     let parserDoc = parser.parseFromString(
       `<div class="videocontrols" xmlns="http://www.w3.org/1999/xhtml" role="none">
@@ -3166,17 +3176,13 @@ this.NoControlsPictureInPictureImplWidget = class {
     return true;
   }
 
-  destructor() {}
+  teardown() {}
 
   onPrefChange(prefName, prefValue) {
     this.prefs[prefName] = prefValue;
   }
 
   generateContent() {
-    /*
-     * Pass the markup through XML parser purely for the reason of loading the localization DTD.
-     * Remove it when migrate to Fluent.
-     */
     const parser = new this.window.DOMParser();
     let parserDoc = parser.parseFromString(
       `<div class="videocontrols" xmlns="http://www.w3.org/1999/xhtml" role="none">
@@ -3320,7 +3326,8 @@ this.NoControlsDesktopImplWidget = class {
       updateReflowedDimensions() {
         this.reflowedDimensions.videoHeight = this.video.clientHeight;
         this.reflowedDimensions.videoWidth = this.video.clientWidth;
-        this.reflowedDimensions.videocontrolsWidth = this.videocontrols.clientWidth;
+        this.reflowedDimensions.videocontrolsWidth =
+          this.videocontrols.clientWidth;
       },
 
       reflowedDimensions: {
@@ -3346,7 +3353,7 @@ this.NoControlsDesktopImplWidget = class {
     return true;
   }
 
-  destructor() {
+  teardown() {
     this.Utils.terminate();
   }
 
@@ -3356,14 +3363,11 @@ this.NoControlsDesktopImplWidget = class {
   }
 
   generateContent() {
-    /*
-     * Pass the markup through XML parser purely for the reason of loading the localization DTD.
-     * Remove it when migrate to Fluent.
-     */
     const parser = new this.window.DOMParser();
     let parserDoc = parser.parseFromString(
       `<div class="videocontrols" xmlns="http://www.w3.org/1999/xhtml" role="none">
         <link rel="stylesheet" href="chrome://global/skin/media/videocontrols.css" />
+        <link rel="stylesheet" href="chrome://global/skin/media/pipToggle.css" />
 
         <div id="controlsContainer" class="controlsContainer" role="none">
           <div class="controlsOverlay stackItem">
@@ -3372,9 +3376,9 @@ this.NoControlsDesktopImplWidget = class {
               <div class="pip-expanded clickable">
                 <span class="pip-icon-label clickable">
                   <span class="pip-icon"></span>
-                  <span class="pip-label" data-l10n-id="videocontrols-picture-in-picture-toggle-label"></span>
+                  <span class="pip-label" data-l10n-id="videocontrols-picture-in-picture-toggle-label2"></span>
                 </span>
-                <div class="pip-explainer clickable" data-l10n-id="videocontrols-picture-in-picture-explainer"></div>
+                <div class="pip-explainer clickable" data-l10n-id="videocontrols-picture-in-picture-explainer3"></div>
               </div>
               <div class="pip-icon"></div>
             </button>

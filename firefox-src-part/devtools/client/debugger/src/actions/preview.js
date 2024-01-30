@@ -13,6 +13,7 @@ import {
   isLineInScope,
   isSelectedFrameVisible,
   getSelectedSource,
+  getSelectedLocation,
   getSelectedFrame,
   getSymbols,
   getCurrentThread,
@@ -23,15 +24,15 @@ import {
 import { getMappedExpression } from "./expressions";
 
 function findExpressionMatch(state, codeMirror, tokenPos) {
-  const source = getSelectedSource(state);
-  if (!source) {
-    return;
+  const location = getSelectedLocation(state);
+  if (!location) {
+    return null;
   }
 
-  const symbols = getSymbols(state, source);
+  const symbols = getSymbols(state, location);
 
   let match;
-  if (!symbols || symbols.loading) {
+  if (!symbols) {
     match = getExpressionFromCoords(codeMirror, tokenPos);
   } else {
     match = findBestMatchExpression(symbols, tokenPos);
@@ -40,7 +41,7 @@ function findExpressionMatch(state, codeMirror, tokenPos) {
 }
 
 export function updatePreview(cx, target, tokenPos, codeMirror) {
-  return ({ dispatch, getState, client, sourceMaps }) => {
+  return ({ dispatch, getState }) => {
     const cursorPos = target.getBoundingClientRect();
 
     if (
@@ -73,7 +74,7 @@ export function setPreview(
   cursorPos,
   target
 ) {
-  return async ({ dispatch, getState, client, sourceMaps }) => {
+  return async ({ dispatch, getState, client }) => {
     dispatch({ type: "START_PREVIEW" });
     const previewCount = getPreviewCount(getState());
     if (getPreview(getState())) {
@@ -125,7 +126,6 @@ export function setPreview(
     }
 
     const root = {
-      name: expression,
       path: expression,
       contents: {
         value: resultGrip,
@@ -167,7 +167,7 @@ export function clearPreview(cx) {
   return ({ dispatch, getState, client }) => {
     const currentSelection = getPreview(getState());
     if (!currentSelection) {
-      return;
+      return null;
     }
 
     return dispatch({

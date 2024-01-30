@@ -7,7 +7,7 @@
 const {
   CONNECTION_TYPES,
   DEBUG_TARGET_TYPES,
-} = require("devtools/client/shared/remote-debugging/constants");
+} = require("resource://devtools/client/shared/remote-debugging/constants.js");
 
 const actionTypes = {
   ADB_ADDON_INSTALL_START: "ADB_ADDON_INSTALL_START",
@@ -107,10 +107,6 @@ const PAGE_TYPES = {
 };
 
 const PREFERENCES = {
-  // Preference that enables the Multiprocess Browser Toolbox. This will also
-  // enable inspecting Content processes when opening a "Main Process" toolbox
-  // on a remote target.
-  FISSION_BROWSER_TOOLBOX: "devtools.browsertoolbox.fission",
   // Preference that drives the display of the "Tabs" category on This Firefox.
   LOCAL_TAB_DEBUGGING_ENABLED: "devtools.aboutdebugging.local-tab-debugging",
   // Preference that drives the display of the "Processes" debug target category.

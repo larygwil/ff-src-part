@@ -31,6 +31,7 @@
 <?xml-stylesheet href="chrome://browser/skin/customizableui/panelUI.css" type="text/css"?>
 <?xml-stylesheet href="chrome://browser/skin/downloads/downloads.css" type="text/css"?>
 <?xml-stylesheet href="chrome://browser/skin/searchbar.css" type="text/css"?>
+<?xml-stylesheet href="chrome://browser/skin/translations/panel.css" type="text/css"?>
 <?xml-stylesheet href="chrome://browser/skin/places/tree-icons.css" type="text/css"?>
 <?xml-stylesheet href="chrome://browser/skin/places/editBookmark.css" type="text/css"?>
 
@@ -39,9 +40,9 @@
         xmlns:xul="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
         xmlns="http://www.w3.org/1999/xhtml"
 #ifdef XP_MACOSX
-        data-l10n-id="browser-main-window-mac"
+        data-l10n-id="browser-main-window-mac-window-titles"
 #else
-        data-l10n-id="browser-main-window"
+        data-l10n-id="browser-main-window-window-titles"
 #endif
         data-l10n-args="{&quot;content-title&quot;:&quot;CONTENTTITLE&quot;}"
         data-l10n-attrs="data-content-title-default, data-content-title-private, data-title-default, data-title-private"
@@ -61,30 +62,35 @@
         persist="screenX screenY width height sizemode"
         data-l10n-sync="true">
 <head>
-  <link rel="localization" href="browser/search.ftl"/>
   <link rel="localization" href="branding/brand.ftl"/>
-  <link rel="localization" href="browser/branding/sync-brand.ftl"/>
-  <link rel="localization" href="browser/branding/brandings.ftl"/>
-  <link rel="localization" href="toolkit/global/textActions.ftl"/>
+  <link rel="localization" href="browser/allTabsMenu.ftl"/>
+  <link rel="localization" href="browser/appmenu.ftl"/>
   <link rel="localization" href="browser/browser.ftl"/>
   <link rel="localization" href="browser/browserContext.ftl"/>
   <link rel="localization" href="browser/browserSets.ftl"/>
+  <link rel="localization" href="browser/firefoxView.ftl"/>
   <link rel="localization" href="browser/menubar.ftl"/>
-  <link rel="localization" href="browser/protectionsPanel.ftl"/>
-  <link rel="localization" href="browser/appmenu.ftl"/>
+  <link rel="localization" href="browser/originControls.ftl"/>
   <link rel="localization" href="browser/panelUI.ftl"/>
-  <link rel="localization" href="preview/interventions.ftl"/>
-  <link rel="localization" href="browser/sidebarMenu.ftl"/>
-  <link rel="localization" href="browser/allTabsMenu.ftl"/>
   <link rel="localization" href="browser/places.ftl"/>
-  <link rel="localization" href="toolkit/printing/printUI.ftl"/>
-  <link rel="localization" href="browser/tabbrowser.ftl"/>
-  <link rel="localization" href="preview/firefoxSuggest.ftl"/>
-  <link rel="localization" href="browser/toolbarContextMenu.ftl"/>
+  <link rel="localization" href="browser/protectionsPanel.ftl"/>
   <link rel="localization" href="browser/screenshots.ftl"/>
-#ifdef NIGHTLY_BUILD
-  <link rel="localization" href="preview/firefoxView.ftl"/>
-#endif
+  <link rel="localization" href="browser/search.ftl"/>
+  <link rel="localization" href="browser/sidebarMenu.ftl"/>
+  <link rel="localization" href="browser/tabbrowser.ftl"/>
+  <link rel="localization" href="browser/toolbarContextMenu.ftl"/>
+  <link rel="localization" href="browser/translations.ftl" />
+  <link rel="localization" href="browser/unifiedExtensions.ftl"/>
+  <link rel="localization" href="browser/webrtcIndicator.ftl"/>
+  <link rel="localization" href="toolkit/branding/accounts.ftl"/>
+  <link rel="localization" href="toolkit/branding/brandings.ftl"/>
+  <link rel="localization" href="toolkit/global/textActions.ftl"/>
+  <link rel="localization" href="toolkit/printing/printUI.ftl"/>
+  <!-- Untranslated FTL files -->
+  <link rel="localization" href="preview/firefoxSuggest.ftl" />
+  <link rel="localization" href="preview/identityCredentialNotification.ftl" />
+  <link rel="localization" href="preview/interventions.ftl" />
+  <link rel="localization" href="preview/stripOnShare.ftl" />
 
   <title data-l10n-id="browser-main-window-title"></title>
 
@@ -106,6 +112,7 @@
   Services.scriptloader.loadSubScript("chrome://browser/content/browser-pageActions.js", this);
   Services.scriptloader.loadSubScript("chrome://browser/content/browser-sidebar.js", this);
   Services.scriptloader.loadSubScript("chrome://browser/content/browser-tabsintitlebar.js", this);
+  Services.scriptloader.loadSubScript("chrome://browser/content/browser-unified-extensions.js", this);
   Services.scriptloader.loadSubScript("chrome://browser/content/tabbrowser.js", this);
   Services.scriptloader.loadSubScript("chrome://browser/content/tabbrowser-tab.js", this);
   Services.scriptloader.loadSubScript("chrome://browser/content/tabbrowser-tabs.js", this);
@@ -137,10 +144,11 @@
 #include main-popupset.inc.xhtml
 
 #include appmenu-viewcache.inc.xhtml
+#include unified-extensions-viewcache.inc.xhtml
 
   <html:dialog id="window-modal-dialog" style="visibility: hidden; height: 0; width: 0"/>
   <html:template id="window-modal-dialog-template">
-    <vbox class="dialogTemplate dialogOverlay" align="center" topmost="true">
+    <vbox class="dialogTemplate dialogOverlay" topmost="true">
       <hbox class="dialogBox">
         <browser class="dialogFrame" autoscroll="false" disablehistory="true"/>
       </hbox>
@@ -158,10 +166,6 @@
   </html:template>
 
 #include fullscreen-and-pointerlock.inc.xhtml
-
-  <vbox id="browser-bottombox" layer="true">
-    <!-- gNotificationBox will be added here lazily. -->
-  </vbox>
 
   <html:div id="a11y-announcement" role="alert"/>
 

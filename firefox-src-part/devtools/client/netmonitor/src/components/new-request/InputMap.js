@@ -4,10 +4,15 @@
 
 "use strict";
 
-const { Component, createRef } = require("devtools/client/shared/vendor/react");
-const { L10N } = require("devtools/client/netmonitor/src/utils/l10n");
-const PropTypes = require("devtools/client/shared/vendor/react-prop-types");
-const dom = require("devtools/client/shared/vendor/react-dom-factories");
+const {
+  Component,
+  createRef,
+} = require("resource://devtools/client/shared/vendor/react.js");
+const {
+  L10N,
+} = require("resource://devtools/client/netmonitor/src/utils/l10n.js");
+const PropTypes = require("resource://devtools/client/shared/vendor/react-prop-types.js");
+const dom = require("resource://devtools/client/shared/vendor/react-dom-factories.js");
 const { div, input, textarea, button } = dom;
 
 const CUSTOM_NEW_REQUEST_INPUT_NAME = L10N.getStr(
@@ -64,9 +69,10 @@ class InputMap extends Component {
         // Get next to last child on the list,
         // because that was the item that was just added and
         // we need to focous on it, so the user can keep editing it.
-        const targetParentNode = this.listRef.current.childNodes?.[
-          this.listRef.current.childElementCount - 2
-        ];
+        const targetParentNode =
+          this.listRef.current.childNodes?.[
+            this.listRef.current.childElementCount - 2
+          ];
         targetParentNode?.querySelector(`.${target.className}`).focus();
       });
     };
@@ -74,18 +80,17 @@ class InputMap extends Component {
     return div(
       {
         ref: this.listRef,
-        id: "http-custom-input-and-map-form",
+        className: "http-custom-input-and-map-form",
       },
       list.map((item, index) => {
         return div(
           {
             className: "tabpanel-summary-container http-custom-input",
-            id: "http-custom-name-and-value",
+            id: `http-custom-${item.name.toLowerCase()}`,
             key: index,
           },
           input({
             className: "tabpanel-summary-input-checkbox",
-            id: "http-custom-input-checkbox",
             name: `checked-${index}`,
             type: "checkbox",
             onChange: event => {
@@ -101,6 +106,7 @@ class InputMap extends Component {
               {
                 className: "auto-growing-textarea",
                 "data-replicated-value": item.name,
+                title: item.name,
               },
               textarea({
                 className: "http-custom-input-name",
@@ -120,6 +126,7 @@ class InputMap extends Component {
               {
                 className: "auto-growing-textarea",
                 "data-replicated-value": item.value,
+                title: item.value,
               },
               textarea({
                 className: "http-custom-input-value",
@@ -151,7 +158,6 @@ class InputMap extends Component {
           },
           input({
             className: "tabpanel-summary-input-checkbox",
-            id: "http-custom-input-checkbox",
             onChange: () => {},
             checked: true,
             type: "checkbox",
@@ -162,6 +168,7 @@ class InputMap extends Component {
               {
                 className: "auto-growing-textarea",
                 "data-replicated-value": name,
+                title: value,
               },
               textarea({
                 className: "http-custom-input-name",
@@ -182,12 +189,13 @@ class InputMap extends Component {
               {
                 className: "auto-growing-textarea",
                 "data-replicated-value": value,
+                title: value,
               },
               textarea({
                 className: "http-custom-input-value",
                 type: "text",
                 ref: "addInputValue",
-                value: value,
+                value,
                 onChange: e => this.setState({ value: e.target.value }),
                 rows: 1,
                 placeholder: CUSTOM_NEW_REQUEST_INPUT_VALUE,

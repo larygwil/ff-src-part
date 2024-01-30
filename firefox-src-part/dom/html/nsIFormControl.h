@@ -177,6 +177,17 @@ class nsIFormControl : public nsISupports {
   inline bool IsSubmittableControl() const;
 
   /**
+   * https://html.spec.whatwg.org/multipage/forms.html#concept-button
+   */
+  inline bool IsConceptButton() const;
+
+  /**
+   * Returns whether this is an ordinal button or a concept button that has no
+   * form associated.
+   */
+  inline bool IsButtonControl() const;
+
+  /**
    * Returns whether this form control can have draggable children.
    * @return whether this form control can have draggable children.
    */
@@ -256,6 +267,16 @@ bool nsIFormControl::IsSubmittableControl() const {
   return type == FormControlType::Object || type == FormControlType::Textarea ||
          type == FormControlType::Select || IsButtonElement(type) ||
          IsInputElement(type);
+}
+
+bool nsIFormControl::IsConceptButton() const {
+  auto type = ControlType();
+  return IsSubmitControl() || type == FormControlType::InputReset ||
+         type == FormControlType::InputButton || IsButtonElement(type);
+}
+
+bool nsIFormControl::IsButtonControl() const {
+  return IsConceptButton() && (!GetForm() || !IsSubmitControl());
 }
 
 bool nsIFormControl::AllowDraggableChildren() const {

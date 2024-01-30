@@ -2,17 +2,20 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-// If we're in a subdialog, then this is a spotlight modal
-const page = document.querySelector(":root[dialogroot=true]")
-  ? "spotlight"
-  : "about:welcome";
+// If the container has a "page" data attribute, then this is
+// a Spotlight modal or Feature Callout. Otherwise, this is
+// about:welcome and we should return the current page.
+const page =
+  document.querySelector(
+    "#multi-stage-message-root.onboardingContainer[data-page]"
+  )?.dataset.page || document.location.href;
 
 export const AboutWelcomeUtils = {
   handleUserAction(action) {
-    window.AWSendToParent("SPECIAL_ACTION", action);
+    return window.AWSendToParent("SPECIAL_ACTION", action);
   },
   sendImpressionTelemetry(messageId, context) {
-    window.AWSendEventTelemetry({
+    window.AWSendEventTelemetry?.({
       event: "IMPRESSION",
       event_context: {
         ...context,
@@ -30,7 +33,14 @@ export const AboutWelcomeUtils = {
       },
       message_id: messageId,
     };
-    window.AWSendEventTelemetry(ping);
+    window.AWSendEventTelemetry?.(ping);
+  },
+  sendDismissTelemetry(messageId, elementId) {
+    // Don't send DISMISS telemetry in spotlight modals since they already send
+    // their own equivalent telemetry.
+    if (page !== "spotlight") {
+      this.sendActionTelemetry(messageId, elementId, "DISMISS");
+    }
   },
   async fetchFlowParams(metricsFlowUri) {
     let flowParams;
@@ -42,7 +52,7 @@ export const AboutWelcomeUtils = {
         const { deviceId, flowId, flowBeginTime } = await response.json();
         flowParams = { deviceId, flowId, flowBeginTime };
       } else {
-        console.error("Non-200 response", response); // eslint-disable-line no-console
+        console.error("Non-200 response", response);
       }
     } catch (e) {
       flowParams = null;
@@ -63,20 +73,19 @@ export const DEFAULT_RTAMO_CONTENT = {
   template: "return_to_amo",
   utm_term: "rtamo",
   content: {
-    position: "corner",
-    hero_text: { string_id: "mr1-welcome-screen-hero-text" },
-    title: { string_id: "return-to-amo-subtitle" },
-    has_noodles: true,
+    position: "split",
+    title: { string_id: "mr1-return-to-amo-subtitle" },
+    has_noodles: false,
     subtitle: {
-      string_id: "return-to-amo-addon-title",
-    },
-    help_text: {
-      string_id: "mr1-onboarding-welcome-image-caption",
+      string_id: "mr1-return-to-amo-addon-title",
     },
     backdrop:
-      "#212121 url(chrome://activity-stream/content/data/content/assets/proton-bkg.avif) center/cover no-repeat fixed",
+      "var(--mr-welcome-background-color) var(--mr-welcome-background-gradient)",
+    background:
+      "url('chrome://activity-stream/content/data/content/assets/mr-rtamo-background-image.svg') no-repeat center",
+    progress_bar: true,
     primary_button: {
-      label: { string_id: "return-to-amo-add-extension-label" },
+      label: { string_id: "mr1-return-to-amo-add-extension-label" },
       source_id: "ADD_EXTENSION_BUTTON",
       action: {
         type: "INSTALL_ADDON_FROM_URL",
@@ -100,6 +109,7 @@ export const DEFAULT_RTAMO_CONTENT = {
       action: {
         data: {
           entrypoint: "activity-stream-firstrun",
+          where: "tab",
         },
         type: "SHOW_FIREFOX_ACCOUNTS",
         addFlowParams: true,

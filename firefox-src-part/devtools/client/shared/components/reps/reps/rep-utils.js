@@ -5,7 +5,7 @@
 "use strict";
 
 // Make this available to both AMD and CJS environments
-define(function(require, exports, module) {
+define(function (require, exports, module) {
   // Dependencies
   const validProtocols = /(http|https|ftp|data|resource|chrome):/i;
 
@@ -57,7 +57,8 @@ define(function(require, exports, module) {
   //                       (so also '%')
   // )
   // eslint-disable-next-line max-len
-  const urlRegex = /(^|[\s(,;'"`“])((?:https?:\/(\/)?|www\d{0,3}[.][a-z0-9.\-]{2,249}|[a-z0-9.\-]{2,250}[.][a-z]{2,4}\/)[-\w.!~*'();,/?:@&=+$#%]*)/im;
+  const urlRegex =
+    /(^|[\s(,;'"`“])((?:https?:\/(\/)?|www\d{0,3}[.][a-z0-9.\-]{2,249}|[a-z0-9.\-]{2,250}[.][a-z]{2,4}\/)[-\w.!~*'();,/?:@&=+$#%]*)/im;
 
   // Set of terminators that are likely to have been part of the context rather
   // than part of the URL and so should be uneaten. This is '(', ',', ';', plus
@@ -91,39 +92,42 @@ define(function(require, exports, module) {
     0x5c: "\\\\",
   };
 
-  // Regexp that matches any character we might possibly want to escape.
+  // All characters we might possibly want to escape, excluding quotes.
   // Note that we over-match here, because it's difficult to, say, match
   // an unpaired surrogate with a regexp.  The details are worked out by
   // the replacement function; see |escapeString|.
-  const escapeRegexp = new RegExp(
-    "[" +
-      // Quote and backslash.
-      '"\\\\' +
-      // Controls.
-      "\x00-\x1f" +
-      // More controls.
-      "\x7f-\x9f" +
-      // BOM
-      "\ufeff" +
-      // Specials, except for the replacement character.
-      "\ufff0-\ufffc\ufffe\uffff" +
-      // Surrogates.
-      "\ud800-\udfff" +
-      // Mathematical invisibles.
-      "\u2061-\u2064" +
-      // Line and paragraph separators.
-      "\u2028-\u2029" +
-      // Private use area.
-      "\ue000-\uf8ff" +
-      "]",
+  const commonEscapes =
+    // Backslash.
+    "\\\\" +
+    // Controls.
+    "\x00-\x1f" +
+    // More controls.
+    "\x7f-\x9f" +
+    // BOM
+    "\ufeff" +
+    // Specials, except for the replacement character.
+    "\ufff0-\ufffc\ufffe\uffff" +
+    // Surrogates.
+    "\ud800-\udfff" +
+    // Mathematical invisibles.
+    "\u2061-\u2064" +
+    // Line and paragraph separators.
+    "\u2028-\u2029" +
+    // Private use area.
+    "\ue000-\uf8ff";
+  const escapeRegexp = new RegExp(`[${commonEscapes}]`, "g");
+  const escapeRegexpIncludingDoubleQuote = new RegExp(
+    `[${commonEscapes}"]`,
     "g"
   );
 
   /**
    * Escape a string so that the result is viewable and valid JS.
-   * Control characters, other invisibles, invalid characters,
-   * backslash, and double quotes are escaped.  The resulting string is
-   * surrounded by double quotes.
+   * Control characters, other invisibles, invalid characters, and backslash
+   * are escaped.  The resulting string is quoted with either double quotes,
+   * single quotes, or backticks.  The preference is for a quote that doesn't
+   * require escaping, falling back to double quotes if that's not possible
+   * (and then escaping them in the string).
    *
    * @param {String} str
    *        the input
@@ -132,7 +136,18 @@ define(function(require, exports, module) {
    * @return {String} the escaped string
    */
   function escapeString(str, escapeWhitespace) {
-    return `"${str.replace(escapeRegexp, (match, offset) => {
+    let quote = '"';
+    let regexp = escapeRegexp;
+    if (str.includes('"')) {
+      if (!str.includes("'")) {
+        quote = "'";
+      } else if (!str.includes("`") && !str.includes("${")) {
+        quote = "`";
+      } else {
+        regexp = escapeRegexpIncludingDoubleQuote;
+      }
+    }
+    return `${quote}${str.replace(regexp, (match, offset) => {
       const c = match.charCodeAt(0);
       if (c in escapeMap) {
         if (!escapeWhitespace && (c === 9 || c === 0xa || c === 0xd)) {
@@ -164,7 +179,7 @@ define(function(require, exports, module) {
         return match;
       }
       return `\\u${`0000${c.toString(16)}`.substr(-4)}`;
-    })}"`;
+    })}${quote}`;
   }
 
   /**
@@ -306,7 +321,7 @@ define(function(require, exports, module) {
    * render a fallback rep if the render fails.
    */
   function wrapRender(renderMethod) {
-    const wrappedFunction = function(props) {
+    const wrappedFunction = function (props) {
       try {
         return renderMethod.call(this, props);
       } catch (e) {
@@ -479,8 +494,9 @@ define(function(require, exports, module) {
   function cleanupStyle(userProvidedStyle, createElement) {
     // Regular expression that matches the allowed CSS property names.
     const allowedStylesRegex = new RegExp(
-      "^(?:-moz-)?(?:background|border|box|clear|color|cursor|display|float|font|line|" +
-        "margin|padding|text|transition|outline|white-space|word|writing|" +
+      "^(?:-moz-)?(?:align|background|border|box|clear|color|cursor|display|" +
+        "float|font|justify|line|margin|padding|position|text|transition" +
+        "|outline|vertical-align|white-space|word|writing|" +
         "(?:min-|max-)?width|(?:min-|max-)?height)"
     );
 
@@ -506,6 +522,11 @@ define(function(require, exports, module) {
           return false;
         }
 
+        if (name === "position") {
+          return ["static", "relative"].includes(
+            dummy.style.getPropertyValue(name)
+          );
+        }
         // There can be multiple call to `url()` (e.g.` background: url("path/to/image"), url("data:image/png,…");`);
         // filter out the property if the url function is called with anything that is not
         // a data URL.

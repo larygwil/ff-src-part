@@ -4,18 +4,20 @@
 
 import { createBreakpoint } from "../../client/firefox/create";
 import {
-  makeBreakpointLocation,
+  makeBreakpointServerLocation,
   makeBreakpointId,
 } from "../../utils/breakpoint";
 import {
   getBreakpoint,
   getBreakpointPositionsForLocation,
   getFirstBreakpointPosition,
-  getLocationSource,
-  getSourceContent,
+  getSettledSourceTextContent,
   getBreakpointsList,
   getPendingBreakpointList,
   isMapScopesEnabled,
+  getBlackBoxRanges,
+  isSourceMapIgnoreListEnabled,
+  isSourceOnSourceMapIgnoreList,
 } from "../../selectors";
 
 import { setBreakpointPositions } from "./breakpointPositions";
@@ -24,7 +26,7 @@ import { setSkipPausing } from "../pause/skipPausing";
 import { PROMISE } from "../utils/middleware/promise";
 import { recordEvent } from "../../utils/telemetry";
 import { comparePosition } from "../../utils/location";
-import { getTextAtPosition } from "../../utils/source";
+import { getTextAtPosition, isLineBlackboxed } from "../../utils/source";
 import { getMappedScopesForLocation } from "../pause/mapScopes";
 import { validateNavigateContext } from "../../utils/context";
 
@@ -58,32 +60,48 @@ async function clientSetBreakpoint(
   { getState, dispatch },
   breakpoint
 ) {
-  const breakpointLocation = makeBreakpointLocation(
+  const breakpointServerLocation = makeBreakpointServerLocation(
     getState(),
     breakpoint.generatedLocation
   );
   const shouldMapBreakpointExpressions =
     isMapScopesEnabled(getState()) &&
-    getLocationSource(getState(), breakpoint.location).isOriginal &&
+    breakpoint.location.source.isOriginal &&
     (breakpoint.options.logValue || breakpoint.options.condition);
 
   if (shouldMapBreakpointExpressions) {
     breakpoint = await dispatch(updateBreakpointSourceMapping(cx, breakpoint));
   }
-  return client.setBreakpoint(breakpointLocation, breakpoint.options);
+  return client.setBreakpoint(breakpointServerLocation, breakpoint.options);
 }
 
 function clientRemoveBreakpoint(client, state, generatedLocation) {
-  const breakpointLocation = makeBreakpointLocation(state, generatedLocation);
-  return client.removeBreakpoint(breakpointLocation);
+  const breakpointServerLocation = makeBreakpointServerLocation(
+    state,
+    generatedLocation
+  );
+  return client.removeBreakpoint(breakpointServerLocation);
 }
 
 export function enableBreakpoint(cx, initialBreakpoint) {
   return thunkArgs => {
     const { dispatch, getState, client } = thunkArgs;
-    const breakpoint = getBreakpoint(getState(), initialBreakpoint.location);
-    if (!breakpoint || !breakpoint.disabled) {
-      return;
+    const state = getState();
+    const breakpoint = getBreakpoint(state, initialBreakpoint.location);
+    const blackboxedRanges = getBlackBoxRanges(state);
+    const isSourceOnIgnoreList =
+      isSourceMapIgnoreListEnabled(state) &&
+      isSourceOnSourceMapIgnoreList(state, breakpoint.location.source);
+    if (
+      !breakpoint ||
+      !breakpoint.disabled ||
+      isLineBlackboxed(
+        blackboxedRanges[breakpoint.location.source.url],
+        breakpoint.location.line,
+        isSourceOnIgnoreList
+      )
+    ) {
+      return null;
     }
 
     dispatch(setSkipPausing(false));
@@ -107,42 +125,39 @@ export function addBreakpoint(
     const { dispatch, getState, client } = thunkArgs;
     recordEvent("add_breakpoint");
 
-    const { column, line } = initialLocation;
-    const initialSource = getLocationSource(getState(), initialLocation);
-
     await dispatch(
-      setBreakpointPositions({ cx, sourceId: initialSource.id, line })
+      setBreakpointPositions({
+        cx,
+        location: initialLocation,
+      })
     );
 
-    const position = column
+    const position = initialLocation.column
       ? getBreakpointPositionsForLocation(getState(), initialLocation)
       : getFirstBreakpointPosition(getState(), initialLocation);
 
     // No position is found if the `initialLocation` is on a non-breakable line or
     // the line no longer exists.
     if (!position) {
-      return;
+      return null;
     }
 
     const { location, generatedLocation } = position;
 
-    const source = getLocationSource(getState(), location);
-    const generatedSource = getLocationSource(getState(), generatedLocation);
-
-    if (!source || !generatedSource) {
-      return;
+    if (!location.source || !generatedLocation.source) {
+      return null;
     }
 
-    const originalContent = getSourceContent(getState(), source.id);
+    const originalContent = getSettledSourceTextContent(getState(), location);
     const originalText = getTextAtPosition(
-      source.id,
+      location.source.id,
       originalContent,
       location
     );
 
-    const content = getSourceContent(getState(), generatedSource.id);
+    const content = getSettledSourceTextContent(getState(), generatedLocation);
     const text = getTextAtPosition(
-      generatedSource.id,
+      generatedLocation.source.id,
       content,
       generatedLocation
     );
@@ -150,7 +165,6 @@ export function addBreakpoint(
     const id = makeBreakpointId(location);
     const breakpoint = createBreakpoint({
       id,
-      thread: generatedSource.thread,
       disabled,
       options,
       location,
@@ -160,7 +174,7 @@ export function addBreakpoint(
     });
 
     if (shouldCancel()) {
-      return;
+      return null;
     }
 
     dispatch(setSkipPausing(false));
@@ -189,7 +203,7 @@ export function removeBreakpoint(cx, initialBreakpoint) {
 
     const breakpoint = getBreakpoint(getState(), initialBreakpoint.location);
     if (!breakpoint) {
-      return;
+      return null;
     }
 
     dispatch(setSkipPausing(false));
@@ -213,8 +227,8 @@ export function removeBreakpoint(cx, initialBreakpoint) {
  * Remove all installed, pending, and client breakpoints associated with a
  * target generated location.
  *
- * @memberof actions/breakpoints
- * @static
+ * @param {Object} target
+ *        Location object where to remove breakpoints.
  */
 export function removeBreakpointAtGeneratedLocation(cx, target) {
   return ({ dispatch, getState, client }) => {
@@ -243,8 +257,8 @@ export function removeBreakpointAtGeneratedLocation(cx, target) {
 
     // Remove any remaining pending breakpoints matching the generated location.
     const pending = getPendingBreakpointList(getState());
-    for (const breakpoint of pending) {
-      const { generatedLocation } = breakpoint;
+    for (const pendingBreakpoint of pending) {
+      const { generatedLocation } = pendingBreakpoint;
       if (
         generatedLocation.sourceUrl == target.sourceUrl &&
         comparePosition(generatedLocation, target)
@@ -252,7 +266,7 @@ export function removeBreakpointAtGeneratedLocation(cx, target) {
         dispatch({
           type: "REMOVE_PENDING_BREAKPOINT",
           cx,
-          breakpoint,
+          pendingBreakpoint,
         });
       }
     }
@@ -270,7 +284,7 @@ export function disableBreakpoint(cx, initialBreakpoint) {
   return ({ dispatch, getState, client }) => {
     const breakpoint = getBreakpoint(getState(), initialBreakpoint.location);
     if (!breakpoint || breakpoint.disabled) {
-      return;
+      return null;
     }
 
     dispatch(setSkipPausing(false));
@@ -318,12 +332,8 @@ export function setBreakpointOptions(cx, location, options = {}) {
   };
 }
 
-async function updateExpression(
-  evaluationsParser,
-  mappings,
-  originalExpression
-) {
-  const mapped = await evaluationsParser.mapExpression(
+async function updateExpression(parserWorker, mappings, originalExpression) {
+  const mapped = await parserWorker.mapExpression(
     originalExpression,
     mappings,
     [],
@@ -340,7 +350,7 @@ async function updateExpression(
 }
 
 function updateBreakpointSourceMapping(cx, breakpoint) {
-  return async ({ getState, dispatch, evaluationsParser }) => {
+  return async ({ getState, dispatch, parserWorker }) => {
     const options = { ...breakpoint.options };
 
     const mappedScopes = await dispatch(
@@ -353,14 +363,14 @@ function updateBreakpointSourceMapping(cx, breakpoint) {
 
     if (options.condition) {
       options.condition = await updateExpression(
-        evaluationsParser,
+        parserWorker,
         mappings,
         options.condition
       );
     }
     if (options.logValue) {
       options.logValue = await updateExpression(
-        evaluationsParser,
+        parserWorker,
         mappings,
         options.logValue
       );

@@ -6,21 +6,26 @@ var gArgs;
 var gBrowser;
 var gURLBar;
 var gDebugger;
-var gMultiProcessBrowser = window.docShell.QueryInterface(Ci.nsILoadContext)
-  .useRemoteTabs;
-var gFissionBrowser = window.docShell.QueryInterface(Ci.nsILoadContext)
-  .useRemoteSubframes;
+var gMultiProcessBrowser = window.docShell.QueryInterface(
+  Ci.nsILoadContext
+).useRemoteTabs;
+var gFissionBrowser = window.docShell.QueryInterface(
+  Ci.nsILoadContext
+).useRemoteSubframes;
 var gWritingProfile = false;
 var gWrittenProfile = false;
 
-const { E10SUtils } = ChromeUtils.import(
-  "resource://gre/modules/E10SUtils.jsm"
+const { E10SUtils } = ChromeUtils.importESModule(
+  "resource://gre/modules/E10SUtils.sys.mjs"
 );
-const { OS } = ChromeUtils.import("resource://gre/modules/osfile.jsm");
-const { Preferences } = ChromeUtils.import(
-  "resource://gre/modules/Preferences.jsm"
+const { Preferences } = ChromeUtils.importESModule(
+  "resource://gre/modules/Preferences.sys.mjs"
 );
-const { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm");
+const lazy = {};
+ChromeUtils.defineESModuleGetters(lazy, {
+  BrowserToolboxLauncher:
+    "resource://devtools/client/framework/browser-toolbox/Launcher.sys.mjs",
+});
 
 const FEATURES = {
   paintDumping: "nglayout.debug.paint_dumping",
@@ -47,8 +52,6 @@ const COMMANDS = [
 class Debugger {
   constructor() {
     this._flags = new Map();
-    this._visualDebugging = false;
-    this._visualEventDebugging = false;
     this._pagedMode = false;
     this._attached = false;
 
@@ -91,26 +94,6 @@ class Debugger {
     }
   }
 
-  get visualDebugging() {
-    return this._visualDebugging;
-  }
-
-  set visualDebugging(v) {
-    v = !!v;
-    this._visualDebugging = v;
-    this._sendMessage("setVisualDebugging", v);
-  }
-
-  get visualEventDebugging() {
-    return this._visualEventDebugging;
-  }
-
-  set visualEventDebugging(v) {
-    v = !!v;
-    this._visualEventDebugging = v;
-    this._sendMessage("setVisualEventDebugging", v);
-  }
-
   get pagedMode() {
     return this._pagedMode;
   }
@@ -123,6 +106,10 @@ class Debugger {
 
   setPagedMode(v) {
     this._sendMessage("setPagedMode", v);
+  }
+
+  openDevTools() {
+    lazy.BrowserToolboxLauncher.init();
   }
 
   async _sendMessage(name, arg) {
@@ -145,10 +132,10 @@ class Debugger {
 
 for (let [name, pref] of Object.entries(FEATURES)) {
   Object.defineProperty(Debugger.prototype, name, {
-    get: function() {
+    get: function () {
       return this._flags.get(name);
     },
-    set: function(v) {
+    set: function (v) {
       v = !!v;
       Preferences.set(pref, v);
       this._flags.set(name, v);
@@ -162,7 +149,7 @@ for (let [name, pref] of Object.entries(FEATURES)) {
 }
 
 for (let name of COMMANDS) {
-  Debugger.prototype[name] = function() {
+  Debugger.prototype[name] = function () {
     this._sendMessage(name);
   };
 }
@@ -171,15 +158,16 @@ function autoCloseIfNeeded(aCrash) {
   if (!gArgs.autoclose) {
     return;
   }
-  setTimeout(function() {
+  setTimeout(function () {
     if (aCrash) {
       let browser = document.createXULElement("browser");
       // FIXME(emilio): we could use gBrowser if we bothered get the process switches right.
       //
       // Doesn't seem worth for this particular case.
       document.documentElement.appendChild(browser);
-      browser.loadURI("about:crashparent", {
-        triggeringPrincipal: Services.scriptSecurityManager.getSystemPrincipal(),
+      browser.loadURI(Services.io.newURI("about:crashparent"), {
+        triggeringPrincipal:
+          Services.scriptSecurityManager.getSystemPrincipal(),
       });
       return;
     }
@@ -196,7 +184,7 @@ function nsLDBBrowserContentListener() {
 }
 
 nsLDBBrowserContentListener.prototype = {
-  init: function() {
+  init: function () {
     this.mStatusText = document.getElementById("status-text");
     this.mForwardButton = document.getElementById("forward-button");
     this.mBackButton = document.getElementById("back-button");
@@ -209,7 +197,7 @@ nsLDBBrowserContentListener.prototype = {
   ]),
 
   // nsIWebProgressListener implementation
-  onStateChange: function(aWebProgress, aRequest, aStateFlags, aStatus) {
+  onStateChange: function (aWebProgress, aRequest, aStateFlags, aStatus) {
     if (!(aStateFlags & Ci.nsIWebProgressListener.STATE_IS_NETWORK)) {
       return;
     }
@@ -241,7 +229,7 @@ nsLDBBrowserContentListener.prototype = {
     }
   },
 
-  onProgressChange: function(
+  onProgressChange: function (
     aWebProgress,
     aRequest,
     aCurSelfProgress,
@@ -250,22 +238,22 @@ nsLDBBrowserContentListener.prototype = {
     aMaxTotalProgress
   ) {},
 
-  onLocationChange: function(aWebProgress, aRequest, aLocation, aFlags) {
+  onLocationChange: function (aWebProgress, aRequest, aLocation, aFlags) {
     gURLBar.value = aLocation.spec;
     this.setButtonEnabled(this.mForwardButton, gBrowser.canGoForward);
     this.setButtonEnabled(this.mBackButton, gBrowser.canGoBack);
   },
 
-  onStatusChange: function(aWebProgress, aRequest, aStatus, aMessage) {
+  onStatusChange: function (aWebProgress, aRequest, aStatus, aMessage) {
     this.mStatusText.value = aMessage;
   },
 
-  onSecurityChange: function(aWebProgress, aRequest, aState) {},
+  onSecurityChange: function (aWebProgress, aRequest, aState) {},
 
-  onContentBlockingEvent: function(aWebProgress, aRequest, aEvent) {},
+  onContentBlockingEvent: function (aWebProgress, aRequest, aEvent) {},
 
   // non-interface methods
-  setButtonEnabled: function(aButtonElement, aEnabled) {
+  setButtonEnabled: function (aButtonElement, aEnabled) {
     if (aEnabled) {
       aButtonElement.removeAttribute("disabled");
     } else {
@@ -344,11 +332,11 @@ function OnLDBLoad() {
   Services.obs.addObserver(TabCrashedObserver, "ipc:content-shutdown");
   Services.obs.addObserver(TabCrashedObserver, "oop-frameloader-crashed");
 
-  // Pretend slightly to be like a normal browser, so that SessionStore.jsm
+  // Pretend slightly to be like a normal browser, so that SessionStore.sys.mjs
   // doesn't get too confused.  The effect is that we'll never switch process
   // type when navigating, and for layout debugging purposes we don't bother
   // about getting that right.
-  gBrowser.getTabForBrowser = function() {
+  gBrowser.getTabForBrowser = function () {
     return null;
   };
 
@@ -356,10 +344,7 @@ function OnLDBLoad() {
 
   if (gArgs.profile) {
     if (Services.profiler) {
-      let env = Cc["@mozilla.org/process/environment;1"].getService(
-        Ci.nsIEnvironment
-      );
-      if (!env.exists("MOZ_PROFILER_SYMBOLICATE")) {
+      if (!Services.env.exists("MOZ_PROFILER_SYMBOLICATE")) {
         dump(
           "Warning: MOZ_PROFILER_SYMBOLICATE environment variable not set; " +
             "profile will not be symbolicated.\n"
@@ -374,8 +359,7 @@ function OnLDBLoad() {
       if (gArgs.url) {
         // Switch to the right kind of content process, and wait a bit so that
         // the profiler has had a chance to attach to it.
-        updateBrowserRemotenessByURL(gArgs.url);
-        setTimeout(() => loadURI(gArgs.url), 3000);
+        loadStringURI(gArgs.url, { delayLoad: 3000 });
         return;
       }
     } else {
@@ -387,7 +371,7 @@ function OnLDBLoad() {
   gDebugger._pagedMode = gArgs.paged;
 
   if (gArgs.url) {
-    loadURI(gArgs.url);
+    loadStringURI(gArgs.url);
   }
 
   // Some command line arguments may toggle menu items. Call this after
@@ -415,11 +399,11 @@ function dumpProfile() {
   gWritingProfile = true;
 
   let cwd = Services.dirsvc.get("CurWorkD", Ci.nsIFile).path;
-  let filename = OS.Path.join(cwd, gArgs.profileFilename);
+  let filename = PathUtils.join(cwd, gArgs.profileFilename);
 
   dump(`Writing profile to ${filename}...\n`);
 
-  Services.profiler.dumpProfileToFileAsync(filename).then(function() {
+  Services.profiler.dumpProfileToFileAsync(filename).then(function () {
     gWritingProfile = false;
     gWrittenProfile = true;
     dump(`done\n`);
@@ -470,7 +454,7 @@ function openFile() {
       fp.fileURL.spec &&
       fp.fileURL.spec.length > 0
     ) {
-      loadURI(fp.fileURL.spec);
+      loadURIObject(fp.fileURL);
     }
   });
 }
@@ -478,14 +462,13 @@ function openFile() {
 // A simplified version of the function with the same name in tabbrowser.js.
 function updateBrowserRemotenessByURL(aURL) {
   let oa = E10SUtils.predictOriginAttributes({ browser: gBrowser });
-  let remoteType = E10SUtils.getRemoteTypeForURI(
-    aURL,
-    gMultiProcessBrowser,
-    gFissionBrowser,
-    gBrowser.remoteType,
-    gBrowser.currentURI,
-    oa
-  );
+  let remoteType = E10SUtils.getRemoteTypeForURIObject(aURL, {
+    multiProcess: gMultiProcessBrowser,
+    remoteSubFrames: gFissionBrowser,
+    preferredRemoteType: gBrowser.remoteType,
+    currentURI: gBrowser.currentURI,
+    originAttributes: oa,
+  });
   if (gBrowser.remoteType != remoteType) {
     gDebugger.detachBrowser();
     if (remoteType == E10SUtils.NOT_REMOTE) {
@@ -501,10 +484,29 @@ function updateBrowserRemotenessByURL(aURL) {
   }
 }
 
-function loadURI(aURL) {
+function loadStringURI(aURLString, aOptions) {
+  let realURL;
+  try {
+    realURL = Services.uriFixup.getFixupURIInfo(aURLString).preferredURI;
+  } catch (ex) {
+    alert(
+      "Couldn't work out how to create a URL from input: " +
+        aURLString.substring(0, 100)
+    );
+    return;
+  }
+  return loadURIObject(realURL, aOptions);
+}
+
+async function loadURIObject(aURL, { delayLoad } = {}) {
   // We don't bother trying to handle navigations within the browser to new URLs
   // that should be loaded in a different process.
   updateBrowserRemotenessByURL(aURL);
+  // When attaching the profiler we may want to delay the actual load a bit
+  // after switching remoteness.
+  if (delayLoad) {
+    await new Promise(r => setTimeout(r, delayLoad));
+  }
   gBrowser.loadURI(aURL, {
     triggeringPrincipal: Services.scriptSecurityManager.getSystemPrincipal(),
   });
@@ -516,6 +518,6 @@ function focusURLBar() {
 }
 
 function go() {
-  loadURI(gURLBar.value);
+  loadStringURI(gURLBar.value);
   gBrowser.focus();
 }

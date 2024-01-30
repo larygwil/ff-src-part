@@ -14,6 +14,7 @@
         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
   <script src="chrome://global/content/contentAreaUtils.js"/>
   <script src="chrome://browser/content/browser.js"/>
+  <script src="chrome://browser/content/places/browserPlacesViews.js"/>
   <script src="chrome://browser/content/browser-places.js"/>
   <script src="chrome://browser/content/webext-panels.js"/>
   <script src="chrome://global/content/globalOverlay.js"/>
@@ -21,7 +22,7 @@
   <script src="chrome://global/content/editMenuOverlay.js"/>
 
   <linkset>
-    <html:link rel="localization" href="browser/branding/brandings.ftl"/>
+    <html:link rel="localization" href="toolkit/branding/brandings.ftl"/>
     <html:link rel="localization" href="toolkit/global/textActions.ftl"/>
     <html:link rel="localization" href="browser/browserContext.ftl"/>
   </linkset>
@@ -48,7 +49,7 @@
            overflowpadding="4"
            norolluponanchor="true" />
 
-    <menupopup id="contentAreaContextMenu" pagemenu="start"
+    <menupopup id="contentAreaContextMenu"
                onpopupshowing="if (event.target != this)
                                  return true;
                                gContextMenu = new nsContextMenu(this, event.shiftKey);

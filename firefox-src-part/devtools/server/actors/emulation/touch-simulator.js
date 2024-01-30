@@ -4,13 +4,10 @@
 
 "use strict";
 
-const { Services } = require("resource://gre/modules/Services.jsm");
-
-loader.lazyRequireGetter(this, "InspectorUtils", "InspectorUtils");
 loader.lazyRequireGetter(
   this,
   "PICKER_TYPES",
-  "devtools/shared/picker-constants"
+  "resource://devtools/shared/picker-constants.js"
 );
 
 var isClickHoldEnabled = Services.prefs.getBoolPref(
@@ -43,7 +40,7 @@ const EVENTS_TO_HANDLE = [
   "mouseleave",
 ];
 
-const kStateHover = 0x00000004; // NS_EVENT_STATE_HOVER
+const kStateHover = 0x00000004; // ElementState::HOVER
 
 /**
  * Simulate touch events for platforms where they aren't generally available.

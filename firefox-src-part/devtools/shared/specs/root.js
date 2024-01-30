@@ -9,7 +9,7 @@ const {
   RetVal,
   Arg,
   Option,
-} = require("devtools/shared/protocol");
+} = require("resource://devtools/shared/protocol.js");
 
 types.addDictType("root.listWorkers", {
   workers: "array:workerDescriptor",
@@ -92,13 +92,17 @@ const rootSpecPrototype = {
       oneway: true,
     },
 
+    clearResources: {
+      request: {
+        resourceTypes: Arg(0, "array:string"),
+      },
+      oneway: true,
+    },
+
     requestTypes: {
       request: {},
       response: RetVal("json"),
     },
-
-    // Note that RootFront also implements 'echo' requests
-    // that can't be described via protocol.js specs.
   },
 
   events: {

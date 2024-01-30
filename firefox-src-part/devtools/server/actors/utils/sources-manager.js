@@ -4,17 +4,17 @@
 
 "use strict";
 
-const { Ci } = require("chrome");
-const DevToolsUtils = require("devtools/shared/DevToolsUtils");
+const DevToolsUtils = require("resource://devtools/shared/DevToolsUtils.js");
 const { assert, fetch } = DevToolsUtils;
-const EventEmitter = require("devtools/shared/event-emitter");
-const { SourceLocation } = require("devtools/server/actors/common");
-const Services = require("Services");
+const EventEmitter = require("resource://devtools/shared/event-emitter.js");
+const {
+  SourceLocation,
+} = require("resource://devtools/server/actors/common.js");
 
 loader.lazyRequireGetter(
   this,
   "SourceActor",
-  "devtools/server/actors/source",
+  "resource://devtools/server/actors/source.js",
   true
 );
 
@@ -259,9 +259,15 @@ class SourcesManager extends EventEmitter {
    *        boxed or not.
    */
   isBlackBoxed(url, line, column) {
+    if (!this.blackBoxedSources.has(url)) {
+      return false;
+    }
+
     const ranges = this.blackBoxedSources.get(url);
+
+    // If we have an entry in the map, but it is falsy, the source is fully blackboxed.
     if (!ranges) {
-      return this.blackBoxedSources.has(url);
+      return true;
     }
 
     const range = ranges.find(r => isLocationInRange({ line, column }, r));

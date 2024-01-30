@@ -3,16 +3,20 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 "use strict";
-const EventEmitter = require("devtools/shared/event-emitter");
-const { ELLIPSIS } = require("devtools/shared/l10n");
-const KeyShortcuts = require("devtools/client/shared/key-shortcuts");
-const { parseItemValue } = require("devtools/shared/storage/utils");
-const { KeyCodes } = require("devtools/client/shared/keycodes");
-const { getUnicodeHostname } = require("devtools/client/shared/unicode-url");
-const getStorageTypeURL = require("devtools/client/storage/utils/doc-utils");
+const EventEmitter = require("resource://devtools/shared/event-emitter.js");
+const { ELLIPSIS } = require("resource://devtools/shared/l10n.js");
+const KeyShortcuts = require("resource://devtools/client/shared/key-shortcuts.js");
+const {
+  parseItemValue,
+} = require("resource://devtools/shared/storage/utils.js");
+const { KeyCodes } = require("resource://devtools/client/shared/keycodes.js");
+const {
+  getUnicodeHostname,
+} = require("resource://devtools/client/shared/unicode-url.js");
+const getStorageTypeURL = require("resource://devtools/client/storage/utils/doc-utils.js");
 
 // GUID to be used as a separator in compound keys. This must match the same
-// constant in devtools/server/actors/storage.js,
+// constant in devtools/server/actors/resources/storage/index.js,
 // devtools/client/storage/test/head.js and
 // devtools/server/tests/browser/head.js
 const SEPARATOR_GUID = "{9d414cc5-8319-0a04-0586-c0a6ae01670a}";
@@ -20,20 +24,30 @@ const SEPARATOR_GUID = "{9d414cc5-8319-0a04-0586-c0a6ae01670a}";
 loader.lazyRequireGetter(
   this,
   "TreeWidget",
-  "devtools/client/shared/widgets/TreeWidget",
+  "resource://devtools/client/shared/widgets/TreeWidget.js",
   true
 );
 loader.lazyRequireGetter(
   this,
   "TableWidget",
-  "devtools/client/shared/widgets/TableWidget",
+  "resource://devtools/client/shared/widgets/TableWidget.js",
   true
 );
-loader.lazyImporter(
+loader.lazyRequireGetter(
   this,
-  "VariablesView",
-  "resource://devtools/client/storage/VariablesView.jsm"
+  "debounce",
+  "resource://devtools/shared/debounce.js",
+  true
 );
+loader.lazyGetter(this, "standardSessionString", () => {
+  const l10n = new Localization(["devtools/client/storage.ftl"], true);
+  return l10n.formatValueSync("storage-expires-session");
+});
+
+const lazy = {};
+ChromeUtils.defineESModuleGetters(lazy, {
+  VariablesView: "resource://devtools/client/storage/VariablesView.sys.mjs",
+});
 
 const REASON = {
   NEW_ROW: "new-row",
@@ -41,6 +55,9 @@ const REASON = {
   POPULATE: "populate",
   UPDATE: "update",
 };
+
+// How long we wait to debounce resize events
+const LAZY_RESIZE_INTERVAL_MS = 200;
 
 // Maximum length of item name to show in context menu label - will be
 // trimmed with ellipsis if it's longer.
@@ -143,15 +160,15 @@ class StorageUI {
     this.updateObjectSidebar = this.updateObjectSidebar.bind(this);
     this.table.on(TableWidget.EVENTS.ROW_SELECTED, this.updateObjectSidebar);
 
-    this.handleScrollEnd = this.handleScrollEnd.bind(this);
+    this.handleScrollEnd = this.loadMoreItems.bind(this);
     this.table.on(TableWidget.EVENTS.SCROLL_END, this.handleScrollEnd);
 
     this.editItem = this.editItem.bind(this);
     this.table.on(TableWidget.EVENTS.CELL_EDIT, this.editItem);
 
     this.sidebar = this._panelDoc.getElementById("storage-sidebar");
-    this.sidebar.setAttribute("width", "300");
-    this.view = new VariablesView(this.sidebar.firstChild, {
+    this.sidebar.style.width = "300px";
+    this.view = new lazy.VariablesView(this.sidebar.firstChild, {
       lazyEmpty: true,
       // ms
       lazyEmptyDelay: 10,
@@ -175,9 +192,8 @@ class StorageUI {
     this._tablePopup = this._panelDoc.getElementById("storage-table-popup");
     this._tablePopup.addEventListener("popupshowing", this.onTablePopupShowing);
 
-    this.onVariableViewPopupShowing = this.onVariableViewPopupShowing.bind(
-      this
-    );
+    this.onVariableViewPopupShowing =
+      this.onVariableViewPopupShowing.bind(this);
     this._variableViewPopup = this._panelDoc.getElementById(
       "variable-view-popup"
     );
@@ -189,6 +205,11 @@ class StorageUI {
     this.onRefreshTable = this.onRefreshTable.bind(this);
     this.onAddItem = this.onAddItem.bind(this);
     this.onCopyItem = this.onCopyItem.bind(this);
+    this.onPanelWindowResize = debounce(
+      this.#onLazyPanelResize,
+      LAZY_RESIZE_INTERVAL_MS,
+      this
+    );
     this.onRemoveItem = this.onRemoveItem.bind(this);
     this.onRemoveAllFrom = this.onRemoveAllFrom.bind(this);
     this.onRemoveAll = this.onRemoveAll.bind(this);
@@ -200,6 +221,8 @@ class StorageUI {
 
     this._addButton = this._panelDoc.getElementById("add-button");
     this._addButton.addEventListener("click", this.onAddItem);
+
+    this._window.addEventListener("resize", this.onPanelWindowResize, true);
 
     this._variableViewPopupCopy = this._panelDoc.getElementById(
       "variable-view-popup-copy"
@@ -291,17 +314,22 @@ class StorageUI {
     this._onResourceListAvailable = this._onResourceListAvailable.bind(this);
 
     const { resourceCommand } = this._toolbox;
+
+    this._listenedResourceTypes = [
+      // The first item in this list will be the first selected storage item
+      // Tests assume Cookie -- moving cookie will break tests
+      resourceCommand.TYPES.COOKIE,
+      resourceCommand.TYPES.CACHE_STORAGE,
+      resourceCommand.TYPES.INDEXED_DB,
+      resourceCommand.TYPES.LOCAL_STORAGE,
+      resourceCommand.TYPES.SESSION_STORAGE,
+    ];
+    // EXTENSION_STORAGE is only relevant when debugging web extensions
+    if (this._commands.descriptorFront.isWebExtensionDescriptor) {
+      this._listenedResourceTypes.push(resourceCommand.TYPES.EXTENSION_STORAGE);
+    }
     await this._toolbox.resourceCommand.watchResources(
-      [
-        // The first item in this list will be the first selected storage item
-        // Tests assume Cookie -- moving cookie will break tests
-        resourceCommand.TYPES.COOKIE,
-        resourceCommand.TYPES.CACHE_STORAGE,
-        resourceCommand.TYPES.EXTENSION_STORAGE,
-        resourceCommand.TYPES.INDEXED_DB,
-        resourceCommand.TYPES.LOCAL_STORAGE,
-        resourceCommand.TYPES.SESSION_STORAGE,
-      ],
+      this._listenedResourceTypes,
       {
         onAvailable: this._onResourceListAvailable,
       }
@@ -332,16 +360,6 @@ class StorageUI {
     );
 
     this._l10nStrings = new Map(ids.map((id, i) => [id, results[i]]));
-  }
-
-  async _onTargetAvailable({ targetFront }) {
-    // Only support top level target and navigation to new processes.
-    // i.e. ignore additional targets created for remote <iframes>
-    if (!targetFront.isTopLevel) {
-      return;
-    }
-
-    this.front = await targetFront.getFront("storage");
   }
 
   async _onResourceListAvailable(resources) {
@@ -383,6 +401,10 @@ class StorageUI {
     }
   }
 
+  // We only need to listen to target destruction, but TargetCommand.watchTarget
+  // requires a target available function...
+  async _onTargetAvailable({ targetFront }) {}
+
   _onTargetDestroyed({ targetFront }) {
     // Remove all storages related to this target
     for (const type in this.storageResources) {
@@ -413,23 +435,18 @@ class StorageUI {
   }
 
   destroy() {
+    if (this._destroyed) {
+      return;
+    }
+    this._destroyed = true;
+
     const { resourceCommand } = this._toolbox;
-    resourceCommand.unwatchResources(
-      [
-        resourceCommand.TYPES.COOKIE,
-        resourceCommand.TYPES.CACHE_STORAGE,
-        resourceCommand.TYPES.EXTENSION_STORAGE,
-        resourceCommand.TYPES.INDEXED_DB,
-        resourceCommand.TYPES.LOCAL_STORAGE,
-        resourceCommand.TYPES.SESSION_STORAGE,
-      ],
-      {
-        onAvailable: this._onResourceListAvailable,
-      }
-    );
+    resourceCommand.unwatchResources(this._listenedResourceTypes, {
+      onAvailable: this._onResourceListAvailable,
+    });
 
     this.table.off(TableWidget.EVENTS.ROW_SELECTED, this.updateObjectSidebar);
-    this.table.off(TableWidget.EVENTS.SCROLL_END, this.handleScrollEnd);
+    this.table.off(TableWidget.EVENTS.SCROLL_END, this.loadMoreItems);
     this.table.off(TableWidget.EVENTS.CELL_EDIT, this.editItem);
     this.table.destroy();
 
@@ -442,6 +459,8 @@ class StorageUI {
       this.onPaneToggleButtonClicked
     );
     this.sidebarToggleBtn = null;
+
+    this._window.removeEventListener("resize", this.#onLazyPanelResize, true);
 
     this._treePopup.removeEventListener(
       "popupshowing",
@@ -538,7 +557,7 @@ class StorageUI {
    *         An array of keys of columns to be made editable
    */
   makeFieldsEditable(editableFields) {
-    if (editableFields && editableFields.length > 0) {
+    if (editableFields && editableFields.length) {
       this.table.makeFieldsEditable(editableFields);
     } else if (this.table._editableFieldsEngine) {
       this.table._editableFieldsEngine.destroy();
@@ -674,6 +693,21 @@ class StorageUI {
   }
 
   /**
+   * If the panel is resized we need to check if we should load the next batch of
+   * storage items.
+   */
+  async #onLazyPanelResize() {
+    // We can be called on a closed window or destroyed toolbox because of the
+    // deferred task.
+    if (this._window.closed || this._destroyed || this.table.hasScrollbar) {
+      return;
+    }
+
+    await this.loadMoreItems();
+    this.emit("storage-resize");
+  }
+
+  /**
    * Get a string for a column name automatically choosing whether or not the
    * string should be localized.
    *
@@ -708,7 +742,7 @@ class StorageUI {
     for (const type in added) {
       for (const host in added[type]) {
         const label = this.getReadableLabelFromHostname(host);
-        this.tree.add([type, { id: host, label: label, type: "url" }]);
+        this.tree.add([type, { id: host, label, type: "url" }]);
         for (let name of added[type][host]) {
           try {
             name = JSON.parse(name);
@@ -780,7 +814,7 @@ class StorageUI {
                 }
 
                 // Remove the item from table if currently displayed.
-                if (names.length > 0) {
+                if (names.length) {
                   const tableItemName = names.pop();
                   if (this.tree.isSelected([type, host, ...names])) {
                     await this.removeItemFromTable(tableItemName);
@@ -814,11 +848,7 @@ class StorageUI {
     }
 
     const [type, host, db, objectStore] = selectedItem;
-    if (
-      !changed[type] ||
-      !changed[type][host] ||
-      changed[type][host].length == 0
-    ) {
+    if (!changed[type] || !changed[type][host] || !changed[type][host].length) {
       return;
     }
     try {
@@ -865,6 +895,7 @@ class StorageUI {
   async fetchStorageObjects(type, host, names, reason) {
     const fetchOpts =
       reason === REASON.NEXT_50_ITEMS ? { offset: this.itemOffset } : {};
+    fetchOpts.sessionString = standardSessionString;
     const storage = this._getStorage(type, host);
     this.sidebarToggledOpen = null;
 
@@ -899,9 +930,13 @@ class StorageUI {
         await this.resetColumns(type, host, subType);
       }
 
-      const { data } = await storage.getStoreObjects(host, names, fetchOpts);
+      const { data, total } = await storage.getStoreObjects(
+        host,
+        names,
+        fetchOpts
+      );
       if (data.length) {
-        await this.populateTable(data, reason);
+        await this.populateTable(data, reason, total);
       } else if (reason === REASON.POPULATE) {
         await this.clearHeaders();
       }
@@ -955,7 +990,7 @@ class StorageUI {
     const populateTreeFromResource = (type, resource) => {
       for (const host in resource.hosts) {
         const label = this.getReadableLabelFromHostname(host);
-        this.tree.add([type, { id: host, label: label, type: "url" }]);
+        this.tree.add([type, { id: host, label, type: "url" }]);
         for (const name of resource.hosts[host]) {
           try {
             const names = JSON.parse(name);
@@ -1235,8 +1270,9 @@ class StorageUI {
     if (item.length > 2) {
       names = [JSON.stringify(item.slice(2))];
     }
-    await this.fetchStorageObjects(type, host, names, REASON.POPULATE);
+
     this.itemOffset = 0;
+    await this.fetchStorageObjects(type, host, names, REASON.POPULATE);
   }
 
   /**
@@ -1312,8 +1348,10 @@ class StorageUI {
    *        Array of objects to be populated in the storage table
    * @param {Constant} reason
    *        See REASON constant at top of file.
+   * @param {number} totalAvailable
+   *        The total number of items available in the current storage type.
    */
-  async populateTable(data, reason) {
+  async populateTable(data, reason, totalAvailable) {
     for (const item of data) {
       if (item.value) {
         item.valueActor = item.value;
@@ -1350,6 +1388,14 @@ class StorageUI {
       }
 
       this.shouldLoadMoreItems = true;
+    }
+
+    if (
+      (reason === REASON.POPULATE || reason === REASON.NEXT_50_ITEMS) &&
+      this.table.items.size < totalAvailable &&
+      !this.table.hasScrollbar
+    ) {
+      await this.loadMoreItems();
     }
   }
 
@@ -1390,10 +1436,14 @@ class StorageUI {
   }
 
   /**
-   * Handles endless scrolling for the table
+   * Load the next batch of 50 items
    */
-  async handleScrollEnd() {
-    if (!this.shouldLoadMoreItems) {
+  async loadMoreItems() {
+    if (
+      !this.shouldLoadMoreItems ||
+      this._toolbox.currentToolId !== "storage" ||
+      !this.tree.selectedItem
+    ) {
       return;
     }
     this.shouldLoadMoreItems = false;
@@ -1459,7 +1509,8 @@ class StorageUI {
       }
     }
 
-    this._tablePopupDeleteAllSessionCookies.hidden = !showDeleteAllSessionCookies;
+    this._tablePopupDeleteAllSessionCookies.hidden =
+      !showDeleteAllSessionCookies;
 
     if (type === "cookies") {
       const hostString = addEllipsis(data.host);
@@ -1513,7 +1564,8 @@ class StorageUI {
         }
       }
 
-      this._treePopupDeleteAllSessionCookies.hidden = !showDeleteAllSessionCookies;
+      this._treePopupDeleteAllSessionCookies.hidden =
+        !showDeleteAllSessionCookies;
 
       // The delete action is displayed for:
       // - IndexedDB databases (level 3 of the tree)
@@ -1591,7 +1643,7 @@ class StorageUI {
     const data = this.table.items.get(rowId);
 
     let name = data[uniqueId];
-    if (path.length > 0) {
+    if (path.length) {
       name = JSON.stringify([...path, name]);
     }
     front.removeItem(host, name);
@@ -1608,7 +1660,7 @@ class StorageUI {
     // data from server are successfully fetched (and that's async).
     const [, host, ...path] = this.tree.selectedItem;
     const front = this.getCurrentFront();
-    const name = path.length > 0 ? JSON.stringify(path) : undefined;
+    const name = path.length ? JSON.stringify(path) : undefined;
     front.removeAll(host, name);
   }
 
@@ -1621,7 +1673,7 @@ class StorageUI {
     // table data from server is successfully fetched (and that's async).
     const [, host, ...path] = this.tree.selectedItem;
     const front = this.getCurrentFront();
-    const name = path.length > 0 ? JSON.stringify(path) : undefined;
+    const name = path.length ? JSON.stringify(path) : undefined;
     front.removeAllSessionCookies(host, name);
   }
 

@@ -4,55 +4,54 @@
 
 "use strict";
 
-const Services = require("Services");
-const { l10n } = require("devtools/shared/inspector/css-logic");
+const { l10n } = require("resource://devtools/shared/inspector/css-logic.js");
 const {
   InplaceEditor,
   editableField,
-} = require("devtools/client/shared/inplace-editor");
+} = require("resource://devtools/client/shared/inplace-editor.js");
 const {
   createChild,
   appendText,
   advanceValidate,
   blurOnMultipleProperties,
-} = require("devtools/client/inspector/shared/utils");
-const { throttle } = require("devtools/shared/throttle");
+} = require("resource://devtools/client/inspector/shared/utils.js");
+const { throttle } = require("resource://devtools/shared/throttle.js");
 const {
   style: { ELEMENT_STYLE },
-} = require("devtools/shared/constants");
+} = require("resource://devtools/shared/constants.js");
 
 loader.lazyRequireGetter(
   this,
   "openContentLink",
-  "devtools/client/shared/link",
+  "resource://devtools/client/shared/link.js",
   true
 );
 loader.lazyRequireGetter(
   this,
   ["parseDeclarations", "parseSingleValue"],
-  "devtools/shared/css/parsing-utils",
+  "resource://devtools/shared/css/parsing-utils.js",
   true
 );
 loader.lazyRequireGetter(
   this,
   "findCssSelector",
-  "devtools/shared/inspector/css-logic",
+  "resource://devtools/shared/inspector/css-logic.js",
   true
 );
-loader.lazyRequireGetter(
-  this,
-  "AppConstants",
-  "resource://gre/modules/AppConstants.jsm",
-  true
-);
+const lazy = {};
+ChromeUtils.defineESModuleGetters(lazy, {
+  AppConstants: "resource://gre/modules/AppConstants.sys.mjs",
+});
 
 const HTML_NS = "http://www.w3.org/1999/xhtml";
-const INLINE_COMPATIBILITY_WARNING_PREF =
-  "devtools.inspector.ruleview.inline-compatibility-warning.enabled";
+const inlineCompatibilityWarningEnabled = Services.prefs.getBoolPref(
+  "devtools.inspector.ruleview.inline-compatibility-warning.enabled"
+);
 
 const SHARED_SWATCH_CLASS = "ruleview-swatch";
 const COLOR_SWATCH_CLASS = "ruleview-colorswatch";
 const BEZIER_SWATCH_CLASS = "ruleview-bezierswatch";
+const LINEAR_EASING_SWATCH_CLASS = "ruleview-lineareasingswatch";
 const FILTER_SWATCH_CLASS = "ruleview-filterswatch";
 const ANGLE_SWATCH_CLASS = "ruleview-angleswatch";
 const FONT_FAMILY_CLASS = "ruleview-font-family";
@@ -65,6 +64,7 @@ const SHAPE_SWATCH_CLASS = "ruleview-shapeswatch";
 const ACTIONABLE_ELEMENTS_SELECTORS = [
   `.${COLOR_SWATCH_CLASS}`,
   `.${BEZIER_SWATCH_CLASS}`,
+  `.${LINEAR_EASING_SWATCH_CLASS}`,
   `.${FILTER_SWATCH_CLASS}`,
   `.${ANGLE_SWATCH_CLASS}`,
   "a",
@@ -136,9 +136,8 @@ function TextPropertyEditor(ruleEditor, property) {
   this.getGridlineNames = this.getGridlineNames.bind(this);
   this.update = this.update.bind(this);
   this.updatePropertyState = this.updatePropertyState.bind(this);
-  this._onDraggablePreferenceChanged = this._onDraggablePreferenceChanged.bind(
-    this
-  );
+  this._onDraggablePreferenceChanged =
+    this._onDraggablePreferenceChanged.bind(this);
   this._onEnableChanged = this._onEnableChanged.bind(this);
   this._onEnableClicked = this._onEnableClicked.bind(this);
   this._onExpandClicked = this._onExpandClicked.bind(this);
@@ -188,7 +187,7 @@ TextPropertyEditor.prototype = {
   /**
    * Create the property editor's DOM.
    */
-  _create: function() {
+  _create() {
     this.element = this.doc.createElementNS(HTML_NS, "li");
     this.element.classList.add("ruleview-property");
     this.element.dataset.declarationId = this.prop.id;
@@ -258,10 +257,6 @@ TextPropertyEditor.prototype = {
       class: "ruleview-unused-warning",
       hidden: "",
     });
-
-    const inlineCompatibilityWarningEnabled = Services.prefs.getBoolPref(
-      INLINE_COMPATIBILITY_WARNING_PREF
-    );
 
     if (inlineCompatibilityWarningEnabled) {
       this.compatibilityState = createChild(this.container, "div", {
@@ -423,9 +418,10 @@ TextPropertyEditor.prototype = {
    * @return {Object} Contains the names of the cols and rows as arrays
    * {cols: [], rows: []}.
    */
-  getGridlineNames: async function() {
+  async getGridlineNames() {
     const gridLineNames = { cols: [], rows: [] };
-    const layoutInspector = await this.ruleView.inspector.walker.getLayoutInspector();
+    const layoutInspector =
+      await this.ruleView.inspector.walker.getLayoutInspector();
     const gridFront = await layoutInspector.getCurrentGrid(
       this.ruleView.inspector.selection.nodeFront
     );
@@ -507,7 +503,7 @@ TextPropertyEditor.prototype = {
    * Populate the span based on changes to the TextProperty.
    */
   // eslint-disable-next-line complexity
-  update: function() {
+  update() {
     if (this.ruleView.isDestroyed) {
       return;
     }
@@ -549,6 +545,9 @@ TextPropertyEditor.prototype = {
       filterSwatchClass: SHARED_SWATCH_CLASS + " " + FILTER_SWATCH_CLASS,
       flexClass: "ruleview-flex js-toggle-flexbox-highlighter",
       gridClass: "ruleview-grid js-toggle-grid-highlighter",
+      linearEasingClass: "ruleview-lineareasing",
+      linearEasingSwatchClass:
+        SHARED_SWATCH_CLASS + " " + LINEAR_EASING_SWATCH_CLASS,
       shapeClass: "ruleview-shape",
       shapeSwatchClass: SHAPE_SWATCH_CLASS,
       // Only ask the parser to convert colors to the default color type specified by the
@@ -582,6 +581,14 @@ TextPropertyEditor.prototype = {
 
     this.valueSpan.innerHTML = "";
     this.valueSpan.appendChild(frag);
+    if (
+      this.valueSpan.textProperty?.name === "grid-template-areas" &&
+      this.isValid() &&
+      (this.valueSpan.innerText.includes(`"`) ||
+        this.valueSpan.innerText.includes(`'`))
+    ) {
+      this._formatGridTemplateAreasValue();
+    }
 
     this.ruleView.emit("property-value-updated", {
       rule: this.prop.rule,
@@ -665,6 +672,26 @@ TextPropertyEditor.prototype = {
         });
         const title = l10n("rule.bezierSwatch.tooltip");
         span.setAttribute("title", title);
+      }
+    }
+
+    // Attach the linear easing tooltip to the linear easing swatches
+    this._linearEasingSwatchSpans = this.valueSpan.querySelectorAll(
+      "." + LINEAR_EASING_SWATCH_CLASS
+    );
+    if (this.ruleEditor.isEditable) {
+      for (const span of this._linearEasingSwatchSpans) {
+        // Adding this swatch to the list of swatches our colorpicker
+        // knows about
+        this.ruleView.tooltips
+          .getTooltip("linearEaseFunction")
+          .addSwatch(span, {
+            onShow: this._onStartEditing,
+            onPreview: this._onSwatchPreview,
+            onCommit: this._onSwatchCommit,
+            onRevert: this._onSwatchRevert,
+          });
+        span.setAttribute("title", l10n("rule.bezierSwatch.tooltip"));
       }
     }
 
@@ -777,7 +804,7 @@ TextPropertyEditor.prototype = {
     }
   },
 
-  _onStartEditing: function() {
+  _onStartEditing() {
     this.element.classList.remove("ruleview-overridden");
     this.filterProperty.hidden = true;
     this.enable.style.visibility = "hidden";
@@ -801,7 +828,7 @@ TextPropertyEditor.prototype = {
    * Update the visibility of the enable checkbox, the warning indicator, the used
    * indicator and the filter property, as well as the overridden state of the property.
    */
-  updatePropertyState: function() {
+  updatePropertyState() {
     if (this.prop.enabled) {
       this.enable.style.removeProperty("visibility");
     } else {
@@ -836,16 +863,12 @@ TextPropertyEditor.prototype = {
 
     this.updatePropertyUsedIndicator();
 
-    const inlineCompatibilityWarningEnabled = Services.prefs.getBoolPref(
-      INLINE_COMPATIBILITY_WARNING_PREF
-    );
-
     if (inlineCompatibilityWarningEnabled) {
       this.updatePropertyCompatibilityIndicator();
     }
   },
 
-  updatePropertyUsedIndicator: function() {
+  updatePropertyUsedIndicator() {
     const { used } = this.prop.isUsed();
 
     if (this.editing || this.prop.overridden || !this.prop.enabled || used) {
@@ -857,7 +880,7 @@ TextPropertyEditor.prototype = {
     }
   },
 
-  updatePropertyCompatibilityIndicator: async function() {
+  async updatePropertyCompatibilityIndicator() {
     const { isCompatible } = await this.prop.isCompatible();
 
     if (this.editing || isCompatible) {
@@ -871,7 +894,7 @@ TextPropertyEditor.prototype = {
    * Update the indicator for computed styles. The computed styles themselves
    * are populated on demand, when they become visible.
    */
-  _updateComputed: function() {
+  _updateComputed() {
     this.computed.innerHTML = "";
 
     this.expander.style.display =
@@ -888,7 +911,7 @@ TextPropertyEditor.prototype = {
   /**
    * Populate the list of computed styles.
    */
-  _populateComputed: function() {
+  _populateComputed() {
     if (this._populatedComputed) {
       return;
     }
@@ -916,7 +939,7 @@ TextPropertyEditor.prototype = {
    * overridden styles themselves are populated on demand, when they
    * become visible.
    */
-  _updateShorthandOverridden: function() {
+  _updateShorthandOverridden() {
     this.shorthandOverridden.innerHTML = "";
 
     this._populatedShorthandOverridden = false;
@@ -926,7 +949,7 @@ TextPropertyEditor.prototype = {
   /**
    * Populate the list of overridden shorthand styles.
    */
-  _populateShorthandOverridden: function() {
+  _populateShorthandOverridden() {
     if (
       this._populatedShorthandOverridden ||
       this.prop.overridden ||
@@ -954,7 +977,7 @@ TextPropertyEditor.prototype = {
   /**
    * Creates and populates a list item with the computed CSS property.
    */
-  _createComputedListItem: function(parentEl, computed, className) {
+  _createComputedListItem(parentEl, computed, className) {
     const li = createChild(parentEl, "li", {
       class: className,
     });
@@ -1001,7 +1024,7 @@ TextPropertyEditor.prototype = {
    * Handle updates to the preference which disables/enables the feature to
    * edit size properties on drag.
    */
-  _onDraggablePreferenceChanged: function() {
+  _onDraggablePreferenceChanged() {
     if (this._isDraggableProperty(this.prop)) {
       this._addDraggingCapability();
     } else {
@@ -1012,19 +1035,17 @@ TextPropertyEditor.prototype = {
   /**
    * Stop clicks propogating down the tree from the enable / disable checkbox.
    */
-  _onEnableClicked: function(event) {
+  _onEnableClicked(event) {
     event.stopPropagation();
   },
 
   /**
    * Handles clicks on the disabled property.
    */
-  _onEnableChanged: function(event) {
+  _onEnableChanged(event) {
     this.prop.setEnabled(this.enable.checked);
     event.stopPropagation();
-    this.telemetry.recordEvent("edit_rule", "ruleview", null, {
-      session_id: this.toolbox.sessionId,
-    });
+    this.telemetry.recordEvent("edit_rule", "ruleview");
   },
 
   /**
@@ -1034,7 +1055,7 @@ TextPropertyEditor.prototype = {
    * expand the computed list and tracks whether or not the computed list is
    * expanded by manually by the user.
    */
-  _onExpandClicked: function(event) {
+  _onExpandClicked(event) {
     if (
       this.computed.hasAttribute("filter-open") ||
       this.computed.hasAttribute("user-open")
@@ -1059,7 +1080,7 @@ TextPropertyEditor.prototype = {
    * filtering. The filter-open attribute is used to track whether or not the
    * computed list was toggled opened by the filter.
    */
-  expandForFilter: function() {
+  expandForFilter() {
     if (!this.computed.hasAttribute("user-open")) {
       this.expander.setAttribute("open", "true");
       this.computed.setAttribute("filter-open", "");
@@ -1070,7 +1091,7 @@ TextPropertyEditor.prototype = {
   /**
    * Collapses the computed list that was expanded by style filtering.
    */
-  collapseForFilter: function() {
+  collapseForFilter() {
     this.computed.removeAttribute("filter-open");
 
     if (!this.computed.hasAttribute("user-open")) {
@@ -1090,16 +1111,14 @@ TextPropertyEditor.prototype = {
    * @param {Number} direction
    *        The move focus direction number.
    */
-  _onNameDone: function(value, commit, direction) {
+  _onNameDone(value, commit, direction) {
     const isNameUnchanged =
       (!commit && !this.ruleEditor.isEditing) || this.committed.name === value;
     if (this.prop.value && isNameUnchanged) {
       return;
     }
 
-    this.telemetry.recordEvent("edit_rule", "ruleview", null, {
-      session_id: this.toolbox.sessionId,
-    });
+    this.telemetry.recordEvent("edit_rule", "ruleview");
 
     // Remove a property if the name is empty
     if (!value.trim()) {
@@ -1141,7 +1160,7 @@ TextPropertyEditor.prototype = {
    * @param {Number} direction
    *        The move focus direction number.
    */
-  remove: function(direction) {
+  remove(direction) {
     if (this._colorSwatchSpans && this._colorSwatchSpans.length) {
       for (const span of this._colorSwatchSpans) {
         this.ruleView.tooltips.getTooltip("colorPicker").removeSwatch(span);
@@ -1178,7 +1197,7 @@ TextPropertyEditor.prototype = {
    * @param {Number} direction
    *        The move focus direction number.
    */
-  _onValueDone: function(value = "", commit, direction) {
+  _onValueDone(value = "", commit, direction) {
     const parsedProperties = this._getValueAndExtraProperties(value);
     const val = parseSingleValue(
       this.cssProperties.isKnown,
@@ -1209,9 +1228,7 @@ TextPropertyEditor.prototype = {
       this._removeDraggingCapacity();
     }
 
-    this.telemetry.recordEvent("edit_rule", "ruleview", null, {
-      session_id: this.toolbox.sessionId,
-    });
+    this.telemetry.recordEvent("edit_rule", "ruleview");
 
     // First, set this property value (common case, only modified a property)
     this.prop.setValue(val.value, val.priority);
@@ -1243,7 +1260,7 @@ TextPropertyEditor.prototype = {
   /**
    * Called when the swatch editor wants to commit a value change.
    */
-  _onSwatchCommit: function() {
+  _onSwatchCommit() {
     this._onValueDone(this.valueSpan.textContent, true);
     this.update();
   },
@@ -1251,7 +1268,7 @@ TextPropertyEditor.prototype = {
   /**
    * Called when the swatch editor wants to preview a value change.
    */
-  _onSwatchPreview: function() {
+  _onSwatchPreview() {
     this._previewValue(this.valueSpan.textContent);
   },
 
@@ -1259,7 +1276,7 @@ TextPropertyEditor.prototype = {
    * Called when the swatch editor closes from an ESC. Revert to the original
    * value of this property before editing.
    */
-  _onSwatchRevert: function() {
+  _onSwatchRevert() {
     this._previewValue(this.prop.value, true);
     this.update();
   },
@@ -1279,7 +1296,7 @@ TextPropertyEditor.prototype = {
    *        propertiesToAdd: An array with additional properties, following the
    *                         parseDeclarations format of {name,value,priority}
    */
-  _getValueAndExtraProperties: function(value) {
+  _getValueAndExtraProperties(value) {
     // The inplace editor will prevent manual typing of multiple properties,
     // but we need to deal with the case during a paste event.
     // Adding multiple properties inside of value editor sets value with the
@@ -1306,8 +1323,8 @@ TextPropertyEditor.prototype = {
     }
 
     return {
-      propertiesToAdd: propertiesToAdd,
-      firstValue: firstValue,
+      propertiesToAdd,
+      firstValue,
     };
   },
 
@@ -1319,7 +1336,7 @@ TextPropertyEditor.prototype = {
    * @param {Boolean} reverting
    *        True if we're reverting the previously previewed value
    */
-  _previewValue: function(value, reverting = false) {
+  _previewValue(value, reverting = false) {
     // Since function call is debounced, we need to make sure we are still
     // editing, and any selector modifications have been completed
     if (!reverting && (!this.editing || this.ruleEditor.isEditing)) {
@@ -1341,8 +1358,9 @@ TextPropertyEditor.prototype = {
    * @param  {KeyboardEvent} event
    * @returns {Boolean}
    */
-  _hasSmallIncrementModifier: function(event) {
-    const modifier = AppConstants.platform === "macosx" ? "altKey" : "ctrlKey";
+  _hasSmallIncrementModifier(event) {
+    const modifier =
+      lazy.AppConstants.platform === "macosx" ? "altKey" : "ctrlKey";
     return event[modifier] === true;
   },
 
@@ -1354,9 +1372,10 @@ TextPropertyEditor.prototype = {
    * @param  {String} value
    * @returns {Object|null}
    */
-  _parseDimension: function(value) {
+  _parseDimension(value) {
     // The regex handles values like +1, -1, 1e4, .4, 1.3e-4, 1.567
-    const cssDimensionRegex = /^(?<value>[+-]?(\d*\.)?\d+(e[+-]?\d+)?)(?<unit>(%|[a-zA-Z]+))$/;
+    const cssDimensionRegex =
+      /^(?<value>[+-]?(\d*\.)?\d+(e[+-]?\d+)?)(?<unit>(%|[a-zA-Z]+))$/;
     return value.match(cssDimensionRegex);
   },
 
@@ -1366,14 +1385,9 @@ TextPropertyEditor.prototype = {
    * @param  {TextProperty} textProperty
    * @returns {Boolean}
    */
-  _isDraggableProperty: function(textProperty) {
+  _isDraggableProperty(textProperty) {
     // Check if the feature is explicitly disabled.
-    if (
-      !Services.prefs.getBoolPref(
-        "devtools.inspector.draggable_properties",
-        false
-      )
-    ) {
+    if (!this.ruleView.draggablePropertiesEnabled) {
       return false;
     }
     // temporary way of fixing the bug when editing inline styles
@@ -1394,7 +1408,7 @@ TextPropertyEditor.prototype = {
     return !!dimensionMatchObj;
   },
 
-  _draggingOnMouseDown: function(event) {
+  _draggingOnMouseDown(event) {
     this._isDragging = true;
     this.valueSpan.setPointerCapture(event.pointerId);
     this._draggingController = new AbortController();
@@ -1423,7 +1437,7 @@ TextPropertyEditor.prototype = {
     });
   },
 
-  _draggingOnMouseMove: function(event) {
+  _draggingOnMouseMove(event) {
     if (!this._isDragging) {
       return;
     }
@@ -1470,7 +1484,7 @@ TextPropertyEditor.prototype = {
     this._hasDragged = true;
   },
 
-  _draggingOnMouseUp: function(event) {
+  _draggingOnMouseUp(event) {
     if (!this._isDragging) {
       return;
     }
@@ -1481,7 +1495,7 @@ TextPropertyEditor.prototype = {
     this._onStopDragging(event);
   },
 
-  _draggingOnKeydown: function(event) {
+  _draggingOnKeydown(event) {
     if (event.key == "Escape") {
       this.prop.setValue(this.committed.value, this.committed.priority);
       this._onStopDragging(event);
@@ -1489,7 +1503,7 @@ TextPropertyEditor.prototype = {
     }
   },
 
-  _onStopDragging: function(event) {
+  _onStopDragging(event) {
     // childHasDragged is used to stop the propagation of a click event when we
     // release the mouse in the ruleview.
     // The click event is not emitted when we have a pending click on the text property.
@@ -1508,7 +1522,7 @@ TextPropertyEditor.prototype = {
    * add event listeners to add the ability to modify any size value
    * by dragging the mouse horizontally
    */
-  _addDraggingCapability: function() {
+  _addDraggingCapability() {
     if (this.valueSpan.classList.contains(DRAGGABLE_VALUE_CLASSNAME)) {
       return;
     }
@@ -1516,7 +1530,7 @@ TextPropertyEditor.prototype = {
     this.valueSpan.addEventListener("mousedown", this._draggingOnMouseDown);
   },
 
-  _removeDraggingCapacity: function() {
+  _removeDraggingCapacity() {
     if (!this.valueSpan.classList.contains(DRAGGABLE_VALUE_CLASSNAME)) {
       return;
     }
@@ -1531,7 +1545,7 @@ TextPropertyEditor.prototype = {
    *
    * @return {Boolean} true if the property name + value pair is valid, false otherwise.
    */
-  isValid: function() {
+  isValid() {
     return this.prop.isValid();
   },
 
@@ -1539,8 +1553,45 @@ TextPropertyEditor.prototype = {
    * Validate the name of this property.
    * @return {Boolean} true if the property name is valid, false otherwise.
    */
-  isNameValid: function() {
+  isNameValid() {
     return this.prop.isNameValid();
+  },
+
+  /**
+   * Display grid-template-area value strings each on their own line
+   * to display it in an ascii-art style matrix
+   */
+  _formatGridTemplateAreasValue() {
+    this.valueSpan.classList.add("ruleview-propertyvalue-break-spaces");
+
+    let quoteSymbolsUsed = [];
+
+    const getQuoteSymbolsUsed = cssValue => {
+      const regex = /\"|\'/g;
+      const found = cssValue.match(regex);
+      quoteSymbolsUsed = found.filter((_, i) => i % 2 === 0);
+    };
+
+    getQuoteSymbolsUsed(this.valueSpan.innerText);
+
+    this.valueSpan.innerText = this.valueSpan.innerText
+      .split('"')
+      .filter(s => s !== "")
+      .map(s => s.split("'"))
+      .flat()
+      .map(s => s.trim().replace(/\s+/g, " "))
+      .filter(s => s.length)
+      .map(line => line.split(" "))
+      .map((line, i, lines) =>
+        line.map((col, j) =>
+          col.padEnd(Math.max(...lines.map(l => l[j].length)), " ")
+        )
+      )
+      .map(
+        (line, i) =>
+          `\n${quoteSymbolsUsed[i]}` + line.join(" ") + quoteSymbolsUsed[i]
+      )
+      .join(" ");
   },
 };
 

@@ -10,14 +10,13 @@ const gLoadContext = Cu.createLoadContext();
 const gContentPrefs = Cc["@mozilla.org/content-pref/service;1"].getService(
   Ci.nsIContentPrefService2
 );
-const { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm");
 const gZoomPropertyName = "browser.content.full-zoom";
 
-ChromeUtils.defineModuleGetter(
-  this,
-  "PanelMultiView",
-  "resource:///modules/PanelMultiView.jsm"
-);
+const lazy = {};
+
+ChromeUtils.defineESModuleGetters(lazy, {
+  PanelMultiView: "resource:///modules/PanelMultiView.sys.mjs",
+});
 
 var ZoomUI = {
   init(aWindow) {
@@ -72,7 +71,7 @@ var ZoomUI = {
           resolve(value);
         },
         handleError(error) {
-          Cu.reportError(error);
+          console.error(error);
         },
       });
     });
@@ -129,7 +128,7 @@ async function updateZoomUI(aBrowser, aAnimate = false) {
     return;
   }
 
-  let appMenuZoomReset = PanelMultiView.getViewNode(
+  let appMenuZoomReset = lazy.PanelMultiView.getViewNode(
     win.document,
     "appMenu-zoomReset-button2"
   );
@@ -187,26 +186,28 @@ async function updateZoomUI(aBrowser, aAnimate = false) {
     }
     urlbarZoomButton.setAttribute("label", label);
   }
+
+  win.FullZoom.updateCommands();
 }
 
-const { CustomizableUI } = ChromeUtils.import(
-  "resource:///modules/CustomizableUI.jsm"
+const { CustomizableUI } = ChromeUtils.importESModule(
+  "resource:///modules/CustomizableUI.sys.mjs"
 );
 let customizationListener = {};
-customizationListener.onWidgetAdded = customizationListener.onWidgetRemoved = customizationListener.onWidgetMoved = function(
-  aWidgetId
-) {
-  if (aWidgetId == "zoom-controls") {
-    for (let window of CustomizableUI.windows) {
-      updateZoomUI(window.gBrowser.selectedBrowser);
+customizationListener.onWidgetAdded =
+  customizationListener.onWidgetRemoved =
+  customizationListener.onWidgetMoved =
+    function (aWidgetId) {
+      if (aWidgetId == "zoom-controls") {
+        for (let window of CustomizableUI.windows) {
+          updateZoomUI(window.gBrowser.selectedBrowser);
+        }
+      }
+    };
+customizationListener.onWidgetReset = customizationListener.onWidgetUndoMove =
+  function (aWidgetNode) {
+    if (aWidgetNode.id == "zoom-controls") {
+      updateZoomUI(aWidgetNode.ownerGlobal.gBrowser.selectedBrowser);
     }
-  }
-};
-customizationListener.onWidgetReset = customizationListener.onWidgetUndoMove = function(
-  aWidgetNode
-) {
-  if (aWidgetNode.id == "zoom-controls") {
-    updateZoomUI(aWidgetNode.ownerGlobal.gBrowser.selectedBrowser);
-  }
-};
+  };
 CustomizableUI.addListener(customizationListener);

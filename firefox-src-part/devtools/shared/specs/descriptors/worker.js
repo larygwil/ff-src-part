@@ -3,18 +3,15 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 "use strict";
 
-const { RetVal, generateActorSpec } = require("devtools/shared/protocol");
+const {
+  RetVal,
+  generateActorSpec,
+} = require("resource://devtools/shared/protocol.js");
 
 const workerDescriptorSpec = generateActorSpec({
   typeName: "workerDescriptor",
 
   methods: {
-    // @backward-compat { version 102 } WorkerDescriptor no longer implement attach method
-    //                  We can remove this method once 102 is the release channel.
-    attach: {
-      request: {},
-      response: RetVal("json"),
-    },
     detach: {
       request: {},
       response: {},

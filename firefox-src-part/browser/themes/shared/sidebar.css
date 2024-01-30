@@ -18,6 +18,16 @@
   border-bottom: 1px solid var(--sidebar-border-color);
 }
 
+#sidebar-spacer {
+  /* To ensure the button doesn't expand unnecessarily for short labels, the
+     spacer should significantly out-flex the button. */
+  flex: 1000 1000;
+}
+
+#sidebar {
+  flex: 1;
+}
+
 @media not (-moz-platform: linux) {
   /* We don't let the splitter overlap the sidebar on Linux since the sidebar's
   scrollbar is too narrow on Linux. */
@@ -55,6 +65,7 @@
   margin: 0;
   padding: 0;
   padding-inline: 8px 4px;
+  flex: 1;
 }
 
 #sidebar-switcher-arrow {
@@ -76,6 +87,7 @@
   border-radius: var(--toolbarbutton-border-radius);
   border: 1px solid transparent;
   padding: 2px 4px;
+  flex: 1;
 }
 
 #sidebar-switcher-target:hover {
@@ -116,7 +128,7 @@ toolbarseparator + #sidebar-extensions-separator {
 }
 
 #sidebar-box[sidebarcommand="viewTabsSidebar"] > #sidebar-header > #sidebar-switcher-target > #sidebar-icon {
-  list-style-image: url(chrome://browser/skin/tab.svg);
+  list-style-image: url(chrome://browser/skin/synced-tabs.svg);
   -moz-context-properties: fill;
   fill: currentColor;
   opacity: 0.8;

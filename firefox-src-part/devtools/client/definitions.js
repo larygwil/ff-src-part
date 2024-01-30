@@ -4,97 +4,104 @@
 
 "use strict";
 
-const Services = require("Services");
 const osString = Services.appinfo.OS;
 
 // Panels
 loader.lazyGetter(
   this,
   "OptionsPanel",
-  () => require("devtools/client/framework/toolbox-options").OptionsPanel
+  () =>
+    require("resource://devtools/client/framework/toolbox-options.js")
+      .OptionsPanel
 );
 loader.lazyGetter(
   this,
   "InspectorPanel",
-  () => require("devtools/client/inspector/panel").InspectorPanel
+  () => require("resource://devtools/client/inspector/panel.js").InspectorPanel
 );
 loader.lazyGetter(
   this,
   "WebConsolePanel",
-  () => require("devtools/client/webconsole/panel").WebConsolePanel
+  () =>
+    require("resource://devtools/client/webconsole/panel.js").WebConsolePanel
 );
 loader.lazyGetter(
   this,
   "DebuggerPanel",
-  () => require("devtools/client/debugger/panel").DebuggerPanel
+  () => require("resource://devtools/client/debugger/panel.js").DebuggerPanel
 );
 loader.lazyGetter(
   this,
   "StyleEditorPanel",
-  () => require("devtools/client/styleeditor/panel").StyleEditorPanel
+  () =>
+    require("resource://devtools/client/styleeditor/panel.js").StyleEditorPanel
 );
 loader.lazyGetter(
   this,
   "MemoryPanel",
-  () => require("devtools/client/memory/panel").MemoryPanel
+  () => require("resource://devtools/client/memory/panel.js").MemoryPanel
 );
 loader.lazyGetter(
   this,
   "NewPerformancePanel",
-  () => require("devtools/client/performance-new/panel").PerformancePanel
+  () =>
+    require("resource://devtools/client/performance-new/panel/panel.js")
+      .PerformancePanel
 );
 loader.lazyGetter(
   this,
   "NetMonitorPanel",
-  () => require("devtools/client/netmonitor/panel").NetMonitorPanel
+  () =>
+    require("resource://devtools/client/netmonitor/panel.js").NetMonitorPanel
 );
 loader.lazyGetter(
   this,
   "StoragePanel",
-  () => require("devtools/client/storage/panel").StoragePanel
+  () => require("resource://devtools/client/storage/panel.js").StoragePanel
 );
 loader.lazyGetter(
   this,
   "DomPanel",
-  () => require("devtools/client/dom/panel").DomPanel
+  () => require("resource://devtools/client/dom/panel.js").DomPanel
 );
 loader.lazyGetter(
   this,
   "AccessibilityPanel",
-  () => require("devtools/client/accessibility/panel").AccessibilityPanel
+  () =>
+    require("resource://devtools/client/accessibility/panel.js")
+      .AccessibilityPanel
 );
 loader.lazyGetter(
   this,
   "ApplicationPanel",
-  () => require("devtools/client/application/panel").ApplicationPanel
+  () =>
+    require("resource://devtools/client/application/panel.js").ApplicationPanel
 );
 
 // Other dependencies
 loader.lazyRequireGetter(
   this,
   "ResponsiveUIManager",
-  "devtools/client/responsive/manager"
+  "resource://devtools/client/responsive/manager.js"
 );
 
-loader.lazyRequireGetter(
-  this,
-  "AppConstants",
-  "resource://gre/modules/AppConstants.jsm",
-  true
-);
+const lazy = {};
+ChromeUtils.defineESModuleGetters(lazy, {
+  AppConstants: "resource://gre/modules/AppConstants.sys.mjs",
+});
 loader.lazyRequireGetter(
   this,
   "DevToolsExperimentalPrefs",
-  "devtools/client/devtools-experimental-prefs"
+  "resource://devtools/client/devtools-experimental-prefs.js"
 );
 loader.lazyRequireGetter(
   this,
   "captureAndSaveScreenshot",
-  "devtools/client/shared/screenshot",
+  "resource://devtools/client/shared/screenshot.js",
   true
 );
 
-const { LocalizationHelper } = require("devtools/shared/l10n");
+const { LocalizationHelper } = require("resource://devtools/shared/l10n.js");
 const L10N = new LocalizationHelper(
   "devtools/client/locales/startup.properties"
 );
@@ -119,11 +126,11 @@ Tools.options = {
   tooltip: l10n("optionsButton.tooltip"),
   inMenu: false,
 
-  isToolSupported: function() {
+  isToolSupported() {
     return true;
   },
 
-  build: function(iframeWindow, toolbox, commands) {
+  build(iframeWindow, toolbox, commands) {
     return new OptionsPanel(iframeWindow, toolbox, commands);
   },
 };
@@ -153,15 +160,15 @@ Tools.inspector = {
   // preventRaisingOnKey is used to keep the focus on the content window for shortcuts
   // that trigger the element picker.
   preventRaisingOnKey: true,
-  onkey: function(panel, toolbox) {
+  onkey(panel, toolbox) {
     toolbox.nodePicker.togglePicker();
   },
 
-  isToolSupported: function(toolbox) {
+  isToolSupported(toolbox) {
     return toolbox.target.hasActor("inspector");
   },
 
-  build: function(iframeWindow, toolbox, commands) {
+  build(iframeWindow, toolbox, commands) {
     return new InspectorPanel(iframeWindow, toolbox, commands);
   },
 };
@@ -184,7 +191,7 @@ Tools.webConsole = {
   inMenu: false,
 
   preventClosingOnKey: true,
-  onkey: function(panel, toolbox) {
+  onkey(panel, toolbox) {
     if (toolbox.splitConsole) {
       return toolbox.focusConsoleInput();
     }
@@ -193,10 +200,10 @@ Tools.webConsole = {
     return undefined;
   },
 
-  isToolSupported: function() {
+  isToolSupported() {
     return true;
   },
-  build: function(iframeWindow, toolbox, commands) {
+  build(iframeWindow, toolbox, commands) {
     return new WebConsolePanel(iframeWindow, toolbox, commands);
   },
 };
@@ -217,10 +224,10 @@ Tools.jsdebugger = {
     );
   },
   inMenu: false,
-  isToolSupported: function() {
+  isToolSupported() {
     return true;
   },
-  build: function(iframeWindow, toolbox, commands) {
+  build(iframeWindow, toolbox, commands) {
     return new DebuggerPanel(iframeWindow, toolbox, commands);
   },
 };
@@ -241,11 +248,11 @@ Tools.styleEditor = {
     );
   },
   inMenu: false,
-  isToolSupported: function(toolbox) {
+  isToolSupported(toolbox) {
     return toolbox.target.hasActor("styleSheets");
   },
 
-  build: function(iframeWindow, toolbox, commands) {
+  build(iframeWindow, toolbox, commands) {
     return new StyleEditorPanel(iframeWindow, toolbox, commands);
   },
 };
@@ -254,7 +261,7 @@ Tools.performance = {
   id: "performance",
   ordinal: 6,
   icon: "chrome://devtools/skin/images/tool-profiler.svg",
-  url: "chrome://devtools/content/performance-new/index.xhtml",
+  url: "chrome://devtools/content/performance-new/panel/index.xhtml",
   visibilityswitch: "devtools.performance.enabled",
   label: l10n("performance.label"),
   panelLabel: l10n("performance.panelLabel"),
@@ -266,16 +273,18 @@ Tools.performance = {
   },
   accesskey: l10n("performance.accesskey"),
   inMenu: false,
-  isToolSupported: function(toolbox) {
+  isToolSupported(toolbox) {
     // Only use the new performance panel on local tab toolboxes, as they are guaranteed
     // to have a performance actor.
     // Remote tab toolboxes (eg about:devtools-toolbox from about:debugging) should not
     // use the performance panel; about:debugging provides a "Profile performance" button
     // which can be used instead, without having the overhead of starting a remote toolbox.
     // Also accept the Browser Toolbox, so that we can profile its process via a second browser toolbox.
-    return toolbox.target.isLocalTab || toolbox.isBrowserToolbox;
+    return (
+      toolbox.commands.descriptorFront.isLocalTab || toolbox.isBrowserToolbox
+    );
   },
-  build: function(frame, toolbox, commands) {
+  build(frame, toolbox, commands) {
     return new NewPerformancePanel(frame, toolbox, commands);
   },
 };
@@ -290,11 +299,15 @@ Tools.memory = {
   panelLabel: l10n("memory.panelLabel"),
   tooltip: l10n("memory.tooltip"),
 
-  isToolSupported: function(toolbox) {
-    return !toolbox.target.isAddon && !toolbox.target.isWorkerTarget;
+  isToolSupported(toolbox) {
+    const { descriptorFront } = toolbox.commands;
+    return (
+      !descriptorFront.isWebExtensionDescriptor &&
+      !descriptorFront.isWorkerDescriptor
+    );
   },
 
-  build: function(frame, toolbox, commands) {
+  build(frame, toolbox, commands) {
     return new MemoryPanel(frame, toolbox, commands);
   },
 };
@@ -317,14 +330,14 @@ Tools.netMonitor = {
   },
   inMenu: false,
 
-  isToolSupported: function(toolbox) {
+  isToolSupported(toolbox) {
     return (
       toolbox.target.getTrait("networkMonitor") &&
       !toolbox.target.isWorkerTarget
     );
   },
 
-  build: function(iframeWindow, toolbox, commands) {
+  build(iframeWindow, toolbox, commands) {
     return new NetMonitorPanel(iframeWindow, toolbox, commands);
   },
 };
@@ -347,11 +360,18 @@ Tools.storage = {
   },
   inMenu: false,
 
-  isToolSupported: function(toolbox) {
-    return toolbox.target.hasActor("storage");
+  isToolSupported(toolbox) {
+    const { descriptorFront } = toolbox.commands;
+    // Storage is available on all contexts debugging a BrowsingContext.
+    // As of today, this is all but worker toolboxes.
+    return (
+      descriptorFront.isTabDescriptor ||
+      descriptorFront.isParentProcessDescriptor ||
+      descriptorFront.isWebExtensionDescriptor
+    );
   },
 
-  build: function(iframeWindow, toolbox, commands) {
+  build(iframeWindow, toolbox, commands) {
     return new StoragePanel(iframeWindow, toolbox, commands);
   },
 };
@@ -374,11 +394,11 @@ Tools.dom = {
   },
   inMenu: false,
 
-  isToolSupported: function() {
+  isToolSupported() {
     return true;
   },
 
-  build: function(iframeWindow, toolbox, commands) {
+  build(iframeWindow, toolbox, commands) {
     return new DomPanel(iframeWindow, toolbox, commands);
   },
 };
@@ -422,11 +442,11 @@ Tools.application = {
   tooltip: l10n("application.tooltip"),
   inMenu: false,
 
-  isToolSupported: function(toolbox) {
+  isToolSupported(toolbox) {
     return toolbox.target.hasActor("manifest");
   },
 
-  build: function(iframeWindow, toolbox, commands) {
+  build(iframeWindow, toolbox, commands) {
     return new ApplicationPanel(iframeWindow, toolbox, commands);
   },
 };
@@ -473,7 +493,7 @@ exports.ToolboxButtons = [
   {
     id: "command-button-experimental-prefs",
     description: "DevTools Experimental preferences",
-    isToolSupported: () => !AppConstants.MOZILLA_OFFICIAL,
+    isToolSupported: () => !lazy.AppConstants.MOZILLA_OFFICIAL,
     onClick: (event, toolbox) => DevToolsExperimentalPrefs.showTooltip(toolbox),
     isChecked: () => DevToolsExperimentalPrefs.isAnyPreferenceEnabled(),
   },
@@ -483,16 +503,16 @@ exports.ToolboxButtons = [
       "toolbox.buttons.responsive",
       osString == "Darwin" ? "Cmd+Opt+M" : "Ctrl+Shift+M"
     ),
-    isToolSupported: toolbox => toolbox.target.isLocalTab,
+    isToolSupported: toolbox => toolbox.commands.descriptorFront.isLocalTab,
     onClick(event, toolbox) {
-      const { localTab } = toolbox.descriptorFront;
+      const { localTab } = toolbox.commands.descriptorFront;
       const browserWindow = localTab.ownerDocument.defaultView;
       ResponsiveUIManager.toggle(browserWindow, localTab, {
         trigger: "toolbox",
       });
     },
     isChecked(toolbox) {
-      const { localTab } = toolbox.descriptorFront;
+      const { localTab } = toolbox.commands.descriptorFront;
       if (!localTab) {
         return false;
       }
@@ -563,25 +583,35 @@ exports.ToolboxButtons = [
       }
     },
   },
-  createHighlightButton("RulersHighlighter", "rulers"),
-  createHighlightButton("MeasuringToolHighlighter", "measure"),
+  createHighlightButton(
+    ["RulersHighlighter", "ViewportSizeHighlighter"],
+    "rulers"
+  ),
+  createHighlightButton(["MeasuringToolHighlighter"], "measure"),
 ];
 
-function createHighlightButton(highlighterName, id) {
+function createHighlightButton(highlighters, id) {
   return {
     id: `command-button-${id}`,
     description: l10n(`toolbox.buttons.${id}`),
-    isToolSupported: toolbox => !toolbox.target.chrome,
+    isToolSupported: toolbox =>
+      toolbox.commands.descriptorFront.isTabDescriptor,
     async onClick(event, toolbox) {
       const inspectorFront = await toolbox.target.getFront("inspector");
-      const highlighter = await inspectorFront.getOrCreateHighlighterByType(
-        highlighterName
-      );
-      if (highlighter.isShown()) {
-        return highlighter.hide();
-      }
 
-      return highlighter.show();
+      await Promise.all(
+        highlighters.map(async name => {
+          const highlighter = await inspectorFront.getOrCreateHighlighterByType(
+            name
+          );
+
+          if (highlighter.isShown()) {
+            await highlighter.hide();
+          } else {
+            await highlighter.show();
+          }
+        })
+      );
     },
     isChecked(toolbox) {
       // if the inspector doesn't exist, then the highlighter has not yet been connected
@@ -594,8 +624,10 @@ function createHighlightButton(highlighterName, id) {
         // fix this properly.
         return false;
       }
-      const highlighter = inspectorFront.getKnownHighlighter(highlighterName);
-      return highlighter && highlighter.isShown();
+
+      return highlighters.every(name =>
+        inspectorFront.getKnownHighlighter(name)?.isShown()
+      );
     },
   };
 }

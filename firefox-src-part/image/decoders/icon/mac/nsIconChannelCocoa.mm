@@ -15,7 +15,6 @@
 #include "nsIInterfaceRequestorUtils.h"
 #include "nsString.h"
 #include "nsMimeTypes.h"
-#include "nsMemory.h"
 #include "nsIURL.h"
 #include "nsNetCID.h"
 #include "nsIPipe.h"
@@ -29,6 +28,7 @@
 #include "nsContentSecurityManager.h"
 #include "nsNetUtil.h"
 #include "mozilla/RefPtr.h"
+#include "mozilla/UniquePtrExtensions.h"
 
 #include <Cocoa/Cocoa.h>
 
@@ -37,7 +37,11 @@ using namespace mozilla;
 // nsIconChannel methods
 nsIconChannel::nsIconChannel() {}
 
-nsIconChannel::~nsIconChannel() {}
+nsIconChannel::~nsIconChannel() {
+  if (mLoadInfo) {
+    NS_ReleaseOnMainThread("nsIconChannel::mLoadInfo", mLoadInfo.forget());
+  }
+}
 
 NS_IMPL_ISUPPORTS(nsIconChannel, nsIChannel, nsIRequest, nsIRequestObserver, nsIStreamListener)
 
@@ -61,6 +65,18 @@ nsIconChannel::IsPending(bool* result) { return mPump->IsPending(result); }
 
 NS_IMETHODIMP
 nsIconChannel::GetStatus(nsresult* status) { return mPump->GetStatus(status); }
+
+NS_IMETHODIMP nsIconChannel::SetCanceledReason(const nsACString& aReason) {
+  return SetCanceledReasonImpl(aReason);
+}
+
+NS_IMETHODIMP nsIconChannel::GetCanceledReason(nsACString& aReason) {
+  return GetCanceledReasonImpl(aReason);
+}
+
+NS_IMETHODIMP nsIconChannel::CancelWithReason(nsresult aStatus, const nsACString& aReason) {
+  return CancelWithReasonImpl(aStatus, aReason);
+}
 
 NS_IMETHODIMP
 nsIconChannel::Cancel(nsresult status) {
@@ -202,7 +218,7 @@ nsIconChannel::AsyncOpen(nsIStreamListener* aListener) {
   }
 
   // Init our stream pump
-  nsCOMPtr<nsIEventTarget> target =
+  nsCOMPtr<nsISerialEventTarget> target =
       nsContentUtils::GetEventTargetByLoadInfo(mLoadInfo, mozilla::TaskCategory::Other);
   rv = mPump->Init(inStream, 0, 0, false, target);
   if (NS_FAILED(rv)) {
@@ -292,7 +308,11 @@ nsresult nsIconChannel::MakeInputStream(nsIInputStream** _retval, bool aNonBlock
   //  - 1 byte for the image height, as u8
   //  - the raw image data as BGRA, width * height * 4 bytes.
   size_t bufferCapacity = 4 + width * height * 4;
-  UniquePtr<uint8_t[]> fileBuf = MakeUnique<uint8_t[]>(bufferCapacity);
+  UniquePtr<uint8_t[]> fileBuf = MakeUniqueFallible<uint8_t[]>(bufferCapacity);
+  if (NS_WARN_IF(!fileBuf)) {
+    return NS_ERROR_OUT_OF_MEMORY;
+  }
+
   fileBuf[0] = uint8_t(width);
   fileBuf[1] = uint8_t(height);
   fileBuf[2] = uint8_t(mozilla::gfx::SurfaceFormat::B8G8R8A8);
@@ -313,8 +333,8 @@ nsresult nsIconChannel::MakeInputStream(nsIInputStream** _retval, bool aNonBlock
   CGColorSpaceRelease(cs);
 
   NSGraphicsContext* oldContext = [NSGraphicsContext currentContext];
-  [NSGraphicsContext setCurrentContext:[NSGraphicsContext graphicsContextWithGraphicsPort:ctx
-                                                                                  flipped:NO]];
+  [NSGraphicsContext setCurrentContext:[NSGraphicsContext graphicsContextWithCGContext:ctx
+                                                                               flipped:NO]];
 
   [iconImage drawInRect:NSMakeRect(0, 0, width, height)];
 
@@ -325,15 +345,13 @@ nsresult nsIconChannel::MakeInputStream(nsIInputStream** _retval, bool aNonBlock
   // Now, create a pipe and stuff our data into it
   nsCOMPtr<nsIInputStream> inStream;
   nsCOMPtr<nsIOutputStream> outStream;
-  rv = NS_NewPipe(getter_AddRefs(inStream), getter_AddRefs(outStream), bufferCapacity,
-                  bufferCapacity, aNonBlocking);
+  NS_NewPipe(getter_AddRefs(inStream), getter_AddRefs(outStream), bufferCapacity, bufferCapacity,
+             aNonBlocking);
 
+  uint32_t written;
+  rv = outStream->Write((char*)fileBuf.get(), bufferCapacity, &written);
   if (NS_SUCCEEDED(rv)) {
-    uint32_t written;
-    rv = outStream->Write((char*)fileBuf.get(), bufferCapacity, &written);
-    if (NS_SUCCEEDED(rv)) {
-      NS_IF_ADDREF(*_retval = inStream);
-    }
+    NS_IF_ADDREF(*_retval = inStream);
   }
 
   // Drop notification callbacks to prevent cycles.
@@ -481,7 +499,7 @@ nsIconChannel::SetNotificationCallbacks(nsIInterfaceRequestor* aNotificationCall
 }
 
 NS_IMETHODIMP
-nsIconChannel::GetSecurityInfo(nsISupports** aSecurityInfo) {
+nsIconChannel::GetSecurityInfo(nsITransportSecurityInfo** aSecurityInfo) {
   *aSecurityInfo = nullptr;
   return NS_OK;
 }
