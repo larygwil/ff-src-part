@@ -4,7 +4,7 @@ on:
   schedule:
     - cron: '35 6 * * 4'
     # * is a special character in YAML so you have to quote this string
-    # Thu 03:00
+    # Thu 06:35
     
   
   workflow_dispatch:
@@ -21,7 +21,19 @@ jobs:
     steps:
     - name: Job's checkout
       uses: actions/checkout@master
-      
+
+    - name: Show some info and switch branch
+      run: |
+        pwd
+        ls -la
+        git branch -a
+        git fetch origin master
+        git branch -a
+        git config user.name bot
+        git config user.email bot@github.bot.none
+        git config --list
+        env
+
     - name: Run the bash
-      run: ff-src-part-ci.sh
+      run: bash ff-src-part-ci.sh
         
