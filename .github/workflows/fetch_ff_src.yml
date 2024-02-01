@@ -1,0 +1,27 @@
+name: Fetch latest Firefox src
+
+on:
+  schedule:
+    - cron: '35 6 * * 4'
+    # * is a special character in YAML so you have to quote this string
+    # Thu 03:00
+    
+  
+  workflow_dispatch:
+
+  # push:
+  #   branches:
+  #     - bot
+          
+
+jobs:
+  my_first_job_id:
+    name: Fetch latest Firefox src
+    runs-on: ubuntu-latest
+    steps:
+    - name: Job's checkout
+      uses: actions/checkout@master
+      
+    - name: Run the bash
+      run: ff-src-part-ci.sh
+        
