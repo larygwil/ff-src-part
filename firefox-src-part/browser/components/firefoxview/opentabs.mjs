@@ -41,6 +41,7 @@ const TOPIC_CURRENT_BROWSER_CHANGED = "net:current-browser-id";
  */
 class OpenTabsInView extends ViewPage {
   static properties = {
+    ...ViewPage.properties,
     windows: { type: Map },
     searchQuery: { type: String },
   };
@@ -204,7 +205,7 @@ class OpenTabsInView extends ViewPage {
       />
       <link
         rel="stylesheet"
-        href="chrome://browser/content/firefoxview/firefoxview-next.css"
+        href="chrome://browser/content/firefoxview/firefoxview.css"
       />
       <div class="sticky-container bottom-fade">
         <h2
@@ -218,6 +219,8 @@ class OpenTabsInView extends ViewPage {
               data-l10n-id="firefoxview-search-text-box-opentabs"
               data-l10n-attrs="placeholder"
               @fxview-search-textbox-query=${this.onSearchQuery}
+              .size=${this.searchTextboxSize}
+              pageName=${this.recentBrowsing ? "recentbrowsing" : "opentabs"}
             ></fxview-search-textbox>
           </div>`
         )}
@@ -393,6 +396,7 @@ class OpenTabsInViewCard extends ViewPageContent {
     searchQuery: { type: String },
     searchResults: { type: Array },
     showAll: { type: Boolean },
+    cumulativeSearches: { type: Number },
   };
   static MAX_TABS_FOR_COMPACT_HEIGHT = 7;
 
@@ -406,6 +410,7 @@ class OpenTabsInViewCard extends ViewPageContent {
     this.searchQuery = "";
     this.searchResults = null;
     this.showAll = false;
+    this.cumulativeSearches = 0;
   }
 
   static queries = {
@@ -458,6 +463,15 @@ class OpenTabsInViewCard extends ViewPageContent {
       (event.type == "keydown" && event.code == "Space")
     ) {
       event.preventDefault();
+      Services.telemetry.recordEvent(
+        "firefoxview_next",
+        "search_show_all",
+        "showallbutton",
+        null,
+        {
+          section: "opentabs",
+        }
+      );
       this.showAll = true;
     }
   }
@@ -478,6 +492,16 @@ class OpenTabsInViewCard extends ViewPageContent {
         window: this.title || "Window 1 (Current)",
       }
     );
+    if (this.searchQuery) {
+      const searchesHistogram = Services.telemetry.getKeyedHistogramById(
+        "FIREFOX_VIEW_CUMULATIVE_SEARCHES"
+      );
+      searchesHistogram.add(
+        this.recentBrowsing ? "recentbrowsing" : "opentabs",
+        this.cumulativeSearches
+      );
+      this.cumulativeSearches = 0;
+    }
   }
 
   viewVisibleCallback() {
@@ -496,7 +520,7 @@ class OpenTabsInViewCard extends ViewPageContent {
     return html`
       <link
         rel="stylesheet"
-        href="chrome://browser/content/firefoxview/firefoxview-next.css"
+        href="chrome://browser/content/firefoxview/firefoxview.css"
       />
       <card-container
         ?preserveCollapseState=${this.recentBrowsing}
@@ -533,6 +557,7 @@ class OpenTabsInViewCard extends ViewPageContent {
             ?hidden=${!this.isShowAllLinkVisible()}
             slot="footer"
             tabindex="0"
+            role="link"
           ></div>`,
           () =>
             html` <div
@@ -546,6 +571,7 @@ class OpenTabsInViewCard extends ViewPageContent {
                 OpenTabsInViewCard.MAX_TABS_FOR_COMPACT_HEIGHT}
               slot="footer"
               tabindex="0"
+              role="link"
             ></div>`
         )}
       </card-container>
@@ -555,6 +581,9 @@ class OpenTabsInViewCard extends ViewPageContent {
   willUpdate(changedProperties) {
     if (changedProperties.has("searchQuery")) {
       this.showAll = false;
+      this.cumulativeSearches = this.searchQuery
+        ? this.cumulativeSearches + 1
+        : 0;
     }
     if (changedProperties.has("searchQuery") || changedProperties.has("tabs")) {
       this.updateSearchResults();
@@ -721,7 +750,7 @@ class OpenTabsContextMenu extends MozLitElement {
     return html`
       <link
         rel="stylesheet"
-        href="chrome://browser/content/firefoxview/firefoxview-next.css"
+        href="chrome://browser/content/firefoxview/firefoxview.css"
       />
       <panel-list data-tab-type="opentabs">
         <panel-item

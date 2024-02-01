@@ -101,6 +101,7 @@ input[type="url"]:read-only {
   display: flex;
   align-items: center;
   margin-bottom: 40px;
+  margin-top: 5px;
 }
 
 .title {
@@ -323,6 +324,5 @@ login-command-button {
 }
 
 .action-buttons .form-actions-row {
-  margin-block: 5px 0;
   margin-inline: 0 5px;
 }

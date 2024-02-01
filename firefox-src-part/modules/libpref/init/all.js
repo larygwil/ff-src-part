@@ -364,9 +364,6 @@ pref("media.peerconnection.dtls.version.min", 771);
 
 pref("media.getusermedia.audiocapture.enabled", false);
 
-// WebVTT pseudo element and class support.
-pref("media.webvtt.pseudo.enabled", true);
-
 // WebVTT debug logging.
 pref("media.webvtt.debug.logging", false);
 
@@ -810,12 +807,6 @@ pref("print.print_edge_bottom", 0);
   pref("print.print_in_color", true);
 #endif
 
-// List of domains of web apps which depend on Gecko's traditional join/split
-// node(s) behavior or Blink/WebKit compatible one in `contenteditable` or
-// `designMode`.
-pref("editor.join_split_direction.force_use_traditional_direction", "");
-pref("editor.join_split_direction.force_use_compatible_direction", "");
-
 // Scripts & Windows prefs
 pref("dom.beforeunload_timeout_ms",         1000);
 pref("dom.disable_window_flip",             false);
@@ -1073,6 +1064,8 @@ pref("network.protocol-handler.external.disk", false);
 pref("network.protocol-handler.external.disks", false);
 pref("network.protocol-handler.external.afp", false);
 pref("network.protocol-handler.external.moz-icon", false);
+pref("network.protocol-handler.external.firefox", false);
+pref("network.protocol-handler.external.firefox-private", false);
 
 // Don't allow  external protocol handlers for common typos
 pref("network.protocol-handler.external.ttp", false);  // http
@@ -1971,9 +1964,6 @@ pref("mousewheel.with_shift.delta_multiplier_z", 100);
 // 3 = left
 pref("layout.scrollbar.side", 0);
 
-// pref to control whether layout warnings that are hit quite often are enabled
-pref("layout.spammy_warnings.enabled", false);
-
 // enable single finger gesture input (win7+ tablets)
 pref("gestures.enable_single_finger_input", true);
 
@@ -2652,7 +2642,6 @@ pref("font.size.monospace.x-math", 13);
 
   pref("font.weight-override.HelveticaNeue-Light", 300); // Ensure Light > Thin (200)
   pref("font.weight-override.HelveticaNeue-LightItalic", 300);
-  pref("font.weight-override.HelveticaNeue-MediumItalic", 500); // Harmonize MediumItalic with Medium
 
   // See bug 404131, topmost <panel> element wins to Dashboard on MacOSX.
   pref("ui.panel.default_level_parent", false);
@@ -3693,10 +3682,6 @@ pref("toolkit.aboutProcesses.profileDuration", 5);
   pref("toolkit.crashreporter.include_context_heap", true);
 #endif
 
-// Don't create the hidden window during startup on
-// platforms that don't always need it.
-pref("toolkit.lazyHiddenWindow", true);
-
 // Support for legacy customizations that rely on checking the
 // user profile directory for these stylesheets:
 //  * userContent.css
@@ -3969,6 +3954,8 @@ pref("extensions.formautofill.addresses.enabled", true);
 pref("extensions.formautofill.addresses.capture.enabled", false);
 // This preference should be removed entirely once address capture v2 developing is finished
 pref("extensions.formautofill.addresses.capture.v2.enabled", false);
+// Defies the required address form fields to trigger the display of the address capture doorhanger
+pref("extensions.formautofill.addresses.capture.requiredFields", "street-address,postal-code,address-level1,address-level2");
 pref("extensions.formautofill.addresses.ignoreAutocompleteOff", true);
 // Supported countries need to follow ISO 3166-1 to align with "browser.search.region"
 pref("extensions.formautofill.addresses.supportedCountries", "US,CA");
@@ -3994,8 +3981,9 @@ pref("extensions.formautofill.creditCards.heuristics.fathom.testConfidence", "0"
 
 pref("extensions.formautofill.loglevel", "Warn");
 
-// Temporary pref that we will remove when enabling capture on form removal in Fx122.
+// Temporary prefs that we will be removed when enabling capture on form removal and on page navigation in Fx123.
 pref("extensions.formautofill.heuristics.captureOnFormRemoval", false);
+pref("extensions.formautofill.heuristics.captureOnPageNavigation", false);
 // The interactivityCheckMode pref is only temporary.
 // It will be removed when we decide to only support the `focusability` mode
 pref("extensions.formautofill.heuristics.interactivityCheckMode", "focusability");

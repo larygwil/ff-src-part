@@ -93,7 +93,11 @@
 
   /** Size **/
   --size-item-small: 16px;
+  --size-item-medium: 28px;
   --size-item-large: 32px;
+
+  /** Spacing **/
+  --spacing-small: 0.5rem;
 }
 
 @media not (prefers-contrast) {

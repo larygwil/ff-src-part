@@ -35,6 +35,7 @@ import {
 } from "chrome://browser/content/screenshots/overlayHelpers.mjs";
 
 import { AppConstants } from "resource://gre/modules/AppConstants.sys.mjs";
+import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs";
 
 const STATES = {
   CROSSHAIRS: "crosshairs",
@@ -49,6 +50,16 @@ const lazy = {};
 ChromeUtils.defineLazyGetter(lazy, "overlayLocalization", () => {
   return new Localization(["browser/screenshotsOverlay.ftl"], true);
 });
+
+const SCREENSHOTS_LAST_SAVED_METHOD_PREF =
+  "screenshots.browser.component.last-saved-method";
+
+XPCOMUtils.defineLazyPreferenceGetter(
+  lazy,
+  "SCREENSHOTS_LAST_SAVED_METHOD",
+  SCREENSHOTS_LAST_SAVED_METHOD_PREF,
+  "download"
+);
 
 const REGION_CHANGE_THRESHOLD = 5;
 const SCROLL_BY_EDGE = 20;
@@ -229,8 +240,6 @@ export class ScreenshotsOverlay {
     this.bottomRightMover = this.getElementById("mover-bottomRight");
 
     this.selectionSize = this.getElementById("selection-size");
-
-    this.addEventListeners();
   }
 
   /**
@@ -238,7 +247,6 @@ export class ScreenshotsOverlay {
    */
   tearDown(options = {}) {
     if (this.#content) {
-      this.removeEventListeners();
       if (!(options.doNotResetMethods === true)) {
         this.resetMethodsUsed();
       }
@@ -251,30 +259,6 @@ export class ScreenshotsOverlay {
     }
     this.#initialized = false;
     this.#setState("");
-  }
-
-  /**
-   * Add required event listeners to the overlay
-   */
-  addEventListeners() {
-    this.screenshotsContainer.addEventListener("click", this);
-    this.screenshotsContainer.addEventListener("pointerdown", this);
-    this.window.addEventListener("pointermove", this);
-    this.window.addEventListener("pointerup", this);
-    this.screenshotsContainer.addEventListener("keydown", this);
-    this.screenshotsContainer.addEventListener("keyup", this);
-  }
-
-  /**
-   * Remove the events listeners from the overlay
-   */
-  removeEventListeners() {
-    this.screenshotsContainer.removeEventListener("click", this);
-    this.screenshotsContainer.removeEventListener("pointerdown", this);
-    this.window.removeEventListener("pointermove", this);
-    this.window.removeEventListener("pointerup", this);
-    this.screenshotsContainer.removeEventListener("keydown", this);
-    this.screenshotsContainer.removeEventListener("keyup", this);
   }
 
   resetMethodsUsed() {
@@ -332,10 +316,10 @@ export class ScreenshotsOverlay {
   }
 
   handleClick(event) {
-    switch (event.target.id) {
+    switch (event.originalTarget.id) {
       case "screenshots-cancel-button":
       case "cancel":
-        this.#dispatchEvent("Screenshots:Close", { reason: "overlay_cancel" });
+        this.maybeCancelScreenshots();
         break;
       case "copy":
         this.#dispatchEvent("Screenshots:Copy", {
@@ -350,6 +334,16 @@ export class ScreenshotsOverlay {
     }
   }
 
+  maybeCancelScreenshots() {
+    if (this.#state === STATES.CROSSHAIRS) {
+      this.#dispatchEvent("Screenshots:Close", {
+        reason: "overlay_cancel",
+      });
+    } else {
+      this.#setState(STATES.CROSSHAIRS);
+    }
+  }
+
   /**
    * Handles the pointerdown event depending on the state.
    * Early return when a pointer down happens on a button.
@@ -357,8 +351,9 @@ export class ScreenshotsOverlay {
    */
   handlePointerDown(event) {
     if (
-      event.target.id === "screenshots-cancel-button" ||
-      event.target.closest("#buttons-container") === this.buttonsContainer
+      event.originalTarget.id === "screenshots-cancel-button" ||
+      event.originalTarget.closest("#buttons-container") ===
+        this.buttonsContainer
     ) {
       event.stopPropagation();
       return;
@@ -372,7 +367,7 @@ export class ScreenshotsOverlay {
         break;
       }
       case STATES.SELECTED: {
-        this.selectedDragStart(pageX, pageY, event.target.id);
+        this.selectedDragStart(pageX, pageY, event.originalTarget.id);
         break;
       }
     }
@@ -420,7 +415,7 @@ export class ScreenshotsOverlay {
         break;
       }
       case STATES.DRAGGING: {
-        this.draggingDragEnd(pageX, pageY, event.target.id);
+        this.draggingDragEnd(pageX, pageY, event.originalTarget.id);
         break;
       }
       case STATES.RESIZING: {
@@ -451,6 +446,9 @@ export class ScreenshotsOverlay {
       case "Tab":
         this.maybeLockFocus(event);
         break;
+      case "Escape":
+        this.maybeCancelScreenshots();
+        break;
     }
   }
 
@@ -475,7 +473,7 @@ export class ScreenshotsOverlay {
    * @param {Event} event The keydown event
    */
   handleArrowLeftKeyDown(event) {
-    switch (event.target.id) {
+    switch (event.originalTarget.id) {
       case "highlight":
         if (this.getAccelKey(event)) {
           let width = this.selectionRegion.width;
@@ -505,10 +503,10 @@ export class ScreenshotsOverlay {
           let left = this.selectionRegion.left;
           this.selectionRegion.left = this.windowDimensions.scrollX;
           this.selectionRegion.right = left;
-          if (event.target.id === "mover-topRight") {
-            this.topLeftMover.focus();
-          } else if (event.target.id === "mover-bottomRight") {
-            this.bottomLeftMover.focus();
+          if (event.originalTarget.id === "mover-topRight") {
+            this.topLeftMover.focus({ focusVisible: true });
+          } else if (event.originalTarget.id === "mover-bottomRight") {
+            this.bottomLeftMover.focus({ focusVisible: true });
           }
           break;
         }
@@ -516,10 +514,10 @@ export class ScreenshotsOverlay {
         this.selectionRegion.right -= 10 ** event.shiftKey;
         if (this.selectionRegion.x1 >= this.selectionRegion.x2) {
           this.selectionRegion.sortCoords();
-          if (event.target.id === "mover-topRight") {
-            this.topLeftMover.focus();
-          } else if (event.target.id === "mover-bottomRight") {
-            this.bottomLeftMover.focus();
+          if (event.originalTarget.id === "mover-topRight") {
+            this.topLeftMover.focus({ focusVisible: true });
+          } else if (event.originalTarget.id === "mover-bottomRight") {
+            this.bottomLeftMover.focus({ focusVisible: true });
           }
         }
         break;
@@ -543,7 +541,7 @@ export class ScreenshotsOverlay {
    * @param {Event} event The keydown event
    */
   handleArrowUpKeyDown(event) {
-    switch (event.target.id) {
+    switch (event.originalTarget.id) {
       case "highlight":
         if (this.getAccelKey(event)) {
           let height = this.selectionRegion.height;
@@ -573,10 +571,10 @@ export class ScreenshotsOverlay {
           let top = this.selectionRegion.top;
           this.selectionRegion.top = this.windowDimensions.scrollY;
           this.selectionRegion.bottom = top;
-          if (event.target.id === "mover-bottomLeft") {
-            this.topLeftMover.focus();
-          } else if (event.target.id === "mover-bottomRight") {
-            this.topRightMover.focus();
+          if (event.originalTarget.id === "mover-bottomLeft") {
+            this.topLeftMover.focus({ focusVisible: true });
+          } else if (event.originalTarget.id === "mover-bottomRight") {
+            this.topRightMover.focus({ focusVisible: true });
           }
           break;
         }
@@ -584,10 +582,10 @@ export class ScreenshotsOverlay {
         this.selectionRegion.bottom -= 10 ** event.shiftKey;
         if (this.selectionRegion.y1 >= this.selectionRegion.y2) {
           this.selectionRegion.sortCoords();
-          if (event.target.id === "mover-bottomLeft") {
-            this.topLeftMover.focus();
-          } else if (event.target.id === "mover-bottomRight") {
-            this.topRightMover.focus();
+          if (event.originalTarget.id === "mover-bottomLeft") {
+            this.topLeftMover.focus({ focusVisible: true });
+          } else if (event.originalTarget.id === "mover-bottomRight") {
+            this.topRightMover.focus({ focusVisible: true });
           }
         }
         break;
@@ -611,7 +609,7 @@ export class ScreenshotsOverlay {
    * @param {Event} event The keydown event
    */
   handleArrowRightKeyDown(event) {
-    switch (event.target.id) {
+    switch (event.originalTarget.id) {
       case "highlight":
         if (this.getAccelKey(event)) {
           let width = this.selectionRegion.width;
@@ -644,10 +642,10 @@ export class ScreenshotsOverlay {
           this.selectionRegion.right =
             this.windowDimensions.scrollX + this.windowDimensions.clientWidth;
           this.selectionRegion.left = right;
-          if (event.target.id === "mover-topLeft") {
-            this.topRightMover.focus();
-          } else if (event.target.id === "mover-bottomLeft") {
-            this.bottomRightMover.focus();
+          if (event.originalTarget.id === "mover-topLeft") {
+            this.topRightMover.focus({ focusVisible: true });
+          } else if (event.originalTarget.id === "mover-bottomLeft") {
+            this.bottomRightMover.focus({ focusVisible: true });
           }
           break;
         }
@@ -655,10 +653,10 @@ export class ScreenshotsOverlay {
         this.selectionRegion.left += 10 ** event.shiftKey;
         if (this.selectionRegion.x1 >= this.selectionRegion.x2) {
           this.selectionRegion.sortCoords();
-          if (event.target.id === "mover-topLeft") {
-            this.topRightMover.focus();
-          } else if (event.target.id === "mover-bottomLeft") {
-            this.bottomRightMover.focus();
+          if (event.originalTarget.id === "mover-topLeft") {
+            this.topRightMover.focus({ focusVisible: true });
+          } else if (event.originalTarget.id === "mover-bottomLeft") {
+            this.bottomRightMover.focus({ focusVisible: true });
           }
         }
         break;
@@ -682,7 +680,7 @@ export class ScreenshotsOverlay {
    * @param {Event} event The keydown event
    */
   handleArrowDownKeyDown(event) {
-    switch (event.target.id) {
+    switch (event.originalTarget.id) {
       case "highlight":
         if (this.getAccelKey(event)) {
           let height = this.selectionRegion.height;
@@ -715,10 +713,10 @@ export class ScreenshotsOverlay {
           this.selectionRegion.bottom =
             this.windowDimensions.scrollY + this.windowDimensions.clientHeight;
           this.selectionRegion.top = bottom;
-          if (event.target.id === "mover-topLeft") {
-            this.bottomLeftMover.focus();
-          } else if (event.target.id === "mover-topRight") {
-            this.bottomRightMover.focus();
+          if (event.originalTarget.id === "mover-topLeft") {
+            this.bottomLeftMover.focus({ focusVisible: true });
+          } else if (event.originalTarget.id === "mover-topRight") {
+            this.bottomRightMover.focus({ focusVisible: true });
           }
           break;
         }
@@ -726,10 +724,10 @@ export class ScreenshotsOverlay {
         this.selectionRegion.top += 10 ** event.shiftKey;
         if (this.selectionRegion.y1 >= this.selectionRegion.y2) {
           this.selectionRegion.sortCoords();
-          if (event.target.id === "mover-topLeft") {
-            this.bottomLeftMover.focus();
-          } else if (event.target.id === "mover-topRight") {
-            this.bottomRightMover.focus();
+          if (event.originalTarget.id === "mover-topLeft") {
+            this.bottomLeftMover.focus({ focusVisible: true });
+          } else if (event.originalTarget.id === "mover-topRight") {
+            this.bottomRightMover.focus({ focusVisible: true });
           }
         }
         break;
@@ -755,12 +753,30 @@ export class ScreenshotsOverlay {
       return;
     }
 
-    if (event.target.id === "highlight" && event.shiftKey) {
-      event.preventDefault();
-      this.downloadButton.focus();
-    } else if (event.target.id === "download" && !event.shiftKey) {
-      event.preventDefault();
-      this.highlightEl.focus();
+    event.preventDefault();
+    if (event.originalTarget.id === "highlight" && event.shiftKey) {
+      this.downloadButton.focus({ focusVisible: true });
+    } else if (event.originalTarget.id === "download" && !event.shiftKey) {
+      this.highlightEl.focus({ focusVisible: true });
+    } else {
+      // The content document can listen for keydown events and prevent moving
+      // focus so we manually move focus to the next element here.
+      let direction = event.shiftKey
+        ? Services.focus.MOVEFOCUS_BACKWARD
+        : Services.focus.MOVEFOCUS_FORWARD;
+      Services.focus.moveFocus(this.window, null, direction, 0);
+    }
+  }
+
+  /**
+   * Set the focus to the most recent saved method.
+   * This will default to the download button.
+   */
+  setFocusToActionButton() {
+    if (lazy.SCREENSHOTS_LAST_SAVED_METHOD === "copy") {
+      this.copyButton.focus({ focusVisible: true });
+    } else {
+      this.downloadButton.focus({ focusVisible: true });
     }
   }
 
@@ -775,7 +791,7 @@ export class ScreenshotsOverlay {
       case "ArrowUp":
       case "ArrowRight":
       case "ArrowDown":
-        switch (event.target.id) {
+        switch (event.originalTarget.id) {
           case "highlight":
           case "mover-bottomLeft":
           case "mover-bottomRight":
@@ -857,6 +873,8 @@ export class ScreenshotsOverlay {
     this.showPreviewContainer();
     this.#dispatchEvent("Screenshots:ShowPanel");
     this.#previousDimensions = null;
+    this.#cachedEle = null;
+    this.hoverElementRegion.resetDimensions();
   }
 
   /**
@@ -1112,7 +1130,7 @@ export class ScreenshotsOverlay {
     if (this.hoverElementRegion.isRegionValid) {
       this.selectionRegion.dimensions = this.hoverElementRegion.dimensions;
       this.#setState(STATES.SELECTED);
-      this.downloadButton.focus();
+      this.setFocusToActionButton();
       this.#dispatchEvent("Screenshots:RecordEvent", {
         eventName: "selected",
         reason: "element",
@@ -1137,7 +1155,7 @@ export class ScreenshotsOverlay {
     this.#setState(STATES.SELECTED);
     this.maybeRecordRegionSelected();
     this.#methodsUsed.region += 1;
-    this.downloadButton.focus();
+    this.setFocusToActionButton();
   }
 
   /**
@@ -1150,6 +1168,7 @@ export class ScreenshotsOverlay {
     this.resizingDrag(pageX, pageY);
     this.selectionRegion.sortCoords();
     this.#setState(STATES.SELECTED);
+    this.setFocusToActionButton();
     this.maybeRecordRegionSelected();
     if (this.#moverId === "highlight") {
       this.#methodsUsed.move += 1;

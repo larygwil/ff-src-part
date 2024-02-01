@@ -784,11 +784,12 @@
         const animations = Array.from(
           aTab.container.getElementsByTagName("tab")
         )
+          .filter(tab => tab.hasAttribute("busy"))
           .map(tab => {
             const throbber = tab.throbber;
             return throbber ? throbber.getAnimations({ subtree: true }) : [];
           })
-          .reduce((a, b) => a.concat(b))
+          .reduce((a, b) => a.concat(b), [])
           .filter(
             anim =>
               CSSAnimation.isInstance(anim) &&
@@ -976,7 +977,8 @@
       aTab,
       aIconURL = "",
       aOriginalURL = aIconURL,
-      aLoadingPrincipal = null
+      aLoadingPrincipal = null,
+      aClearImageFirst = false
     ) {
       let makeString = url => (url instanceof Ci.nsIURI ? url.spec : url);
 
@@ -1000,7 +1002,9 @@
       browser.mIconURL = aIconURL;
 
       if (aIconURL != aTab.getAttribute("image")) {
-        aTab.removeAttribute("image");
+        if (aClearImageFirst) {
+          aTab.removeAttribute("image");
+        }
         if (aIconURL) {
           if (aLoadingPrincipal) {
             aTab.setAttribute("iconloadingprincipal", aLoadingPrincipal);
@@ -1009,6 +1013,7 @@
           }
           aTab.setAttribute("image", aIconURL);
         } else {
+          aTab.removeAttribute("image");
           aTab.removeAttribute("iconloadingprincipal");
         }
         this._tabAttrModified(aTab, ["image"]);
@@ -4737,8 +4742,22 @@
           this.shouldActivateDocShell(ourBrowser);
       }
 
+      let ourBrowserContainer =
+        ourBrowser.ownerDocument.getElementById("browser");
+      let otherBrowserContainer =
+        aOtherBrowser.ownerDocument.getElementById("browser");
+      let ourBrowserContainerWasHidden = ourBrowserContainer.hidden;
+      let otherBrowserContainerWasHidden = otherBrowserContainer.hidden;
+
+      // #browser is hidden in Customize Mode; this breaks docshell swapping,
+      // so we need to toggle 'hidden' to make swapping work in this case.
+      ourBrowserContainer.hidden = otherBrowserContainer.hidden = false;
+
       // Swap the docshells
       ourBrowser.swapDocShells(aOtherBrowser);
+
+      ourBrowserContainer.hidden = ourBrowserContainerWasHidden;
+      otherBrowserContainer.hidden = otherBrowserContainerWasHidden;
 
       // Swap permanentKey properties.
       let ourPermanentKey = ourBrowser.permanentKey;

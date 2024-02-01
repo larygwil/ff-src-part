@@ -542,7 +542,7 @@ export class TranslationsParent extends JSWindowActorParent {
     }
 
     // Only offer the translation if it's still the current page.
-    var isCurrentPage = false;
+    let isCurrentPage = false;
     if (AppConstants.platform !== "android") {
       isCurrentPage =
         documentURI.spec ===
@@ -1821,6 +1821,89 @@ export class TranslationsParent extends JSWindowActorParent {
   }
 
   /**
+   * Gets the expected download size that will occur (if any) if translate is called on two given languages for display purposes.
+   *
+   * @param {string} fromLanguage
+   * @param {string} toLanguage
+   * @param {boolean} withQualityEstimation
+   * @returns {Promise<long>} Size in bytes of the expected download. A result of 0 indicates no download is expected for the request.
+   */
+  static async getExpectedTranslationDownloadSize(
+    fromLanguage,
+    toLanguage,
+    withQualityEstimation = false
+  ) {
+    const directSize = await this.#getModelDownloadSize(
+      fromLanguage,
+      toLanguage,
+      withQualityEstimation
+    );
+
+    // If a direct model is not found, then check pivots.
+    if (directSize.downloadSize == 0 && !directSize.modelFound) {
+      const indirectFrom = await TranslationsParent.#getModelDownloadSize(
+        fromLanguage,
+        PIVOT_LANGUAGE,
+        withQualityEstimation
+      );
+
+      const indirectTo = await TranslationsParent.#getModelDownloadSize(
+        PIVOT_LANGUAGE,
+        toLanguage,
+        withQualityEstimation
+      );
+
+      // Note, will also return 0 due to the models not being available as well.
+      return (
+        parseInt(indirectFrom.downloadSize) + parseInt(indirectTo.downloadSize)
+      );
+    }
+    return directSize.downloadSize;
+  }
+
+  /**
+   * Determines the language model download size for a specified translation for display purposes.
+   *
+   * @param {string} fromLanguage
+   * @param {string} toLanguage
+   * @param {boolean} withQualityEstimation
+   * @returns {Promise<{downloadSize: long, modelFound: boolean}> Download size is the size in bytes of the estimated download for display purposes. Model found indicates a model was found.
+   * e.g., a result of {size: 0, modelFound: false} indicates no bytes to download, because a model wasn't located.
+   */
+  static async #getModelDownloadSize(
+    fromLanguage,
+    toLanguage,
+    withQualityEstimation = false
+  ) {
+    const client = TranslationsParent.#getTranslationModelsRemoteClient();
+    const records = [
+      ...(await TranslationsParent.#getTranslationModelRecords()).values(),
+    ];
+
+    let downloadSize = 0;
+    let modelFound = false;
+
+    await Promise.all(
+      records.map(async record => {
+        if (record.fileType === "qualityModel" && !withQualityEstimation) {
+          return;
+        }
+
+        if (record.fromLang !== fromLanguage || record.toLang !== toLanguage) {
+          return;
+        }
+
+        modelFound = true;
+        const isDownloaded = await client.attachments.isDownloaded(record);
+        if (!isDownloaded) {
+          downloadSize += parseInt(record.attachment.size);
+        }
+      })
+    );
+    return { downloadSize, modelFound };
+  }
+
+  /**
    * For testing purposes, allow the Translations Engine to be mocked. If called
    * with `null` the mock is removed.
    *
@@ -2632,6 +2715,10 @@ class TranslationsLanguageState {
   }
 
   set requestedTranslationPair(requestedTranslationPair) {
+    if (this.#requestedTranslationPair === requestedTranslationPair) {
+      return;
+    }
+
     this.#error = null;
     this.#isEngineReady = false;
     this.#requestedTranslationPair = requestedTranslationPair;
@@ -2649,6 +2736,10 @@ class TranslationsLanguageState {
   }
 
   set detectedLanguages(detectedLanguages) {
+    if (this.#detectedLanguages === detectedLanguages) {
+      return;
+    }
+
     this.#detectedLanguages = detectedLanguages;
     this.dispatch();
   }
@@ -2665,6 +2756,10 @@ class TranslationsLanguageState {
   }
 
   set locationChangeId(locationChangeId) {
+    if (this.#locationChangeId === locationChangeId) {
+      return;
+    }
+
     this.#locationChangeId = locationChangeId;
 
     // When the location changes remove the previous error.
@@ -2681,6 +2776,9 @@ class TranslationsLanguageState {
   }
 
   set error(error) {
+    if (this.#error === error) {
+      return;
+    }
     this.#error = error;
     // Setting an error invalidates the requested translation pair.
     this.#requestedTranslationPair = null;
@@ -2697,6 +2795,9 @@ class TranslationsLanguageState {
   }
 
   set isEngineReady(isEngineReady) {
+    if (this.#isEngineReady === isEngineReady) {
+      return;
+    }
     this.#isEngineReady = isEngineReady;
     this.dispatch();
   }

@@ -668,9 +668,9 @@ Toolbox.prototype = {
   },
 
   /**
-   * Called on each new TRACING_STATE resource
+   * Called on each new JSTRACER_STATE resource
    *
-   * @param {Object} resource The TRACING_STATE resource
+   * @param {Object} resource The JSTRACER_STATE resource
    */
   async _onTracingStateChanged(resource) {
     const { profile } = resource;
@@ -926,7 +926,7 @@ Toolbox.prototype = {
           false
         )
       ) {
-        watchedResources.push(this.resourceCommand.TYPES.TRACING_STATE);
+        watchedResources.push(this.resourceCommand.TYPES.JSTRACER_STATE);
       }
 
       if (!this.isBrowserToolbox) {
@@ -1409,10 +1409,7 @@ Toolbox.prototype = {
     if (this._sourceMapLoader) {
       return this._sourceMapLoader;
     }
-    this._sourceMapLoader = new SourceMapLoader();
-    this._sourceMapLoader.on("source-map-error", message =>
-      this.target.logWarningInPage(message, "source map")
-    );
+    this._sourceMapLoader = new SourceMapLoader(this.commands.targetCommand);
     return this._sourceMapLoader;
   },
 
@@ -4082,9 +4079,7 @@ Toolbox.prototype = {
     this._pausedTargets = null;
 
     if (this._sourceMapLoader) {
-      this._sourceMapLoader.stopSourceMapWorker();
-      // Unregister all listeners
-      this._sourceMapLoader.clearEvents();
+      this._sourceMapLoader.destroy();
       this._sourceMapLoader = null;
     }
 
@@ -4744,7 +4739,7 @@ Toolbox.prototype = {
       if (resourceType == TYPES.THREAD_STATE) {
         this._onThreadStateChanged(resource);
       }
-      if (resourceType == TYPES.TRACING_STATE) {
+      if (resourceType == TYPES.JSTRACER_STATE) {
         this._onTracingStateChanged(resource);
       }
     }

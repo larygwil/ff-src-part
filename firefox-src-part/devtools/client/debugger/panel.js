@@ -4,10 +4,12 @@
 
 "use strict";
 
-const { MultiLocalizationHelper } = require("devtools/shared/l10n");
+const {
+  MultiLocalizationHelper,
+} = require("resource://devtools/shared/l10n.js");
 const {
   FluentL10n,
-} = require("devtools/client/shared/fluent-l10n/fluent-l10n");
+} = require("resource://devtools/client/shared/fluent-l10n/fluent-l10n.js");
 
 loader.lazyRequireGetter(
   this,
@@ -51,6 +53,8 @@ const DBG_STRINGS_URI = [
   // These are used in the AppErrorBoundary component
   "devtools/client/locales/startup.properties",
   "devtools/client/locales/components.properties",
+  // Used by SourceMapLoader
+  "devtools/client/locales/toolbox.properties",
 ];
 const L10N = new MultiLocalizationHelper(...DBG_STRINGS_URI);
 

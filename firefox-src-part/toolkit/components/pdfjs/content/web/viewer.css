@@ -311,8 +311,8 @@
   .buttonWidgetAnnotation.radioButton input:checked::before{
     border-radius:50%;
     height:50%;
-    left:30%;
-    top:20%;
+    left:25%;
+    top:25%;
     width:50%;
   }
 
@@ -900,6 +900,10 @@
 
   &.draggable.selectedEditor{
     cursor:move;
+  }
+
+  &.moving{
+    touch-action:none;
   }
 
   &.selectedEditor{
@@ -3293,6 +3297,14 @@ a:focus > .thumbnail > .thumbnailImage,
   background-clip:padding-box;
   border-radius:2px;
   color:var(--treeitem-hover-color);
+}
+
+#outlineOptionsContainer{
+  display:none;
+
+  #sidebarContainer:has(#outlineView:not(.hidden)) &{
+    display:inherit;
+  }
 }
 
 .dialogButton{

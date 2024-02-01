@@ -134,7 +134,8 @@ interface nsIContentAnalysisRequest : nsISupports
   // being uploaded.
   readonly attribute AString url;
 
-  // Sha256 digest of file.
+  // Sha256 digest of file. Callers may pass in an empty string to have the
+  // content analysis code calculate this.
   readonly attribute ACString sha256Digest;
 
   // URLs involved in the download (empty for non-downloads).
@@ -198,7 +199,7 @@ interface nsIContentAnalysis : nsISupports
    * @param aAutoAcknowledge
    *        Whether to send an acknowledge message to the agent after the agent sends a response.
    *        Passing false means that the caller is responsible for
-   *        calling nsIContentAnalysisResponse::acknowledge(), unless the request is cancelled.
+   *        calling nsIContentAnalysisResponse::acknowledge() if the Promise is resolved.
    */
   [implicit_jscontext]
   Promise analyzeContentRequest(in nsIContentAnalysisRequest aCar, in bool aAutoAcknowledge);
@@ -212,7 +213,8 @@ interface nsIContentAnalysis : nsISupports
    * @param aAutoAcknowledge
    *        Whether to send an acknowledge message to the agent after the agent sends a response.
    *        Passing false means that the caller is responsible for
-   *        calling nsIContentAnalysisResponse::acknowledge(), unless the request is cancelled.
+   *        calling nsIContentAnalysisResponse::acknowledge() if nsIContentAnalysisCallback::contentResult()
+   *        is called.
    * @param callback
    *        Callbacks to be called when the agent sends a response message (or when there is an error).
    */
@@ -227,4 +229,10 @@ interface nsIContentAnalysis : nsISupports
    *        The token for the request to cancel.
    */
   void cancelContentAnalysisRequest(in ACString aRequestToken);
+
+  /**
+   * Indicates that the user has responded to a WARN dialog. aAllowContent represents
+   * whether the user wants to allow the request to go through.
+   */
+  void respondToWarnDialog(in ACString aRequestToken, in bool aAllowContent);
 };

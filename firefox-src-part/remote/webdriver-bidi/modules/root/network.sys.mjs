@@ -281,6 +281,7 @@ class NetworkModule extends Module {
     this.#networkListener = new lazy.NetworkListener();
     this.#networkListener.on("auth-required", this.#onAuthRequired);
     this.#networkListener.on("before-request-sent", this.#onBeforeRequestSent);
+    this.#networkListener.on("fetch-error", this.#onFetchError);
     this.#networkListener.on("response-completed", this.#onResponseEvent);
     this.#networkListener.on("response-started", this.#onResponseEvent);
   }
@@ -288,6 +289,7 @@ class NetworkModule extends Module {
   destroy() {
     this.#networkListener.off("auth-required", this.#onAuthRequired);
     this.#networkListener.off("before-request-sent", this.#onBeforeRequestSent);
+    this.#networkListener.off("fetch-error", this.#onFetchError);
     this.#networkListener.off("response-completed", this.#onResponseEvent);
     this.#networkListener.off("response-started", this.#onResponseEvent);
     this.#networkListener.destroy();
@@ -461,6 +463,53 @@ class NetworkModule extends Module {
   }
 
   /**
+   * Fails a request that is blocked by a network intercept.
+   *
+   * @param {object=} options
+   * @param {string} options.request
+   *     The id of the blocked request that should be continued.
+   *
+   * @throws {InvalidArgumentError}
+   *     Raised if an argument is of an invalid type or value.
+   * @throws {NoSuchRequestError}
+   *     Raised if the request id does not match any request in the blocked
+   *     requests map.
+   */
+  async failRequest(options = {}) {
+    this.assertExperimentalCommandsEnabled("network.failRequest");
+    const { request: requestId } = options;
+
+    lazy.assert.string(
+      requestId,
+      `Expected "request" to be a string, got ${requestId}`
+    );
+
+    if (!this.#blockedRequests.has(requestId)) {
+      throw new lazy.error.NoSuchRequestError(
+        `Blocked request with id ${requestId} not found`
+      );
+    }
+
+    const { phase, request, resolveBlockedEvent } =
+      this.#blockedRequests.get(requestId);
+
+    if (phase === InterceptPhase.AuthRequired) {
+      throw new lazy.error.InvalidArgumentError(
+        `Expected blocked request not to be in "authRequired" phase`
+      );
+    }
+
+    const wrapper = ChannelWrapper.get(request);
+    wrapper.resume();
+    wrapper.cancel(
+      Cr.NS_ERROR_ABORT,
+      Ci.nsILoadInfo.BLOCKING_REASON_WEBDRIVER_BIDI
+    );
+
+    resolveBlockedEvent();
+  }
+
+  /**
    * Removes an existing network intercept.
    *
    * @param {object=} options
@@ -490,6 +539,44 @@ class NetworkModule extends Module {
     }
 
     this.#interceptMap.delete(intercept);
+  }
+
+  /**
+   * Add a new request in the blockedRequests map.
+   *
+   * @param {string} requestId
+   *     The request id.
+   * @param {InterceptPhase} phase
+   *     The phase where the request is blocked.
+   * @param {object=} options
+   * @param {object=} options.authCallbacks
+   *     Only defined for requests blocked in the authRequired phase.
+   *     Provides callbacks to handle the authentication.
+   * @param {nsIChannel=} options.requestChannel
+   *     The request channel.
+   * @param {nsIChannel=} options.responseChannel
+   *     The response channel.
+   */
+  #addBlockedRequest(requestId, phase, options = {}) {
+    const {
+      authCallbacks,
+      requestChannel: request,
+      responseChannel: response,
+    } = options;
+    const { promise: blockedEventPromise, resolve: resolveBlockedEvent } =
+      Promise.withResolvers();
+
+    this.#blockedRequests.set(requestId, {
+      authCallbacks,
+      request,
+      response,
+      resolveBlockedEvent,
+      phase,
+    });
+
+    blockedEventPromise.finally(() => {
+      this.#blockedRequests.delete(requestId);
+    });
   }
 
   #extractChallenges(responseData) {
@@ -533,6 +620,10 @@ class NetworkModule extends Module {
       contextId: browsingContext.id,
       type: lazy.WindowGlobalMessageHandler.type,
     };
+  }
+
+  #getSuspendMarkerText(requestData, phase) {
+    return `Request (id: ${requestData.request}) suspended by WebDriver BiDi in ${phase} phase`;
   }
 
   #getNetworkIntercepts(event, requestData) {
@@ -668,23 +759,18 @@ class NetworkModule extends Module {
       if (authRequiredEvent.isBlocked) {
         isBlocked = true;
 
-        const { promise: blockedEventPromise, resolve: resolveBlockedEvent } =
-          Promise.withResolvers();
-
         // requestChannel.suspend() is not needed here because the request is
         // already blocked on the authentication prompt notification until
         // one of the authCallbacks is called.
-        this.#blockedRequests.set(authRequiredEvent.request.request, {
-          authCallbacks,
-          request: requestChannel,
-          response: responseChannel,
-          resolveBlockedEvent,
-          phase: InterceptPhase.AuthRequired,
-        });
-
-        blockedEventPromise.finally(() => {
-          this.#blockedRequests.delete(authRequiredEvent.request.request);
-        });
+        this.#addBlockedRequest(
+          authRequiredEvent.request.request,
+          InterceptPhase.AuthRequired,
+          {
+            authCallbacks,
+            requestChannel,
+            responseChannel,
+          }
+        );
       }
     } finally {
       if (!isBlocked) {
@@ -774,17 +860,91 @@ class NetworkModule extends Module {
     if (beforeRequestSentEvent.isBlocked) {
       // TODO: Requests suspended in beforeRequestSent still reach the server at
       // the moment. https://bugzilla.mozilla.org/show_bug.cgi?id=1849686
-      requestChannel.suspend();
+      const wrapper = ChannelWrapper.get(requestChannel);
+      wrapper.suspend(
+        this.#getSuspendMarkerText(requestData, "beforeRequestSent")
+      );
 
-      this.#blockedRequests.set(beforeRequestSentEvent.request.request, {
-        request: requestChannel,
-        phase: InterceptPhase.BeforeRequestSent,
-      });
-
-      // TODO: Once we implement network.continueRequest, we should create a
-      // promise here which will wait until the request is resumed and removes
-      // the request from the blockedRequests. See Bug 1850680.
+      this.#addBlockedRequest(
+        beforeRequestSentEvent.request.request,
+        InterceptPhase.BeforeRequestSent,
+        {
+          requestChannel,
+        }
+      );
     }
+  };
+
+  #onFetchError = (name, data) => {
+    const {
+      contextId,
+      errorText,
+      isNavigationRequest,
+      redirectCount,
+      requestData,
+      timestamp,
+    } = data;
+
+    const browsingContext = lazy.TabManager.getBrowsingContextById(contextId);
+    if (!browsingContext) {
+      // Do not emit events if the context id does not match any existing
+      // browsing context.
+      return;
+    }
+
+    const internalEventName = "network._fetchError";
+    const protocolEventName = "network.fetchError";
+
+    // Process the navigation to create potentially missing navigation ids
+    // before the early return below.
+    const navigation = this.#getNavigationId(
+      protocolEventName,
+      isNavigationRequest,
+      browsingContext,
+      requestData.url
+    );
+
+    // Always emit internal events, they are used to support the browsingContext
+    // navigate command.
+    // Bug 1861922: Replace internal events with a Network listener helper
+    // directly using the NetworkObserver.
+    this.emitEvent(
+      internalEventName,
+      {
+        navigation,
+        url: requestData.url,
+      },
+      this.#getContextInfo(browsingContext)
+    );
+
+    const isListening = this.messageHandler.eventsDispatcher.hasListener(
+      protocolEventName,
+      { contextId }
+    );
+    if (!isListening) {
+      // If there are no listeners subscribed to this event and this context,
+      // bail out.
+      return;
+    }
+
+    const baseParameters = this.#processNetworkEvent(protocolEventName, {
+      contextId,
+      navigation,
+      redirectCount,
+      requestData,
+      timestamp,
+    });
+
+    const fetchErrorEvent = this.#serializeNetworkEvent({
+      ...baseParameters,
+      errorText,
+    });
+
+    this.emitEvent(
+      protocolEventName,
+      fetchErrorEvent,
+      this.#getContextInfo(browsingContext)
+    );
   };
 
   #onResponseEvent = (name, data) => {
@@ -876,17 +1036,19 @@ class NetworkModule extends Module {
       protocolEventName === "network.responseStarted" &&
       responseEvent.isBlocked
     ) {
-      requestChannel.suspend();
+      const wrapper = ChannelWrapper.get(requestChannel);
+      wrapper.suspend(
+        this.#getSuspendMarkerText(requestData, "responseStarted")
+      );
 
-      this.#blockedRequests.set(responseEvent.request.request, {
-        request: requestChannel,
-        response: responseChannel,
-        phase: InterceptPhase.ResponseStarted,
-      });
-
-      // TODO: Once we implement network.continueResponse, we should create a
-      // promise here which will wait until the request is resumed and removes
-      // the request from the blockedRequests. See Bug 1853887.
+      this.#addBlockedRequest(
+        responseEvent.request.request,
+        InterceptPhase.ResponseStarted,
+        {
+          requestChannel,
+          responseChannel,
+        }
+      );
     }
   };
 
@@ -1051,6 +1213,7 @@ class NetworkModule extends Module {
     return [
       "network.authRequired",
       "network.beforeRequestSent",
+      "network.fetchError",
       "network.responseCompleted",
       "network.responseStarted",
     ];

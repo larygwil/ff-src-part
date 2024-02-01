@@ -49,7 +49,6 @@
 #include <algorithm>
 #include <stdio.h>
 
-#include "CaretAssociationHint.h"
 #include "FrameProperties.h"
 #include "LayoutConstants.h"
 #include "mozilla/AspectRatio.h"
@@ -127,6 +126,7 @@ struct CharacterDataChangeInfo;
 
 namespace mozilla {
 
+enum class CaretAssociationHint;
 enum class PeekOffsetOption : uint16_t;
 enum class PseudoStyleType : uint8_t;
 enum class TableSelectionMode : uint32_t;
@@ -2234,10 +2234,7 @@ class nsIFrame : public nsQueryFrame {
   // that need the beginning and end of the object, the StartOffset and
   // EndOffset helpers can be used.
   struct MOZ_STACK_CLASS ContentOffsets {
-    ContentOffsets()
-        : offset(0),
-          secondaryOffset(0),
-          associate(mozilla::CARET_ASSOCIATE_BEFORE) {}
+    ContentOffsets() = default;
     bool IsNull() { return !content; }
     // Helpers for places that need the ends of the offsets and expect them in
     // numerical order, as opposed to wanting the primary and secondary offsets
@@ -2245,17 +2242,20 @@ class nsIFrame : public nsQueryFrame {
     int32_t EndOffset() { return std::max(offset, secondaryOffset); }
 
     nsCOMPtr<nsIContent> content;
-    int32_t offset;
-    int32_t secondaryOffset;
+    int32_t offset = 0;
+    int32_t secondaryOffset = 0;
     // This value indicates whether the associated content is before or after
     // the offset; the most visible use is to allow the caret to know which line
     // to display on.
-    mozilla::CaretAssociationHint associate;
+    mozilla::CaretAssociationHint associate{0};  // Before
   };
   enum {
-    IGNORE_SELECTION_STYLE = 0x01,
+    IGNORE_SELECTION_STYLE = 1 << 0,
     // Treat visibility:hidden frames as non-selectable
-    SKIP_HIDDEN = 0x02
+    SKIP_HIDDEN = 1 << 1,
+    // Do not return content in native anonymous subtree (if the frame is in a
+    // native anonymous subtree, the method may return content in same subtree).
+    IGNORE_NATIVE_ANONYMOUS_SUBTREE = 1 << 2,
   };
   /**
    * This function calculates the content offsets for selection relative to
@@ -2388,6 +2388,13 @@ class nsIFrame : public nsQueryFrame {
    * Called when this frame becomes primary for mContent.
    */
   void InitPrimaryFrame();
+  /**
+   * Called when the primary frame style changes.
+   *
+   * Kind of like DidSetComputedStyle, but the first computed style is set
+   * before SetPrimaryFrame, so we need this tweak.
+   */
+  void HandlePrimaryFrameStyleChange(ComputedStyle* aOldStyle);
 
  public:
   /**
@@ -3304,8 +3311,7 @@ class nsIFrame : public nsQueryFrame {
    * https://drafts.csswg.org/css-contain-2/#relevant-to-the-user.
    * Returns true if the over-all relevancy changed.
    */
-  [[nodiscard]] bool UpdateIsRelevantContent(
-      const ContentRelevancy& aRelevancyToUpdate);
+  bool UpdateIsRelevantContent(const ContentRelevancy& aRelevancyToUpdate);
 
   /**
    * Get the "type" of the frame.
@@ -4590,6 +4596,14 @@ class nsIFrame : public nsQueryFrame {
     return HasAnyStateBits(NS_FRAME_IS_SVG_TEXT);
   }
 
+  // https://drafts.csswg.org/css-overflow-3/#scroll-container
+  bool IsScrollContainer() const {
+    const bool result = IsScrollFrame() || IsListControlFrame();
+    MOZ_ASSERT(result == !!GetAsScrollContainer());
+    return result;
+  }
+  nsIScrollableFrame* GetAsScrollContainer() const;
+
   /**
    * Returns true if the frame is an SVG Rendering Observer container.
    */
@@ -4687,8 +4701,6 @@ class nsIFrame : public nsQueryFrame {
   }
   // Update mAllDescendantsAreInvisible flag for this frame and ancestors.
   void UpdateVisibleDescendantsState();
-
-  void UpdateAnimationVisibility();
 
   /**
    * If this returns true, the frame it's called on should get the

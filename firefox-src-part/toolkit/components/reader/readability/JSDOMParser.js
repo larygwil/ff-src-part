@@ -1,11 +1,3 @@
-/*eslint-env es6:false*/
-/*
- * DO NOT MODIFY THIS FILE DIRECTLY!
- *
- * This is a shared library that is maintained in an external repo:
- * https://github.com/mozilla/readability
- */
-
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -881,10 +873,11 @@
 
   JSDOMParser.prototype = {
     error: function(m) {
-      if (typeof dump !== "undefined") {
-        dump("JSDOMParser error: " + m + "\n");
-      } else if (typeof console !== "undefined") {
+      if (typeof console !== "undefined") {
         console.log("JSDOMParser error: " + m + "\n");
+      } else if (typeof dump !== "undefined") {
+        /* global dump */
+        dump("JSDOMParser error: " + m + "\n");
       }
       this.errorState += m + "\n";
     },
@@ -1199,5 +1192,6 @@
 })(this);
 
 if (typeof module === "object") {
+  /* global module */
   module.exports = this.JSDOMParser;
 }

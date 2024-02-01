@@ -41,7 +41,6 @@ ChromeUtils.defineESModuleGetters(lazy, {
   HomePage: "resource:///modules/HomePage.sys.mjs",
   Integration: "resource://gre/modules/Integration.sys.mjs",
   Interactions: "resource:///modules/Interactions.sys.mjs",
-  Log: "resource://gre/modules/Log.sys.mjs",
   LoginBreaches: "resource:///modules/LoginBreaches.sys.mjs",
   MigrationUtils: "resource:///modules/MigrationUtils.sys.mjs",
   NetUtil: "resource://gre/modules/NetUtil.sys.mjs",
@@ -589,7 +588,6 @@ let JSWINDOWACTORS = {
       "chrome://browser/content/places/historySidebar.xhtml",
       "chrome://browser/content/places/bookmarksSidebar.xhtml",
       "about:firefoxview",
-      "about:firefoxview-next",
     ],
   },
 
@@ -3738,12 +3736,12 @@ BrowserGlue.prototype = {
    * Show the notificationBox for a locked places database.
    */
   _showPlacesLockedNotificationBox:
-    function BG__showPlacesLockedNotificationBox() {
+    async function BG__showPlacesLockedNotificationBox() {
       var win = lazy.BrowserWindowTracker.getTopWindow();
       var buttons = [{ supportPage: "places-locked" }];
 
       var notifyBox = win.gBrowser.getNotificationBox();
-      var notification = notifyBox.appendNotification(
+      var notification = await notifyBox.appendNotification(
         "places-locked",
         {
           label: { "l10n-id": "places-locked-prompt" },
@@ -4618,7 +4616,7 @@ BrowserGlue.prototype = {
     ];
 
     const notifyBox = win.gBrowser.getNotificationBox();
-    const notification = notifyBox.appendNotification(
+    const notification = await notifyBox.appendNotification(
       "startup-restore-session-suggestion",
       {
         label: messageFragment,
@@ -5734,12 +5732,10 @@ export var AboutHomeStartupCache = {
       return;
     }
 
-    this.log = lazy.Log.repository.getLogger(this.LOG_NAME);
-    this.log.manageLevelFromPref(this.LOG_LEVEL_PREF);
-    this._appender = new lazy.Log.ConsoleAppender(
-      new lazy.Log.BasicFormatter()
-    );
-    this.log.addAppender(this._appender);
+    this.log = console.createInstance({
+      prefix: this.LOG_NAME,
+      maxLogLevelPref: this.LOG_LEVEL_PREF,
+    });
 
     this.log.trace("Initting.");
 
@@ -5841,7 +5837,6 @@ export var AboutHomeStartupCache = {
 
     if (this.log) {
       this.log.trace("Uninitialized.");
-      this.log.removeAppender(this._appender);
       this.log = null;
     }
 

@@ -19,21 +19,20 @@ ChromeUtils.defineESModuleGetters(lazy, {
 
 XPCOMUtils.defineLazyModuleGetters(lazy, {
   AboutWelcomeTelemetry:
-    "resource://activity-stream/aboutwelcome/lib/AboutWelcomeTelemetry.jsm",
+    "resource:///modules/aboutwelcome/AboutWelcomeTelemetry.jsm",
   AboutWelcomeDefaults:
-    "resource://activity-stream/aboutwelcome/lib/AboutWelcomeDefaults.jsm",
-  AWScreenUtils:
-    "resource://activity-stream/aboutwelcome/lib/AWScreenUtils.jsm",
+    "resource:///modules/aboutwelcome/AboutWelcomeDefaults.jsm",
+  AWScreenUtils: "resource:///modules/aboutwelcome/AWScreenUtils.jsm",
 });
 
-XPCOMUtils.defineLazyGetter(lazy, "log", () => {
+ChromeUtils.defineLazyGetter(lazy, "log", () => {
   const { Logger } = ChromeUtils.importESModule(
     "resource://messaging-system/lib/Logger.sys.mjs"
   );
   return new Logger("AboutWelcomeParent");
 });
 
-XPCOMUtils.defineLazyGetter(
+ChromeUtils.defineLazyGetter(
   lazy,
   "Telemetry",
   () => new lazy.AboutWelcomeTelemetry()

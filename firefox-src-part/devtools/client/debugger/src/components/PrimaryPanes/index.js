@@ -2,13 +2,13 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
 
-import React, { Component } from "react";
-import PropTypes from "prop-types";
+import React, { Component } from "devtools/client/shared/vendor/react";
+import PropTypes from "devtools/client/shared/vendor/react-prop-types";
 
-import actions from "../../actions";
-import { getSelectedPrimaryPaneTab } from "../../selectors";
+import actions from "../../actions/index";
+import { getSelectedPrimaryPaneTab } from "../../selectors/index";
 import { prefs } from "../../utils/prefs";
-import { connect } from "../../utils/connect";
+import { connect } from "devtools/client/shared/vendor/react-redux";
 import { primaryPaneTabs } from "../../constants";
 
 import Outline from "./Outline";
@@ -18,9 +18,7 @@ import ProjectSearch from "./ProjectSearch";
 const {
   TabPanel,
   Tabs,
-} = require("devtools/client/shared/components/tabs/Tabs.js");
-
-import "./Sources.css";
+} = require("resource://devtools/client/shared/components/tabs/Tabs.js");
 
 const tabs = [
   primaryPaneTabs.SOURCES,

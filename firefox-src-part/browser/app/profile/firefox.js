@@ -641,6 +641,10 @@ pref("browser.urlbar.suggest.addons", true);
 // mdn suggestions are turned on.
 pref("browser.urlbar.suggest.mdn", true);
 
+// If `browser.urlbar.yelp.featureGate` is true, this controls whether
+// Yelp suggestions are turned on.
+pref("browser.urlbar.suggest.yelp", true);
+
 // The minimum prefix length of addons keyword the user must type to trigger
 // the suggestion. 0 means the min length should be taken from Nimbus.
 pref("browser.urlbar.addons.minKeywordLength", 0);
@@ -710,9 +714,6 @@ pref("browser.download.clearHistoryOnDelete", 0);
 pref("browser.helperApps.showOpenOptionForPdfJS", true);
 pref("browser.helperApps.showOpenOptionForViewableInternally", true);
 
-// search engine removal URL
-pref("browser.search.searchEngineRemoval", "https://support.mozilla.org/1/firefox/%VERSION%/%OS%/%LOCALE%/search-engine-removal");
-
 // search engines URL
 pref("browser.search.searchEnginesURL",      "https://addons.mozilla.org/%LOCALE%/firefox/search-engines/");
 
@@ -780,6 +781,14 @@ pref("browser.shopping.experience2023.survey.hasSeen", false);
 
 // Number of PDP visits used to display shopping survey
 pref("browser.shopping.experience2023.survey.pdpVisits", 0);
+
+// Enables the auto-open feature for the shopping sidebar,
+// including new callouts and settings UI changes
+// (this is just the feature flag).
+pref("browser.shopping.experience2023.autoOpen.enabled", true);
+
+// Opens the shopping sidebar automatically when viewing a PDP.
+pref("browser.shopping.experience2023.autoOpen.userEnabled", true);
 
 // Enables the display of the Mozilla VPN banner in private browsing windows
 pref("browser.privatebrowsing.vpnpromourl", "https://vpn.mozilla.org/?utm_source=firefox-browser&utm_medium=firefox-%CHANNEL%-browser&utm_campaign=private-browsing-vpn-link");
@@ -907,6 +916,10 @@ pref("browser.tabs.tooltipsShowPidAndActiveness", true);
 pref("browser.tabs.tooltipsShowPidAndActiveness", false);
 #endif
 
+pref("browser.tabs.cardPreview.enabled", false);
+pref("browser.tabs.cardPreview.delayMs", 1000);
+pref("browser.tabs.cardPreview.showThumbnails", true);
+
 pref("browser.tabs.firefox-view", true);
 pref("browser.tabs.firefox-view-next", true);
 pref("browser.tabs.firefox-view-newIcon", true);
@@ -1017,6 +1030,11 @@ pref("privacy.clearOnShutdown.sessions",    true);
 pref("privacy.clearOnShutdown.offlineApps", false);
 pref("privacy.clearOnShutdown.siteSettings", false);
 pref("privacy.clearOnShutdown.openWindows", false);
+// Clear on shutdown prefs used in the new dialog
+pref("privacy.clearOnShutdown_v2.historyFormDataAndDownloads", true);
+pref("privacy.clearOnShutdown_v2.cookiesAndStorage", true);
+pref("privacy.clearOnShutdown_v2.cache", true);
+pref("privacy.clearOnShutdown_v2.siteSettings", false);
 
 pref("privacy.cpd.history",                 true);
 pref("privacy.cpd.formdata",                true);
@@ -1040,6 +1058,8 @@ pref("privacy.history.custom",              false);
 // 5 - Last 5 minutes
 // 6 - Last 24 hours
 pref("privacy.sanitize.timeSpan", 1);
+
+pref("privacy.sanitize.useOldClearHistoryDialog", true);
 
 pref("privacy.panicButton.enabled",         true);
 
@@ -1318,10 +1338,6 @@ pref("places.frecency.origins.alternative.featureGate", false);
 // selects "Forget About This Site".
 pref("places.forgetThisSite.clearByBaseDomain", true);
 
-#ifdef NIGHTLY_BUILD
-pref("places.experimental.useSingleQueueTransactionManager", true);
-#endif
-
 // Whether to warm up network connections for places: menus and places: toolbar.
 pref("browser.places.speculativeConnect.enabled", true);
 
@@ -1560,13 +1576,18 @@ pref("services.sync.prefs.sync.permissions.default.image", true);
 pref("services.sync.prefs.sync.pref.downloads.disable_button.edit_actions", true);
 pref("services.sync.prefs.sync.pref.privacy.disable_button.cookie_exceptions", true);
 pref("services.sync.prefs.sync.privacy.clearOnShutdown.cache", true);
+pref("services.sync.prefs.sync.privacy.clearOnShutdown_v2.cache", true);
 pref("services.sync.prefs.sync.privacy.clearOnShutdown.cookies", true);
+pref("services.sync.prefs.sync.privacy.clearOnShutdown_v2.cookiesAndStorage", true);
 pref("services.sync.prefs.sync.privacy.clearOnShutdown.downloads", true);
+pref("services.sync.prefs.sync.privacy.clearOnShutdown_v2.downloads", true);
 pref("services.sync.prefs.sync.privacy.clearOnShutdown.formdata", true);
 pref("services.sync.prefs.sync.privacy.clearOnShutdown.history", true);
+pref("services.sync.prefs.sync.privacy.clearOnShutdown_v2.historyFormDataAndDownloads", true);
 pref("services.sync.prefs.sync.privacy.clearOnShutdown.offlineApps", true);
 pref("services.sync.prefs.sync.privacy.clearOnShutdown.sessions", true);
 pref("services.sync.prefs.sync.privacy.clearOnShutdown.siteSettings", true);
+pref("services.sync.prefs.sync.privacy.clearOnShutdown_v2.siteSettings", true);
 pref("services.sync.prefs.sync.privacy.donottrackheader.enabled", true);
 pref("services.sync.prefs.sync.privacy.globalprivacycontrol.enabled", true);
 pref("services.sync.prefs.sync.privacy.sanitize.sanitizeOnShutdown", true);
@@ -1840,6 +1861,9 @@ pref("identity.fxaccounts.remote.root", "https://accounts.firefox.com/");
 // The value of the context query parameter passed in fxa requests.
 pref("identity.fxaccounts.contextParam", "fx_desktop_v3");
 
+// Whether to use the oauth flow for desktop or not
+pref("identity.fxaccounts.oauth.enabled", false);
+
 // The remote URL of the FxA Profile Server
 pref("identity.fxaccounts.remote.profile.uri", "https://profile.accounts.firefox.com/v1");
 
@@ -1947,10 +1971,6 @@ pref("toolkit.telemetry.newProfilePing.enabled", true);
 pref("toolkit.telemetry.updatePing.enabled", true);
 // Enables sending 'bhr' pings when the browser hangs.
 pref("toolkit.telemetry.bhrPing.enabled", true);
-
-// Ping Centre Telemetry settings.
-pref("browser.ping-centre.telemetry", true);
-pref("browser.ping-centre.log", false);
 
 // Enable GMP support in the addon manager.
 pref("media.gmp-provider.enabled", true);
@@ -2071,8 +2091,7 @@ pref("browser.contentblocking.report.show_mobile_app", true);
 pref("browser.send_to_device_locales", "de,en-GB,en-US,es-AR,es-CL,es-ES,es-MX,fr,id,pl,pt-BR,ru,zh-TW");
 
 // Avoid advertising in certain regions. Comma separated string of two letter ISO 3166-1 country codes.
-// We're currently blocking all of Ukraine (ua), but would prefer to block just Crimea (ua-43). Currently, the Mozilla Location Service APIs used by Region.sys.mjs only exposes the country, not the subdivision.
-pref("browser.vpn_promo.disallowed_regions", "ae,by,cn,cu,iq,ir,kp,om,ru,sd,sy,tm,tr,ua");
+pref("browser.vpn_promo.disallowed_regions", "ae,by,cn,cu,iq,ir,kp,om,ru,sd,sy,tm,tr");
 
 // Default to enabling VPN promo messages to be shown when specified and allowed
 pref("browser.vpn_promo.enabled", true);
@@ -2356,6 +2375,9 @@ pref("extensions.screenshots.disabled", false);
 // Preference that determines whether Screenshots is opened as a dedicated browser component
 pref("screenshots.browser.component.enabled", false);
 
+// Preference that determines what button to focus
+pref("screenshots.browser.component.last-saved-method", "download");
+
 // DoH Rollout: whether to clear the mode value at shutdown.
 pref("doh-rollout.clearModeOnShutdown", false);
 
@@ -2444,7 +2466,7 @@ pref("browser.toolbars.bookmarks.showInPrivateBrowsing", false);
 // quick access to sign-in and manage your Firefox Account.
 pref("identity.fxaccounts.toolbar.enabled", true);
 pref("identity.fxaccounts.toolbar.accessed", false);
-pref("identity.fxaccounts.toolbar.defaultVisible", false);
+pref("identity.fxaccounts.toolbar.defaultVisible", true);
 pref("identity.fxaccounts.toolbar.pxiToolbarEnabled", false);
 
 // Check bundled omni JARs for corruption.
@@ -2870,9 +2892,9 @@ pref("browser.firefox-view.view-count", 0);
 // Maximum number of rows to show on the "History" page.
 pref("browser.firefox-view.max-history-rows", 300);
 // Enables search functionality in Firefox View.
-pref("browser.firefox-view.search.enabled", false);
+pref("browser.firefox-view.search.enabled", true);
 // Enables virtual list functionality in Firefox View.
-pref("browser.firefox-view.virtual-list.enabled", false);
+pref("browser.firefox-view.virtual-list.enabled", true);
 
 // If the user has seen the pdf.js feature tour this value reflects the tour
 // message id, the id of the last screen they saw, and whether they completed the tour
@@ -2890,6 +2912,9 @@ pref("browser.pdfjs.feature-tour", "{\"screen\":\"\",\"complete\":false}");
 #else
   pref("cookiebanners.ui.desktop.enabled", false);
 #endif
+
+// When true, shows a one-time feature callout for cookie banner blocking.
+pref("cookiebanners.ui.desktop.showCallout", false);
 
 // Controls which variant of the cookie banner CFR the user is presented with.
 pref("cookiebanners.ui.desktop.cfrVariant", 0);
@@ -2950,11 +2975,6 @@ pref("ui.new-webcompat-reporter.reason-dropdown", 0);
 // Whether the reset private browsing panel should ask for confirmation before
 // performing the clear action.
 pref("browser.privatebrowsing.resetPBM.showConfirmationDialog", true);
-
-// bug 1858545: Temporary pref to enable a staged rollout of macOS attribution Telemetry
-#ifdef XP_MACOSX
-  pref("browser.attribution.macos.enabled", false);
-#endif
 
 // the preferences related to the Nimbus experiment, to activate and deactivate
 // the the entire rollout or deactivate only the OS prompt (see: bug 1864216)

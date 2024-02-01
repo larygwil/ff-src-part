@@ -43,16 +43,19 @@ class RecentlyClosedTabsInView extends ViewPage {
     this.fullyUpdated = false;
     this.maxTabsLength = this.recentBrowsing
       ? MAX_TABS_FOR_RECENT_BROWSING
-      : 25;
+      : -1;
     this.recentlyClosedTabs = [];
     this.searchQuery = "";
     this.searchResults = null;
     this.showAll = false;
+    this.cumulativeSearches = 0;
   }
 
   static properties = {
+    ...ViewPage.properties,
     searchResults: { type: Array },
     showAll: { type: Boolean },
+    cumulativeSearches: { type: Number },
   };
 
   static queries = {
@@ -231,6 +234,16 @@ class RecentlyClosedTabsInView extends ViewPage {
         page: this.recentBrowsing ? "recentbrowsing" : "recentlyclosed",
       }
     );
+    if (this.searchQuery) {
+      const searchesHistogram = Services.telemetry.getKeyedHistogramById(
+        "FIREFOX_VIEW_CUMULATIVE_SEARCHES"
+      );
+      searchesHistogram.add(
+        this.recentBrowsing ? "recentbrowsing" : "recentlyclosed",
+        this.cumulativeSearches
+      );
+      this.cumulativeSearches = 0;
+    }
   }
 
   onDismissTab(e) {
@@ -266,8 +279,13 @@ class RecentlyClosedTabsInView extends ViewPage {
     );
   }
 
-  willUpdate() {
+  willUpdate(changedProperties) {
     this.fullyUpdated = false;
+    if (changedProperties.has("searchQuery")) {
+      this.cumulativeSearches = this.searchQuery
+        ? this.cumulativeSearches + 1
+        : 0;
+    }
   }
 
   updated() {
@@ -305,7 +323,7 @@ class RecentlyClosedTabsInView extends ViewPage {
         "firefoxview-recentlyclosed-empty-description-two",
       ];
       descriptionLink = {
-        url: "about:firefoxview-next#history",
+        url: "about:firefoxview#history",
         name: "history-url",
         sameTarget: "true",
       };
@@ -328,7 +346,7 @@ class RecentlyClosedTabsInView extends ViewPage {
     return html`
       <link
         rel="stylesheet"
-        href="chrome://browser/content/firefoxview/firefoxview-next.css"
+        href="chrome://browser/content/firefoxview/firefoxview.css"
       />
       ${when(
         !this.recentBrowsing,
@@ -348,6 +366,10 @@ class RecentlyClosedTabsInView extends ViewPage {
                 data-l10n-id="firefoxview-search-text-box-recentlyclosed"
                 data-l10n-attrs="placeholder"
                 @fxview-search-textbox-query=${this.onSearchQuery}
+                .size=${this.searchTextboxSize}
+                pageName=${this.recentBrowsing
+                  ? "recentbrowsing"
+                  : "recentlyclosed"}
               ></fxview-search-textbox>
             </div>`
           )}
@@ -373,7 +395,9 @@ class RecentlyClosedTabsInView extends ViewPage {
                 <fxview-tab-list
                   class="with-dismiss-button"
                   slot="main"
-                  .maxTabsLength=${this.showAll ? -1 : this.maxTabsLength}
+                  .maxTabsLength=${!this.recentBrowsing || this.showAll
+                    ? -1
+                    : MAX_TABS_FOR_RECENT_BROWSING}
                   .searchQuery=${ifDefined(
                     this.searchResults && this.searchQuery
                   )}
@@ -396,6 +420,7 @@ class RecentlyClosedTabsInView extends ViewPage {
               ?hidden=${!this.isShowAllLinkVisible()}
               slot="footer"
               tabindex="0"
+              role="link"
             ></div>`
           )}
         </card-container>
@@ -423,7 +448,7 @@ class RecentlyClosedTabsInView extends ViewPage {
     return (
       this.recentBrowsing &&
       this.searchQuery &&
-      this.searchResults.length > this.maxTabsLength &&
+      this.searchResults.length > MAX_TABS_FOR_RECENT_BROWSING &&
       !this.showAll
     );
   }
@@ -436,6 +461,15 @@ class RecentlyClosedTabsInView extends ViewPage {
     ) {
       event.preventDefault();
       this.showAll = true;
+      Services.telemetry.recordEvent(
+        "firefoxview_next",
+        "search_show_all",
+        "showallbutton",
+        null,
+        {
+          section: "recentlyclosed",
+        }
+      );
     }
   }
 }

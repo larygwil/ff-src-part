@@ -47,7 +47,7 @@ XPCOMUtils.defineLazyModuleGetters(lazy, {
 XPCOMUtils.defineLazyServiceGetters(lazy, {
   BrowserHandler: ["@mozilla.org/browser/clh;1", "nsIBrowserHandler"],
 });
-XPCOMUtils.defineLazyGetter(lazy, "log", () => {
+ChromeUtils.defineLazyGetter(lazy, "log", () => {
   const { Logger } = ChromeUtils.importESModule(
     "resource://messaging-system/lib/Logger.sys.mjs"
   );
@@ -1341,7 +1341,9 @@ class _ASRouter {
       message.skip_in_tests &&
       // `this.messagesEnabledInAutomation` should be stubbed in tests
       !this.messagesEnabledInAutomation?.includes(message.id) &&
-      (Cu.isInAutomation || Services.env.exists("XPCSHELL_TEST_PROFILE_DIR"))
+      (Cu.isInAutomation ||
+        Services.env.exists("XPCSHELL_TEST_PROFILE_DIR") ||
+        Services.env.get("MOZ_AUTOMATION"))
     ) {
       lazy.log.debug(
         `Skipping message ${message.id} because ${message.skip_in_tests}`
@@ -1863,12 +1865,7 @@ class _ASRouter {
         encodeURIComponent(attributionData)
       );
     } else if (AppConstants.platform === "macosx") {
-      await this.setAttributionString(
-        `__MOZCUSTOM__${encodeURIComponent(attributionData)}`
-      );
-
-      // Delete attribution data file
-      await AttributionCode.deleteFileAsync();
+      await this.setAttributionString(encodeURIComponent(attributionData));
     }
 
     // Clear cache call is only possible in a testing environment

@@ -29105,7 +29105,7 @@ const BOLDITALIC = {
   weight: "bold"
 };
 const substitutionMap = new Map([["Times-Roman", {
-  local: ["Times New Roman", "Times-Roman", "Times", "Liberation Serif", "Nimbus Roman", "Nimbus Roman L", "Tinos", "Thorndale", "TeX Gyre Termes", "FreeSerif", "DejaVu Serif", "Bitstream Vera Serif", "Ubuntu"],
+  local: ["Times New Roman", "Times-Roman", "Times", "Liberation Serif", "Nimbus Roman", "Nimbus Roman L", "Tinos", "Thorndale", "TeX Gyre Termes", "FreeSerif", "Linux Libertine O", "Libertinus Serif", "DejaVu Serif", "Bitstream Vera Serif", "Ubuntu"],
   style: NORMAL,
   ultimate: "serif"
 }], ["Times-Bold", {
@@ -29141,7 +29141,7 @@ const substitutionMap = new Map([["Times-Roman", {
   style: BOLDITALIC,
   ultimate: "sans-serif"
 }], ["Courier", {
-  local: ["Courier", "Courier New", "Liberation Mono", "Nimbus Mono", "Nimbus Mono L", "Cousine", "Cumberland", "TeX Gyre Cursor", "FreeMono"],
+  local: ["Courier", "Courier New", "Liberation Mono", "Nimbus Mono", "Nimbus Mono L", "Cousine", "Cumberland", "TeX Gyre Cursor", "FreeMono", "Linux Libertine Mono O", "Libertinus Mono"],
   style: NORMAL,
   ultimate: "monospace"
 }], ["Courier-Bold", {
@@ -29233,6 +29233,10 @@ function getStyleToAppend(style) {
   }
   return "";
 }
+function getFamilyName(str) {
+  const keywords = new Set(["thin", "extralight", "ultralight", "demilight", "semilight", "light", "book", "regular", "normal", "medium", "demibold", "semibold", "bold", "extrabold", "ultrabold", "black", "heavy", "extrablack", "ultrablack", "roman", "italic", "oblique", "ultracondensed", "extracondensed", "condensed", "semicondensed", "normal", "semiexpanded", "expanded", "extraexpanded", "ultraexpanded", "bolditalic"]);
+  return str.split(/[- ,+]+/g).filter(tok => !keywords.has(tok.toLowerCase())).join(" ");
+}
 function generateFont({
   alias,
   local,
@@ -29309,7 +29313,7 @@ function getFontSubstitution(systemFontCache, idFactory, localFontPath, baseFont
     const italic = /oblique|italic/gi.test(baseFontName);
     const style = bold && italic && BOLDITALIC || bold && BOLD || italic && ITALIC || NORMAL;
     substitutionInfo = {
-      css: loadedName,
+      css: `"${getFamilyName(baseFontName)}",${loadedName}`,
       guessFallback: true,
       loadedName,
       baseFontName,
@@ -29330,7 +29334,7 @@ function getFontSubstitution(systemFontCache, idFactory, localFontPath, baseFont
   const guessFallback = ultimate === null;
   const fallback = guessFallback ? "" : `,${ultimate}`;
   substitutionInfo = {
-    css: `${loadedName}${fallback}`,
+    css: `"${getFamilyName(baseFontName)}",${loadedName}${fallback}`,
     guessFallback,
     loadedName,
     baseFontName,
@@ -31419,6 +31423,7 @@ class PartialEvaluator {
       }
       const objId = `mask_${this.idFactory.createObjId()}`;
       operatorList.addDependency(objId);
+      imgData.dataLen = imgData.bitmap ? imgData.width * imgData.height * 4 : imgData.data.length;
       this._sendImgData(objId, imgData);
       args = [{
         data: objId,
@@ -31460,14 +31465,32 @@ class PartialEvaluator {
       cacheGlobally = false;
     if (this.parsingType3Font) {
       objId = `${this.idFactory.getDocId()}_type3_${objId}`;
-    } else if (imageRef) {
+    } else if (cacheKey && imageRef) {
       cacheGlobally = this.globalImageCache.shouldCache(imageRef, this.pageIndex);
       if (cacheGlobally) {
+        assert(!isInline, "Cannot cache an inline image globally.");
         objId = `${this.idFactory.getDocId()}_${objId}`;
       }
     }
     operatorList.addDependency(objId);
     args = [objId, w, h];
+    operatorList.addImageOps(OPS.paintImageXObject, args, optionalContent);
+    if (cacheGlobally && w * h > 250000) {
+      const localLength = await this.handler.sendWithPromise("commonobj", [objId, "CopyLocalImage", {
+        imageRef
+      }]);
+      if (localLength) {
+        this.globalImageCache.setData(imageRef, {
+          objId,
+          fn: OPS.paintImageXObject,
+          args,
+          optionalContent,
+          byteSize: 0
+        });
+        this.globalImageCache.addByteSize(imageRef, localLength);
+        return;
+      }
+    }
     PDFImage.buildImage({
       xref: this.xref,
       res: resources,
@@ -31477,16 +31500,16 @@ class PartialEvaluator {
       localColorSpaceCache
     }).then(async imageObj => {
       imgData = await imageObj.createImageData(false, this.options.isOffscreenCanvasSupported);
-      if (cacheKey && imageRef && cacheGlobally) {
-        const length = imgData.bitmap ? imgData.width * imgData.height * 4 : imgData.data.length;
-        this.globalImageCache.addByteSize(imageRef, length);
+      imgData.dataLen = imgData.bitmap ? imgData.width * imgData.height * 4 : imgData.data.length;
+      imgData.ref = imageRef;
+      if (cacheGlobally) {
+        this.globalImageCache.addByteSize(imageRef, imgData.dataLen);
       }
       return this._sendImgData(objId, imgData, cacheGlobally);
     }).catch(reason => {
       warn(`Unable to decode image "${objId}": "${reason}".`);
       return this._sendImgData(objId, null, cacheGlobally);
     });
-    operatorList.addImageOps(OPS.paintImageXObject, args, optionalContent);
     if (cacheKey) {
       const cacheData = {
         fn: OPS.paintImageXObject,
@@ -31497,7 +31520,6 @@ class PartialEvaluator {
       if (imageRef) {
         this._regionalImageCache.set(null, imageRef, cacheData);
         if (cacheGlobally) {
-          assert(!isInline, "Cannot cache an inline image globally.");
           this.globalImageCache.setData(imageRef, {
             objId,
             fn: OPS.paintImageXObject,
@@ -32506,7 +32528,8 @@ class PartialEvaluator {
     seenStyles = new Set(),
     viewBox,
     markedContentData = null,
-    disableNormalization = false
+    disableNormalization = false,
+    keepWhiteSpace = false
   }) {
     resources ||= Dict.empty;
     stateManager ||= new StateManager(new TextState());
@@ -32545,10 +32568,10 @@ class PartialEvaluator {
       const ret = twoLastChars[twoLastCharsPos] !== " " && twoLastChars[nextPos] === " ";
       twoLastChars[twoLastCharsPos] = char;
       twoLastCharsPos = nextPos;
-      return ret;
+      return !keepWhiteSpace && ret;
     }
     function shouldAddWhitepsace() {
-      return twoLastChars[twoLastCharsPos] !== " " && twoLastChars[(twoLastCharsPos + 1) % 2] === " ";
+      return !keepWhiteSpace && twoLastChars[twoLastCharsPos] !== " " && twoLastChars[(twoLastCharsPos + 1) % 2] === " ";
     }
     function resetLastChars() {
       twoLastChars[0] = twoLastChars[1] = " ";
@@ -32842,6 +32865,9 @@ class PartialEvaluator {
             textState.translateTextMatrix(0, -charSpacing);
           }
         }
+        if (keepWhiteSpace) {
+          compareWithLastPosition(0);
+        }
         return;
       }
       const glyphs = font.charsToGlyphs(chars);
@@ -32860,7 +32886,7 @@ class PartialEvaluator {
           glyphWidth = glyph.vmetric ? glyph.vmetric[0] : -glyphWidth;
         }
         let scaledDim = glyphWidth * scale;
-        if (category.isWhitespace) {
+        if (!keepWhiteSpace && category.isWhitespace) {
           if (!font.vertical) {
             charSpacing += scaledDim + textState.wordSpacing;
             textState.translateTextMatrix(charSpacing * textState.textHScale, 0);
@@ -33182,7 +33208,8 @@ class PartialEvaluator {
                 seenStyles,
                 viewBox,
                 markedContentData,
-                disableNormalization
+                disableNormalization,
+                keepWhiteSpace
               }).then(function () {
                 if (!sinkWrapper.enqueueInvoked) {
                   emptyXObjectCache.set(name, xobj.dict.objId, true);
@@ -35097,6 +35124,21 @@ endcmap CMapName currentdict /CMap defineresource pop end end`;
       }
     }
     return this.resources;
+  }
+  static getFirstPositionInfo(rect, rotation, fontSize) {
+    const [x1, y1, x2, y2] = rect;
+    let w = x2 - x1;
+    let h = y2 - y1;
+    if (rotation % 180 !== 0) {
+      [w, h] = [h, w];
+    }
+    const lineHeight = LINE_FACTOR * fontSize;
+    const lineDescent = LINE_DESCENT_FACTOR * fontSize;
+    return {
+      coords: [0, h + lineDescent - lineHeight],
+      bbox: [0, 0, w, h],
+      matrix: rotation !== 0 ? getRotationMatrix(rotation, h, lineHeight) : undefined
+    };
   }
   createAppearance(text, rect, rotation, fontSize, bgColor, strokeAlpha) {
     const ctx = this._createContext();
@@ -51106,7 +51148,7 @@ class Annotation {
           firstPosition ||= item.transform.slice(-2);
           buffer.push(item.str);
           if (item.hasEOL) {
-            text.push(buffer.join(""));
+            text.push(buffer.join("").trimEnd());
             buffer.length = 0;
           }
         }
@@ -51117,26 +51159,31 @@ class Annotation {
       task,
       resources,
       includeMarkedContent: true,
+      keepWhiteSpace: true,
       sink,
       viewBox
     });
     this.reset();
     if (buffer.length) {
-      text.push(buffer.join(""));
+      text.push(buffer.join("").trimEnd());
     }
     if (text.length > 1 || text[0]) {
       const appearanceDict = this.appearance.dict;
-      const bbox = appearanceDict.getArray("BBox") || [0, 0, 1, 1];
-      const matrix = appearanceDict.getArray("Matrix") || [1, 0, 0, 1, 0, 0];
-      const rect = this.data.rect;
-      const transform = getTransformMatrix(rect, bbox, matrix);
-      transform[4] -= rect[0];
-      transform[5] -= rect[1];
-      firstPosition = Util.applyTransform(firstPosition, transform);
-      firstPosition = Util.applyTransform(firstPosition, matrix);
-      this.data.textPosition = firstPosition;
+      this.data.textPosition = this._transformPoint(firstPosition, appearanceDict.getArray("BBox"), appearanceDict.getArray("Matrix"));
       this.data.textContent = text;
     }
+  }
+  _transformPoint(coords, bbox, matrix) {
+    const {
+      rect
+    } = this.data;
+    bbox ||= [0, 0, 1, 1];
+    matrix ||= [1, 0, 0, 1, 0, 0];
+    const transform = getTransformMatrix(rect, bbox, matrix);
+    transform[4] -= rect[0];
+    transform[5] -= rect[1];
+    coords = Util.applyTransform(coords, transform);
+    return Util.applyTransform(coords, matrix);
   }
   getFieldObject() {
     if (this.data.kidIds) {
@@ -52806,29 +52853,41 @@ class FreeTextAnnotation extends MarkupAnnotation {
     } = params;
     this.data.annotationType = AnnotationType.FREETEXT;
     this.setDefaultAppearance(params);
-    if (this.appearance) {
+    this._hasAppearance = !!this.appearance;
+    if (this._hasAppearance) {
       const {
         fontColor,
         fontSize
       } = parseAppearanceStream(this.appearance, evaluatorOptions, xref);
       this.data.defaultAppearanceData.fontColor = fontColor;
       this.data.defaultAppearanceData.fontSize = fontSize || 10;
-    } else if (this._isOffscreenCanvasSupported) {
-      const strokeAlpha = params.dict.get("CA");
-      const fakeUnicodeFont = new FakeUnicodeFont(xref, "sans-serif");
+    } else {
       this.data.defaultAppearanceData.fontSize ||= 10;
       const {
         fontColor,
         fontSize
       } = this.data.defaultAppearanceData;
-      this.appearance = fakeUnicodeFont.createAppearance(this._contents.str, this.rectangle, this.rotation, fontSize, fontColor, strokeAlpha);
-      this._streams.push(this.appearance, FakeUnicodeFont.toUnicodeStream);
-    } else {
-      warn("FreeTextAnnotation: OffscreenCanvas is not supported, annotation may not render correctly.");
+      if (this._contents.str) {
+        this.data.textContent = this._contents.str.split(/\r\n?|\n/).map(line => line.trimEnd());
+        const {
+          coords,
+          bbox,
+          matrix
+        } = FakeUnicodeFont.getFirstPositionInfo(this.rectangle, this.rotation, fontSize);
+        this.data.textPosition = this._transformPoint(coords, bbox, matrix);
+      }
+      if (this._isOffscreenCanvasSupported) {
+        const strokeAlpha = params.dict.get("CA");
+        const fakeUnicodeFont = new FakeUnicodeFont(xref, "sans-serif");
+        this.appearance = fakeUnicodeFont.createAppearance(this._contents.str, this.rectangle, this.rotation, fontSize, fontColor, strokeAlpha);
+        this._streams.push(this.appearance, FakeUnicodeFont.toUnicodeStream);
+      } else {
+        warn("FreeTextAnnotation: OffscreenCanvas is not supported, annotation may not render correctly.");
+      }
     }
   }
   get hasTextContent() {
-    return !!this.appearance;
+    return this._hasAppearance;
   }
   static createNewDict(annotation, xref, {
     apRef,
@@ -53281,11 +53340,15 @@ class InkAnnotation extends MarkupAnnotation {
     } of paths) {
       buffer.length = 0;
       buffer.push(`${numberToString(bezier[0])} ${numberToString(bezier[1])} m`);
-      for (let i = 2, ii = bezier.length; i < ii; i += 6) {
-        const curve = bezier.slice(i, i + 6).map(numberToString).join(" ");
-        buffer.push(`${curve} c`);
+      if (bezier.length === 2) {
+        buffer.push(`${numberToString(bezier[0])} ${numberToString(bezier[1])} l S`);
+      } else {
+        for (let i = 2, ii = bezier.length; i < ii; i += 6) {
+          const curve = bezier.slice(i, i + 6).map(numberToString).join(" ");
+          buffer.push(`${curve} c`);
+        }
+        buffer.push("S");
       }
-      buffer.push("S");
       appearanceBuffer.push(buffer.join("\n"));
     }
     const appearance = appearanceBuffer.join("\n");
@@ -56531,7 +56594,7 @@ class WorkerMessageHandler {
       docId,
       apiVersion
     } = docParams;
-    const workerVersion = '4.0.348';
+    const workerVersion = '4.1.30';
     if (apiVersion !== workerVersion) {
       throw new Error(`The API version "${apiVersion}" does not match ` + `the Worker version "${workerVersion}".`);
     }
@@ -57092,8 +57155,8 @@ if (typeof window === "undefined" && !isNodeJS && typeof self !== "undefined" &&
 
 ;// CONCATENATED MODULE: ./src/pdf.worker.js
 
-const pdfjsVersion = '4.0.348';
-const pdfjsBuild = 'cb009d15a';
+const pdfjsVersion = '4.1.30';
+const pdfjsBuild = 'a22b5a4f0';
 
 var __webpack_exports__WorkerMessageHandler = __webpack_exports__.WorkerMessageHandler;
 export { __webpack_exports__WorkerMessageHandler as WorkerMessageHandler };

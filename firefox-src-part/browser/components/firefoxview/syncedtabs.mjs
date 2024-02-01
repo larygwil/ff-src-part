@@ -51,6 +51,7 @@ class SyncedTabsInView extends ViewPage {
     this.fullyUpdated = false;
     this.searchQuery = "";
     this.showAll = false;
+    this.cumulativeSearches = 0;
   }
 
   static properties = {
@@ -61,6 +62,7 @@ class SyncedTabsInView extends ViewPage {
     devices: { type: Array },
     searchQuery: { type: String },
     showAll: { type: Boolean },
+    cumulativeSearches: { type: Number },
   };
 
   static queries = {
@@ -110,6 +112,14 @@ class SyncedTabsInView extends ViewPage {
         "fxview-search-textbox-query",
         this
       );
+    }
+  }
+
+  willUpdate(changedProperties) {
+    if (changedProperties.has("searchQuery")) {
+      this.cumulativeSearches = this.searchQuery
+        ? this.cumulativeSearches + 1
+        : 0;
     }
   }
 
@@ -318,6 +328,16 @@ class SyncedTabsInView extends ViewPage {
         }
       );
     }
+    if (this.searchQuery) {
+      const searchesHistogram = Services.telemetry.getKeyedHistogramById(
+        "FIREFOX_VIEW_CUMULATIVE_SEARCHES"
+      );
+      searchesHistogram.add(
+        this.recentBrowsing ? "recentbrowsing" : "syncedtabs",
+        this.cumulativeSearches
+      );
+      this.cumulativeSearches = 0;
+    }
   }
 
   onContextMenu(e) {
@@ -361,7 +381,7 @@ class SyncedTabsInView extends ViewPage {
         () => html`
           <div
             slot=${ifDefined(this.recentBrowsing ? null : "main")}
-            class="blackbox notabs"
+            class="blackbox notabs search-results-empty"
             data-l10n-id="firefoxview-search-results-empty"
             data-l10n-args=${JSON.stringify({
               query: escapeHtmlEntities(this.searchQuery),
@@ -464,6 +484,7 @@ class SyncedTabsInView extends ViewPage {
               @keydown=${this.enableShowAll}
               data-l10n-id="firefoxview-show-all"
               tabindex="0"
+              role="link"
             ></div>
           </div>`);
         }
@@ -501,6 +522,15 @@ class SyncedTabsInView extends ViewPage {
     ) {
       event.preventDefault();
       this.showAll = true;
+      Services.telemetry.recordEvent(
+        "firefoxview_next",
+        "search_show_all",
+        "showallbutton",
+        null,
+        {
+          section: "syncedtabs",
+        }
+      );
     }
   }
 
@@ -548,7 +578,7 @@ class SyncedTabsInView extends ViewPage {
     />`);
     renderArray.push(html` <link
       rel="stylesheet"
-      href="chrome://browser/content/firefoxview/firefoxview-next.css"
+      href="chrome://browser/content/firefoxview/firefoxview.css"
     />`);
 
     if (!this.recentBrowsing) {
@@ -567,6 +597,10 @@ class SyncedTabsInView extends ViewPage {
                   data-l10n-id="firefoxview-search-text-box-syncedtabs"
                   data-l10n-attrs="placeholder"
                   @fxview-search-textbox-query=${this.onSearchQuery}
+                  .size=${this.searchTextboxSize}
+                  pageName=${this.recentBrowsing
+                    ? "recentbrowsing"
+                    : "syncedtabs"}
                 ></fxview-search-textbox>
               </div>`
             )}
@@ -677,7 +711,7 @@ class SyncedTabsInView extends ViewPage {
   sendTabTelemetry(numTabs) {
     /*
     Services.telemetry.recordEvent(
-      "firefoxview-next",
+      "firefoxview_next",
       "synced_tabs",
       "tabs",
       null,

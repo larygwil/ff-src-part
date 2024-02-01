@@ -178,10 +178,8 @@ export class NetworkEventRecord {
    *     The har-like timings.
    * @param {object} offsets
    *     The har-like timings, but as offset from the request start.
-   * @param {Array} serverTimings
-   *     The server timings.
    */
-  addEventTimings(total, timings, offsets, serverTimings) {}
+  addEventTimings(total, timings, offsets) {}
 
   /**
    * Add response cache entry.
@@ -216,7 +214,11 @@ export class NetworkEventRecord {
       },
     };
 
-    this.#emitResponseCompleted();
+    if (responseInfo.blockedReason) {
+      this.#emitFetchError();
+    } else {
+      this.#emitResponseCompleted();
+    }
   }
 
   /**
@@ -230,6 +232,18 @@ export class NetworkEventRecord {
    *     The server timings.
    */
   addServerTimings(serverTimings) {}
+
+  /**
+   * Add service worker timings.
+   *
+   * Required API for a NetworkObserver event owner.
+   *
+   * Not used for RemoteAgent.
+   *
+   * @param {object} serviceWorkerTimings
+   *     The server timings.
+   */
+  addServiceWorkerTimings(serviceWorkerTimings) {}
 
   onAuthPrompt(authDetails, authCallbacks) {
     this.#emitAuthRequired(authCallbacks);
@@ -265,8 +279,8 @@ export class NetworkEventRecord {
       authCallbacks,
       contextId: this.#contextId,
       isNavigationRequest: this.#isMainDocumentChannel,
-      requestChannel: this.#requestChannel,
       redirectCount: this.#redirectCount,
+      requestChannel: this.#requestChannel,
       requestData: this.#requestData,
       responseChannel: this.#responseChannel,
       responseData: this.#responseData,
@@ -280,8 +294,23 @@ export class NetworkEventRecord {
     this.#networkListener.emit("before-request-sent", {
       contextId: this.#contextId,
       isNavigationRequest: this.#isMainDocumentChannel,
-      requestChannel: this.#requestChannel,
       redirectCount: this.#redirectCount,
+      requestChannel: this.#requestChannel,
+      requestData: this.#requestData,
+      timestamp: Date.now(),
+    });
+  }
+
+  #emitFetchError() {
+    this.#updateDataFromTimedChannel();
+
+    this.#networkListener.emit("fetch-error", {
+      contextId: this.#contextId,
+      // TODO: Update with a proper error text. Bug 1873037.
+      errorText: ChromeUtils.getXPCOMErrorName(this.#requestChannel.status),
+      isNavigationRequest: this.#isMainDocumentChannel,
+      redirectCount: this.#redirectCount,
+      requestChannel: this.#requestChannel,
       requestData: this.#requestData,
       timestamp: Date.now(),
     });

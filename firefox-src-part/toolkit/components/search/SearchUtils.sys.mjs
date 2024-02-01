@@ -147,6 +147,13 @@ export var SearchUtils = {
   OLD_SETTINGS_OVERRIDES_KEY: "search-config-overrides",
 
   /**
+   * This is the Remote Settings key for getting the overrides for the
+   * newer search engine configuration. Tests may use `SETTINGS_OVERRIDES_KEY`
+   * for the current configuration according to the preference.
+   */
+  NEW_SETTINGS_OVERRIDES_KEY: "search-config-overrides-v2",
+
+  /**
    * This is the Remote Settings key that we use to get the search engine
    * configurations.
    *
@@ -165,7 +172,9 @@ export var SearchUtils = {
    * @returns {string}
    */
   get SETTINGS_OVERRIDES_KEY() {
-    return SearchUtils.OLD_SETTINGS_OVERRIDES_KEY;
+    return SearchUtils.newSearchConfigEnabled
+      ? SearchUtils.NEW_SETTINGS_OVERRIDES_KEY
+      : SearchUtils.OLD_SETTINGS_OVERRIDES_KEY;
   },
 
   /**
@@ -215,7 +224,6 @@ export var SearchUtils = {
   DEFAULT_TAG: "default",
 
   MOZ_PARAM: {
-    DATE: "moz:date",
     LOCALE: "moz:locale",
   },
 

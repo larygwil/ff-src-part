@@ -5,7 +5,7 @@
 "use strict";
 
 const {
-  TYPES: { TRACING_STATE },
+  TYPES: { JSTRACER_STATE },
 } = require("resource://devtools/server/actors/resources/index.js");
 
 // Bug 1827382, as this module can be used from the worker thread,
@@ -46,21 +46,30 @@ class TracingStateWatcher {
     removeTracingListener(this.tracingListener);
   }
 
-  // Emit a TRACING_STATE resource with:
-  //   enabled = true|false
-  // When Javascript tracing is enabled or disabled.
-  onTracingToggled(enabled) {
+  /**
+   * Be notified by the underlying JavaScriptTracer class
+   * in case it stops by itself, instead of being stopped when the Actor's stopTracing
+   * method is called by the user.
+   *
+   * @param {Boolean} enabled
+   *        True if the tracer starts tracing, false it it stops.
+   * @param {String} reason
+   *        Optional string to justify why the tracer stopped.
+   */
+  onTracingToggled(enabled, reason) {
     const tracerActor = this.targetActor.getTargetScopedActor("tracer");
     const logMethod = tracerActor?.getLogMethod();
     this.onAvailable([
       {
-        resourceType: TRACING_STATE,
+        resourceType: JSTRACER_STATE,
         enabled,
         logMethod,
         profile:
           logMethod == LOG_METHODS.PROFILER && !enabled
             ? tracerActor.getProfile()
             : undefined,
+        timeStamp: ChromeUtils.dateNow(),
+        reason,
       },
     ]);
   }

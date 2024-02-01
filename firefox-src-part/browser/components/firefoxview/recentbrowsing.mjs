@@ -16,6 +16,10 @@ class RecentBrowsingInView extends ViewPage {
     searchTextbox: "fxview-search-textbox",
   };
 
+  static properties = {
+    ...ViewPage.properties,
+  };
+
   viewVisibleCallback() {
     for (let child of this.children) {
       let childView = child.firstElementChild;
@@ -36,7 +40,7 @@ class RecentBrowsingInView extends ViewPage {
     return html`
       <link
         rel="stylesheet"
-        href="chrome://browser/content/firefoxview/firefoxview-next.css"
+        href="chrome://browser/content/firefoxview/firefoxview.css"
       />
       <div class="sticky-container bottom-fade">
         <h2
@@ -49,6 +53,8 @@ class RecentBrowsingInView extends ViewPage {
             <fxview-search-textbox
               data-l10n-id="firefoxview-search-text-box-recentbrowsing"
               data-l10n-attrs="placeholder"
+              .size=${this.searchTextboxSize}
+              pageName="recentbrowsing"
             ></fxview-search-textbox>
           </div>`
         )}

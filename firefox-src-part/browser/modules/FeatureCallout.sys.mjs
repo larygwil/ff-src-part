@@ -20,9 +20,9 @@ const TRANSITION_MS = 500;
 const CONTAINER_ID = "feature-callout";
 const CONTENT_BOX_ID = "multi-stage-message-root";
 const BUNDLE_SRC =
-  "resource://activity-stream/aboutwelcome/aboutwelcome.bundle.js";
+  "chrome://browser/content/aboutwelcome/aboutwelcome.bundle.js";
 
-XPCOMUtils.defineLazyGetter(lazy, "log", () => {
+ChromeUtils.defineLazyGetter(lazy, "log", () => {
   const { Logger } = ChromeUtils.importESModule(
     "resource://messaging-system/lib/Logger.sys.mjs"
   );
@@ -435,7 +435,7 @@ export class FeatureCallout {
     };
     // Update styling to be compatible with about:welcome bundle
     await addStylesheet(
-      "chrome://activity-stream/content/aboutwelcome/aboutwelcome.css"
+      "chrome://browser/content/aboutwelcome/aboutwelcome.css"
     );
   }
 
@@ -1665,13 +1665,13 @@ export class FeatureCallout {
     }
     return (
       this._container.querySelector(
-        ".primary:not(:disabled, [hidden], .text-link, .cta-link)"
+        ".primary:not(:disabled, [hidden], .text-link, .cta-link, .split-button)"
       ) ||
       this._container.querySelector(
-        ".secondary:not(:disabled, [hidden], .text-link, .cta-link)"
+        ".secondary:not(:disabled, [hidden], .text-link, .cta-link, .split-button)"
       ) ||
       this._container.querySelector(
-        "button:not(:disabled, [hidden], .text-link, .cta-link, .dismiss-button)"
+        "button:not(:disabled, [hidden], .text-link, .cta-link, .dismiss-button, .split-button)"
       ) ||
       this._container.querySelector("input:not(:disabled, [hidden])") ||
       this._container.querySelector(

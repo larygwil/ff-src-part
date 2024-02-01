@@ -86,6 +86,8 @@ Preferences.addAll([
   { id: "browser.warnOnQuitShortcut", type: "bool" },
   { id: "browser.tabs.warnOnOpen", type: "bool" },
   { id: "browser.ctrlTab.sortByRecentlyUsed", type: "bool" },
+  { id: "browser.tabs.cardPreview.enabled", type: "bool" },
+  { id: "browser.tabs.cardPreview.showThumbnails", type: "bool" },
 
   // CFR
   {
@@ -189,10 +191,6 @@ if (AppConstants.MOZ_UPDATER) {
 
   if (AppConstants.NIGHTLY_BUILD) {
     Preferences.addAll([{ id: "app.update.suppressPrompts", type: "bool" }]);
-  }
-
-  if (AppConstants.MOZ_MAINTENANCE_SERVICE) {
-    Preferences.addAll([{ id: "app.update.service.enabled", type: "bool" }]);
   }
 }
 
@@ -353,6 +351,15 @@ var gMainPane = {
         showTabsInTaskbar.hidden = ver < 6.1;
       } catch (ex) {}
     }
+
+    let thumbsCheckbox = document.getElementById("tabPreviewShowThumbnails");
+    let cardPreviewEnabledPref = Preferences.get(
+      "browser.tabs.cardPreview.enabled"
+    );
+    let maybeShowThumbsCheckbox = () =>
+      (thumbsCheckbox.hidden = !cardPreviewEnabledPref.value);
+    cardPreviewEnabledPref.on("change", maybeShowThumbsCheckbox);
+    maybeShowThumbsCheckbox();
 
     // The "opening multiple tabs might slow down Firefox" warning provides
     // an option for not showing this warning again. When the user disables it,
@@ -634,9 +641,6 @@ var gMainPane = {
       ) {
         document.getElementById("updateAllowDescription").hidden = true;
         document.getElementById("updateSettingsContainer").hidden = true;
-        if (updateDisabled && AppConstants.MOZ_MAINTENANCE_SERVICE) {
-          document.getElementById("useService").hidden = true;
-        }
       } else {
         // Start with no option selected since we are still reading the value
         document.getElementById("autoDesktop").removeAttribute("selected");
@@ -684,27 +688,6 @@ var gMainPane = {
         document.getElementById(
           "updateSettingCrossUserWarningDesc"
         ).hidden = false;
-      }
-
-      if (AppConstants.MOZ_MAINTENANCE_SERVICE) {
-        // Check to see if the maintenance service is installed.
-        // If it isn't installed, don't show the preference at all.
-        let installed;
-        try {
-          let wrk = Cc["@mozilla.org/windows-registry-key;1"].createInstance(
-            Ci.nsIWindowsRegKey
-          );
-          wrk.open(
-            wrk.ROOT_KEY_LOCAL_MACHINE,
-            "SOFTWARE\\Mozilla\\MaintenanceService",
-            wrk.ACCESS_READ | wrk.WOW64_64
-          );
-          installed = wrk.readIntValue("Installed");
-          wrk.close();
-        } catch (e) {}
-        if (installed != 1) {
-          document.getElementById("useService").hidden = true;
-        }
       }
     }
 
@@ -3734,7 +3717,7 @@ let gHandlerListItemFragment = MozXULElement.parseXULToFragment(`
       <label class="actionDescription" flex="1" crop="end"/>
     </hbox>
     <hbox class="actionsMenuContainer" flex="1">
-      <menulist class="actionsMenu" flex="1" crop="end" selectedIndex="1">
+      <menulist class="actionsMenu" flex="1" crop="end" selectedIndex="1" aria-labelledby="actionColumn">
         <menupopup/>
       </menulist>
     </hbox>

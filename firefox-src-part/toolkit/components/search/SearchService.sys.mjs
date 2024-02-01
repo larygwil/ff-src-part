@@ -4,7 +4,6 @@
 
 /* eslint no-shadow: error, mozilla/no-aArgs: error */
 
-import { PromiseUtils } from "resource://gre/modules/PromiseUtils.sys.mjs";
 import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs";
 
 const lazy = {};
@@ -430,7 +429,7 @@ export class SearchService {
    */
   reset() {
     this.#initializationStatus = "not initialized";
-    this.#initDeferredPromise = PromiseUtils.defer();
+    this.#initDeferredPromise = Promise.withResolvers();
     this.#startupExtensions = new Set();
     this._engines.clear();
     this._cachedSortedEngines = null;
@@ -668,22 +667,14 @@ export class SearchService {
   async addOpenSearchEngine(engineURL, iconURL) {
     lazy.logConsole.debug("addEngine: Adding", engineURL);
     await this.init();
-    let errCode;
     try {
       var engine = new lazy.OpenSearchEngine();
       engine._setIcon(iconURL, false);
-      errCode = await new Promise(resolve => {
-        engine.install(engineURL, errorCode => {
-          resolve(errorCode);
-        });
-      });
-      if (errCode) {
-        throw errCode;
-      }
+      await engine.install(engineURL);
     } catch (ex) {
       throw Components.Exception(
         "addEngine: Error adding engine:\n" + ex,
-        errCode || Cr.NS_ERROR_FAILURE
+        ex.result || Cr.NS_ERROR_FAILURE
       );
     }
     this.#maybeStartOpenSearchUpdateTimer();
@@ -949,7 +940,7 @@ export class SearchService {
    * registered for handling updates to search engines. Only OpenSearch engines
    * have these updates and hence, only those are handled here.
    */
-  notify() {
+  async notify() {
     lazy.logConsole.debug("notify: checking for updates");
 
     // Walk the engine list, looking for engines whose update time has expired.
@@ -980,7 +971,7 @@ export class SearchService {
 
       lazy.logConsole.debug(engine.name, "has expired");
 
-      engineUpdateService.update(engine);
+      await engineUpdateService.update(engine);
 
       // Schedule the next update
       engineUpdateService.scheduleNextUpdate(engine);
@@ -998,7 +989,7 @@ export class SearchService {
    *   Resolved when initalization has successfully finished, and rejected if it
    *   has failed.
    */
-  #initDeferredPromise = PromiseUtils.defer();
+  #initDeferredPromise = Promise.withResolvers();
 
   /**
    * Indicates if initialization has started, failed, succeeded or has not
@@ -3709,7 +3700,7 @@ var engineUpdateService = {
     engine.setAttr("updateexpir", Date.now() + milliseconds);
   },
 
-  update(engine) {
+  async update(engine) {
     engine = engine.wrappedJSObject;
     lazy.logConsole.debug("update called for", engine._name);
     if (
@@ -3729,7 +3720,7 @@ var engineUpdateService = {
       testEngine = new lazy.OpenSearchEngine();
       testEngine._engineToUpdate = engine;
       try {
-        testEngine.install(updateURI);
+        await testEngine.install(updateURI);
       } catch (ex) {
         lazy.logConsole.error("Failed to update", engine.name, ex);
       }

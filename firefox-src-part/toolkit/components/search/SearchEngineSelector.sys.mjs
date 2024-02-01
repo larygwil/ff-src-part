@@ -28,8 +28,13 @@ export class SearchEngineSelector {
    */
   constructor(listener) {
     this._remoteConfig = lazy.RemoteSettings(lazy.SearchUtils.NEW_SETTINGS_KEY);
+    this._remoteConfigOverrides = lazy.RemoteSettings(
+      lazy.SearchUtils.NEW_SETTINGS_OVERRIDES_KEY
+    );
     this._listenerAdded = false;
     this._onConfigurationUpdated = this._onConfigurationUpdated.bind(this);
+    this._onConfigurationOverridesUpdated =
+      this._onConfigurationOverridesUpdated.bind(this);
     this._changeListener = listener;
   }
 
@@ -41,8 +46,13 @@ export class SearchEngineSelector {
       return this._getConfigurationPromise;
     }
 
-    this._configuration = await (this._getConfigurationPromise =
-      this._getConfiguration());
+    this._getConfigurationPromise = Promise.all([
+      this._getConfiguration(),
+      this._getConfigurationOverrides(),
+    ]);
+    let remoteSettingsData = await this._getConfigurationPromise;
+    this._configuration = remoteSettingsData[0];
+    this._configurationOverrides = remoteSettingsData[1];
     delete this._getConfigurationPromise;
 
     if (!this._configuration?.length) {
@@ -54,10 +64,22 @@ export class SearchEngineSelector {
 
     if (!this._listenerAdded) {
       this._remoteConfig.on("sync", this._onConfigurationUpdated);
+      this._remoteConfigOverrides.on(
+        "sync",
+        this._onConfigurationOverridesUpdated
+      );
       this._listenerAdded = true;
     }
 
     return this._configuration;
+  }
+
+  /**
+   * Used by tests to get the configuration overrides.
+   */
+  async getEngineConfigurationOverrides() {
+    await this.getEngineConfiguration();
+    return this._configurationOverrides;
   }
 
   /**
@@ -117,6 +139,42 @@ export class SearchEngineSelector {
     if (this._changeListener) {
       this._changeListener();
     }
+  }
+
+  /**
+   * Handles updating of the configuration. Note that the search service is
+   * only updated after a period where the user is observed to be idle.
+   *
+   * @param {object} options
+   *   The options object
+   * @param {object} options.data
+   *   The data to update
+   * @param {Array} options.data.current
+   *   The new configuration object
+   */
+  _onConfigurationOverridesUpdated({ data: { current } }) {
+    this._configurationOverrides = current;
+    lazy.logConsole.debug("Search configuration overrides updated remotely");
+    if (this._changeListener) {
+      this._changeListener();
+    }
+  }
+
+  /**
+   * Obtains the configuration overrides from remote settings.
+   *
+   * @returns {Array}
+   *   An array of objects in the database, or an empty array if none
+   *   could be obtained.
+   */
+  async _getConfigurationOverrides() {
+    let result = [];
+    try {
+      result = await this._remoteConfigOverrides.get();
+    } catch (ex) {
+      // This data is remote only, so we just return an empty array if it fails.
+    }
+    return result;
   }
 
   /**
@@ -198,12 +256,17 @@ export class SearchEngineSelector {
         continue;
       }
 
-      let engine = this.#copyObject({}, config.base);
+      let engine = structuredClone(config.base);
       engine.identifier = config.identifier;
 
-      // Variants are applied to the base engine cumulatively.
       for (let variant of variants) {
-        engine = this.#copyObject(engine, variant);
+        engine = this.#deepCopyObject(engine, variant);
+      }
+
+      for (let override of this._configurationOverrides) {
+        if (override.identifier == engine.identifier) {
+          engine = this.#deepCopyObject(engine, override);
+        }
       }
 
       engines.push(engine);
@@ -219,7 +282,7 @@ export class SearchEngineSelector {
       let environment = orderData.environment;
 
       if (this.#matchesUserEnvironment({ environment }, userEnv)) {
-        this.#setEngineOrders(engines, orderData.order, userEnv);
+        this.#setEngineOrders(engines, orderData.order);
       }
     }
 
@@ -270,31 +333,29 @@ export class SearchEngineSelector {
   }
 
   /**
-   * Object.assign but ignore some keys
+   * Deep copies an object to the target object and ignores some keys.
    *
    * @param {object} target - Object to copy to.
    * @param {object} source - Object to copy from.
    * @returns {object} - The source object.
    */
-  #copyObject(target, source) {
-    for (let sourceKey in source) {
-      if (["environment"].includes(sourceKey)) {
+  #deepCopyObject(target, source) {
+    for (let key in source) {
+      if (["environment"].includes(key)) {
         continue;
       }
 
-      if (
-        typeof source[sourceKey] == "object" &&
-        !Array.isArray(source[sourceKey])
-      ) {
-        if (sourceKey in target) {
-          this.#copyObject(target[sourceKey], source[sourceKey]);
+      if (typeof source[key] == "object" && !Array.isArray(source[key])) {
+        if (key in target) {
+          this.#deepCopyObject(target[key], source[key]);
         } else {
-          target[sourceKey] = { ...source[sourceKey] };
+          target[key] = structuredClone(source[key]);
         }
       } else {
-        target[sourceKey] = source[sourceKey];
+        target[key] = structuredClone(source[key]);
       }
     }
+
     return target;
   }
 
@@ -374,9 +435,9 @@ export class SearchEngineSelector {
   }
 
   /**
-   * @param {string} minVersion
+   * @param {string} min
    *  The minimum version supported.
-   * @param {string} maxVersion
+   * @param {string} max
    *  The maximum version supported.
    * @param {string} userVersion
    *  The user's version.
@@ -384,16 +445,36 @@ export class SearchEngineSelector {
    *  True if the user's version is within the range of the min and max versions
    *  supported.
    */
-  #matchesVersions(minVersion, maxVersion, userVersion) {
+  #matchesVersions(min, max, userVersion) {
     // If there's no versions for this engineConfig, ignore the check.
-    if (!minVersion && !maxVersion) {
+    if (!min && !max) {
       return true;
     }
 
+    if (!userVersion) {
+      return false;
+    }
+
+    if (min && !max) {
+      return this.#isAboveOrEqualMin(userVersion, min);
+    }
+
+    if (!min && max) {
+      return this.#isBelowOrEqualMax(userVersion, max);
+    }
+
     return (
-      (minVersion && Services.vc.compare(userVersion, minVersion) < 0) ||
-      (maxVersion && Services.vc.compare(userVersion, maxVersion) > 0)
+      this.#isAboveOrEqualMin(userVersion, min) &&
+      this.#isBelowOrEqualMax(userVersion, max)
     );
+  }
+
+  #isAboveOrEqualMin(userVersion, min) {
+    return Services.vc.compare(userVersion, min) >= 0;
+  }
+
+  #isBelowOrEqualMax(userVersion, max) {
+    return Services.vc.compare(userVersion, max) <= 0;
   }
 
   /**
@@ -586,25 +667,19 @@ export class SearchEngineSelector {
    *   private engine identifer for the environment.
    * @param {string} [engineType]
    *   A string to identify default engine or default private engine.
-   * @returns {object}
-   *   The default engine or default private engine.
+   * @returns {object|undefined}
+   *   The default engine or default private engine. Undefined if none can be
+   *   found.
    */
   #findDefault(engines, config, engineType = "default") {
     let defaultMatch =
       engineType == "default" ? config.default : config.defaultPrivate;
 
-    let startsWith =
-      engineType == "default"
-        ? config.defaultStartsWith
-        : config.defaultPrivateStartsWith;
+    if (!defaultMatch) {
+      return undefined;
+    }
 
-    let engine = engines.find(
-      e =>
-        (defaultMatch && e.identifier == defaultMatch) ||
-        (startsWith && e.identifier.startsWith(startsWith))
-    );
-
-    return engine;
+    return this.#findEngineWithMatch(engines, defaultMatch);
   }
 
   /**
@@ -615,26 +690,35 @@ export class SearchEngineSelector {
    * @param {Array} orderedEngines
    *  The ordering of engines. Engines in the beginning of the list get a higher
    *  orderHint number.
-   * @param {object} userEnv
-   *   The user's environment.
    */
-  #setEngineOrders(engines, orderedEngines, userEnv) {
+  #setEngineOrders(engines, orderedEngines) {
     let orderNumber = orderedEngines.length;
 
     for (const engine of orderedEngines) {
-      let foundEngine;
-
-      if (engine.endsWith("*")) {
-        let match = engine.slice(0, -1);
-        foundEngine = engines.find(e => e.identifier.startsWith(match));
-      } else {
-        foundEngine = engines.find(e => e.identifier == engine);
-      }
-
+      let foundEngine = this.#findEngineWithMatch(engines, engine);
       if (foundEngine) {
         foundEngine.orderHint = orderNumber;
         orderNumber -= 1;
       }
     }
+  }
+
+  /**
+   * Finds an engine with the given match.
+   *
+   * @param {object[]} engines
+   *   An array of search engine configurations.
+   * @param {string} match
+   *   A string to match against the engine identifier. This will be an exact
+   *   match, unless the string ends with `*`, in which case it will use a
+   *   startsWith match.
+   * @returns {object|undefined}
+   */
+  #findEngineWithMatch(engines, match) {
+    if (match.endsWith("*")) {
+      let matchNoStar = match.slice(0, -1);
+      return engines.find(e => e.identifier.startsWith(matchNoStar));
+    }
+    return engines.find(e => e.identifier == match);
   }
 }

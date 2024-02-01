@@ -14,6 +14,7 @@
 #include "gfx2DGlue.h"
 #include "gfxUtils.h"
 #include "mozilla/Attributes.h"
+#include "mozilla/CaretAssociationHint.h"
 #include "mozilla/ComputedStyle.h"
 #include "mozilla/DebugOnly.h"
 #include "mozilla/DisplayPortUtils.h"
@@ -34,6 +35,7 @@
 #include "mozilla/PresShell.h"
 #include "mozilla/PresShellInlines.h"
 #include "mozilla/ResultExtensions.h"
+#include "mozilla/SelectionMovementUtils.h"
 #include "mozilla/Sprintf.h"
 #include "mozilla/StaticAnalysisFunctions.h"
 #include "mozilla/StaticPrefs_layout.h"
@@ -751,24 +753,34 @@ void nsIFrame::Init(nsIContent* aContent, nsContainerFrame* aParent,
 
 void nsIFrame::InitPrimaryFrame() {
   MOZ_ASSERT(IsPrimaryFrame());
+  HandlePrimaryFrameStyleChange(nullptr);
+}
+
+void nsIFrame::HandlePrimaryFrameStyleChange(ComputedStyle* aOldStyle) {
   const nsStyleDisplay* disp = StyleDisplay();
-
-  if (disp->mContainerType != StyleContainerType::Normal) {
-    PresContext()->RegisterContainerQueryFrame(this);
+  const nsStyleDisplay* oldDisp =
+      aOldStyle ? aOldStyle->StyleDisplay() : nullptr;
+  if (!oldDisp || oldDisp->mContainerType != disp->mContainerType) {
+    auto* pc = PresContext();
+    if (disp->mContainerType != StyleContainerType::Normal) {
+      pc->RegisterContainerQueryFrame(this);
+    } else {
+      pc->UnregisterContainerQueryFrame(this);
+    }
   }
 
-  if (StyleDisplay()->ContentVisibility(*this) ==
-      StyleContentVisibility::Auto) {
-    PresShell()->RegisterContentVisibilityAutoFrame(this);
-  } else if (auto* element = Element::FromNodeOrNull(GetContent())) {
-    element->ClearContentRelevancy();
+  const auto cv = disp->ContentVisibility(*this);
+  if (!oldDisp || oldDisp->ContentVisibility(*this) != cv) {
+    if (cv == StyleContentVisibility::Auto) {
+      PresShell()->RegisterContentVisibilityAutoFrame(this);
+    } else {
+      if (auto* element = Element::FromNodeOrNull(GetContent())) {
+        element->ClearContentRelevancy();
+      }
+      PresShell()->UnregisterContentVisibilityAutoFrame(this);
+    }
+    PresContext()->SetNeedsToUpdateHiddenByContentVisibilityForAnimations();
   }
-
-  // TODO(mrobinson): Once bug 1765615 is fixed, this should be called on
-  // layout changes. In addition, when `content-visibility: auto` is implemented
-  // this should also be called when scrolling or focus causes content to be
-  // skipped or unskipped.
-  UpdateAnimationVisibility();
 
   HandleLastRememberedSize();
 }
@@ -794,19 +806,21 @@ void nsIFrame::Destroy(DestroyContext& aContext) {
     }
   }
 
-  if (disp->mContainerType != StyleContainerType::Normal) {
-    PresContext()->UnregisterContainerQueryFrame(this);
-  }
-
-  nsPresContext* presContext = PresContext();
-  mozilla::PresShell* presShell = presContext->GetPresShell();
   if (HasAnyStateBits(NS_FRAME_OUT_OF_FLOW)) {
     if (nsPlaceholderFrame* placeholder = GetPlaceholderFrame()) {
       placeholder->SetOutOfFlowFrame(nullptr);
     }
   }
 
+  nsPresContext* pc = PresContext();
+  mozilla::PresShell* ps = pc->GetPresShell();
   if (IsPrimaryFrame()) {
+    if (disp->mContainerType != StyleContainerType::Normal) {
+      pc->UnregisterContainerQueryFrame(this);
+    }
+    if (disp->ContentVisibility(*this) == StyleContentVisibility::Auto) {
+      ps->UnregisterContentVisibilityAutoFrame(this);
+    }
     // This needs to happen before we clear our Properties() table.
     ActiveLayerTracker::TransferActivityToContent(this, mContent);
   }
@@ -824,7 +838,7 @@ void nsIFrame::Destroy(DestroyContext& aContext) {
     // If no new frame for this element is created by the end of the
     // restyling process, stop animations and transitions for this frame
     RestyleManager::AnimationsWithDestroyedFrame* adf =
-        presContext->RestyleManager()->GetAnimationsWithDestroyedFrame();
+        pc->RestyleManager()->GetAnimationsWithDestroyedFrame();
     // AnimationsWithDestroyedFrame only lives during the restyling process.
     if (adf) {
       adf->Put(mContent, mComputedStyle);
@@ -839,12 +853,12 @@ void nsIFrame::Destroy(DestroyContext& aContext) {
   DisableVisibilityTracking();
 
   // Ensure that we're not in the approximately visible list anymore.
-  PresContext()->GetPresShell()->RemoveFrameFromApproximatelyVisibleList(this);
+  ps->RemoveFrameFromApproximatelyVisibleList(this);
 
-  presShell->NotifyDestroyingFrame(this);
+  ps->NotifyDestroyingFrame(this);
 
   if (HasAnyStateBits(NS_FRAME_EXTERNAL_REFERENCE)) {
-    presShell->ClearFrameRefs(this);
+    ps->ClearFrameRefs(this);
   }
 
   nsView* view = GetView();
@@ -882,7 +896,7 @@ void nsIFrame::Destroy(DestroyContext& aContext) {
 
 #ifdef DEBUG
   {
-    nsIFrame* rootFrame = presShell->GetRootFrame();
+    nsIFrame* rootFrame = ps->GetRootFrame();
     MOZ_ASSERT(rootFrame);
     if (this != rootFrame) {
       auto* builder = nsLayoutUtils::GetRetainedDisplayListBuilder(rootFrame);
@@ -902,7 +916,7 @@ void nsIFrame::Destroy(DestroyContext& aContext) {
 
   // Now that we're totally cleaned out, we need to add ourselves to
   // the presshell's recycler.
-  presShell->FreeFrame(id, this);
+  ps->FreeFrame(id, this);
 }
 
 std::pair<int32_t, int32_t> nsIFrame::GetOffsets() const {
@@ -1373,7 +1387,8 @@ void nsIFrame::DidSetComputedStyle(ComputedStyle* aOldComputedStyle) {
   }
 
   if (IsPrimaryFrame()) {
-    HandleLastRememberedSize();
+    MOZ_ASSERT(aOldComputedStyle);
+    HandlePrimaryFrameStyleChange(aOldComputedStyle);
   }
 
   RemoveStateBits(NS_FRAME_SIMPLE_EVENT_REGIONS | NS_FRAME_SIMPLE_DISPLAYLIST);
@@ -2471,8 +2486,7 @@ bool nsIFrame::CanBeDynamicReflowRoot() const {
 
   // If we participate in a container's block reflow context, or margins
   // can collapse through us, we can't be a dynamic reflow root.
-  if (IsBlockFrameOrSubclass() &&
-      !HasAllStateBits(NS_BLOCK_FLOAT_MGR | NS_BLOCK_MARGIN_ROOT)) {
+  if (IsBlockFrameOrSubclass() && !HasAnyStateBits(NS_BLOCK_BFC_STATE_BITS)) {
     return false;
   }
 
@@ -4933,20 +4947,21 @@ nsresult nsIFrame::SelectByTypeAtPoint(nsPresContext* aPresContext,
     return NS_OK;
   }
 
-  ContentOffsets offsets = GetContentOffsetsFromPoint(aPoint, SKIP_HIDDEN);
+  ContentOffsets offsets = GetContentOffsetsFromPoint(
+      aPoint, SKIP_HIDDEN | IGNORE_NATIVE_ANONYMOUS_SUBTREE);
   if (!offsets.content) {
     return NS_ERROR_FAILURE;
   }
 
-  int32_t offset;
-  nsIFrame* frame = nsFrameSelection::GetFrameForNodeOffset(
+  uint32_t offset;
+  nsIFrame* frame = SelectionMovementUtils::GetFrameForNodeOffset(
       offsets.content, offsets.offset, offsets.associate, &offset);
   if (!frame) {
     return NS_ERROR_FAILURE;
   }
-  return frame->PeekBackwardAndForward(aBeginAmountType, aEndAmountType, offset,
-                                       aBeginAmountType != eSelectWord,
-                                       aSelectFlags);
+  return frame->PeekBackwardAndForward(
+      aBeginAmountType, aEndAmountType, static_cast<int32_t>(offset),
+      aBeginAmountType != eSelectWord, aSelectFlags);
 }
 
 /**
@@ -5057,7 +5072,7 @@ nsresult nsIFrame::PeekBackwardAndForward(nsSelectionAmount aAmountBack,
   rv = frameSelection->HandleClick(
       MOZ_KnownLive(startpos.mResultContent) /* bug 1636889 */,
       startpos.mContentOffset, startpos.mContentOffset, focusMode,
-      CARET_ASSOCIATE_AFTER);
+      CaretAssociationHint::After);
   if (NS_FAILED(rv)) {
     return rv;
   }
@@ -5065,7 +5080,8 @@ nsresult nsIFrame::PeekBackwardAndForward(nsSelectionAmount aAmountBack,
   rv = frameSelection->HandleClick(
       MOZ_KnownLive(endpos.mResultContent) /* bug 1636889 */,
       endpos.mContentOffset, endpos.mContentOffset,
-      nsFrameSelection::FocusMode::kExtendSelection, CARET_ASSOCIATE_BEFORE);
+      nsFrameSelection::FocusMode::kExtendSelection,
+      CaretAssociationHint::Before);
   if (NS_FAILED(rv)) {
     return rv;
   }
@@ -5380,7 +5396,7 @@ static bool SelfIsSelectable(nsIFrame* aFrame, uint32_t aFlags) {
          aFrame->Style()->UserSelect() != StyleUserSelect::None;
 }
 
-static bool SelectionDescendToKids(nsIFrame* aFrame) {
+static bool FrameContentCanHaveParentSelectionRange(nsIFrame* aFrame) {
   // If we are only near (not directly over) then don't traverse
   // frames with independent selection (e.g. text and list controls, see bug
   // 268497).  Note that this prevents any of the users of this method from
@@ -5401,10 +5417,13 @@ static bool SelectionDescendToKids(nsIFrame* aFrame) {
       aFrame->HasAnyStateBits(NS_FRAME_INDEPENDENT_SELECTION),
       aFrame->GetParent()->HasAnyStateBits(NS_FRAME_INDEPENDENT_SELECTION));
 
-  if (aFrame->IsGeneratedContentFrame()) {
+  return !aFrame->IsGeneratedContentFrame();
+}
+
+static bool SelectionDescendToKids(nsIFrame* aFrame) {
+  if (!FrameContentCanHaveParentSelectionRange(aFrame)) {
     return false;
   }
-
   auto style = aFrame->Style()->UserSelect();
   return style != StyleUserSelect::All && style != StyleUserSelect::None;
 }
@@ -5645,11 +5664,18 @@ static FrameTarget GetSelectionClosestFrame(nsIFrame* aFrame,
     return target;
   }
 
+  if (aFlags & nsIFrame::IGNORE_NATIVE_ANONYMOUS_SUBTREE &&
+      !FrameContentCanHaveParentSelectionRange(aFrame)) {
+    return LastResortFrameTargetForFrame(aFrame, aPoint);
+  }
+
   if (nsIFrame* kid = aFrame->PrincipalChildList().FirstChild()) {
     // Go through all the child frames to find the closest one
     nsIFrame::FrameWithDistance closest = {nullptr, nscoord_MAX, nscoord_MAX};
     for (; kid; kid = kid->GetNextSibling()) {
-      if (!SelfIsSelectable(kid, aFlags) || kid->IsEmpty()) continue;
+      if (!SelfIsSelectable(kid, aFlags) || kid->IsEmpty()) {
+        continue;
+      }
 
       kid->FindCloserFrameForSelection(aPoint, &closest);
     }
@@ -5673,7 +5699,7 @@ static nsIFrame::ContentOffsets OffsetsForSingleFrame(nsIFrame* aFrame,
   if (aFrame->GetNextContinuation() || aFrame->GetPrevContinuation()) {
     offsets.offset = range.start;
     offsets.secondaryOffset = range.end;
-    offsets.associate = CARET_ASSOCIATE_AFTER;
+    offsets.associate = CaretAssociationHint::After;
     return offsets;
   }
 
@@ -5697,8 +5723,9 @@ static nsIFrame::ContentOffsets OffsetsForSingleFrame(nsIFrame* aFrame,
     else
       offsets.secondaryOffset = range.start;
   }
-  offsets.associate = offsets.offset == range.start ? CARET_ASSOCIATE_AFTER
-                                                    : CARET_ASSOCIATE_BEFORE;
+  offsets.associate = offsets.offset == range.start
+                          ? CaretAssociationHint::After
+                          : CaretAssociationHint::Before;
   return offsets;
 }
 
@@ -5764,8 +5791,9 @@ nsIFrame::ContentOffsets nsIFrame::GetContentOffsetsFromPoint(
     else
       offsets.offset = range.start;
     offsets.secondaryOffset = offsets.offset;
-    offsets.associate = offsets.offset == range.start ? CARET_ASSOCIATE_AFTER
-                                                      : CARET_ASSOCIATE_BEFORE;
+    offsets.associate = offsets.offset == range.start
+                            ? CaretAssociationHint::After
+                            : CaretAssociationHint::Before;
     return offsets;
   }
 
@@ -5888,7 +5916,6 @@ void nsIFrame::MarkSubtreeDirty() {
   // Mark all descendants dirty, unless:
   // - Already dirty.
   // - TableColGroup
-  // - XULBox
   AutoTArray<nsIFrame*, 32> stack;
   for (const auto& childLists : ChildLists()) {
     for (nsIFrame* kid : childLists.mList) {
@@ -6294,6 +6321,7 @@ nsIFrame::SizeComputationResult nsIFrame::ComputeSize(
   auto parentFrame = GetParent();
   auto alignCB = parentFrame;
   bool isGridItem = IsGridItem();
+  const bool isSubgrid = IsSubgrid();
   if (parentFrame && parentFrame->IsTableWrapperFrame() && IsTableFrame()) {
     // An inner table frame is sized as a grid item if its table wrapper is,
     // because they actually have the same CB (the wrapper's CB).
@@ -6326,8 +6354,16 @@ nsIFrame::SizeComputationResult nsIFrame::ComputeSize(
   const bool isAutoISize = styleISize.IsAuto();
   const bool isAutoBSize =
       nsLayoutUtils::IsAutoBSize(styleBSize, aCBSize.BSize(aWM));
+
   // Compute inline-axis size
-  if (!isAutoISize) {
+  const bool isSubgriddedInInlineAxis =
+      isSubgrid && static_cast<nsGridContainerFrame*>(this)->IsColSubgrid();
+
+  // Per https://drafts.csswg.org/css-grid/#subgrid-box-alignment, if we are
+  // subgridded in the inline-axis, ignore our style inline-size, and stretch to
+  // fill the CB.
+  const bool shouldComputeISize = !isAutoISize && !isSubgriddedInInlineAxis;
+  if (shouldComputeISize) {
     auto iSizeResult = ComputeISizeValue(
         aRenderingContext, aWM, aCBSize, boxSizingAdjust,
         boxSizingToMarginEdgeISize, styleISize, aSizeOverrides, aFlags);
@@ -6438,9 +6474,13 @@ nsIFrame::SizeComputationResult nsIFrame::ComputeSize(
   // the flexbox algorithm.)
   const bool isFlexItemInlineAxisMainAxis =
       isFlexItem && flexMainAxis == eLogicalAxisInline;
+  // Grid items that are subgridded in inline-axis also ignore their min & max
+  // sizing properties in that axis.
+  const bool shouldIgnoreMinMaxISize =
+      isFlexItemInlineAxisMainAxis || isSubgriddedInInlineAxis;
   const auto& maxISizeCoord = stylePos->MaxISize(aWM);
   nscoord maxISize = NS_UNCONSTRAINEDSIZE;
-  if (!maxISizeCoord.IsNone() && !isFlexItemInlineAxisMainAxis) {
+  if (!maxISizeCoord.IsNone() && !shouldIgnoreMinMaxISize) {
     maxISize = ComputeISizeValue(aRenderingContext, aWM, aCBSize,
                                  boxSizingAdjust, boxSizingToMarginEdgeISize,
                                  maxISizeCoord, aSizeOverrides, aFlags)
@@ -6450,7 +6490,7 @@ nsIFrame::SizeComputationResult nsIFrame::ComputeSize(
 
   const auto& minISizeCoord = stylePos->MinISize(aWM);
   nscoord minISize;
-  if (!minISizeCoord.IsAuto() && !isFlexItemInlineAxisMainAxis) {
+  if (!minISizeCoord.IsAuto() && !shouldIgnoreMinMaxISize) {
     minISize = ComputeISizeValue(aRenderingContext, aWM, aCBSize,
                                  boxSizingAdjust, boxSizingToMarginEdgeISize,
                                  minISizeCoord, aSizeOverrides, aFlags)
@@ -6498,7 +6538,14 @@ nsIFrame::SizeComputationResult nsIFrame::ComputeSize(
   // that we already calculated in the initial ComputeAutoSize() call. However,
   // if we have a valid preferred aspect ratio, we still have to compute the
   // block size because aspect ratio affects the intrinsic content size.)
-  if (!isAutoBSize) {
+  const bool isSubgriddedInBlockAxis =
+      isSubgrid && static_cast<nsGridContainerFrame*>(this)->IsRowSubgrid();
+
+  // Per https://drafts.csswg.org/css-grid/#subgrid-box-alignment, if we are
+  // subgridded in the block-axis, ignore our style block-size, and stretch to
+  // fill the CB.
+  const bool shouldComputeBSize = !isAutoBSize && !isSubgriddedInBlockAxis;
+  if (shouldComputeBSize) {
     result.BSize(aWM) = nsLayoutUtils::ComputeBSizeValue(
         aCBSize.BSize(aWM), boxSizingAdjust.BSize(aWM),
         styleBSize.AsLengthPercentage());
@@ -6561,16 +6608,23 @@ nsIFrame::SizeComputationResult nsIFrame::ComputeSize(
   }
 
   if (result.BSize(aWM) != NS_UNCONSTRAINEDSIZE) {
+    // Flex items ignore their min & max sizing properties in their flex
+    // container's main-axis. (Those properties get applied later in the flexbox
+    // algorithm.)
     const bool isFlexItemBlockAxisMainAxis =
         isFlexItem && flexMainAxis == eLogicalAxisBlock;
-    if (!isAutoMaxBSize && !isFlexItemBlockAxisMainAxis) {
+    // Grid items that are subgridded in block-axis also ignore their min & max
+    // sizing properties in that axis.
+    const bool shouldIgnoreMinMaxBSize =
+        isFlexItemBlockAxisMainAxis || isSubgriddedInBlockAxis;
+    if (!isAutoMaxBSize && !shouldIgnoreMinMaxBSize) {
       nscoord maxBSize = nsLayoutUtils::ComputeBSizeValue(
           aCBSize.BSize(aWM), boxSizingAdjust.BSize(aWM),
           maxBSizeCoord.AsLengthPercentage());
       result.BSize(aWM) = std::min(maxBSize, result.BSize(aWM));
     }
 
-    if (!isAutoMinBSize && !isFlexItemBlockAxisMainAxis) {
+    if (!isAutoMinBSize && !shouldIgnoreMinMaxBSize) {
       nscoord minBSize = nsLayoutUtils::ComputeBSizeValue(
           aCBSize.BSize(aWM), boxSizingAdjust.BSize(aWM),
           minBSizeCoord.AsLengthPercentage());
@@ -7066,6 +7120,7 @@ bool nsIFrame::UpdateIsRelevantContent(
   }
 
   HandleLastRememberedSize();
+  PresContext()->SetNeedsToUpdateHiddenByContentVisibilityForAnimations();
   PresShell()->FrameNeedsReflow(
       this, IntrinsicDirty::FrameAncestorsAndDescendants, NS_FRAME_IS_DIRTY);
   InvalidateFrame();
@@ -7930,10 +7985,15 @@ bool nsIFrame::ComputeCustomOverflow(OverflowAreas& aOverflowAreas) {
 }
 
 bool nsIFrame::DoesClipChildrenInBothAxes() const {
-  nsIScrollableFrame* sf = do_QueryFrame(this);
+  if (IsScrollContainer()) {
+    return true;
+  }
   const nsStyleDisplay* display = StyleDisplay();
-  return sf || (display->mOverflowX == StyleOverflow::Clip &&
-                display->mOverflowY == StyleOverflow::Clip);
+  if (display->IsContainPaint() && SupportsContainLayoutAndPaint()) {
+    return true;
+  }
+  return display->mOverflowX == StyleOverflow::Clip &&
+         display->mOverflowY == StyleOverflow::Clip;
 }
 
 /* virtual */
@@ -8544,8 +8604,8 @@ static nsresult GetNextPrevLineFromBlockFrame(PeekOffsetStruct* aPos,
 
   aPos->mResultFrame = nullptr;
   aPos->mResultContent = nullptr;
-  aPos->mAttach = aPos->mDirection == eDirNext ? CARET_ASSOCIATE_AFTER
-                                               : CARET_ASSOCIATE_BEFORE;
+  aPos->mAttach = aPos->mDirection == eDirNext ? CaretAssociationHint::After
+                                               : CaretAssociationHint::Before;
 
   AutoAssertNoDomMutations guard;
   nsILineIterator* it = aBlockFrame->GetLineIterator();
@@ -8574,7 +8634,6 @@ static nsresult GetNextPrevLineFromBlockFrame(PeekOffsetStruct* aPos,
   bool isBeforeFirstFrame, isAfterLastFrame;
   bool found = false;
 
-  nsresult result = NS_OK;
   while (!found) {
     if (aPos->mDirection == eDirPrevious)
       searchingLine--;
@@ -8613,9 +8672,9 @@ static nsresult GetNextPrevLineFromBlockFrame(PeekOffsetStruct* aPos,
     nsPoint newDesiredPos =
         aPos->mDesiredCaretPos -
         offset;  // get desired position into blockframe coords
-    result = it->FindFrameAt(searchingLine, newDesiredPos, &resultFrame,
-                             &isBeforeFirstFrame, &isAfterLastFrame);
-    if (NS_FAILED(result)) {
+    nsresult rv = it->FindFrameAt(searchingLine, newDesiredPos, &resultFrame,
+                                  &isBeforeFirstFrame, &isAfterLastFrame);
+    if (NS_FAILED(rv)) {
       continue;
     }
 
@@ -8627,19 +8686,14 @@ static nsresult GetNextPrevLineFromBlockFrame(PeekOffsetStruct* aPos,
         return NS_OK;
       }
       // resultFrame is not a block frame
-      result = NS_ERROR_FAILURE;
-
-      nsCOMPtr<nsIFrameEnumerator> frameTraversal;
-      result = NS_NewFrameTraversal(
-          getter_AddRefs(frameTraversal), pc, resultFrame, ePostOrder,
+      Maybe<nsFrameIterator> frameIterator;
+      frameIterator.emplace(
+          pc, resultFrame, nsFrameIterator::Type::PostOrder,
           false,  // aVisual
           aPos->mOptions.contains(PeekOffsetOption::StopAtScroller),
           false,  // aFollowOOFs
           false   // aSkipPopupChecks
       );
-      if (NS_FAILED(result)) {
-        return result;
-      }
 
       auto FoundValidFrame = [aPos](const nsIFrame::ContentOffsets& aOffsets,
                                     const nsIFrame* aFrame) {
@@ -8679,7 +8733,8 @@ static nsresult GetNextPrevLineFromBlockFrame(PeekOffsetStruct* aPos,
           nsPoint offset;
           resultFrame->GetOffsetFromView(offset, &view);
           nsIFrame::ContentOffsets offsets =
-              resultFrame->GetContentOffsetsFromPoint(point - offset);
+              resultFrame->GetContentOffsetsFromPoint(
+                  point - offset, nsIFrame::IGNORE_NATIVE_ANONYMOUS_SUBTREE);
           aPos->mResultContent = offsets.content;
           aPos->mContentOffset = offsets.offset;
           aPos->mAttach = offsets.associate;
@@ -8697,7 +8752,7 @@ static nsresult GetNextPrevLineFromBlockFrame(PeekOffsetStruct* aPos,
           break;
         }
         // always try previous on THAT line if that fails go the other way
-        resultFrame = frameTraversal->Traverse(/* aForward = */ false);
+        resultFrame = frameIterator->Traverse(/* aForward = */ false);
         if (!resultFrame) {
           return NS_ERROR_FAILURE;
         }
@@ -8705,14 +8760,15 @@ static nsresult GetNextPrevLineFromBlockFrame(PeekOffsetStruct* aPos,
 
       if (!found) {
         resultFrame = storeOldResultFrame;
-
-        result = NS_NewFrameTraversal(
-            getter_AddRefs(frameTraversal), pc, resultFrame, eLeaf,
+        frameIterator.reset();
+        frameIterator.emplace(
+            pc, resultFrame, nsFrameIterator::Type::Leaf,
             false,  // aVisual
             aPos->mOptions.contains(PeekOffsetOption::StopAtScroller),
             false,  // aFollowOOFs
             false   // aSkipPopupChecks
         );
+        MOZ_ASSERT(frameIterator);
       }
       while (!found) {
         nsPoint point = aPos->mDesiredCaretPos;
@@ -8720,16 +8776,16 @@ static nsresult GetNextPrevLineFromBlockFrame(PeekOffsetStruct* aPos,
         nsPoint offset;
         resultFrame->GetOffsetFromView(offset, &view);
         nsIFrame::ContentOffsets offsets =
-            resultFrame->GetContentOffsetsFromPoint(point - offset);
+            resultFrame->GetContentOffsetsFromPoint(
+                point - offset, nsIFrame::IGNORE_NATIVE_ANONYMOUS_SUBTREE);
         aPos->mResultContent = offsets.content;
         aPos->mContentOffset = offsets.offset;
         aPos->mAttach = offsets.associate;
         if (FoundValidFrame(offsets, resultFrame)) {
           found = true;
-          if (resultFrame == farStoppingFrame)
-            aPos->mAttach = CARET_ASSOCIATE_BEFORE;
-          else
-            aPos->mAttach = CARET_ASSOCIATE_AFTER;
+          aPos->mAttach = resultFrame == farStoppingFrame
+                              ? CaretAssociationHint::Before
+                              : CaretAssociationHint::After;
           break;
         }
         if (aPos->mDirection == eDirPrevious &&
@@ -8738,7 +8794,7 @@ static nsresult GetNextPrevLineFromBlockFrame(PeekOffsetStruct* aPos,
         if (aPos->mDirection == eDirNext && (resultFrame == farStoppingFrame))
           break;
         // previous didnt work now we try "next"
-        nsIFrame* tempFrame = frameTraversal->Traverse(/* aForward = */ true);
+        nsIFrame* tempFrame = frameIterator->Traverse(/* aForward = */ true);
         if (!tempFrame) break;
         resultFrame = tempFrame;
       }
@@ -8747,8 +8803,9 @@ static nsresult GetNextPrevLineFromBlockFrame(PeekOffsetStruct* aPos,
       // we need to jump to new block frame.
       aPos->mAmount = eSelectLine;
       aPos->mStartOffset = 0;
-      aPos->mAttach = aPos->mDirection == eDirNext ? CARET_ASSOCIATE_BEFORE
-                                                   : CARET_ASSOCIATE_AFTER;
+      aPos->mAttach = aPos->mDirection == eDirNext
+                          ? CaretAssociationHint::Before
+                          : CaretAssociationHint::After;
       if (aPos->mDirection == eDirPrevious)
         aPos->mStartOffset = -1;  // start from end
       return aBlockFrame->PeekOffset(aPos);
@@ -8938,8 +8995,9 @@ static void SetPeekResultFromFrame(PeekOffsetStruct& aPos, nsIFrame* aFrame,
   aPos.mContentOffset =
       aOffset < 0 ? range.end + aOffset + 1 : range.start + aOffset;
   if (aAtLineEdge == OffsetIsAtLineEdge::Yes) {
-    aPos.mAttach = aPos.mContentOffset == range.start ? CARET_ASSOCIATE_AFTER
-                                                      : CARET_ASSOCIATE_BEFORE;
+    aPos.mAttach = aPos.mContentOffset == range.start
+                       ? CaretAssociationHint::After
+                       : CaretAssociationHint::Before;
   }
 }
 
@@ -9597,13 +9655,11 @@ nsIFrame::SelectablePeekReport nsIFrame::GetFrameFromDirection(
       aOptions.contains(PeekOffsetOption::Visual) && presContext->BidiEnabled();
   const bool followOofs =
       !aOptions.contains(PeekOffsetOption::StopAtPlaceholder);
-  nsCOMPtr<nsIFrameEnumerator> frameTraversal;
-  MOZ_TRY(NS_NewFrameTraversal(
-      getter_AddRefs(frameTraversal), presContext, this, eLeaf,
-      needsVisualTraversal, aOptions.contains(PeekOffsetOption::StopAtScroller),
-      followOofs,
+  nsFrameIterator frameIterator(
+      presContext, this, nsFrameIterator::Type::Leaf, needsVisualTraversal,
+      aOptions.contains(PeekOffsetOption::StopAtScroller), followOofs,
       false  // aSkipPopupChecks
-      ));
+  );
 
   // Find the prev/next selectable frame
   bool selectable = false;
@@ -9643,7 +9699,7 @@ nsIFrame::SelectablePeekReport nsIFrame::GetFrameFromDirection(
       }
     }
 
-    traversedFrame = frameTraversal->Traverse(aDirection == eDirNext);
+    traversedFrame = frameIterator.Traverse(aDirection == eDirNext);
     if (!traversedFrame) {
       return result;
     }
@@ -10689,12 +10745,13 @@ Focusable nsIFrame::IsFocusable(bool aWithMouse, bool aCheckVisibility) {
     return {};
   }
 
-  const nsStyleUI& ui = *StyleUI();
-  if (ui.IsInert()) {
+  const StyleUserFocus uf = StyleUI()->UserFocus();
+  if (uf == StyleUserFocus::None) {
     return {};
   }
+  MOZ_ASSERT(!StyleUI()->IsInert(), "inert implies -moz-user-focus: none");
 
-  PseudoStyleType pseudo = Style()->GetPseudoType();
+  const PseudoStyleType pseudo = Style()->GetPseudoType();
   if (pseudo == PseudoStyleType::anonymousItem) {
     return {};
   }
@@ -10705,8 +10762,8 @@ Focusable nsIFrame::IsFocusable(bool aWithMouse, bool aCheckVisibility) {
     // tabability of XUL elements in some circumstances (which default to
     // -moz-user-focus: ignore).
     auto focusability = xul->GetXULFocusability(aWithMouse);
-    focusable.mFocusable = focusability.mForcedFocusable.valueOr(
-        ui.UserFocus() == StyleUserFocus::Normal);
+    focusable.mFocusable =
+        focusability.mForcedFocusable.valueOr(uf == StyleUserFocus::Normal);
     if (focusable) {
       focusable.mTabIndex = focusability.mForcedTabIndexIfFocusable.valueOr(0);
     }
@@ -11384,6 +11441,10 @@ static bool HasNoVisibleDescendants(const nsIFrame* aFrame) {
   return true;
 }
 
+nsIScrollableFrame* nsIFrame::GetAsScrollContainer() const {
+  return do_QueryFrame(this);
+}
+
 void nsIFrame::UpdateVisibleDescendantsState() {
   if (StyleVisibility()->IsVisible()) {
     // Notify invisible ancestors that a visible descendant exists now.
@@ -11395,29 +11456,6 @@ void nsIFrame::UpdateVisibleDescendantsState() {
     }
   } else {
     mAllDescendantsAreInvisible = HasNoVisibleDescendants(this);
-  }
-}
-
-void nsIFrame::UpdateAnimationVisibility() {
-  auto* animationCollection = AnimationCollection<CSSAnimation>::Get(this);
-  auto* transitionCollection = AnimationCollection<CSSTransition>::Get(this);
-
-  if ((!animationCollection || animationCollection->mAnimations.IsEmpty()) &&
-      (!transitionCollection || transitionCollection->mAnimations.IsEmpty())) {
-    return;
-  }
-
-  bool hidden = IsHiddenByContentVisibilityOnAnyAncestor();
-  if (animationCollection) {
-    for (auto& animation : animationCollection->mAnimations) {
-      animation->SetHiddenByContentVisibility(hidden);
-    }
-  }
-
-  if (transitionCollection) {
-    for (auto& transition : transitionCollection->mAnimations) {
-      transition->SetHiddenByContentVisibility(hidden);
-    }
   }
 }
 
