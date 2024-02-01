@@ -31,18 +31,18 @@ then
     exit 0
 fi
   
-cd /tmp || exit 1
+cd $HOME || exit 1
 # 下载并解压VER_LATEST版本的Firefox源码到临时目录
 # wget "https://example.com/path/to/firefox-$VER_LATEST.tar.gz"
 SOURCE_TAR="firefox-${VER_LATEST}.source.tar.xz"
 SOURCE_TAR_URL="https://ftp.mozilla.org/pub/firefox/releases/${VER_LATEST}/source/${SOURCE_TAR}"
 echo "Download new source tarball ..."
-wget --no-verbose "$SOURCE_TAR_URL"  || exit 1
+wget "$SOURCE_TAR_URL"  || exit 1
 
 echo "Extract tarball..."
 tar -xf "$SOURCE_TAR" || exit 1
 EXTRACTED_DIR="firefox-${VER_LATEST/esr/}"
-FF_LATEST_TMP="/$PWD/$EXTRACTED_DIR"
+FF_LATEST_TMP="$PWD/$EXTRACTED_DIR"
 
 # 删除FF_SRC_GIT中除了.git之外的所有文件和目录
 cd "$FF_SRC_GIT" || exit 1
@@ -138,4 +138,5 @@ git commit -m "$VER_LATEST" || exit
 git tag "$VER_LATEST" 
 git push -u origin || exit 1
 git push -u origin --tags
+
 
