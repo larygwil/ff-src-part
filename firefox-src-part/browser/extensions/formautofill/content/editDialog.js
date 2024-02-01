@@ -8,13 +8,9 @@
 "use strict";
 
 ChromeUtils.defineESModuleGetters(this, {
+  AutofillTelemetry: "resource://autofill/AutofillTelemetry.sys.mjs",
   formAutofillStorage: "resource://autofill/FormAutofillStorage.sys.mjs",
 });
-ChromeUtils.defineModuleGetter(
-  this,
-  "AutofillTelemetry",
-  "resource://autofill/AutofillTelemetry.jsm"
-);
 
 class AutofillEditDialog {
   constructor(subStorageName, elements, record) {
@@ -212,7 +208,7 @@ class EditCreditCardDialog extends AutofillEditDialog {
     if (this._record?.guid) {
       document.l10n.setAttributes(
         this._elements.title,
-        "autofill-edit-card-title"
+        "autofill-edit-card-title2"
       );
     }
   }

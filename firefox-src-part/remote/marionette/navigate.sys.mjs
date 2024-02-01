@@ -2,8 +2,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs";
-
 const lazy = {};
 
 ChromeUtils.defineESModuleGetters(lazy, {
@@ -11,7 +9,6 @@ ChromeUtils.defineESModuleGetters(lazy, {
   EventDispatcher:
     "chrome://remote/content/marionette/actors/MarionetteEventsParent.sys.mjs",
   Log: "chrome://remote/content/shared/Log.sys.mjs",
-  modal: "chrome://remote/content/marionette/modal.sys.mjs",
   PageLoadStrategy:
     "chrome://remote/content/shared/webdriver/Capabilities.sys.mjs",
   ProgressListener: "chrome://remote/content/shared/Navigate.sys.mjs",
@@ -19,7 +16,7 @@ ChromeUtils.defineESModuleGetters(lazy, {
   truncate: "chrome://remote/content/shared/Format.sys.mjs",
 });
 
-XPCOMUtils.defineLazyGetter(lazy, "logger", () =>
+ChromeUtils.defineLazyGetter(lazy, "logger", () =>
   lazy.Log.get(lazy.Log.TYPES.MARIONETTE)
 );
 
@@ -258,11 +255,9 @@ navigate.waitForNavigationCompleted = async function waitForNavigationCompleted(
     }
   };
 
-  const onDialogOpened = action => {
-    if (action === lazy.modal.ACTION_OPENED) {
-      lazy.logger.trace("Canceled page load listener because a dialog opened");
-      checkDone({ finished: true });
-    }
+  const onPromptOpened = action => {
+    lazy.logger.trace("Canceled page load listener because a dialog opened");
+    checkDone({ finished: true });
   };
 
   const onTimer = timer => {
@@ -369,7 +364,7 @@ navigate.waitForNavigationCompleted = async function waitForNavigationCompleted(
     "XULFrameLoaderCreated",
     onBrowsingContextChanged
   );
-  driver.dialogObserver.add(onDialogOpened);
+  driver.promptListener.on("opened", onPromptOpened);
   Services.obs.addObserver(
     onBrowsingContextDiscarded,
     "browsing-context-discarded"
@@ -420,7 +415,7 @@ navigate.waitForNavigationCompleted = async function waitForNavigationCompleted(
       "XULFrameLoaderCreated",
       onBrowsingContextChanged
     );
-    driver.dialogObserver?.remove(onDialogOpened);
+    driver.promptListener?.off("opened", onPromptOpened);
     unloadTimer?.cancel();
 
     lazy.EventDispatcher.off("page-load", onNavigation);

@@ -7,8 +7,6 @@
  * helper functions that are useful to all components of the urlbar.
  */
 
-import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs";
-
 const lazy = {};
 
 ChromeUtils.defineESModuleGetters(lazy, {
@@ -28,6 +26,7 @@ ChromeUtils.defineESModuleGetters(lazy, {
     "resource:///modules/UrlbarProviderSearchTips.sys.mjs",
   UrlbarSearchUtils: "resource:///modules/UrlbarSearchUtils.sys.mjs",
   UrlbarTokenizer: "resource:///modules/UrlbarTokenizer.sys.mjs",
+  BrowserUIUtils: "resource:///modules/BrowserUIUtils.sys.mjs",
 });
 
 export var UrlbarUtils = {
@@ -49,13 +48,12 @@ export var UrlbarUtils = {
     HEURISTIC_BOOKMARK_KEYWORD: "heuristicBookmarkKeyword",
     HEURISTIC_HISTORY_URL: "heuristicHistoryUrl",
     HEURISTIC_OMNIBOX: "heuristicOmnibox",
-    HEURISTIC_PRELOADED: "heuristicPreloaded",
     HEURISTIC_SEARCH_TIP: "heuristicSearchTip",
     HEURISTIC_TEST: "heuristicTest",
     HEURISTIC_TOKEN_ALIAS_ENGINE: "heuristicTokenAliasEngine",
     INPUT_HISTORY: "inputHistory",
     OMNIBOX: "extension",
-    PRELOADED: "preloaded",
+    RECENT_SEARCH: "recentSearch",
     REMOTE_SUGGESTION: "remoteSuggestion",
     REMOTE_TAB: "remoteTab",
     SUGGESTED_INDEX: "suggestedIndex",
@@ -66,6 +64,9 @@ export var UrlbarUtils = {
   PROVIDER_TYPE: {
     // Should be executed immediately, because it returns heuristic results
     // that must be handed to the user asap.
+    // WARNING: these providers must be extremely fast, because the urlbar will
+    // await for them before returning results to the user. In particular it is
+    // critical to reply quickly to isActive and startQuery.
     HEURISTIC: 1,
     // Can be delayed, contains results coming from the session or the profile.
     PROFILE: 2,
@@ -303,7 +304,7 @@ export var UrlbarUtils = {
     try {
       entry = await lazy.PlacesUtils.keywords.fetch(keyword);
     } catch (ex) {
-      console.error(`Unable to fetch Places keyword "${keyword}": ${ex}`);
+      console.error(`Unable to fetch Places keyword "${keyword}":`, ex);
     }
     if (!entry || !entry.url) {
       // This is not a Places keyword.
@@ -513,8 +514,6 @@ export var UrlbarUtils = {
           return UrlbarUtils.RESULT_GROUP.HEURISTIC_FALLBACK;
         case "Omnibox":
           return UrlbarUtils.RESULT_GROUP.HEURISTIC_OMNIBOX;
-        case "PreloadedSites":
-          return UrlbarUtils.RESULT_GROUP.HEURISTIC_PRELOADED;
         case "TokenAliasEngines":
           return UrlbarUtils.RESULT_GROUP.HEURISTIC_TOKEN_ALIAS_ENGINE;
         case "UrlbarProviderSearchTips":
@@ -542,8 +541,6 @@ export var UrlbarUtils = {
         return UrlbarUtils.RESULT_GROUP.ABOUT_PAGES;
       case "InputHistory":
         return UrlbarUtils.RESULT_GROUP.INPUT_HISTORY;
-      case "PreloadedSites":
-        return UrlbarUtils.RESULT_GROUP.PRELOADED;
       case "UrlbarProviderQuickSuggest":
         return UrlbarUtils.RESULT_GROUP.GENERAL_PARENT;
       default:
@@ -553,9 +550,11 @@ export var UrlbarUtils = {
     switch (result.type) {
       case UrlbarUtils.RESULT_TYPE.SEARCH:
         if (result.source == UrlbarUtils.RESULT_SOURCE.HISTORY) {
-          return UrlbarUtils.RESULT_GROUP.FORM_HISTORY;
+          return result.providerName == "RecentSearches"
+            ? UrlbarUtils.RESULT_GROUP.RECENT_SEARCH
+            : UrlbarUtils.RESULT_GROUP.FORM_HISTORY;
         }
-        if (result.payload.tail) {
+        if (result.payload.tail && !result.isRichSuggestion) {
           return UrlbarUtils.RESULT_GROUP.TAIL_SUGGESTION;
         }
         if (result.payload.suggestion) {
@@ -867,6 +866,13 @@ export var UrlbarUtils = {
     return pasteData;
   },
 
+  /**
+   * Add a (url, input) tuple to the input history table that drives adaptive
+   * results.
+   *
+   * @param {string} url The url to add input history for
+   * @param {string} input The associated search term
+   */
   async addToInputHistory(url, input) {
     await lazy.PlacesUtils.withConnectionWrapper("addToInputHistory", db => {
       // use_count will asymptotically approach the max of 10.
@@ -878,6 +884,29 @@ export var UrlbarUtils = {
         LEFT JOIN moz_inputhistory i ON i.place_id = h.id AND i.input = :input
         WHERE url_hash = hash(:url) AND url = :url
       `,
+        { url, input: input.toLowerCase() }
+      );
+    });
+  },
+
+  /**
+   * Remove a (url, input*) tuple from the input history table that drives
+   * adaptive results.
+   * Note the input argument is used as a wildcard so any match starting with
+   * it will also be removed.
+   *
+   * @param {string} url The url to add input history for
+   * @param {string} input The associated search term
+   */
+  async removeInputHistory(url, input) {
+    await lazy.PlacesUtils.withConnectionWrapper("removeInputHistory", db => {
+      return db.executeCached(
+        `
+        DELETE FROM moz_inputhistory
+        WHERE input BETWEEN :input AND :input || X'FFFF'
+          AND place_id =
+            (SELECT id FROM moz_places WHERE url_hash = hash(:url) AND url = :url)
+        `,
         { url, input: input.toLowerCase() }
       );
     });
@@ -1179,6 +1208,9 @@ export var UrlbarUtils = {
       case UrlbarUtils.RESULT_TYPE.TAB_SWITCH:
         return "switchtab";
       case UrlbarUtils.RESULT_TYPE.SEARCH:
+        if (result.providerName == "RecentSearches") {
+          return "recent_search";
+        }
         if (result.source == UrlbarUtils.RESULT_SOURCE.HISTORY) {
           return "formhistory";
         }
@@ -1187,7 +1219,7 @@ export var UrlbarUtils = {
         }
         if (result.payload.suggestion) {
           let type = result.payload.trending ? "trending" : "searchsuggestion";
-          if (result.payload.isRichSuggestion) {
+          if (result.isRichSuggestion) {
             type += "_rich";
           }
           return type;
@@ -1222,6 +1254,14 @@ export var UrlbarUtils = {
               return "dynamic_wikipedia";
           }
           return "quicksuggest";
+        }
+        if (result.providerName == "UrlbarProviderClipboard") {
+          return "clipboard";
+        }
+        if (result.providerName == "InputHistory") {
+          return result.source == UrlbarUtils.RESULT_SOURCE.BOOKMARKS
+            ? "bookmark_adaptive"
+            : "history_adaptive";
         }
         return result.source == UrlbarUtils.RESULT_SOURCE.BOOKMARKS
           ? "bookmark"
@@ -1263,6 +1303,46 @@ export var UrlbarUtils = {
   },
 
   /**
+   * Checks whether a given text has right-to-left direction or not.
+   *
+   * @param {string} value The text which should be check for RTL direction.
+   * @param {Window} window The window where 'value' is going to be displayed.
+   * @returns {boolean} Returns true if text has right-to-left direction and
+   *                    false otherwise.
+   */
+  isTextDirectionRTL(value, window) {
+    let directionality = window.windowUtils.getDirectionFromText(value);
+    return directionality == window.windowUtils.DIRECTION_RTL;
+  },
+
+  /**
+   * Unescape, decode punycode, and trim (both protocol and trailing slash)
+   * the URL. Use for displaying purposes only!
+   *
+   * @param {string} url The url that should be prepared for display.
+   * @returns {string} Prepared url.
+   */
+  prepareUrlForDisplay(url) {
+    // Some domains are encoded in punycode. The following ensures we display
+    // the url in utf-8.
+    try {
+      url = new URL(url).URI.displaySpec;
+    } catch {} // In some cases url is not a valid url.
+
+    if (url && lazy.UrlbarPrefs.get("trimURLs")) {
+      url = lazy.BrowserUIUtils.removeSingleTrailingSlashFromURL(url);
+      if (url.startsWith("https://")) {
+        url = url.substring(8);
+        if (url.startsWith("www.")) {
+          url = url.substring(4);
+        }
+      }
+    }
+
+    return this.unEscapeURIForUI(url);
+  },
+
+  /**
    * Extracts a group for search engagement telemetry from a result.
    *
    * @param {UrlbarResult} result The result to analyze.
@@ -1283,6 +1363,9 @@ export var UrlbarUtils = {
       case UrlbarUtils.RESULT_GROUP.INPUT_HISTORY: {
         return "adaptive_history";
       }
+      case UrlbarUtils.RESULT_GROUP.RECENT_SEARCH: {
+        return "recent_search";
+      }
       case UrlbarUtils.RESULT_GROUP.FORM_HISTORY: {
         return "search_history";
       }
@@ -1291,7 +1374,7 @@ export var UrlbarUtils = {
         let group = result.payload.trending
           ? "trending_search"
           : "search_suggest";
-        if (result.payload.isRichSuggestion) {
+        if (result.isRichSuggestion) {
           group += "_rich";
         }
         return group;
@@ -1356,6 +1439,8 @@ export var UrlbarUtils = {
             return "site_specific_contextual_search";
           case "UrlbarProviderQuickSuggest":
             return this._getQuickSuggestTelemetryType(result);
+          case "UrlbarProviderQuickSuggestContextualOptIn":
+            return "fxsuggest_data_sharing_opt_in";
           case "Weather":
             return "weather";
         }
@@ -1371,13 +1456,15 @@ export var UrlbarUtils = {
           return "tab_to_search";
         }
         if (result.source == UrlbarUtils.RESULT_SOURCE.HISTORY) {
-          return "search_history";
+          return result.providerName == "RecentSearches"
+            ? "recent_search"
+            : "search_history";
         }
         if (result.payload.suggestion) {
           let type = result.payload.trending
             ? "trending_search"
             : "search_suggest";
-          if (result.payload.isRichSuggestion) {
+          if (result.isRichSuggestion) {
             type += "_rich";
           }
           return type;
@@ -1431,6 +1518,9 @@ export var UrlbarUtils = {
         if (result.providerName === "UrlbarProviderTopSites") {
           return "top_site";
         }
+        if (result.providerName === "UrlbarProviderClipboard") {
+          return "clipboard";
+        }
         return result.source === UrlbarUtils.RESULT_SOURCE.BOOKMARKS
           ? "bookmark"
           : "history";
@@ -1453,7 +1543,7 @@ export var UrlbarUtils = {
 
     if (
       result.providerName === "quickactions" &&
-      element?.classList.contains("urlbarView-quickaction-row")
+      element?.classList.contains("urlbarView-quickaction-button")
     ) {
       return element.dataset.key;
     }
@@ -1468,13 +1558,25 @@ export var UrlbarUtils = {
     }
     return `${source}_${result.payload.telemetryType}`;
   },
+
+  /**
+   * For use when we want to hash a pair of items in a dictionary
+   *
+   * @param {string[]} tokens
+   *   list of tokens to join into a string eg "a" "b" "c"
+   * @returns {string}
+   *   the tokens joined in a string "a|b|c"
+   */
+  tupleString(...tokens) {
+    return tokens.filter(t => t).join("|");
+  },
 };
 
-XPCOMUtils.defineLazyGetter(UrlbarUtils.ICON, "DEFAULT", () => {
+ChromeUtils.defineLazyGetter(UrlbarUtils.ICON, "DEFAULT", () => {
   return lazy.PlacesUtils.favicons.defaultFavicon.spec;
 });
 
-XPCOMUtils.defineLazyGetter(UrlbarUtils, "strings", () => {
+ChromeUtils.defineLazyGetter(UrlbarUtils, "strings", () => {
   return Services.strings.createBundle(
     "chrome://global/locale/autocomplete.properties"
   );
@@ -1518,6 +1620,9 @@ UrlbarUtils.RESULT_PAYLOAD_SCHEMA = {
       engine: {
         type: "string",
       },
+      helpUrl: {
+        type: "string",
+      },
       icon: {
         type: "string",
       },
@@ -1531,9 +1636,6 @@ UrlbarUtils.RESULT_PAYLOAD_SCHEMA = {
         type: "boolean",
       },
       isGeneralPurposeEngine: {
-        type: "boolean",
-      },
-      isRichSuggestion: {
         type: "boolean",
       },
       keyword: {
@@ -1587,7 +1689,39 @@ UrlbarUtils.RESULT_PAYLOAD_SCHEMA = {
             type: "string",
           },
           args: {
-            type: "array",
+            type: "object",
+            additionalProperties: true,
+          },
+        },
+      },
+      // l10n { id, args }
+      bottomTextL10n: {
+        type: "object",
+        required: ["id"],
+        properties: {
+          id: {
+            type: "string",
+          },
+          args: {
+            type: "object",
+            additionalProperties: true,
+          },
+        },
+      },
+      description: {
+        type: "string",
+      },
+      // l10n { id, args }
+      descriptionL10n: {
+        type: "object",
+        required: ["id"],
+        properties: {
+          id: {
+            type: "string",
+          },
+          args: {
+            type: "object",
+            additionalProperties: true,
           },
         },
       },
@@ -1609,7 +1743,8 @@ UrlbarUtils.RESULT_PAYLOAD_SCHEMA = {
             type: "string",
           },
           args: {
-            type: "array",
+            type: "object",
+            additionalProperties: true,
           },
         },
       },
@@ -1618,6 +1753,9 @@ UrlbarUtils.RESULT_PAYLOAD_SCHEMA = {
       },
       icon: {
         type: "string",
+      },
+      iconBlob: {
+        type: "object",
       },
       isBlockable: {
         type: "boolean",
@@ -1631,6 +1769,9 @@ UrlbarUtils.RESULT_PAYLOAD_SCHEMA = {
       originalUrl: {
         type: "string",
       },
+      provider: {
+        type: "string",
+      },
       qsSuggestion: {
         type: "string",
       },
@@ -1638,6 +1779,9 @@ UrlbarUtils.RESULT_PAYLOAD_SCHEMA = {
         type: "string",
       },
       sendAttributionRequest: {
+        type: "boolean",
+      },
+      shouldShowUrl: {
         type: "boolean",
       },
       source: {
@@ -1815,7 +1959,8 @@ UrlbarUtils.RESULT_PAYLOAD_SCHEMA = {
             type: "string",
           },
           args: {
-            type: "array",
+            type: "object",
+            additionalProperties: true,
           },
         },
       },
@@ -1839,7 +1984,8 @@ UrlbarUtils.RESULT_PAYLOAD_SCHEMA = {
             type: "string",
           },
           args: {
-            type: "array",
+            type: "object",
+            additionalProperties: true,
           },
         },
       },
@@ -1990,7 +2136,7 @@ export class UrlbarQueryContext {
    * @returns {{ href: string; isSearch: boolean; }?}
    */
   get fixupInfo() {
-    if (this.trimmedSearchString && !this._fixupInfo) {
+    if (!this._fixupError && !this._fixupInfo && this.trimmedSearchString) {
       let flags =
         Ci.nsIURIFixup.FIXUP_FLAG_FIX_SCHEME_TYPOS |
         Ci.nsIURIFixup.FIXUP_FLAG_ALLOW_KEYWORD_LOOKUP;
@@ -2111,7 +2257,7 @@ export class UrlbarMuxer {
  */
 export class UrlbarProvider {
   constructor() {
-    XPCOMUtils.defineLazyGetter(this, "logger", () =>
+    ChromeUtils.defineLazyGetter(this, "logger", () =>
       UrlbarUtils.getLogger({ prefix: `Provider.${this.name}` })
     );
   }
@@ -2212,8 +2358,6 @@ export class UrlbarProvider {
   /**
    * Called when the user starts and ends an engagement with the urlbar.
    *
-   * @param {boolean} isPrivate
-   *   True if the engagement is in a private context.
    * @param {string} state
    *   The state of the engagement, one of the following strings:
    *
@@ -2262,8 +2406,22 @@ export class UrlbarProvider {
    *       The name of the provider that produced the picked result.
    *
    *   For "abandonment", only `searchString` is defined.
+   * @param {UrlbarController} controller
+   *  The associated controller.
    */
-  onEngagement(isPrivate, state, queryContext, details) {}
+  onEngagement(state, queryContext, details, controller) {}
+
+  /**
+   * Called before a result from the provider is selected. See `onSelection`
+   * for details on what that means.
+   *
+   * @param {UrlbarResult} result
+   *   The result that was selected.
+   * @param {Element} element
+   *   The element in the result's view that was selected.
+   * @abstract
+   */
+  onBeforeSelection(result, element) {}
 
   /**
    * Called when a result from the provider is selected. "Selected" refers to
@@ -2409,6 +2567,11 @@ export class UrlbarProvider {
  */
 export class SkippableTimer {
   /**
+   * This can be used to track whether the timer completed.
+   */
+  done = false;
+
+  /**
    * Creates a skippable timer for the given callback and time.
    *
    * @param {object} options An object that configures the timer
@@ -2434,6 +2597,7 @@ export class SkippableTimer {
       this._timer.initWithCallback(
         () => {
           this._log(`Timed out!`, reportErrorOnTimeout);
+          this.done = true;
           this._timer = null;
           resolve();
         },
@@ -2445,6 +2609,7 @@ export class SkippableTimer {
 
     let firePromise = new Promise(resolve => {
       this.fire = async () => {
+        this.done = true;
         if (this._timer) {
           if (!this._canceled) {
             this._log(`Skipped`);

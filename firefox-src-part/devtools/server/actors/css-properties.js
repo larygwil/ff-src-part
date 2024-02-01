@@ -19,15 +19,15 @@ loader.lazyRequireGetter(
 );
 
 class CssPropertiesActor extends Actor {
-  constructor(conn) {
+  constructor(conn, targetActor) {
     super(conn, cssPropertiesSpec);
+    this.targetActor = targetActor;
   }
 
   getCSSDatabase() {
-    const properties = generateCssProperties();
-    const pseudoElements = InspectorUtils.getCSSPseudoElementNames();
+    const properties = generateCssProperties(this.targetActor.window.document);
 
-    return { properties, pseudoElements };
+    return { properties };
   }
 }
 exports.CssPropertiesActor = CssPropertiesActor;
@@ -36,9 +36,10 @@ exports.CssPropertiesActor = CssPropertiesActor;
  * Generate the CSS properties object. Every key is the property name, while
  * the values are objects that contain information about that property.
  *
+ * @param {Document} doc
  * @return {Object}
  */
-function generateCssProperties() {
+function generateCssProperties(doc) {
   const properties = {};
   const propertyNames = InspectorUtils.getCSSPropertyNames({
     includeAliases: true,
@@ -64,7 +65,7 @@ function generateCssProperties() {
     const subproperties = InspectorUtils.getSubpropertiesForCSSProperty(name);
 
     properties[name] = {
-      isInherited: InspectorUtils.isInheritedProperty(name),
+      isInherited: InspectorUtils.isInheritedProperty(doc, name),
       values,
       supports,
       subproperties,

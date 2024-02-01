@@ -13,10 +13,13 @@
   font: message-box;
   font-size: var(--theme-body-font-size);
 
+  /* TODO(bug 1022557): Perhaps we want to allow forced colors in devtools */
+  forced-color-adjust: none;
+
   --tab-line-hover-color: rgba(0,0,0,.2);
   --tab-line-selected-color: var(--blue-50);
   --toggle-thumb-color: white;
-  --toggle-track-color: var(--grey-30);
+  --toggle-track-color: var(--grey-50);
 
   --searchbox-no-match-background-color: #ffe5e5;
   --searchbox-no-match-stroke-color: var(--red-60);
@@ -31,7 +34,6 @@
 
   --tab-line-hover-color: rgba(255,255,255,.2);
   --toggle-thumb-color: var(--grey-40);
-  --toggle-track-color: var(--grey-60);
 
   --searchbox-no-match-background-color: #402325;
   --searchbox-no-match-stroke-color: var(--red-50);
@@ -108,6 +110,12 @@ html|button > * {
 /* Prevent buttons from having a text selection highlight. Bug 1546366 */
 button::selection {
   all: unset;
+}
+
+iframe {
+  border: 0;
+  min-width: 0;
+  min-height: 0;
 }
 
 /* Autocomplete Popup */
@@ -240,35 +248,21 @@ button::selection {
 
 /* Keyboard focus highlight styles */
 
-:-moz-focusring {
+:focus-visible {
   outline: var(--theme-focus-outline);
-  outline-offset: -1px;
-}
+  outline-offset: var(--theme-outline-offset);
+  box-shadow: var(--theme-outline-box-shadow);
 
-textbox[focused="true"] {
-  border-color: var(--theme-focus-border-color-textbox);
-  box-shadow: var(--theme-focus-box-shadow-textbox);
-  transition: all 0.2s ease-in-out
-}
+  /* override properties set in global-shared.css for links  */
+  a& {
+    outline-color: var(--theme-focus-outline-color) !important;
+    outline-width: var(--theme-focus-outline-size) !important;
+  }
 
-textbox :-moz-focusring {
-  box-shadow: none;
-  outline: none;
-}
-
-/* Form fields should already have box-shadow hightlight */
-select:-moz-focusring,
-input[type="radio"]:-moz-focusring,
-input[type="checkbox"]:-moz-focusring,
-checkbox:-moz-focusring {
-  outline: none;
-}
-
-/* Tab and button of toolbox does not need to display outline */
-
-.devtools-button:-moz-focusring,
-.devtools-tab:-moz-focusring {
-  outline:none;
+  /* offset the outline for checkbox and radio buttons so it doesn't conflict with existing border */
+  :is(input[type="radio"], input[type="checkbox"], checkbox)& {
+    outline-offset: 2px;
+  }
 }
 
 /* Toolbar buttons */
@@ -291,6 +285,8 @@ checkbox:-moz-focusring {
 
 .devtools-togglebutton {
   padding: 1px 6px;
+  /* Separate the outline from the button as it might have a similar background color (after Bug 1590432) */
+  outline-offset: 2px;
 }
 
 /* Remove system form border from devtools-button. */
@@ -326,13 +322,13 @@ checkbox:-moz-focusring {
   content: "";
 }
 
-.devtools-button.checked::before {
+.devtools-button:is(.checked, [aria-pressed="true"])::before {
   color: var(--theme-icon-checked-color);
 }
 
 /* Icon-only buttons */
 .devtools-button:hover::before,
-.devtools-button.checked::before {
+.devtools-button:is(.checked, [aria-pressed="true"])::before {
   opacity: 1;
 }
 
@@ -340,10 +336,6 @@ checkbox:-moz-focusring {
 .devtools-button:disabled {
   pointer-events: none;
   opacity: 0.5 !important;
-}
-
-.devtools-button:focus {
-  background-color: var(--theme-toolbar-hover);
 }
 
 .devtools-button:empty:not([aria-expanded="true"]):hover {
@@ -364,17 +356,17 @@ checkbox:-moz-focusring {
 
 /* Selectable button which is unchecked. */
 
-.devtools-button:not(:empty, .checked):hover,
-.devtools-button:empty:is(:hover:active,.checked),
+.devtools-button:not(:empty, .checked, [aria-pressed="true"]):hover,
+.devtools-button:empty:is(:hover:active,.checked, [aria-pressed="true"]),
 .devtools-button[aria-haspopup="menu"][aria-expanded="true"] {
   background-color: var(--toolbarbutton-hover-background);
 }
 
-.devtools-button:not(:empty, .checked):hover:active {
+.devtools-button:not(:empty, .checked, [aria-pressed="true"]):hover:active {
   background-color: var(--theme-selection-background-hover);
 }
 
-.devtools-button:not(:empty, .checked):focus {
+.devtools-button:not(:empty, .checked, [aria-pressed="true"]):focus {
   background-color: var(--toolbarbutton-focus-background);
   color: var(--toolbarbutton-focus-color);
 }
@@ -390,13 +382,13 @@ checkbox:-moz-focusring {
 
 /* Selectable button which is checked. */
 
-.devtools-button:not(:empty).checked {
+.devtools-button:not(:empty):is(.checked, [aria-pressed="true"]) {
   background: var(--toolbarbutton-checked-background);
   color: var(--toolbarbutton-checked-color);
-}
 
-.devtools-button:not(:empty).checked:focus {
-  background-color: var(--toolbarbutton-checked-focus-background);
+  &:focus {
+    background-color: var(--toolbarbutton-checked-focus-background);
+  }
 }
 
 .devtools-togglebutton[aria-pressed="true"] {
@@ -451,6 +443,13 @@ checkbox:-moz-focusring {
   background-color: var(--theme-body-background);
   color: var(--theme-body-color);
   flex-grow: 1;
+
+  &::placeholder {
+    /* override UA style */
+    opacity: 1;
+    /* Set a dimmed color that still gives us enough contrast  */
+    color: var(--theme-text-color-alt);
+  }
 }
 
 .devtools-searchinput,
@@ -495,20 +494,27 @@ checkbox:-moz-focusring {
 
 .devtools-searchbox > .devtools-searchinput,
 .devtools-searchbox > .devtools-filterinput {
-  /* Let .devtools-searchbox handle the background and border */
+  /* Those classes can be applied on <input>, which have a default styling.
+     We want .devtools-searchbox to handle the background, border and outline, so we
+     need to reset them here */
   background-color: transparent;
   border: none;
+  outline: none;
+  box-shadow: none;
   flex-grow: 1;
   min-width: 0;
   width: 100%;
 }
 
-.devtools-searchbox:focus-within,
-.devtools-textinput:focus,
-.devtools-searchinput:focus,
-.devtools-filterinput:focus {
-  border-color: var(--blue-50);
-  outline: none;
+/* Display an outline on the container when the child input is focused. If another element
+   is focused (e.g. a button), we only want the outline on that element */
+.devtools-searchbox:focus-within:has(input:focus-visible) {
+  outline: var(--theme-focus-outline);
+  outline-offset: -2px;
+
+  &.devtools-searchbox-no-match {
+    outline-color: var(--searchbox-no-match-stroke-color);
+  }
 }
 
 .devtools-searchbox-no-match {
@@ -594,12 +600,11 @@ checkbox:-moz-focusring {
   fill: var(--theme-selection-color);
 }
 
-.theme-twisty:-moz-focusring {
-  outline-style: none;
-}
-
-.theme-twisty[open],
-.theme-twisty.open {
+.theme-twisty:is(
+  .open,
+  [open],
+  [aria-expanded="true"]
+) {
   transform: none;
 }
 
@@ -650,6 +655,8 @@ checkbox:-moz-focusring {
   background-position: center;
   -moz-context-properties: fill;
   fill: var(--theme-icon-color);
+  /* The button is often displayed next to the window edge, so adjust the layout to make the offset visible */
+  outline-offset: -2px;
 }
 
 .all-tabs-menu:hover {
@@ -734,14 +741,6 @@ checkbox:-moz-focusring {
 /* For right-to-left layout, the toggle thumb goes in the opposite direction. */
 html[dir="rtl"] .devtools-checkbox-toggle {
   --x-pos: -.15em;
-}
-
-.devtools-checkbox-toggle:not(:checked):focus {
-  border-color: var(--blue-55);
-}
-
-.devtools-checkbox-toggle:checked:focus {
-  background-color: var(--blue-40);
 }
 
 .devtools-checkbox-toggle:checked {

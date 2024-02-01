@@ -11,7 +11,7 @@
 #include <stdio.h>
 
 #include "mozilla/FileUtils.h"
-#include "mozilla/Result.h"
+#include "mozilla/Try.h"
 #include "mozilla/UniquePtr.h"
 #include "mozilla/UniquePtrExtensions.h"
 
@@ -38,7 +38,6 @@ using LibHandleResult = ::mozilla::Result<LibHandleType, DLErrorType>;
 
 #if defined(XP_WIN)
 #  include <mbstring.h>
-#  include "mozilla/WindowsVersion.h"
 #  include "mozilla/PreXULSkeletonUI.h"
 
 static LibHandleResult GetLibHandle(pathstr_t aDependentLib) {
@@ -301,13 +300,6 @@ static XPCOMGlueLoadResult XPCOMGlueLoad(
     if (l == 0 || *buffer == '#') {
       continue;
     }
-#  ifdef XP_WIN
-    // There is no point in reading Universal CRT forwarder DLLs ahead on
-    // Windows 10 because they will not be touched later.
-    if (IsWin10OrLater() && !strncmp(buffer, "api-", 4)) {
-      continue;
-    }
-#  endif
 
     // cut the trailing newline, if present
     if (buffer[l - 1] == '\n') {

@@ -106,6 +106,7 @@ class NodeActor extends Actor {
     this.currentDisplayType = this.displayType;
     this.wasDisplayed = this.isDisplayed;
     this.wasScrollable = wasScrollable;
+    this.currentContainerType = this.containerType;
 
     if (wasScrollable) {
       this.walker.updateOverflowCausingElements(
@@ -201,6 +202,7 @@ class NodeActor extends Actor {
       isScrollable: this.isScrollable,
       isTopLevelDocument: this.isTopLevelDocument,
       causesOverflow: this.walker.overflowCausingElementsMap.has(this.rawNode),
+      containerType: this.containerType,
 
       // doctype attributes
       name: this.rawNode.name,
@@ -375,6 +377,22 @@ class NodeActor extends Actor {
   }
 
   /**
+   * Returns the computed containerType style property value of the node.
+   */
+  get containerType() {
+    // non-element nodes can't be containers
+    if (
+      isNodeDead(this) ||
+      this.rawNode.nodeType !== Node.ELEMENT_NODE ||
+      !this.computedStyle
+    ) {
+      return null;
+    }
+
+    return this.computedStyle.containerType;
+  }
+
+  /**
    * Check whether the node currently has scrollbars and is scrollable.
    */
   get isScrollable() {
@@ -488,10 +506,15 @@ class NodeActor extends Actor {
       return undefined;
     }
 
+    // NOTE: Debugger.Script.prototype.startColumn is 1-based.
+    //       Convert to 0-based, while keeping the wasm's column (1) as is.
+    //       (bug 1863878)
+    const columnBase = customElementDO.script.format === "wasm" ? 0 : 1;
+
     return {
       url: customElementDO.script.url,
       line: customElementDO.script.startLine,
-      column: customElementDO.script.startColumn,
+      column: customElementDO.script.startColumn - columnBase,
     };
   }
 

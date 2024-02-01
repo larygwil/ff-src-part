@@ -31,7 +31,13 @@ export const ThemeVariableMap = [
     },
   ],
   [
-    "--lwt-tab-text",
+    "--tab-selected-bgcolor",
+    {
+      lwtProperty: "tab_selected",
+    },
+  ],
+  [
+    "--tab-selected-textcolor",
     {
       lwtProperty: "tab_text",
     },
@@ -50,22 +56,9 @@ export const ThemeVariableMap = [
     },
   ],
   [
-    "--toolbar-bgcolor",
-    {
-      lwtProperty: "toolbarColor",
-    },
-  ],
-  [
-    "--toolbar-color",
-    {
-      lwtProperty: "toolbar_text",
-    },
-  ],
-  [
-    "--lwt-tabs-border-color",
+    "--tabs-navbar-shadow-color",
     {
       lwtProperty: "toolbar_top_separator",
-      optionalElementID: "navigator-toolbox",
     },
   ],
   [
@@ -105,19 +98,13 @@ export const ThemeVariableMap = [
     },
   ],
   [
-    "--lwt-selected-tab-background-color",
-    {
-      lwtProperty: "tab_selected",
-    },
-  ],
-  [
-    "--autocomplete-popup-highlight-background",
+    "--urlbarView-highlight-background",
     {
       lwtProperty: "popup_highlight",
     },
   ],
   [
-    "--autocomplete-popup-highlight-color",
+    "--urlbarView-highlight-color",
     {
       lwtProperty: "popup_highlight_text",
     },
@@ -126,14 +113,11 @@ export const ThemeVariableMap = [
     "--sidebar-background-color",
     {
       lwtProperty: "sidebar",
-      optionalElementID: "sidebar-box",
-      processColor(rgbaChannels, element) {
+      processColor(rgbaChannels) {
         if (!rgbaChannels) {
-          element.removeAttribute("lwt-sidebar");
           return null;
         }
         const { r, g, b } = rgbaChannels;
-        element.setAttribute("lwt-sidebar", "true");
         // Drop alpha channel
         return `rgb(${r}, ${g}, ${b})`;
       },
@@ -143,14 +127,12 @@ export const ThemeVariableMap = [
     "--sidebar-text-color",
     {
       lwtProperty: "sidebar_text",
-      optionalElementID: "sidebar-box",
     },
   ],
   [
     "--sidebar-border-color",
     {
       lwtProperty: "sidebar_border",
-      optionalElementID: "browser",
     },
   ],
   [

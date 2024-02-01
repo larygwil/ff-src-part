@@ -61,6 +61,12 @@ let AVAILABLE_PIP_OVERRIDES;
       },
     },
 
+    arte: {
+      "https://*.arte.tv/*": {
+        videoWrapperScriptPath: "video-wrappers/arte.js",
+      },
+    },
+
     bbc: {
       "https://*.bbc.com/*": {
         videoWrapperScriptPath: "video-wrappers/bbc.js",
@@ -247,6 +253,12 @@ let AVAILABLE_PIP_OVERRIDES;
       "https://*.udemy.com/*": {
         videoWrapperScriptPath: "video-wrappers/udemy.js",
         policy: TOGGLE_POLICIES.ONE_QUARTER,
+      },
+    },
+
+    viki: {
+      "https://*.viki.com/*": {
+        videoWrapperScriptPath: "video-wrappers/videojsWrapper.js",
       },
     },
 

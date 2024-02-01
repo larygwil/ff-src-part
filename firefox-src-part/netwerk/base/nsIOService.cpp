@@ -88,8 +88,6 @@ using mozilla::dom::ServiceWorkerDescriptor;
 #define NETWORK_DNS_PREF "network.dns."
 #define FORCE_EXTERNAL_PREF_PREFIX "network.protocol-handler.external."
 
-#define MAX_RECURSION_COUNT 50
-
 nsIOService* gIOService;
 static bool gHasWarnedUploadChannel2;
 static bool gCaptivePortalEnabled = false;
@@ -223,7 +221,6 @@ static const char* gCallbackPrefsForSocketProcess[] = {
     "network.trr.",
     "doh-rollout.",
     "network.dns.disableIPv6",
-    "network.dns.skipTRR-when-parental-control-enabled",
     "network.offline-mirrors-connectivity",
     "network.disable-localhost-when-offline",
     "network.proxy.parse_pac_on_socket_process",
@@ -995,15 +992,6 @@ nsIOService::GetDefaultPort(const char* scheme, int32_t* defaultPort) {
   return NS_OK;
 }
 
-class AutoIncrement {
- public:
-  explicit AutoIncrement(uint32_t* var) : mVar(var) { ++*var; }
-  ~AutoIncrement() { --*mVar; }
-
- private:
-  uint32_t* mVar;
-};
-
 nsresult nsIOService::NewURI(const nsACString& aSpec, const char* aCharset,
                              nsIURI* aBaseURI, nsIURI** result) {
   return NS_NewURI(result, aSpec, aCharset, aBaseURI);
@@ -1029,10 +1017,8 @@ nsIOService::NewFileURI(nsIFile* file, nsIURI** result) {
 already_AddRefed<nsIURI> nsIOService::CreateExposableURI(nsIURI* aURI) {
   MOZ_ASSERT(aURI, "Must have a URI");
   nsCOMPtr<nsIURI> uri = aURI;
-
-  nsAutoCString userPass;
-  uri->GetUserPass(userPass);
-  if (!userPass.IsEmpty()) {
+  bool hasUserPass;
+  if (NS_SUCCEEDED(aURI->GetHasUserPass(&hasUserPass)) && hasUserPass) {
     DebugOnly<nsresult> rv = NS_MutateURI(uri).SetUserPass(""_ns).Finalize(uri);
     MOZ_ASSERT(NS_SUCCEEDED(rv) && uri, "Mutating URI should never fail");
   }

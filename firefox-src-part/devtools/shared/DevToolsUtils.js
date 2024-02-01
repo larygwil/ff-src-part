@@ -20,13 +20,8 @@ ChromeUtils.defineESModuleGetters(lazy, {
   FileUtils: "resource://gre/modules/FileUtils.sys.mjs",
   NetworkHelper:
     "resource://devtools/shared/network-observer/NetworkHelper.sys.mjs",
+  ObjectUtils: "resource://gre/modules/ObjectUtils.sys.mjs",
 });
-
-ChromeUtils.defineModuleGetter(
-  lazy,
-  "ObjectUtils",
-  "resource://gre/modules/ObjectUtils.jsm"
-);
 
 // Native getters which are considered to be side effect free.
 ChromeUtils.defineLazyGetter(lazy, "sideEffectFreeGetters", () => {
@@ -513,7 +508,8 @@ Object.defineProperty(exports, "assert", {
 });
 
 DevToolsUtils.defineLazyGetter(this, "NetUtil", () => {
-  return ChromeUtils.import("resource://gre/modules/NetUtil.jsm").NetUtil;
+  return ChromeUtils.importESModule("resource://gre/modules/NetUtil.sys.mjs")
+    .NetUtil;
 });
 
 /**
@@ -532,6 +528,7 @@ DevToolsUtils.defineLazyGetter(this, "NetUtil", () => {
  *        - principal: the principal to use, if omitted, the request is loaded
  *                     with a content principal corresponding to the url being
  *                     loaded, using the origin attributes of the window, if any.
+ *        - headers: extra headers
  *        - cacheKey: when loading from cache, use this key to retrieve a cache
  *                    specific to a given SHEntry. (Allows loading POST
  *                    requests from cache)
@@ -554,6 +551,7 @@ function mainThreadFetch(
     window: null,
     charset: null,
     principal: null,
+    headers: null,
     cacheKey: 0,
   }
 ) {
@@ -584,6 +582,12 @@ function mainThreadFetch(
       // SHEntry and offer ways to restore POST requests from cache.
       if (aOptions.cacheKey != 0) {
         channel.cacheKey = aOptions.cacheKey;
+      }
+    }
+
+    if (aOptions.headers && channel instanceof Ci.nsIHttpChannel) {
+      for (const h in aOptions.headers) {
+        channel.setRequestHeader(h, aOptions.headers[h], /* aMerge = */ false);
       }
     }
 
@@ -618,7 +622,7 @@ function mainThreadFetch(
             // If there was a real stream error, we would have already rejected above.
             resolve({
               content: "",
-              contentType: "text/plan",
+              contentType: "text/plain",
             });
             return;
           }

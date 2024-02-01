@@ -4,8 +4,6 @@
 
 /* eslint-disable no-restricted-globals */
 
-import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs";
-
 const lazy = {};
 
 ChromeUtils.defineESModuleGetters(lazy, {
@@ -14,10 +12,6 @@ ChromeUtils.defineESModuleGetters(lazy, {
 
 /** Provides functionality for creating and sending DOM events. */
 export const event = {};
-
-XPCOMUtils.defineLazyGetter(lazy, "dblclickTimer", () => {
-  return Cc["@mozilla.org/timer;1"].createInstance(Ci.nsITimer);
-});
 
 const _eventUtils = new WeakMap();
 
@@ -37,9 +31,6 @@ function _getEventUtils(win) {
   }
   return _eventUtils.get(win);
 }
-
-//  Max interval between two clicks that should result in a dblclick (in ms)
-const DBLCLICK_INTERVAL = 640;
 
 event.MouseEvents = {
   click: 0,
@@ -67,38 +58,6 @@ event.MouseButton = {
   isSecondary(button) {
     return button === 2;
   },
-};
-
-event.DoubleClickTracker = {
-  firstClick: false,
-  isClicked() {
-    return event.DoubleClickTracker.firstClick;
-  },
-  setClick() {
-    if (!event.DoubleClickTracker.firstClick) {
-      event.DoubleClickTracker.firstClick = true;
-      event.DoubleClickTracker.startTimer();
-    }
-  },
-  resetClick() {
-    event.DoubleClickTracker.firstClick = false;
-    event.DoubleClickTracker.cancelTimer();
-  },
-  startTimer() {
-    lazy.dblclickTimer.initWithCallback(
-      event.DoubleClickTracker.resetClick,
-      DBLCLICK_INTERVAL,
-      Ci.nsITimer.TYPE_ONE_SHOT
-    );
-  },
-  cancelTimer() {
-    lazy.dblclickTimer.cancel();
-  },
-};
-
-// Only used by legacyactions.js
-event.parseModifiers_ = function (modifiers, win) {
-  return _getEventUtils(win)._parseModifiers(modifiers);
 };
 
 /**
@@ -164,6 +123,20 @@ event.synthesizeTouchAtPoint = function (left, top, opts, win) {
  *     Window object.
  */
 event.synthesizeWheelAtPoint = function (left, top, opts, win) {
+  const dpr = win.devicePixelRatio;
+
+  // All delta properties expect the value in device pixels while the
+  // WebDriver specification uses CSS pixels.
+  if (typeof opts.deltaX !== "undefined") {
+    opts.deltaX *= dpr;
+  }
+  if (typeof opts.deltaY !== "undefined") {
+    opts.deltaY *= dpr;
+  }
+  if (typeof opts.deltaZ !== "undefined") {
+    opts.deltaZ *= dpr;
+  }
+
   return _getEventUtils(win).synthesizeWheelAtPoint(left, top, opts, win);
 };
 

@@ -8,6 +8,7 @@
 #include "mozilla/Encoding.h"
 #include "mozilla/intl/AppDateTimeFormat.h"
 #include "mozilla/intl/LocaleService.h"
+#include "nsIThreadRetargetableStreamListener.h"
 #include "nsNetUtil.h"
 #include "netCore.h"
 #include "nsStringStream.h"
@@ -31,7 +32,8 @@ using mozilla::intl::LocaleService;
 using namespace mozilla;
 
 NS_IMPL_ISUPPORTS(nsIndexedToHTML, nsIDirIndexListener, nsIStreamConverter,
-                  nsIRequestObserver, nsIStreamListener)
+                  nsIThreadRetargetableStreamListener, nsIRequestObserver,
+                  nsIStreamListener)
 
 static void AppendNonAsciiToNCR(const nsAString& in, nsCString& out) {
   nsAString::const_iterator start, end;
@@ -615,6 +617,18 @@ nsIndexedToHTML::OnDataAvailable(nsIRequest* aRequest, nsIInputStream* aInput,
   return mParser->OnDataAvailable(aRequest, aInput, aOffset, aCount);
 }
 
+NS_IMETHODIMP
+nsIndexedToHTML::OnDataFinished(nsresult aStatus) {
+  return NS_ERROR_NOT_IMPLEMENTED;
+}
+
+NS_IMETHODIMP
+nsIndexedToHTML::CheckListenerChain() {
+  // nsIndexedToHTML does not support OnDataAvailable to run OMT. This class
+  // should only pass-through OnDataFinished notification.
+  return NS_ERROR_NO_INTERFACE;
+}
+
 static nsresult FormatTime(
     const mozilla::intl::DateTimeFormat::StyleBag& aStyleBag,
     const PRTime aPrTime, nsAString& aStringOut) {
@@ -622,7 +636,7 @@ static nsresult FormatTime(
   // instead of local time zone name (e.g. CEST).
   // To avoid this case when ResistFingerprinting is disabled, use
   // |FormatPRTime| to show exact time zone name.
-  if (!nsContentUtils::ShouldResistFingerprinting()) {
+  if (!nsContentUtils::ShouldResistFingerprinting(RFPTarget::JSDateTimeUTC)) {
     return mozilla::intl::AppDateTimeFormat::Format(aStyleBag, aPrTime,
                                                     aStringOut);
   }

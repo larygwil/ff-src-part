@@ -53,14 +53,36 @@ export class BaseFeature {
 
   /**
    * @returns {Array}
-   *   If the subclass's `shouldEnable` implementation depends on preferences
-   *   instead of Nimbus variables, the subclass should override this getter and
-   *   return their names in this array so that `enable()` can be called when
-   *   they change. Names should be in the same format that `UrlbarPrefs.get()`
-   *   expects.
+   *   If the subclass's `shouldEnable` implementation depends on any prefs that
+   *   are not fallbacks for Nimbus variables, the subclass should override this
+   *   getter and return their names in this array so that `update()` can be
+   *   called when they change. Names should be relative to `browser.urlbar.`.
+   *   It doesn't hurt to include prefs that are fallbacks for Nimbus variables,
+   *   it's just not necessary because `QuickSuggest` will update all features
+   *   whenever a `urlbar` Nimbus variable or its fallback pref changes.
    */
   get enablingPreferences() {
     return null;
+  }
+
+  /**
+   * @returns {string}
+   *   If the feature manages suggestions served by Merino, the subclass should
+   *   override this getter and return the name of the specific Merino provider
+   *   that serves them.
+   */
+  get merinoProvider() {
+    return "";
+  }
+
+  /**
+   * @returns {Array}
+   *   If the feature manages one or more types of suggestions served by the
+   *   Suggest Rust component, the subclass should override this getter and
+   *   return an array of the type names as defined in `suggest.udl`.
+   */
+  get rustSuggestionTypes() {
+    return [];
   }
 
   /**
@@ -96,6 +118,22 @@ export class BaseFeature {
    *   The `RemoteSettings` client object.
    */
   async onRemoteSettingsSync(rs) {}
+
+  /**
+   * If the feature manages suggestions that either aren't served by Merino or
+   * whose telemetry type is different from `merinoProvider`, the subclass
+   * should override this method. It should return the telemetry type for the
+   * given suggestion. A telemetry type uniquely identifies a type of suggestion
+   * as well as the kind of `UrlbarResult` instances created from it.
+   *
+   * @param {object} suggestion
+   *   A suggestion from either remote settings or Merino.
+   * @returns {string}
+   *   The suggestion's telemetry type.
+   */
+  getSuggestionTelemetryType(suggestion) {
+    return this.merinoProvider;
+  }
 
   /**
    * If the feature corresponds to a type of suggestion, the subclass should

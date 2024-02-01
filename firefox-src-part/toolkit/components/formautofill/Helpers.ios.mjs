@@ -17,17 +17,6 @@ HTMLInputElement.prototype.setUserInput = function (value) {
   this.dispatchEvent(new Event("input", { bubbles: true }));
 };
 
-// TODO: Bug 1828408.
-// Use  WeakRef API directly in our codebase instead of legacy Cu.getWeakReference.
-window.Cu = class {
-  static getWeakReference(elements) {
-    const elementsWeakRef = new WeakRef(elements);
-    return {
-      get: () => elementsWeakRef.deref(),
-    };
-  }
-};
-
 // Mimic the behavior of .getAutocompleteInfo()
 // It should return an object with a fieldName property matching the autocomplete attribute
 // only if it's a valid value from this list https://searchfox.org/mozilla-central/source/dom/base/AutocompleteFieldList.h#89-149
@@ -90,7 +79,7 @@ const internalModuleResolvers = {
 // Define mock for XPCOMUtils
 export const XPCOMUtils = withNotImplementedError({
   defineLazyGetter: (obj, prop, getFn) => {
-    obj[prop] = getFn?.();
+    obj[prop] = getFn?.call(obj);
   },
   defineLazyPreferenceGetter: (
     obj,
@@ -112,6 +101,9 @@ export const XPCOMUtils = withNotImplementedError({
 
 // eslint-disable-next-line no-shadow
 export const ChromeUtils = withNotImplementedError({
+  defineLazyGetter: (obj, prop, getFn) => {
+    obj[prop] = getFn?.call(obj);
+  },
   defineESModuleGetters(obj, modules) {
     internalModuleResolvers.resolveModules(obj, modules);
   },
@@ -131,10 +123,23 @@ export const OSKeyStore = withNotImplementedError({
   ensureLoggedIn: () => true,
 });
 
+// Checks an element's focusability and accessibility via keyboard navigation
+const checkFocusability = element => {
+  return (
+    !element.disabled &&
+    !element.hidden &&
+    element.style.display != "none" &&
+    element.tabIndex != "-1"
+  );
+};
+
 // Define mock for Services
 // NOTE: Services is a global so we need to attach it to the window
 // eslint-disable-next-line no-shadow
 export const Services = withNotImplementedError({
+  focus: withNotImplementedError({
+    elementIsFocusable: checkFocusability,
+  }),
   intl: withNotImplementedError({
     getAvailableLocaleDisplayNames: () => [],
     getRegionDisplayNames: () => [],
@@ -151,6 +156,11 @@ export const Services = withNotImplementedError({
   uuid: withNotImplementedError({ generateUUID: () => "" }),
 });
 window.Services = Services;
+
+// Define mock for Localization
+window.Localization = function () {
+  return { formatValueSync: () => "" };
+};
 
 export const windowUtils = withNotImplementedError({
   removeManuallyManagedState: () => {},

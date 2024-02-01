@@ -25,7 +25,7 @@ XPCOMUtils.defineLazyPreferenceGetter(
   false
 );
 
-XPCOMUtils.defineLazyGetter(lazy, "gTabBrowserLocalization", function () {
+ChromeUtils.defineLazyGetter(lazy, "gTabBrowserLocalization", function () {
   return new Localization(["browser/tabbrowser.ftl"], true);
 });
 
@@ -405,6 +405,8 @@ export class PromptParent extends JSWindowActorParent {
         ? {
             wasPermitUnload: args.inPermitUnload,
             areLeaving: args.ok,
+            // If a prompt was not accepted, do not return the prompt value.
+            value: args.ok ? args.value : null,
           }
         : null;
 

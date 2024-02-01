@@ -101,7 +101,7 @@ function openContextMenu(aMessage, aBrowser, aActor) {
     2,
     null,
     0,
-    context.mozInputSource
+    context.inputSource
   );
   popup.openPopupAtScreen(newEvent.screenX, newEvent.screenY, true, newEvent);
 }
@@ -986,7 +986,7 @@ class nsContextMenu {
     );
 
     // Showing "Copy Clean link" depends on whether the strip-on-share feature is enabled
-    // and whether we can strip anything.
+    // and the user is selecting a URL
     this.showItem(
       "context-stripOnShareLink",
       STRIP_ON_SHARE_ENABLED &&
@@ -994,7 +994,7 @@ class nsContextMenu {
         !this.onMailtoLink &&
         !this.onTelLink &&
         !this.onMozExtLink &&
-        this.getStrippedLink()
+        !this.isSecureAboutPage()
     );
 
     let copyLinkSeparator = document.getElementById("context-sep-copylink");
@@ -1154,18 +1154,10 @@ class nsContextMenu {
 
       // Set the correct label for the fill menu
       let fillMenu = document.getElementById("fill-login");
-      if (onPasswordLikeField) {
-        fillMenu.setAttribute(
-          "data-l10n-id",
-          "main-context-menu-use-saved-password"
-        );
-      } else {
-        // On a username field
-        fillMenu.setAttribute(
-          "data-l10n-id",
-          "main-context-menu-use-saved-login"
-        );
-      }
+      document.l10n.setAttributes(
+        fillMenu,
+        "main-context-menu-use-saved-password"
+      );
 
       let documentURI = this.contentData?.documentURIObject;
       let formOrigin = LoginHelper.getLoginOrigin(documentURI?.spec);
@@ -1199,8 +1191,9 @@ class nsContextMenu {
       popup.appendChild(fragment);
     } finally {
       const documentURI = this.contentData?.documentURIObject;
-      const origin = LoginHelper.getLoginOrigin(documentURI?.spec);
-      const showRelay = origin && this.contentData?.context.showRelay;
+      const showRelay =
+        this.contentData?.context.showRelay &&
+        LoginHelper.getLoginOrigin(documentURI?.spec);
 
       this.showItem("fill-login", showUseSavedLogin);
       this.showItem("fill-login-generated-password", showGenerate);
@@ -2276,7 +2269,7 @@ class nsContextMenu {
   /**
    * Strips any known query params from the link URI.
    * @returns {nsIURI|null} - the stripped version of the URI,
-   * or null if we could not strip any query parameter.
+   * or the original URI if we could not strip any query parameter.
    *
    */
   getStrippedLink() {
@@ -2290,7 +2283,27 @@ class nsContextMenu {
       console.warn(`isLinkURIStrippable: ${e.message}`);
       return null;
     }
-    return strippedLinkURI;
+
+    // If nothing can be stripped, we return the original URI
+    // so the feature can still be used.
+    return strippedLinkURI ?? this.linkURI;
+  }
+
+  /**
+   * Checks if a webpage is a secure interal webpage
+   * @returns {Boolean}
+   *
+   */
+  isSecureAboutPage() {
+    let { currentURI } = this.browser;
+    if (currentURI?.schemeIs("about")) {
+      let module = E10SUtils.getAboutModule(currentURI);
+      if (module) {
+        let flags = module.getURIFlags(currentURI);
+        return !!(flags & Ci.nsIAboutModule.IS_SECURE_CHROME_UI);
+      }
+    }
+    return false;
   }
 
   // Kept for addon compat

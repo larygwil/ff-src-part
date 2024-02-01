@@ -67,7 +67,7 @@ loader.lazyRequireGetter(
 );
 loader.lazyRequireGetter(
   this,
-  ["registerWalkerListeners"],
+  ["registerWalkerListeners", "removeTarget"],
   "resource://devtools/client/framework/actions/index.js",
   true
 );
@@ -204,6 +204,17 @@ loader.lazyRequireGetter(
   "resource://devtools/client/shared/source-map-loader/index.js",
   true
 );
+loader.lazyRequireGetter(
+  this,
+  "openProfilerTab",
+  "resource://devtools/client/performance-new/shared/browser.js",
+  true
+);
+loader.lazyGetter(this, "ProfilerBackground", () => {
+  return ChromeUtils.import(
+    "resource://devtools/client/performance-new/shared/background.jsm.js"
+  );
+});
 
 /**
  * A "Toolbox" is the component that holds all the tools for one specific
@@ -657,6 +668,29 @@ Toolbox.prototype = {
   },
 
   /**
+   * Called on each new TRACING_STATE resource
+   *
+   * @param {Object} resource The TRACING_STATE resource
+   */
+  async _onTracingStateChanged(resource) {
+    const { profile } = resource;
+    if (!profile) {
+      return;
+    }
+    const browser = await openProfilerTab();
+
+    const profileCaptureResult = {
+      type: "SUCCESS",
+      profile,
+    };
+    ProfilerBackground.registerProfileCaptureForBrowser(
+      browser,
+      profileCaptureResult,
+      null
+    );
+  },
+
+  /**
    * Be careful, this method is synchronous, but highlightTool, raise, selectTool
    * are all async.
    */
@@ -676,7 +710,8 @@ Toolbox.prototype = {
       reason === "breakpoint" ||
       reason === "exception" ||
       reason === "resumeLimit" ||
-      reason === "XHR"
+      reason === "XHR" ||
+      reason === "breakpointConditionThrown"
     ) {
       this.raise();
       this.selectTool("jsdebugger", reason);
@@ -762,6 +797,8 @@ Toolbox.prototype = {
   },
 
   _onTargetDestroyed({ targetFront }) {
+    removeTarget(this.store, targetFront);
+
     if (targetFront.isTopLevel) {
       const consoleFront = targetFront.getCachedFront("console");
       // If the target has already been destroyed, its console front will
@@ -882,6 +919,15 @@ Toolbox.prototype = {
         this.resourceCommand.TYPES.DOCUMENT_EVENT,
         this.resourceCommand.TYPES.THREAD_STATE,
       ];
+
+      if (
+        Services.prefs.getBoolPref(
+          "devtools.debugger.features.javascript-tracing",
+          false
+        )
+      ) {
+        watchedResources.push(this.resourceCommand.TYPES.TRACING_STATE);
+      }
 
       if (!this.isBrowserToolbox) {
         // Independently of watching network event resources for the error count icon,
@@ -1528,6 +1574,7 @@ Toolbox.prototype = {
       isToolSupported,
       isCurrentlyVisible,
       isChecked,
+      isToggle,
       onKeyDown,
       experimentalURL,
     } = options;
@@ -1561,6 +1608,7 @@ Toolbox.prototype = {
         isCheckedValue = value;
         this.emit("updatechecked");
       },
+      isToggle,
       // The preference for having this button visible.
       visibilityswitch: `devtools.${id}.enabled`,
       // The toolbar has a container at the start and end of the toolbar for
@@ -1586,16 +1634,30 @@ Toolbox.prototype = {
   },
 
   _splitConsoleOnKeypress(e) {
-    if (e.keyCode === KeyCodes.DOM_VK_ESCAPE) {
-      this.toggleSplitConsole();
-      // If the debugger is paused, don't let the ESC key stop any pending navigation.
-      // If the host is page, don't let the ESC stop the load of the webconsole frame.
-      if (
-        this.threadFront.state == "paused" ||
-        this.hostType === Toolbox.HostType.PAGE
-      ) {
-        e.preventDefault();
+    if (e.keyCode !== KeyCodes.DOM_VK_ESCAPE) {
+      return;
+    }
+
+    const currentPanel = this.getCurrentPanel();
+    if (
+      typeof currentPanel.onToolboxChromeEventHandlerEscapeKeyDown ===
+      "function"
+    ) {
+      const ac = new this.win.AbortController();
+      currentPanel.onToolboxChromeEventHandlerEscapeKeyDown(ac);
+      if (ac.signal.aborted) {
+        return;
       }
+    }
+
+    this.toggleSplitConsole();
+    // If the debugger is paused, don't let the ESC key stop any pending navigation.
+    // If the host is page, don't let the ESC stop the load of the webconsole frame.
+    if (
+      this.threadFront.state == "paused" ||
+      this.hostType === Toolbox.HostType.PAGE
+    ) {
+      e.preventDefault();
     }
   },
 
@@ -2102,6 +2164,7 @@ Toolbox.prototype = {
       isToolSupported: toolbox => {
         return toolbox.target.getTrait("frames");
       },
+      isToggle: true,
     });
 
     return this.pickerButton;
@@ -2170,9 +2233,10 @@ Toolbox.prototype = {
       return;
     }
 
-    const customFormatters =
-      Services.prefs.getBoolPref("devtools.custom-formatters", false) &&
-      Services.prefs.getBoolPref("devtools.custom-formatters.enabled", false);
+    const customFormatters = Services.prefs.getBoolPref(
+      "devtools.custom-formatters.enabled",
+      false
+    );
 
     await this.commands.targetConfigurationCommand.updateConfiguration({
       customFormatters,
@@ -4656,6 +4720,12 @@ Toolbox.prototype = {
         // the host title a bit in order for the event listener in targetCommand to be
         // executed.
         setTimeout(() => {
+          if (resource.targetFront.isDestroyed()) {
+            // The resource's target might have been destroyed in between and
+            // would no longer have a valid actorID available.
+            return;
+          }
+
           this._updateFrames({
             frameData: {
               id: resource.targetFront.actorID,
@@ -4673,6 +4743,9 @@ Toolbox.prototype = {
 
       if (resourceType == TYPES.THREAD_STATE) {
         this._onThreadStateChanged(resource);
+      }
+      if (resourceType == TYPES.TRACING_STATE) {
+        this._onTracingStateChanged(resource);
       }
     }
 

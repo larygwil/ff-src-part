@@ -173,6 +173,119 @@ const CookieCleaner = {
   },
 };
 
+// A cleaner for clearing cookie banner handling exceptions.
+const CookieBannerExceptionCleaner = {
+  async deleteAll() {
+    try {
+      Services.cookieBanners.removeAllDomainPrefs(false);
+    } catch (e) {
+      // Don't throw an error if the cookie banner handling is disabled.
+      if (e.result != Cr.NS_ERROR_NOT_AVAILABLE) {
+        throw e;
+      }
+    }
+  },
+
+  async deleteByPrincipal(aPrincipal) {
+    try {
+      Services.cookieBanners.removeDomainPref(aPrincipal.URI, false);
+    } catch (e) {
+      // Don't throw an error if the cookie banner handling is disabled.
+      if (e.result != Cr.NS_ERROR_NOT_AVAILABLE) {
+        throw e;
+      }
+    }
+  },
+
+  async deleteByBaseDomain(aDomain) {
+    try {
+      Services.cookieBanners.removeDomainPref(
+        Services.io.newURI("https://" + aDomain),
+        false
+      );
+    } catch (e) {
+      // Don't throw an error if the cookie banner handling is disabled.
+      if (e.result != Cr.NS_ERROR_NOT_AVAILABLE) {
+        throw e;
+      }
+    }
+  },
+
+  async deleteByHost(aHost, aOriginAttributes) {
+    try {
+      let isPrivate =
+        !!aOriginAttributes.privateBrowsingId &&
+        aOriginAttributes.privateBrowsingId !==
+          Services.scriptSecurityManager.DEFAULT_PRIVATE_BROWSING_ID;
+
+      Services.cookieBanners.removeDomainPref(
+        Services.io.newURI("https://" + aHost),
+        isPrivate
+      );
+    } catch (e) {
+      // Don't throw an error if the cookie banner handling is disabled.
+      if (e.result != Cr.NS_ERROR_NOT_AVAILABLE) {
+        throw e;
+      }
+    }
+  },
+};
+
+// A cleaner for cleaning cookie banner handling executed records.
+const CookieBannerExecutedRecordCleaner = {
+  async deleteAll() {
+    try {
+      Services.cookieBanners.removeAllExecutedRecords(false);
+    } catch (e) {
+      // Don't throw an error if the cookie banner handling is disabled.
+      if (e.result != Cr.NS_ERROR_NOT_AVAILABLE) {
+        throw e;
+      }
+    }
+  },
+
+  async deleteByPrincipal(aPrincipal) {
+    try {
+      Services.cookieBanners.removeExecutedRecordForSite(
+        aPrincipal.baseDomain,
+        false
+      );
+    } catch (e) {
+      // Don't throw an error if the cookie banner handling is disabled.
+      if (e.result != Cr.NS_ERROR_NOT_AVAILABLE) {
+        throw e;
+      }
+    }
+  },
+
+  async deleteByBaseDomain(aDomain) {
+    try {
+      Services.cookieBanners.removeExecutedRecordForSite(aDomain, false);
+    } catch (e) {
+      // Don't throw an error if the cookie banner handling is disabled.
+      if (e.result != Cr.NS_ERROR_NOT_AVAILABLE) {
+        throw e;
+      }
+    }
+  },
+
+  async deleteByHost(aHost, aOriginAttributes) {
+    try {
+      let isPrivate =
+        !!aOriginAttributes.privateBrowsingId &&
+        aOriginAttributes.privateBrowsingId !==
+          Services.scriptSecurityManager.DEFAULT_PRIVATE_BROWSING_ID;
+
+      Services.cookieBanners.removeExecutedRecordForSite(aHost, isPrivate);
+    } catch (e) {
+      // Don't throw error if the cookie banner handling is disabled.
+      if (e.result != Cr.NS_ERROR_NOT_AVAILABLE) {
+        throw e;
+      }
+    }
+  },
+};
+
 const CertCleaner = {
   async deleteByHost(aHost, aOriginAttributes) {
     let overrideService = Cc["@mozilla.org/security/certoverride;1"].getService(
@@ -426,7 +539,7 @@ const PasswordsCleaner = {
 
   async _deleteInternal(aCb) {
     try {
-      let logins = Services.logins.getAllLogins();
+      let logins = await Services.logins.getAllLogins();
       for (let login of logins) {
         if (aCb(login)) {
           Services.logins.removeLogin(login);
@@ -736,18 +849,17 @@ const QuotaCleaner = {
   },
 
   async cleanupAfterDeletionAtShutdown() {
-    const storageDir = PathUtils.join(
+    const toBeRemovedDir = PathUtils.join(
       PathUtils.profileDir,
-      Services.prefs.getStringPref("dom.quotaManager.storageName")
+      Services.prefs.getStringPref("dom.quotaManager.storageName"),
+      "to-be-removed"
     );
 
     if (
       !AppConstants.MOZ_BACKGROUNDTASKS ||
       !Services.prefs.getBoolPref("dom.quotaManager.backgroundTask.enabled")
     ) {
-      await IOUtils.remove(PathUtils.join(storageDir, "to-be-removed"), {
-        recursive: true,
-      });
+      await IOUtils.remove(toBeRemovedDir, { recursive: true });
       return;
     }
 
@@ -756,10 +868,10 @@ const QuotaCleaner = {
     );
 
     runner.removeDirectoryInDetachedProcess(
-      storageDir,
-      "to-be-removed",
-      "0",
+      toBeRemovedDir,
       "",
+      "0",
+      "*", // wildcard
       "Quota"
     );
   },
@@ -1064,7 +1176,11 @@ const PermissionsCleaner = {
         }
       }
 
-      if (!toBeRemoved && perm.type.startsWith("3rdPartyStorage^")) {
+      if (
+        !toBeRemoved &&
+        (perm.type.startsWith("3rdPartyStorage^") ||
+          perm.type.startsWith("3rdPartyFrameStorage^"))
+      ) {
         let parts = perm.type.split("^");
         let uri;
         try {
@@ -1227,6 +1343,19 @@ const HSTSCleaner = {
     );
   },
 
+  /**
+   * Adds brackets to a site if it's an IPv6 address.
+   * @param {string} aSite - (schemeless) site which may be an IPv6.
+   * @returns {string} bracketed IPv6 or site if site is not an IPv6.
+   */
+  _maybeFixIpv6Site(aSite) {
+    // Not an IPv6 or already has brackets.
+    if (!aSite.includes(":") || aSite[0] == "[") {
+      return aSite;
+    }
+    return `[${aSite}]`;
+  },
+
   deleteByPrincipal(aPrincipal) {
     return this.deleteByHost(aPrincipal.host, aPrincipal.originAttributes);
   },
@@ -1235,7 +1364,9 @@ const HSTSCleaner = {
     let sss = Cc["@mozilla.org/ssservice;1"].getService(
       Ci.nsISiteSecurityService
     );
-    let uri = Services.io.newURI("https://" + aDomain);
+
+    // Add brackets to IPv6 sites to ensure URI creation succeeds.
+    let uri = Services.io.newURI("https://" + this._maybeFixIpv6Site(aDomain));
     sss.resetState(uri, {}, Ci.nsISiteSecurityService.BaseDomain);
   },
 
@@ -1602,6 +1733,16 @@ const FLAGS_MAP = [
     flag: Ci.nsIClearDataService.CLEAR_CREDENTIAL_MANAGER_STATE,
     cleaners: [IdentityCredentialStorageCleaner],
   },
+
+  {
+    flag: Ci.nsIClearDataService.CLEAR_COOKIE_BANNER_EXCEPTION,
+    cleaners: [CookieBannerExceptionCleaner],
+  },
+
+  {
+    flag: Ci.nsIClearDataService.CLEAR_COOKIE_BANNER_EXECUTED_RECORD,
+    cleaners: [CookieBannerExecutedRecordCleaner],
+  },
 ];
 
 export function ClearDataService() {
@@ -1659,12 +1800,48 @@ ClearDataService.prototype = Object.freeze({
     });
   },
 
+  /**
+   * Compute the base domain from a given host. This is a wrapper around
+   * Services.eTLD.getBaseDomainFromHost which also supports IP addresses and
+   * hosts such as "localhost" which are considered valid base domains for
+   * principals and data storage.
+   * @param {string} aDomainOrHost - Domain or host to be converted. May already
+   * be a valid base domain.
+   * @returns {string} Base domain of the given host. Returns aDomainOrHost if
+   * already a base domain.
+   */
+  _getBaseDomainWithFallback(aDomainOrHost) {
+    let result = aDomainOrHost;
+    try {
+      result = Services.eTLD.getBaseDomainFromHost(aDomainOrHost);
+    } catch (e) {
+      if (
+        e.result == Cr.NS_ERROR_HOST_IS_IP_ADDRESS ||
+        e.result == Cr.NS_ERROR_INSUFFICIENT_DOMAIN_LEVELS
+      ) {
+        // For these 2 expected errors, just take the host as the result.
+        // - NS_ERROR_HOST_IS_IP_ADDRESS: the host is in ipv4/ipv6.
+        // - NS_ERROR_INSUFFICIENT_DOMAIN_LEVELS: not enough domain parts to extract.
+        result = aDomainOrHost;
+      } else {
+        throw e;
+      }
+    }
+    return result;
+  },
+
   deleteDataFromBaseDomain(aDomainOrHost, aIsUserRequest, aFlags, aCallback) {
     if (!aDomainOrHost || !aCallback) {
       return Cr.NS_ERROR_INVALID_ARG;
     }
     // We may throw here if aDomainOrHost can't be converted to a base domain.
-    let baseDomain = Services.eTLD.getBaseDomainFromHost(aDomainOrHost);
+    let baseDomain;
+
+    try {
+      baseDomain = this._getBaseDomainWithFallback(aDomainOrHost);
+    } catch (e) {
+      return Cr.NS_ERROR_FAILURE;
+    }
 
     return this._deleteInternal(aFlags, aCallback, aCleaner =>
       aCleaner.deleteByBaseDomain(baseDomain, aIsUserRequest)

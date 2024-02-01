@@ -244,7 +244,9 @@ export function PopupNotifications(tabbrowser, panel, iconBox, options = {}) {
   this.tabbrowser = tabbrowser;
   this.iconBox = iconBox;
 
-  this.panel.addEventListener("popuphidden", this, true);
+  // panel itself has a listener in the bubble phase and this listener
+  // needs to be called after that, so use bubble phase here.
+  this.panel.addEventListener("popuphidden", this);
   this.panel.addEventListener("popuppositioned", this);
   this.panel.classList.add("popup-notification-panel", "panel-no-padding");
 

@@ -4,7 +4,10 @@
 
 "use strict";
 
-const { l10n } = require("resource://devtools/shared/inspector/css-logic.js");
+const {
+  l10n,
+  l10nFormatStr,
+} = require("resource://devtools/shared/inspector/css-logic.js");
 const {
   InplaceEditor,
   editableField,
@@ -38,15 +41,22 @@ loader.lazyRequireGetter(
   "resource://devtools/shared/inspector/css-logic.js",
   true
 );
+loader.lazyRequireGetter(
+  this,
+  "KeyCodes",
+  "resource://devtools/client/shared/keycodes.js",
+  true
+);
+loader.lazyGetter(this, "PROPERTY_NAME_INPUT_LABEL", function () {
+  return l10n("rule.propertyName.label");
+});
+
 const lazy = {};
 ChromeUtils.defineESModuleGetters(lazy, {
   AppConstants: "resource://gre/modules/AppConstants.sys.mjs",
 });
 
 const HTML_NS = "http://www.w3.org/1999/xhtml";
-const inlineCompatibilityWarningEnabled = Services.prefs.getBoolPref(
-  "devtools.inspector.ruleview.inline-compatibility-warning.enabled"
-);
 
 const SHARED_SWATCH_CLASS = "ruleview-swatch";
 const COLOR_SWATCH_CLASS = "ruleview-colorswatch";
@@ -188,7 +198,8 @@ TextPropertyEditor.prototype = {
    * Create the property editor's DOM.
    */
   _create() {
-    this.element = this.doc.createElementNS(HTML_NS, "li");
+    this.element = this.doc.createElementNS(HTML_NS, "div");
+    this.element.setAttribute("role", "listitem");
     this.element.classList.add("ruleview-property");
     this.element.dataset.declarationId = this.prop.id;
     this.element._textPropertyEditor = this;
@@ -197,12 +208,18 @@ TextPropertyEditor.prototype = {
       class: "ruleview-propertycontainer",
     });
 
+    const indent =
+      ((this.ruleEditor.rule.domRule.ancestorData.length || 0) + 1) * 2;
+    createChild(this.container, "span", {
+      class: "ruleview-rule-indent clipboard-only",
+      textContent: " ".repeat(indent),
+    });
+
     // The enable checkbox will disable or enable the rule.
     this.enable = createChild(this.container, "input", {
       type: "checkbox",
       class: "ruleview-enableproperty",
-      "aria-labelledby": this.prop.id,
-      tabindex: "-1",
+      title: l10nFormatStr("rule.propertyToggle.label", this.prop.name),
     });
 
     this.nameContainer = createChild(this.container, "span", {
@@ -258,16 +275,14 @@ TextPropertyEditor.prototype = {
       hidden: "",
     });
 
-    if (inlineCompatibilityWarningEnabled) {
-      this.compatibilityState = createChild(this.container, "div", {
-        class: "ruleview-compatibility-warning",
-        hidden: "",
-      });
-    }
+    this.compatibilityState = createChild(this.container, "div", {
+      class: "ruleview-compatibility-warning",
+      hidden: "",
+    });
 
     // Filter button that filters for the current property name and is
     // displayed when the property is overridden by another rule.
-    this.filterProperty = createChild(this.container, "div", {
+    this.filterProperty = createChild(this.container, "button", {
       class: "ruleview-overridden-rule-filter",
       hidden: "",
       title: l10n("rule.filterProperty.title"),
@@ -314,6 +329,15 @@ TextPropertyEditor.prototype = {
         contentType: InplaceEditor.CONTENT_TYPES.CSS_PROPERTY,
         popup: this.popup,
         cssProperties: this.cssProperties,
+        // (Shift+)Tab will move the focus to the previous/next editable field (so property value
+        // or new selector).
+        focusEditableFieldAfterApply: true,
+        focusEditableFieldContainerSelector: ".ruleview-rule",
+        // We don't want Enter to trigger the next editable field, just to validate
+        // what the user entered, close the editor, and focus the span so the user can
+        // navigate with the keyboard as expected.
+        stopOnReturn: true,
+        inputAriaLabel: PROPERTY_NAME_INPUT_LABEL,
       });
 
       // Auto blur name field on multiple CSS rules get pasted in.
@@ -407,6 +431,17 @@ TextPropertyEditor.prototype = {
           [],
         getGridLineNames: this.getGridlineNames,
         showSuggestCompletionOnEmpty: true,
+        // (Shift+)Tab will move the focus to the previous/next editable field (so property name,
+        // or new property).
+        focusEditableFieldAfterApply: true,
+        focusEditableFieldContainerSelector: ".ruleview-rule",
+        // We don't want Enter to trigger the next editable field, just to validate
+        // what the user entered, close the editor, and focus the span so the user can
+        // navigate with the keyboard as expected.
+        stopOnReturn: true,
+        // Label the value input with the name span so screenreader users know what this
+        // applies to.
+        inputAriaLabelledBy: this.nameSpan.id,
       });
     }
   },
@@ -512,6 +547,10 @@ TextPropertyEditor.prototype = {
 
     const name = this.prop.name;
     this.nameSpan.textContent = name;
+    this.enable.setAttribute(
+      "title",
+      l10nFormatStr("rule.propertyToggle.label", name)
+    );
 
     // Combine the property's value and priority into one string for
     // the value.
@@ -552,7 +591,8 @@ TextPropertyEditor.prototype = {
       shapeSwatchClass: SHAPE_SWATCH_CLASS,
       // Only ask the parser to convert colors to the default color type specified by the
       // user if the property hasn't been changed yet.
-      defaultColorType: !propDirty,
+      useDefaultColorUnit: !propDirty,
+      defaultColorUnit: this.ruleView.inspector.defaultColorUnit,
       urlClass: "theme-link",
       fontFamilyClass: FONT_FAMILY_CLASS,
       baseURI: this.sheetHref,
@@ -722,7 +762,7 @@ TextPropertyEditor.prototype = {
     );
     if (this.ruleEditor.isEditable) {
       for (const angleSpan of this.angleSwatchSpans) {
-        angleSpan.on("unit-change", this._onSwatchCommit);
+        angleSpan.addEventListener("unit-change", this._onSwatchCommit);
         const title = l10n("rule.angleSwatch.tooltip");
         angleSpan.setAttribute("title", title);
       }
@@ -862,10 +902,7 @@ TextPropertyEditor.prototype = {
     }
 
     this.updatePropertyUsedIndicator();
-
-    if (inlineCompatibilityWarningEnabled) {
-      this.updatePropertyCompatibilityIndicator();
-    }
+    this.updatePropertyCompatibilityIndicator();
   },
 
   updatePropertyUsedIndicator() {
@@ -1110,8 +1147,14 @@ TextPropertyEditor.prototype = {
    *        True if the change should be applied.
    * @param {Number} direction
    *        The move focus direction number.
+   * @param {Number} key
+   *        The event keyCode that trigger the editor to close
    */
-  _onNameDone(value, commit, direction) {
+  _onNameDone(value, commit, direction, key) {
+    if (value && commit && !direction && key === KeyCodes.DOM_VK_RETURN) {
+      this.ruleView.maybeShowEnterKeyNotice();
+    }
+
     const isNameUnchanged =
       (!commit && !this.ruleEditor.isEditing) || this.committed.name === value;
     if (this.prop.value && isNameUnchanged) {
@@ -1164,13 +1207,12 @@ TextPropertyEditor.prototype = {
     if (this._colorSwatchSpans && this._colorSwatchSpans.length) {
       for (const span of this._colorSwatchSpans) {
         this.ruleView.tooltips.getTooltip("colorPicker").removeSwatch(span);
-        span.off("unit-change", this._onSwatchCommit);
       }
     }
 
     if (this.angleSwatchSpans && this.angleSwatchSpans.length) {
       for (const span of this.angleSwatchSpans) {
-        span.off("unit-change", this._onSwatchCommit);
+        span.removeEventListener("unit-change", this._onSwatchCommit);
       }
     }
 
@@ -1196,8 +1238,14 @@ TextPropertyEditor.prototype = {
    *        True if the change should be applied.
    * @param {Number} direction
    *        The move focus direction number.
+   * @param {Number} key
+   *        The event keyCode that trigger the editor to close
    */
-  _onValueDone(value = "", commit, direction) {
+  _onValueDone(value = "", commit, direction, key) {
+    if (value && commit && !direction && key === KeyCodes.DOM_VK_RETURN) {
+      this.ruleView.maybeShowEnterKeyNotice();
+    }
+
     const parsedProperties = this._getValueAndExtraProperties(value);
     const val = parseSingleValue(
       this.cssProperties.isKnown,

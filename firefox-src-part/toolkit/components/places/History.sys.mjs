@@ -841,6 +841,10 @@ function convertForUpdatePlaces(pageInfo) {
 // Inner implementation of History.clear().
 var clear = async function (db) {
   await db.executeTransaction(async function () {
+    // Since all metadata must be removed, remove it before pages, to save on
+    // foreign key delete cascading.
+    await db.execute("DELETE FROM moz_places_metadata");
+
     // Remove all non-bookmarked places entries first, this will speed up the
     // triggers work.
     await db.execute(`DELETE FROM moz_places WHERE foreign_count = 0`);
@@ -867,9 +871,6 @@ var clear = async function (db) {
   });
 
   PlacesObservers.notifyListeners([new PlacesHistoryCleared()]);
-
-  // Trigger frecency updates for all affected origins.
-  await db.execute(`DELETE FROM moz_updateoriginsupdate_temp`);
 };
 
 /**
@@ -1542,8 +1543,10 @@ function mergeUpdateInfoIntoPageInfo(updateInfo, pageInfo = {}) {
   if (!pageInfo.url) {
     pageInfo.url = URL.fromURI(updateInfo.uri);
     pageInfo.title = updateInfo.title;
+    pageInfo.placeId = updateInfo.placeId;
     pageInfo.visits = updateInfo.visits.map(visit => {
       return {
+        visitId: visit.visitId,
         date: lazy.PlacesUtils.toDate(visit.visitDate),
         transition: visit.transitionType,
         referrer: visit.referrerURI ? URL.fromURI(visit.referrerURI) : null,

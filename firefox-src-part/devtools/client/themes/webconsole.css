@@ -296,7 +296,7 @@
 
 .message.error > .icon {
   color: var(--theme-icon-error-color);
-  background-image: url(chrome://devtools/skin/images/error-small.svg);
+  background-image: url(resource://devtools-shared-images/error-small.svg);
 }
 
 .message.warn > .icon {
@@ -388,6 +388,14 @@
 
 .message-location .frame-link-source:visited {
   color: currentColor;
+}
+
+.message-location .frame-link-source:focus-visible {
+  /*
+   * The link overflow is hidden, which causes the regular outline to not be displayed.
+   * Setting a negative offset displays it "inside" the element so it's visible.
+   */
+  outline-offset: -2px;
 }
 
 .message-flex-body {
@@ -509,7 +517,7 @@
 
 .message .learn-more-link {
   user-select: none;
-  color: var(--theme-highlight-blue);
+  color: var(--theme-link-color);
   margin: 0 1ch;
 }
 

@@ -21,21 +21,18 @@ export function createLocation({
   // Line 0 represents no specific line chosen for action
   line = 0,
   column,
-
-  sourceUrl = "",
 }) {
   return {
     source,
     sourceActor,
-    // Alias which should probably be migrate to query source and sourceActor?
-    sourceId: source.id,
     sourceActorId: sourceActor?.id,
 
+    // `line` and `column` are 1-based.
+    // This data is mostly coming from and driven by
+    // JSScript::lineno and JSScript::column
+    // https://searchfox.org/mozilla-central/rev/90dce6b0223b4dc17bb10f1125b44f70951585f9/js/src/vm/JSScript.h#1545-1548
     line,
     column,
-
-    // Is this still used anywhere??
-    sourceUrl,
   };
 }
 
@@ -49,11 +46,6 @@ export function debuggerToSourceMapLocation(location) {
     sourceId: location.source.id,
     line: location.line,
     column: location.column,
-
-    // Also add sourceUrl attribute as this may be preserved in jest tests
-    // where we return the exact same object.
-    // This will be removed by bug 1822783.
-    sourceUrl: location.sourceUrl,
   };
 }
 
@@ -126,9 +118,5 @@ export function sourceMapToDebuggerLocation(state, location) {
   return createLocation({
     ...location,
     source,
-
-    // Ensure having location with sourceUrl attribute set.
-    // To be removed in bug 1822783.
-    sourceUrl: source.url,
   });
 }

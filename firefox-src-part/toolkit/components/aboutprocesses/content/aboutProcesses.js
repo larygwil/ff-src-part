@@ -39,7 +39,7 @@ ChromeUtils.defineESModuleGetters(this, {
     "resource://gre/modules/ContextualIdentityService.sys.mjs",
 });
 
-XPCOMUtils.defineLazyGetter(this, "ProfilerPopupBackground", function () {
+ChromeUtils.defineLazyGetter(this, "ProfilerPopupBackground", function () {
   return ChromeUtils.import(
     "resource://devtools/client/performance-new/shared/background.jsm.js"
   );
@@ -883,6 +883,10 @@ var View = {
 
       case "windowsUtils":
         fluentName = "about-processes-utility-actor-windows-utils";
+        break;
+
+      case "windowsFileDialog":
+        fluentName = "about-processes-utility-actor-windows-file-dialog";
         break;
 
       default:

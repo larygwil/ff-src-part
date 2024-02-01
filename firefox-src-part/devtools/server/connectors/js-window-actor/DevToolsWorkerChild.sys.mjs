@@ -15,11 +15,11 @@ XPCOMUtils.defineLazyServiceGetter(
   "nsIWorkerDebuggerManager"
 );
 
-XPCOMUtils.defineLazyGetter(lazy, "Loader", () =>
+ChromeUtils.defineLazyGetter(lazy, "Loader", () =>
   ChromeUtils.importESModule("resource://devtools/shared/loader/Loader.sys.mjs")
 );
 
-XPCOMUtils.defineLazyGetter(lazy, "DevToolsUtils", () =>
+ChromeUtils.defineLazyGetter(lazy, "DevToolsUtils", () =>
   lazy.Loader.require("resource://devtools/shared/DevToolsUtils.js")
 );
 XPCOMUtils.defineLazyModuleGetters(lazy, {
@@ -180,9 +180,14 @@ export class DevToolsWorkerChild extends JSWindowActorChild {
         const { watcherActorID } = message.data;
         return this._destroyTargetActors(watcherActorID);
       }
-      case "DevToolsWorkerParent:addSessionDataEntry": {
-        const { watcherActorID, type, entries } = message.data;
-        return this._addSessionDataEntry(watcherActorID, type, entries);
+      case "DevToolsWorkerParent:addOrSetSessionDataEntry": {
+        const { watcherActorID, type, entries, updateType } = message.data;
+        return this._addOrSetSessionDataEntry(
+          watcherActorID,
+          type,
+          entries,
+          updateType
+        );
       }
       case "DevToolsWorkerParent:removeSessionDataEntry": {
         const { watcherActorID, type, entries } = message.data;
@@ -203,7 +208,7 @@ export class DevToolsWorkerChild extends JSWindowActorChild {
    * to the DevToolsWorkerParent via the DevToolsWorkerChild:workerTargetAvailable message.
    *
    * @param {Object} options
-   * @param {Integer} options.watcherActorID: The ID of the WatcherActor who requested to
+   * @param {String} options.watcherActorID: The ID of the WatcherActor who requested to
    *        observe and create these target actors.
    * @param {String} options.parentConnectionPrefix: The prefix of the DevToolsServerConnection
    *        of the Watcher Actor. This is used to compute a unique ID for the target actor.
@@ -250,18 +255,21 @@ export class DevToolsWorkerChild extends JSWindowActorChild {
       sessionData,
     });
 
-    await Promise.all(
-      Array.from(lazy.wdm.getWorkerDebuggerEnumerator())
-        .filter(dbg => this._shouldHandleWorker(dbg))
-        .map(dbg =>
-          this._createWorkerTargetActor({
-            dbg,
-            connection,
-            forwardingPrefix,
-            watcherActorID,
-          })
-        )
-    );
+    const promises = [];
+    for (const dbg of lazy.wdm.getWorkerDebuggerEnumerator()) {
+      if (!this._shouldHandleWorker(dbg)) {
+        continue;
+      }
+      promises.push(
+        this._createWorkerTargetActor({
+          dbg,
+          connection,
+          forwardingPrefix,
+          watcherActorID,
+        })
+      );
+    }
+    await Promise.all(promises);
   }
 
   _createConnection(forwardingPrefix) {
@@ -410,16 +418,17 @@ export class DevToolsWorkerChild extends JSWindowActorChild {
     });
   }
 
-  async _addSessionDataEntry(watcherActorID, type, entries) {
+  async _addOrSetSessionDataEntry(watcherActorID, type, entries, updateType) {
     const watcherConnectionData = this._connections.get(watcherActorID);
     if (!watcherConnectionData) {
       return;
     }
 
-    lazy.SessionDataHelpers.addSessionDataEntry(
+    lazy.SessionDataHelpers.addOrSetSessionDataEntry(
       watcherConnectionData.sessionData,
       type,
-      entries
+      entries,
+      updateType
     );
 
     const promises = [];
@@ -428,11 +437,12 @@ export class DevToolsWorkerChild extends JSWindowActorChild {
       workerThreadServerForwardingPrefix,
     } of watcherConnectionData.workers) {
       promises.push(
-        addSessionDataEntryInWorkerTarget({
+        addOrSetSessionDataEntryInWorkerTarget({
           dbg,
           workerThreadServerForwardingPrefix,
           type,
           entries,
+          updateType,
         })
       );
     }
@@ -508,14 +518,24 @@ export class DevToolsWorkerChild extends JSWindowActorChild {
 /**
  * Communicate the type and entries to the Worker Target actor, via the WorkerDebugger.
  *
+ * @param {WorkerDebugger} dbg
+ * @param {String} workerThreadServerForwardingPrefix
+ * @param {String} type
+ *        Session data type name
+ * @param {Array} entries
+ *        Session data entries to add or set.
+ * @param {String} updateType
+ *        Either "add" or "set", to control if we should only add some items,
+ *        or replace the whole data set with the new entries.
  * @returns {Promise} Returns a Promise that resolves once the data entry were handled
  *                    by the worker target.
  */
-function addSessionDataEntryInWorkerTarget({
+function addOrSetSessionDataEntryInWorkerTarget({
   dbg,
   workerThreadServerForwardingPrefix,
   type,
   entries,
+  updateType,
 }) {
   if (!lazy.DevToolsUtils.isWorkerDebuggerAlive(dbg)) {
     return Promise.resolve();
@@ -527,7 +547,7 @@ function addSessionDataEntryInWorkerTarget({
     const listener = {
       onMessage: message => {
         message = JSON.parse(message);
-        if (message.type === "session-data-entry-added") {
+        if (message.type === "session-data-entry-added-or-set") {
           resolve();
           dbg.removeListener(listener);
         }
@@ -540,10 +560,11 @@ function addSessionDataEntryInWorkerTarget({
 
     dbg.postMessage(
       JSON.stringify({
-        type: "add-session-data-entry",
+        type: "add-or-set-session-data-entry",
         forwardingPrefix: workerThreadServerForwardingPrefix,
         dataEntryType: type,
         entries,
+        updateType,
       })
     );
   });

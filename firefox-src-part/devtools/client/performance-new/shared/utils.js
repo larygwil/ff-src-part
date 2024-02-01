@@ -497,7 +497,7 @@ const featureDescriptions = [
     name: "CPU Utilization - All Threads",
     value: "cpuallthreads",
     title:
-      "Record how much CPU has been used between samples by ALL registered thread.",
+      "Record CPU usage of all known threads, even threads which are not being profiled.",
     experimental: true,
   },
   {
@@ -551,6 +551,15 @@ const featureDescriptions = [
       }
     })(),
     experimental: true,
+  },
+  {
+    name: "CPU Frequency",
+    value: "cpufreq",
+    title:
+      "Record the clock frequency of every CPU core for every profiler sample.",
+    experimental: true,
+    disabledReason:
+      "This feature is only available on Windows, Linux and Android.",
   },
 ];
 

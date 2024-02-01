@@ -788,6 +788,7 @@
     document.documentURI == "chrome://geckoview/content/geckoview.xhtml"
   );
   if (loadExtraCustomElements) {
+    // Lazily load the following elements
     for (let [tag, script] of [
       ["button-group", "chrome://global/content/elements/named-deck.js"],
       ["findbar", "chrome://global/content/elements/findbar.js"],
@@ -821,12 +822,16 @@
           return import(
             "chrome://global/content/elements/moz-button-group.mjs"
           );
+        case "moz-message-bar":
+          return import("chrome://global/content/elements/moz-message-bar.mjs");
         case "moz-support-link":
           return import(
             "chrome://global/content/elements/moz-support-link.mjs"
           );
         case "moz-toggle":
           return import("chrome://global/content/elements/moz-toggle.mjs");
+        case "moz-card":
+          return import("chrome://global/content/elements/moz-card.mjs");
       }
       throw new Error(`Unknown custom element name (${name})`);
     }
@@ -845,6 +850,7 @@
         .catch(console.error);
     };
 
+    // Immediately load the following elements
     for (let script of [
       "chrome://global/content/elements/arrowscrollbox.js",
       "chrome://global/content/elements/dialog.js",

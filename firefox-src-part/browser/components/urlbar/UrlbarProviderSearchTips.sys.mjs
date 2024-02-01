@@ -19,19 +19,12 @@ const lazy = {};
 ChromeUtils.defineESModuleGetters(lazy, {
   AppMenuNotifications: "resource://gre/modules/AppMenuNotifications.sys.mjs",
   DefaultBrowserCheck: "resource:///modules/BrowserGlue.sys.mjs",
-  ProfileAge: "resource://gre/modules/ProfileAge.sys.mjs",
+  LaterRun: "resource:///modules/LaterRun.sys.mjs",
   UrlbarPrefs: "resource:///modules/UrlbarPrefs.sys.mjs",
   UrlbarProviderTopSites: "resource:///modules/UrlbarProviderTopSites.sys.mjs",
   UrlbarResult: "resource:///modules/UrlbarResult.sys.mjs",
   UrlbarSearchUtils: "resource:///modules/UrlbarSearchUtils.sys.mjs",
   setTimeout: "resource://gre/modules/Timer.sys.mjs",
-});
-
-XPCOMUtils.defineLazyGetter(lazy, "updateManager", () => {
-  return (
-    Cc["@mozilla.org/updates/update-manager;1"] &&
-    Cc["@mozilla.org/updates/update-manager;1"].getService(Ci.nsIUpdateManager)
-  );
 });
 
 XPCOMUtils.defineLazyPreferenceGetter(
@@ -87,8 +80,8 @@ const SHOW_TIP_DELAY_MS = 200;
 const SHOW_PERSIST_TIP_DELAY_MS = 1500;
 
 // We won't show a tip if the browser has been updated in the past
-// LAST_UPDATE_THRESHOLD_MS.
-const LAST_UPDATE_THRESHOLD_MS = 24 * 60 * 60 * 1000;
+// LAST_UPDATE_THRESHOLD_HOURS.
+const LAST_UPDATE_THRESHOLD_HOURS = 24;
 
 /**
  * A provider that sometimes returns a tip result when the user visits the
@@ -274,26 +267,7 @@ class ProviderSearchTips extends UrlbarProvider {
     lazy.UrlbarPrefs.set(`tipShownCount.${tip}`, MAX_SHOWN_COUNT);
   }
 
-  /**
-   * Called when the user starts and ends an engagement with the urlbar.  For
-   * details on parameters, see UrlbarProvider.onEngagement().
-   *
-   * @param {boolean} isPrivate
-   *   True if the engagement is in a private context.
-   * @param {string} state
-   *   The state of the engagement, one of: start, engagement, abandonment,
-   *   discard
-   * @param {UrlbarQueryContext} queryContext
-   *   The engagement's query context.  This is *not* guaranteed to be defined
-   *   when `state` is "start".  It will always be defined for "engagement" and
-   *   "abandonment".
-   * @param {object} details
-   *   This is defined only when `state` is "engagement" or "abandonment", and
-   *   it describes the search string and picked result.
-   * @param {window} window
-   *   The browser window where the engagement event took place.
-   */
-  onEngagement(isPrivate, state, queryContext, details, window) {
+  onEngagement(state, queryContext, details, controller) {
     // Ignore engagements on other results that didn't end the session.
     let { result } = details;
     if (result?.providerName != this.name && details.isSessionOngoing) {
@@ -301,7 +275,7 @@ class ProviderSearchTips extends UrlbarProvider {
     }
 
     if (result?.providerName == this.name) {
-      this.#pickResult(result, window);
+      this.#pickResult(result, controller.browserWindow);
     }
 
     this.showedTipTypeInCurrentEngagement = TIPS.NONE;
@@ -439,10 +413,13 @@ class ProviderSearchTips extends UrlbarProvider {
     // Don't show a tip if the browser has been updated recently.
     // Exception: TIPS.PERSIST should show immediately
     // after the feature is enabled for users.
-    let date = await lastBrowserUpdateDate();
+    let hoursSinceUpdate = Math.min(
+      lazy.LaterRun.hoursSinceInstall,
+      lazy.LaterRun.hoursSinceUpdate
+    );
     if (
       tip != TIPS.PERSIST &&
-      Date.now() - date <= LAST_UPDATE_THRESHOLD_MS &&
+      hoursSinceUpdate < LAST_UPDATE_THRESHOLD_HOURS &&
       !ignoreShowLimits
     ) {
       return;
@@ -611,19 +588,6 @@ async function isDefaultEngineHomepage(urlStr) {
   urlStr = url.hostname.concat(url.pathname);
 
   return homepageMatches.domainPath.test(urlStr);
-}
-
-async function lastBrowserUpdateDate() {
-  // Get the newest update in the update history. This isn't perfect
-  // because these dates are when updates are applied, not when the
-  // user restarts with the update. See bug 1595328.
-  if (lazy.updateManager && lazy.updateManager.getUpdateCount()) {
-    let update = lazy.updateManager.getUpdateAt(0);
-    return update.installDate;
-  }
-  // Fall back to the profile age.
-  let age = await lazy.ProfileAge();
-  return (await age.firstUse) || age.created;
 }
 
 export var UrlbarProviderSearchTips = new ProviderSearchTips();

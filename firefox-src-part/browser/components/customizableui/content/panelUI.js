@@ -457,7 +457,11 @@ const PanelUI = {
       viewNode.classList.add("cui-widget-panelview", "PanelUI-subView");
 
       let viewShown = false;
-      let panelRemover = () => {
+      let panelRemover = event => {
+        // Avoid bubbled events triggering the panel closing.
+        if (event && event.target != tempPanel) {
+          return;
+        }
         viewNode.classList.remove("cui-widget-panelview");
         if (viewShown) {
           CustomizableUI.removePanelCloseListeners(tempPanel);
@@ -644,7 +648,7 @@ const PanelUI = {
       // their localization IDs are set on "appmenu-data-l10n-id" attributes.
       let l10nId = node.getAttribute("appmenu-data-l10n-id");
       if (l10nId) {
-        button.setAttribute("data-l10n-id", l10nId);
+        document.l10n.setAttributes(button, l10nId);
       }
 
       if (node.id) {
@@ -935,6 +939,12 @@ const PanelUI = {
     if (notification.options.popupIconURL) {
       popupnotification.setAttribute("icon", notification.options.popupIconURL);
       popupnotification.setAttribute("hasicon", true);
+    }
+    if (notification.options.learnMoreURL) {
+      popupnotification.setAttribute(
+        "learnmoreurl",
+        notification.options.learnMoreURL
+      );
     }
 
     popupnotification.notification = notification;

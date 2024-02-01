@@ -9,15 +9,13 @@ import {
   SearchEngine,
 } from "resource://gre/modules/SearchEngine.sys.mjs";
 
-import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs";
-
 const lazy = {};
 
 ChromeUtils.defineESModuleGetters(lazy, {
   SearchUtils: "resource://gre/modules/SearchUtils.sys.mjs",
 });
 
-XPCOMUtils.defineLazyGetter(lazy, "logConsole", () => {
+ChromeUtils.defineLazyGetter(lazy, "logConsole", () => {
   return console.createInstance({
     prefix: "OpenSearchEngine",
     maxLogLevel: lazy.SearchUtils.loggingEnabled ? "Debug" : "Warn",
@@ -144,7 +142,12 @@ export class OpenSearchEngine extends SearchEngine {
 
     lazy.logConsole.debug("_install: Downloading engine from:", loadURI.spec);
 
-    var chan = lazy.SearchUtils.makeChannel(loadURI);
+    var chan = lazy.SearchUtils.makeChannel(
+      loadURI,
+      // OpenSearchEngine is loading a definition file for a search engine,
+      // TYPE_DOCUMENT captures that load best
+      Ci.nsIContentPolicy.TYPE_DOCUMENT
+    );
 
     if (this._engineToUpdate && chan instanceof Ci.nsIHttpChannel) {
       var lastModified = this._engineToUpdate.getAttr("updatelastmodified");

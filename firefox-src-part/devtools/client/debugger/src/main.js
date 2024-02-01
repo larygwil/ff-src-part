@@ -49,6 +49,13 @@ async function syncXHRBreakpoints() {
   );
 }
 
+function setPauseOnDebuggerStatement() {
+  const { pauseOnDebuggerStatement } = prefs;
+  return firefox.clientCommands.pauseOnDebuggerStatement(
+    pauseOnDebuggerStatement
+  );
+}
+
 function setPauseOnExceptions() {
   const { pauseOnExceptions, pauseOnCaughtException } = prefs;
   return firefox.clientCommands.pauseOnExceptions(
@@ -68,7 +75,10 @@ async function loadInitialState(commands, toolbox) {
   const breakpoints = initialBreakpointsState(xhrBreakpoints);
   const sourceBlackBox = initialSourceBlackBoxState({ blackboxedRanges });
   const sources = initialSourcesState();
-  const ui = initialUIState();
+  const rootTraits = commands.client.mainRoot.traits;
+  const ui = initialUIState({
+    supportsDebuggerStatementIgnore: rootTraits.supportsDebuggerStatementIgnore,
+  });
 
   return {
     pendingBreakpoints,
@@ -90,6 +100,10 @@ export async function bootstrap({
 }) {
   verifyPrefSchema();
 
+  // Set telemetry at the very beginning as some actions fired from this function might
+  // record events.
+  setToolboxTelemetry(panel.toolbox.telemetry);
+
   const initialState = await loadInitialState(commands, panel.toolbox);
   const workers = bootstrapWorkers(panelWorkers);
 
@@ -109,6 +123,7 @@ export async function bootstrap({
 
   await syncBreakpoints();
   await syncXHRBreakpoints();
+  await setPauseOnDebuggerStatement();
   await setPauseOnExceptions();
 
   setupHelper({
@@ -119,8 +134,6 @@ export async function bootstrap({
     targetCommand: commands.targetCommand,
     client: firefox.clientCommands,
   });
-
-  setToolboxTelemetry(panel.toolbox.telemetry);
 
   bootstrapApp(store, panel.getToolboxStore(), {
     fluentBundles,

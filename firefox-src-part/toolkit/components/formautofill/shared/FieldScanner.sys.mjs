@@ -10,6 +10,9 @@ export class FieldDetail {
   // Reference to the elemenet
   elementWeakRef = null;
 
+  // id/name. This is only used for debugging
+  identifier = "";
+
   // The inferred field name for this element
   fieldName = null;
 
@@ -29,6 +32,7 @@ export class FieldDetail {
   section = "";
   addressType = "";
   contactType = "";
+  credentialType = "";
 
   // When a field is split into N fields, we use part to record which field it is
   // For example, a credit card number field is split into 4 fields, the value of
@@ -41,10 +45,11 @@ export class FieldDetail {
 
   constructor(
     element,
-    fieldName,
-    { autocompleteInfo = {}, confidence = null }
+    fieldName = null,
+    { autocompleteInfo = {}, confidence = null } = {}
   ) {
-    this.elementWeakRef = Cu.getWeakReference(element);
+    this.elementWeakRef = new WeakRef(element);
+    this.identifier = `${element.id}/${element.name}`;
     this.fieldName = fieldName;
 
     if (autocompleteInfo) {
@@ -52,6 +57,7 @@ export class FieldDetail {
       this.section = autocompleteInfo.section;
       this.addressType = autocompleteInfo.addressType;
       this.contactType = autocompleteInfo.contactType;
+      this.credentialType = autocompleteInfo.credentialType;
     } else if (confidence) {
       this.reason = "fathom";
       this.confidence = confidence;
@@ -61,7 +67,7 @@ export class FieldDetail {
   }
 
   get element() {
-    return this.elementWeakRef.get();
+    return this.elementWeakRef.deref();
   }
 
   get sectionName() {
@@ -94,12 +100,12 @@ export class FieldScanner {
    *        The callback function that is used to infer the field info of a given element
    */
   constructor(elements, inferFieldInfoFn) {
-    this.#elementsWeakRef = Cu.getWeakReference(elements);
+    this.#elementsWeakRef = new WeakRef(elements);
     this.#inferFieldInfoFn = inferFieldInfoFn;
   }
 
   get #elements() {
-    return this.#elementsWeakRef.get();
+    return this.#elementsWeakRef.deref();
   }
 
   /**
@@ -141,9 +147,7 @@ export class FieldScanner {
    */
   getFieldDetailByIndex(index) {
     if (index >= this.#elements.length) {
-      throw new Error(
-        `The index ${index} is out of range.(${this.#elements.length})`
-      );
+      return null;
     }
 
     if (index < this.fieldDetails.length) {
@@ -189,18 +193,27 @@ export class FieldScanner {
    * @param {number} index
    *        The index indicates a field detail to be updated.
    * @param {string} fieldName
-   *        The new fieldName
-   * @param {string} reason
-   *        What approach we use to identify this field
+   *        The new name of the field
+   * @param {boolean} [ignoreAutocomplete=false]
+   *        Whether to change the field name when the field name is determined by
+   *        autocomplete attribute
    */
-  updateFieldName(index, fieldName, reason = null) {
+  updateFieldName(index, fieldName, ignoreAutocomplete = false) {
     if (index >= this.fieldDetails.length) {
       throw new Error("Try to update the non-existing field detail.");
     }
-    this.fieldDetails[index].fieldName = fieldName;
-    if (reason) {
-      this.fieldDetails[index].reason = reason;
+
+    const fieldDetail = this.fieldDetails[index];
+    if (fieldDetail.fieldName == fieldName) {
+      return;
     }
+
+    if (!ignoreAutocomplete && fieldDetail.reason == "autocomplete") {
+      return;
+    }
+
+    this.fieldDetails[index].fieldName = fieldName;
+    this.fieldDetails[index].reason = "update-heuristic";
   }
 
   elementExisting(index) {

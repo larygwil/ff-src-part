@@ -33,6 +33,7 @@ const NODE_TYPES = {
   SET: Symbol("<set>"),
   PROTOTYPE: Symbol("<prototype>"),
   BLOCK: Symbol("☲"),
+  PRIMITIVE_VALUE: Symbol("<primitive value>")
 };
 
 let WINDOW_PROPERTIES = {};
@@ -280,7 +281,8 @@ function nodeHasEntries(item) {
     className === "Headers" ||
     className === "FormData" ||
     className === "MIDIInputMap" ||
-    className === "MIDIOutputMap"
+    className === "MIDIOutputMap" ||
+    className === "HighlightRegistry"
   );
 }
 
@@ -376,6 +378,17 @@ function makeNodesForEntries(item) {
     name: nodeName,
     contents: null,
     type: NODE_TYPES.ENTRIES,
+  });
+}
+
+function makeNodeForPrimitiveValue(parent, value) {
+  const nodeName = "<primitive value>";
+
+  return createNode({
+    parent,
+    name: nodeName,
+    contents: {value},
+    type: NODE_TYPES.PRIMITIVE_VALUE,
   });
 }
 
@@ -651,6 +664,13 @@ function makeNodesForProperties(objProps, parent) {
         })
       );
     }
+  }
+
+  const preview = parentValue?.preview;
+
+  if (preview && Object.hasOwn(preview, 'wrappedValue')) {
+    const primitiveValue = preview.wrappedValue
+    nodes.push(makeNodeForPrimitiveValue(parentValue, primitiveValue))
   }
 
   // Add the prototype if it exists and is not null

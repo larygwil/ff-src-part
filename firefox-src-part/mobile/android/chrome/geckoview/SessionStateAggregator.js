@@ -7,8 +7,8 @@
 
 "use strict";
 
-const { GeckoViewChildModule } = ChromeUtils.import(
-  "resource://gre/modules/GeckoViewChildModule.jsm"
+const { GeckoViewChildModule } = ChromeUtils.importESModule(
+  "resource://gre/modules/GeckoViewChildModule.sys.mjs"
 );
 const { XPCOMUtils } = ChromeUtils.importESModule(
   "resource://gre/modules/XPCOMUtils.sys.mjs"
@@ -315,7 +315,7 @@ class ScrollPositionListener extends Handler {
     const displaySize = {};
     const width = {},
       height = {};
-    domWindowUtils.getContentViewerSize(width, height);
+    domWindowUtils.getDocumentViewerSize(width, height);
 
     displaySize.width = width.value;
     displaySize.height = height.value;

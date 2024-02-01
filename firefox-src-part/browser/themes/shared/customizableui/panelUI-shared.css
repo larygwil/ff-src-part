@@ -136,8 +136,9 @@ menupopup {
   background: url(chrome://global/skin/icons/warning-fill-12.svg) center / contain no-repeat transparent;
   box-shadow: none;
   border-radius: 0;
-  -moz-context-properties: fill;
+  -moz-context-properties: fill, stroke;
   fill: var(--warning-icon-bgcolor);
+  stroke: var(--toolbar-bgcolor);
 }
 
 #fxa-toolbar-menu-button[badge-status="login_failed"] > .toolbarbutton-badge-stack > .toolbarbutton-badge {
@@ -226,41 +227,47 @@ toolbarseparator + .panel-subview-body {
   margin: var(--arrowpanel-menuitem-margin);
 }
 
-/* Bookmark-related menupopup tweaks to make them feel like standard panels */
+/* Tweaks for menupopups hanging off toolbar buttons to make them feel like panels */
 
-toolbarbutton menupopup[placespopup] {
-  appearance: none;
-  border: none;
-  font: menu;
-  background-color: transparent;
-  --panel-background: var(--arrowpanel-background);
-  --panel-color: var(--arrowpanel-color);
-  --panel-border-color: var(--arrowpanel-border-color);
-  --panel-border-radius: var(--arrowpanel-border-radius);
-  --panel-padding: var(--panel-subview-body-padding);
-}
+.toolbar-menupopup {
+  &,
+  menupopup {
+    appearance: none;
+    border: none;
+    font: menu;
+    background-color: transparent;
+    --panel-background: var(--arrowpanel-background);
+    --panel-color: var(--arrowpanel-color);
+    --panel-border-color: var(--arrowpanel-border-color);
+    --panel-border-radius: var(--arrowpanel-border-radius);
+    --panel-padding: var(--panel-subview-body-padding);
+  }
 
-toolbarbutton menupopup[placespopup] menupopup[placespopup] {
-  /* Align non top-level menupopup's first menuitem with the menuitem that opened it.
-   * The 1px is for the menupopup's border. */
-  margin-top: calc(-1 * (var(--panel-subview-body-padding-block) + var(--panel-shadow-margin) + 1px));
-}
+  menupopup {
+    /* Align non top-level menupopup's first menuitem with the menuitem that opened it.
+     * The 1px is for the menupopup's border. */
+    margin-top: calc(-1 * (var(--panel-subview-body-padding-block) + var(--panel-shadow-margin) + 1px));
+  }
 
-toolbarbutton menupopup[placespopup] > :is(menu, menuitem)[disabled] {
-  color: var(--panel-disabled-color);
-}
+  menuitem::before,
+  menuitem::after {
+    content: none; /* Reset's macOS' checkmark spacing */
+  }
 
-toolbarbutton menupopup[placespopup] > :is(menu, menuitem):not([disabled])[_moz-menuactive] {
-  color: inherit;
-  background-color: var(--panel-item-hover-bgcolor);
-}
+  :is(menu, menuitem)[disabled] {
+    color: var(--panel-disabled-color);
+  }
 
-toolbarbutton menupopup[placespopup] > :is(menu, menuitem):not([disabled])[_moz-menuactive]:active {
-  color: inherit;
-  background-color: var(--panel-item-active-bgcolor);
-}
+  :is(menu, menuitem):not([disabled])[_moz-menuactive] {
+    color: inherit;
+    background-color: var(--panel-item-hover-bgcolor);
 
-toolbarbutton menupopup[placespopup] > :is(menu, menuitem) :is(
+    &:active {
+      color: inherit;
+      background-color: var(--panel-item-active-bgcolor);
+    }
+  }
+
   .menu-text,
   .menu-iconic-text,
   .menu-iconic-icon,
@@ -268,64 +275,47 @@ toolbarbutton menupopup[placespopup] > :is(menu, menuitem) :is(
   .menu-iconic-accel,
   .menu-accel-container,
   .menu-accel,
-  .menu-right
-) {
-  /* Reset every spacing and appearance set by the platforms' menu.css
-   * and set the ones we need in the following rules. */
-  margin: 0 !important;
-  padding: 0 !important;
-  appearance: none !important;
-}
+  .menu-right {
+    /* Reset every spacing and appearance set by the platforms' menu.css
+     * and set the ones we need in the following rules. */
+    margin: 0;
+    padding: 0;
+    appearance: none;
+  }
 
-toolbarbutton menupopup[placespopup] > :is(.menu-iconic, .menuitem-iconic) > .menu-iconic-left {
-  margin-inline-end: 8px !important;
-}
+  :is(.menu-iconic, .menuitem-iconic) > .menu-iconic-left {
+    margin-inline-end: 8px;
+  }
 
-toolbarbutton menupopup[placespopup] > :is(menu, menuitem) > .menu-accel-container > :is(.menu-accel, .menu-iconic-accel) {
-  margin-inline-start: 16px !important;
-  color: var(--panel-shortcut-color);
-}
+  .menu-accel,
+  .menu-iconic-accel {
+    margin-inline-start: 16px;
+  }
 
-toolbarbutton menupopup[placespopup][emptyplacesresult] > menuitem > .menu-accel-container > .menu-accel {
-  margin: 0 !important;
-}
+  menu > .menu-right {
+    list-style-image: url(chrome://global/skin/icons/arrow-right.svg);
+    -moz-context-properties: fill, fill-opacity;
+    fill: currentColor;
+    fill-opacity: 0.6;
+    width: unset;
+    height: unset;
 
-toolbarbutton menupopup[placespopup] > menu > .menu-right {
-  list-style-image: url(chrome://global/skin/icons/arrow-right.svg);
-  -moz-context-properties: fill, fill-opacity;
-  fill: currentColor;
-  fill-opacity: 0.6;
-  width: unset;
-  height: unset;
-}
+    &:-moz-locale-dir(rtl) {
+      list-style-image: url(chrome://global/skin/icons/arrow-left.svg);
+    }
+  }
 
-toolbarbutton menupopup[placespopup] > menu > .menu-right:-moz-locale-dir(rtl) {
-  list-style-image: url(chrome://global/skin/icons/arrow-left.svg);
-}
-
-/* menuseparators in bookmark-related menupopups are styled differently
- * to allow for user interaction with them (e.g. drag, right click ...) */
-toolbarbutton menupopup[placespopup] menuseparator {
-  position: relative;
-  appearance: none;
-  border: none;
-  min-height: 0;
-  margin: 0 var(--panel-separator-margin-horizontal);
-  padding-inline: 0;
-  padding-top: var(--panel-separator-margin-vertical);
-  padding-bottom: calc(var(--panel-separator-margin-vertical) + 1px);
-}
-
-toolbarbutton menupopup[placespopup] menuseparator::before {
-  content: '';
-  position: absolute;
-  width: 100%;
-  border-top: 1px solid var(--panel-separator-color);
-  border-bottom: none;
+  menuseparator {
+    padding: var(--panel-separator-margin);
+  }
 }
 
 #BMB_bookmarksPopup {
   max-width: 30em;
+}
+
+:is(.toolbar-menupopup, .toolbar-menupopup menupopup)[emptyplacesresult] > menuitem > .menu-accel-container > .menu-accel {
+  margin: 0;
 }
 
 #confirmation-hint {
@@ -440,16 +430,21 @@ panelview[id^=PanelUI-webext-] {
 }
 
 #appMenu-popup panelview,
+/* The Report Broken Site panel can be opened from the Help menu
+ * in the menubar, which isn't a descendant of #appMenu-popup.
+ * Target it specifically in this rule to make it the same width
+ * as if it was a standard panelview opened from the app menu. */
+#report-broken-site-popup-mainView[mainview],
 #PanelUI-fxa {
   width: 22.5em;
 }
 
-#customizationui-widget-multiview panelview:not([extension]) {
+:where(#customizationui-widget-multiview) panelview:not([extension]) {
   min-width: var(--menu-panel-width);
   max-width: 35em;
 }
 
-#customizationui-widget-multiview #appMenu-libraryView,
+#appMenu-libraryView,
 #pageActionPanel panelview,
 #widget-overflow panelview {
   min-width: var(--menu-panel-width-wide);
@@ -716,7 +711,8 @@ toolbarbutton[constrain-size="true"][cui-areatype="panel"] > .toolbarbutton-badg
   display: none;
 }
 
-@supports not -moz-bool-pref("identity.fxaccounts.toolbar.defaultVisible") {
+/* stylelint-disable-next-line media-query-no-invalid */
+@media not (-moz-bool-pref: "identity.fxaccounts.toolbar.defaultVisible") {
   /* Hide the FxA toolbar button when its in the nav-bar, until in use */
   :root[fxastatus="not_configured"] #widget-overflow-list > #fxa-toolbar-menu-button,
   :root[fxastatus="not_configured"] #nav-bar-customization-target > #fxa-toolbar-menu-button {
@@ -755,7 +751,11 @@ toolbarbutton[constrain-size="true"][cui-areatype="panel"] > .toolbarbutton-badg
 
 #fxa-menu-header-description {
   color: var(--text-color-deemphasized);
-  font-weight: 600;
+  font-weight: var(--font-weight-bold);
+}
+
+#cta-menu-header-description {
+  color: var(--text-color-deemphasized);
 }
 
 #PanelUI-appMenu-fxa-label-last-synced {
@@ -768,8 +768,24 @@ toolbarbutton[constrain-size="true"][cui-areatype="panel"] > .toolbarbutton-badg
   list-style-image: url(chrome://browser/skin/fxa/send.svg);
 }
 
+.ctaMenuLogo {
+  width: 16px;
+  height: 16px;
+  margin-inline-start: 5px;
+}
+
 #PanelUI-fxa-menu-monitor-button {
   list-style-image: url(chrome://browser/skin/fxa/monitor.svg);
+}
+
+#PanelUI-fxa-menu-relay-button {
+  list-style-image: url(chrome://browser/content/logos/relay.svg);
+}
+
+#PanelUI-fxa-menu-vpn-button {
+  list-style-image: url("chrome://browser/skin/preferences/vpn-logo.svg");
+  -moz-context-properties: fill;
+  fill: currentColor;
 }
 
 :root:not([fxastatus="signedin"]) #PanelUI-fxa-menu-connect-device-button {
@@ -971,7 +987,7 @@ panelmultiview[mainViewId="PanelUI-fxa"] #PanelUI-remotetabs-syncnow {
   display: none;
 }
 
-toolbarbutton menupopup[placespopup] > :is(menu, menuitem),
+.toolbar-menupopup :is(menu, menuitem),
 .subview-subheader,
 panelview .toolbarbutton-1,
 .subviewbutton,
@@ -1112,7 +1128,12 @@ panelview .toolbarbutton-1,
 .subviewbutton[shortcut]::after {
   content: attr(shortcut);
   display: flex;
-  color: var(--panel-shortcut-color);
+}
+
+@media not (prefers-contrast) {
+  .subviewbutton[shortcut]:not([disabled])::after {
+    color: var(--panel-disabled-color);
+  }
 }
 
 #protections-popup-mainView .subviewbutton-nav:not(.notFound)::after,
@@ -1395,7 +1416,10 @@ toolbarpaletteitem[place="menu-panel"] > .subviewbutton-nav::after {
 
 #panic-button-success-icon,
 #PanelUI-panic-timeframe-icon {
-  list-style-image: url(chrome://browser/skin/panic-panel/header.png);
+  list-style-image: image-set(
+    url(chrome://browser/skin/panic-panel/header.png),
+    url(chrome://browser/skin/panic-panel/header@2x.png) 2x
+  );
   max-height: 48px;
   width: 48px;
 }
@@ -1446,13 +1470,8 @@ radiogroup:focus-visible > .subviewradio[focused="true"] > .radio-label-box {
 }
 
 .subviewradio > .radio-check[selected] {
-  background-color: #fff;
-  border: 4px solid #177ee6;
-}
-
-:root[lwt-popup-brighttext] .subviewradio > .radio-check[selected] {
-  background-color: transparent;
-  border: 4px solid #00ddff;
+  background-color: light-dark(#fff, transparent);
+  border: 4px solid light-dark(#177ee6, #00ddff);
 }
 
 #PanelUI-panic-explanations {
@@ -1465,32 +1484,32 @@ radiogroup:focus-visible > .subviewradio[focused="true"] > .radio-label-box {
 }
 
 .PanelUI-panic-actionlist {
-  padding-block: 2px;
-  padding-inline-start: 20px;
-  background-size: 16px 16px;
-  background-repeat: no-repeat;
-  background-color: transparent;
-  background-position: left center;
+  padding: 2px 0;
 }
 
-.PanelUI-panic-actionlist:-moz-locale-dir(rtl) {
-  background-position-x: right;
+.PanelUI-panic-actionlist::before {
+  display: inline-block;
+  content: "";
+  width: 16px;
+  height: 16px;
+  margin-inline-end: 4px;
+  background-image: image-set(
+    url(chrome://browser/skin/panic-panel/icons.png),
+    url(chrome://browser/skin/panic-panel/icons@2x.png) 2x
+  );
+  vertical-align: bottom;
 }
 
-#PanelUI-panic-actionlist-cookies {
-  background-image: -moz-image-rect(url(chrome://browser/skin/panic-panel/icons.png), 0, 16, 16, 0);
+#PanelUI-panic-actionlist-history::before {
+  background-position-x: 16px;
 }
 
-#PanelUI-panic-actionlist-history {
-  background-image: -moz-image-rect(url(chrome://browser/skin/panic-panel/icons.png), 0, 32, 16, 16);
+#PanelUI-panic-actionlist-windows::before {
+  background-position-x: 32px;
 }
 
-#PanelUI-panic-actionlist-windows {
-  background-image: -moz-image-rect(url(chrome://browser/skin/panic-panel/icons.png), 0, 48, 16, 32);
-}
-
-#PanelUI-panic-actionlist-newwindow {
-  background-image: -moz-image-rect(url(chrome://browser/skin/panic-panel/icons.png), 0, 64, 16, 48);
+#PanelUI-panic-actionlist-newwindow::before {
+  background-position-x: 48px;
 }
 
 #PanelUI-panic-warning {
@@ -1548,29 +1567,6 @@ radiogroup:focus-visible > .subviewradio[focused="true"] > .radio-label-box {
   background-color: var(--button-active-bgcolor);
 }
 
-@media (min-resolution: 1.1dppx) {
-  #panic-button-success-icon,
-  #PanelUI-panic-timeframe-icon {
-    list-style-image: url(chrome://browser/skin/panic-panel/header@2x.png);
-  }
-
-  #PanelUI-panic-actionlist-cookies {
-    background-image: -moz-image-rect(url(chrome://browser/skin/panic-panel/icons@2x.png), 0, 32, 32, 0);
-  }
-
-  #PanelUI-panic-actionlist-history {
-    background-image: -moz-image-rect(url(chrome://browser/skin/panic-panel/icons@2x.png), 0, 64, 32, 32);
-  }
-
-  #PanelUI-panic-actionlist-windows {
-    background-image: -moz-image-rect(url(chrome://browser/skin/panic-panel/icons@2x.png), 0, 96, 32, 64);
-  }
-
-  #PanelUI-panic-actionlist-newwindow {
-    background-image: -moz-image-rect(url(chrome://browser/skin/panic-panel/icons@2x.png), 0, 128, 32, 96);
-  }
-}
-
 .panel-header {
   display: flex;
   align-items: center;
@@ -1590,8 +1586,6 @@ radiogroup:focus-visible > .subviewradio[focused="true"] > .radio-label-box {
 
 .panel-header > h1 {
   flex: auto;
-  font-size: inherit;
-  font-weight: 600;
   margin: 0;
 }
 
@@ -1600,15 +1594,23 @@ radiogroup:focus-visible > .subviewradio[focused="true"] > .radio-label-box {
   margin-inline-start: var(--arrowpanel-header-info-icon-full-width);
 }
 
-.panel-header:not(.panel-header-with-info-button) > .subviewbutton-back + h1 {
-  /* Add the size of the back button to center properly. */
-  margin-inline-end: var(--arrowpanel-header-back-icon-full-width);
-}
-
 .panel-header.panel-header-with-info-button > .subviewbutton-back + h1 {
   margin-inline-start: 0;
   margin-inline-end: calc(var(--arrowpanel-header-back-icon-full-width)
                           - var(--arrowpanel-header-info-icon-full-width));
+}
+
+.panel-header:not(.panel-header-with-additional-element) > .subviewbutton-back + h1 {
+  /* Add the size of the back button to center properly. */
+  margin-inline-end: var(--arrowpanel-header-back-icon-full-width);
+}
+
+.panel-header.panel-header-with-additional-element > .additional-element-on-inline-start + h1 {
+  /* This is for panels where the extra element is on the inline-start side like
+   * the Report Broken Site panel.
+   * The var needs to be set manually via CSS on the .panel-header element as we
+   * can't predict what icon (and thus its size) may be in use. */
+  margin-inline-end: var(--arrowpanel-header-additional-element-width);
 }
 
 .panel-header > h1 > span {
@@ -2013,4 +2015,153 @@ panelview:not([mainview]) #PanelUI-whatsNew-title {
 
 .webextension-popup-stack {
   position: relative;
+}
+
+/* Reset/Restart Private Browsing Panel */
+
+#reset-pbm-panel {
+  max-width: var(--menu-panel-width-wide);
+}
+
+#reset-pbm-panel-container {
+  padding: 16px 16px 0;
+  gap: 8px;
+}
+
+#reset-pbm-panel-header > description {
+  margin-bottom: 0;
+}
+
+#reset-pbm-panel-header > description,
+#reset-pbm-panel-description,
+#reset-pbm-panel-footer {
+  margin-inline: 0;
+}
+
+#reset-pbm-panel-header > description {
+  font-weight: var(--font-weight-bold);
+}
+
+#reset-pbm-panel-checkbox {
+  margin-inline: 0 8px;
+}
+
+/* Report Broken Site panels */
+
+/* Hide the Report Broken Site menu item that
+ * is on the App Menu's Help sub-menu.
+ */
+#appMenu_help_reportBrokenSite {
+  display: none;
+}
+
+.report-broken-site-view {
+  description,
+  label,
+  menulist,
+  input,
+  textarea {
+    margin: 0;
+  }
+
+  p {
+    line-height: 1.5;
+  }
+
+  textarea {
+    resize: vertical;
+  }
+
+  input,
+  textarea {
+    appearance: none;
+    background-color: var(--panel-background);
+    padding: 0.25em;
+    border: 1px solid var(--panel-separator-color);
+    border-radius: 4px;
+
+    &:focus-visible {
+      border-color: transparent;
+      outline: var(--focus-outline);
+      outline-offset: -1px;
+    }
+  }
+
+  /* The menulist:has hack here should go away in bug 1869823 */
+  input:invalid:not(:focus-visible),
+  menulist:has(+ input:invalid):not(:focus-visible) {
+    border-color: transparent;
+    outline: 2px solid var(--color-error-outline);
+    outline-offset: -1px;
+  }
+
+  > .panel-subview-body > label {
+    margin-block: 1.5em 0.5em;
+
+    &.invalid-message {
+      margin-block: 0.5em 0;
+      background-image: url("chrome://global/skin/icons/error.svg");
+      background-position: left center;
+      background-repeat: no-repeat;
+      -moz-context-properties: fill;
+      fill: var(--icon-color-critical);
+      padding-inline-start: calc(16px + 0.25em);
+
+      &:-moz-locale-dir(rtl) {
+        background-position-x: right;
+      }
+
+      input:valid + & {
+        display: none;
+      }
+    }
+  }
+
+  &.main-view {
+    p {
+      margin-block: 0;
+    }
+
+    a {
+      margin-top: 1.5em;
+    }
+  }
+
+  &.sent-view {
+    @media not (prefers-contrast) {
+      background-color: var(--color-background-success);
+    }
+
+    > .panel-header {
+      --arrowpanel-header-additional-element-width: 16px;
+
+      > .checkmark-icon {
+        list-style-image: url(chrome://global/skin/icons/check-filled.svg);
+        -moz-context-properties: fill;
+        fill: #2ac3a2;
+      }
+    }
+
+    > .panel-subview-body {
+      /* Don't let the footer appear way down in the panel while there's
+       * almost no content above. */
+      flex: 0 auto;
+
+      > .subview-subheader {
+        font-size: inherit;
+      }
+    }
+  }
+}
+
+#report-broken-site-panel-container {
+  padding: 8px 16px 16px;
+}
+
+/* <menulist> does not support :invalid, so we use setCustomValidity
+ * on a "helper" input. We must hide it with CSS, as using the HTML
+ * "hidden" attribute will also keep it from working with :invalid.
+ */
+#report-broken-site-popup-missing-reason-validation-helper {
+  display: none;
 }

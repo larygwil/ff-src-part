@@ -27,6 +27,8 @@ const TEXT_TRACK_FONT_SIZE_PREF =
   "media.videocontrols.picture-in-picture.display-text-tracks.size";
 const IMPROVED_CONTROLS_ENABLED_PREF =
   "media.videocontrols.picture-in-picture.improved-video-controls.enabled";
+const SEETHROUGH_MODE_ENABLED_PREF =
+  "media.videocontrols.picture-in-picture.seethrough-mode.enabled";
 
 // Time to fade the Picture-in-Picture video controls after first opening.
 const CONTROLS_FADE_TIMEOUT_MS = 3000;
@@ -115,11 +117,16 @@ function setTimestamp(timeString) {
   Player.setTimestamp(timeString);
 }
 
+function setVolume(volume) {
+  Player.setVolume(volume);
+}
+
 /**
  * The Player object handles initializing the player, holds state, and handles
  * events for updating state.
  */
 let Player = {
+  _isInitialized: false,
   WINDOW_EVENTS: [
     "click",
     "contextmenu",
@@ -236,6 +243,19 @@ let Player = {
       this.handleScrubbingDone(event);
     });
 
+    this.audioScrubber.addEventListener("input", event => {
+      this.audioScrubbing = true;
+      this.handleAudioScrubbing(event.target.value);
+    });
+    this.audioScrubber.addEventListener("change", event => {
+      this.audioScrubbing = false;
+    });
+    this.audioScrubber.addEventListener("pointerdown", event => {
+      if (this.isMuted) {
+        this.audioScrubber.max = 1;
+      }
+    });
+
     for (let radio of document.querySelectorAll(
       'input[type=radio][name="cc-size"]'
     )) {
@@ -259,6 +279,9 @@ let Player = {
     if (Services.prefs.getBoolPref(AUDIO_TOGGLE_ENABLED_PREF, false)) {
       const audioButton = document.getElementById("audio");
       audioButton.hidden = false;
+
+      const audioScrubber = document.getElementById("audio-scrubber");
+      audioScrubber.hidden = false;
     }
 
     if (Services.prefs.getBoolPref(CAPTIONS_ENABLED_PREF, false)) {
@@ -314,6 +337,13 @@ let Player = {
     } else {
       document.querySelector("#medium").checked = "true";
     }
+
+    // In see-through mode the PiP window is made semi-transparent on hover.
+    if (Services.prefs.getBoolPref(SEETHROUGH_MODE_ENABLED_PREF, false)) {
+      document.documentElement.classList.add("seethrough-mode");
+    }
+
+    this._isInitialized = true;
   },
 
   uninit() {
@@ -489,7 +519,8 @@ let Player = {
   handleScrubbing(event) {
     // When using the keyboard to scrub, we get both a keydown and an input
     // event. The input event is fired after the keydown and we have already
-    // handle the keydown event in onKeyDown and we don't want to handle it twice
+    // handled the keydown event in onKeyDown so we set preventNextInputEvent
+    // to true in onKeyDown as to not set the current time twice.
     if (this.preventNextInputEvent) {
       this.preventNextInputEvent = false;
       return;
@@ -522,6 +553,36 @@ let Player = {
     this.scrubbing = false;
   },
 
+  /**
+   * Set the volume on the video and unmute if the video was muted.
+   * If the volume is changed via the keyboard, onKeyDown will set
+   * this.preventNextInputEvent to true.
+   * @param {Number} volume A number between 0 and 1 that represents the volume
+   */
+  handleAudioScrubbing(volume) {
+    // When using the keyboard to adjust the volume, we get both a keydown and
+    // an input event. The input event is fired after the keydown event and we
+    // have already handled the keydown event in onKeyDown so we set
+    // preventNextInputEvent to true in onKeyDown as to not set the volume twice.
+    if (this.preventNextInputEvent) {
+      this.preventNextInputEvent = false;
+      return;
+    }
+
+    if (this.isMuted) {
+      this.isMuted = false;
+      this.actor.sendAsyncMessage("PictureInPicture:Unmute");
+    }
+
+    if (volume == 0) {
+      this.actor.sendAsyncMessage("PictureInPicture:Mute");
+    }
+
+    this.actor.sendAsyncMessage("PictureInPicture:SetVolume", {
+      volume,
+    });
+  },
+
   getScrubberPositionFromEvent(event) {
     return event.target.value;
   },
@@ -547,6 +608,14 @@ let Player = {
   setTimestamp(timestamp) {
     this.timestamp.textContent = timestamp;
     this.timestamp.hidden = timestamp === undefined;
+  },
+
+  setVolume(volume) {
+    if (volume < Number.EPSILON) {
+      this.actor.sendAsyncMessage("PictureInPicture:Mute");
+    }
+
+    this.audioScrubber.value = volume;
   },
 
   closePipWindow(closeData) {
@@ -577,11 +646,7 @@ let Player = {
   onClick(event) {
     switch (event.target.id) {
       case "audio": {
-        if (this.isMuted) {
-          this.actor.sendAsyncMessage("PictureInPicture:Unmute");
-        } else {
-          this.actor.sendAsyncMessage("PictureInPicture:Mute");
-        }
+        this.toggleMute();
         break;
       }
 
@@ -619,7 +684,7 @@ let Player = {
 
       case "closed-caption": {
         let options = {};
-        if (event.mozInputSource == MouseEvent.MOZ_SOURCE_KEYBOARD) {
+        if (event.inputSource == MouseEvent.MOZ_SOURCE_KEYBOARD) {
           options.isKeyboard = true;
         }
         this.toggleSubtitlesSettingsPanel(options);
@@ -679,11 +744,7 @@ let Player = {
         return;
       }
 
-      this.actor.sendAsyncMessage("PictureInPicture:HideVideoControls", {
-        isFullscreen: this.isFullscreen,
-        isVideoControlsShowing: false,
-        playerBottomControlsDOMRect: null,
-      });
+      this.hideVideoControls();
     } else {
       this.settingsPanel.classList.remove("hide");
       this.closedCaptionButton.setAttribute("aria-expanded", true);
@@ -714,6 +775,20 @@ let Player = {
         height: window.innerHeight,
       };
       document.body.requestFullscreen();
+    }
+  },
+
+  /**
+   * Toggle the mute state of the video
+   */
+  toggleMute() {
+    if (this.isMuted) {
+      // We unmute in handleAudioScrubbing so no need to also do it here
+      this.audioScrubber.max = 1;
+      this.handleAudioScrubbing(this.lastVolume ?? 1);
+    } else {
+      this.lastVolume = this.audioScrubber.value;
+      this.actor.sendAsyncMessage("PictureInPicture:Mute");
     }
   },
 
@@ -749,7 +824,7 @@ let Player = {
     };
 
     // If the up or down arrow is pressed while the scrubber is focused then we
-    // want to hijack these keydown events to act as left or right arrow
+    // want to hijack these keydown events to act as left or right arrows
     // respectively to correctly seek the video.
     if (
       event.target.id === "scrubber" &&
@@ -763,17 +838,33 @@ let Player = {
       eventKeys.keyCode = window.KeyEvent.DOM_VK_LEFT;
     }
 
-    // If the keydown event was one of the arrow keys and the scrubber was
-    // focused then we will also get an input event that will overwrite the
-    // keydown event if we dont' prevent the input event.
+    // If the left or right arrow is pressed while the audio scrubber is focused
+    // then we want to hijack these keydown events to act as up or down arrows
+    // respectively to correctly change the volume.
     if (
-      event.target.id === "scrubber" &&
-      [
-        window.KeyEvent.DOM_VK_LEFT,
-        window.KeyEvent.DOM_VK_RIGHT,
-        window.KeyEvent.DOM_VK_UP,
-        window.KeyEvent.DOM_VK_DOWN,
-      ].includes(event.keyCode)
+      event.target.id === "audio-scrubber" &&
+      event.keyCode === window.KeyEvent.DOM_VK_RIGHT
+    ) {
+      eventKeys.keyCode = window.KeyEvent.DOM_VK_UP;
+    } else if (
+      event.target.id === "audio-scrubber" &&
+      event.keyCode === window.KeyEvent.DOM_VK_LEFT
+    ) {
+      eventKeys.keyCode = window.KeyEvent.DOM_VK_DOWN;
+    }
+
+    // If the keydown event was one of the arrow keys and the scrubber or the
+    // audio scrubber was focused then we want to prevent the subsequent input
+    // event from overwriting the keydown event.
+    if (
+      event.target.id === "audio-scrubber" ||
+      (event.target.id === "scrubber" &&
+        [
+          window.KeyEvent.DOM_VK_LEFT,
+          window.KeyEvent.DOM_VK_RIGHT,
+          window.KeyEvent.DOM_VK_UP,
+          window.KeyEvent.DOM_VK_DOWN,
+        ].includes(event.keyCode))
     ) {
       this.preventNextInputEvent = true;
     }
@@ -904,7 +995,11 @@ let Player = {
     let quadrant = this.determineCurrentQuadrant();
     let dragAction = this.determineDirectionDragged();
 
-    if (event.metaKey && AppConstants.platform == "macosx" && dragAction) {
+    if (
+      ((event.ctrlKey && AppConstants.platform !== "macosx") ||
+        (event.metaKey && AppConstants.platform === "macosx")) &&
+      dragAction
+    ) {
       // Moving logic based on current quadrant and direction of drag.
       switch (quadrant) {
         case TOP_RIGHT_QUADRANT:
@@ -1001,11 +1096,7 @@ let Player = {
         !this.controls.getAttribute("keying") &&
         !this.controls.getAttribute("donthide")
       ) {
-        this.actor.sendAsyncMessage("PictureInPicture:HideVideoControls", {
-          isFullscreen: this.isFullscreen,
-          isVideoControlsShowing: false,
-          playerBottomControlsDOMRect: null,
-        });
+        this.hideVideoControls();
       }
     }
   },
@@ -1075,6 +1166,11 @@ let Player = {
     return (this.scrubber = document.getElementById("scrubber"));
   },
 
+  get audioScrubber() {
+    delete this.audioScrubber;
+    return (this.audioScrubber = document.getElementById("audio-scrubber"));
+  },
+
   get timestamp() {
     delete this.timestamp;
     return (this.timestamp = document.getElementById("timestamp"));
@@ -1126,6 +1222,20 @@ let Player = {
       ? `pictureinpicture-pause-btn`
       : `pictureinpicture-play-btn`;
     this.setupTooltip("playpause", strId);
+
+    if (
+      !this._isInitialized ||
+      this.isCurrentHover ||
+      this.controls.getAttribute("keying")
+    ) {
+      return;
+    }
+
+    if (!isPlaying) {
+      this.revealControls(true);
+    } else {
+      this.revealControls(false);
+    }
   },
 
   _isMuted: false,
@@ -1143,6 +1253,11 @@ let Player = {
 
   set isMuted(isMuted) {
     this._isMuted = isMuted;
+    if (!isMuted) {
+      this.audioScrubber.max = 1;
+    } else if (!this.audioScrubbing) {
+      this.audioScrubber.max = 0;
+    }
     this.controls.classList.toggle("muted", isMuted);
     let strId = isMuted
       ? `pictureinpicture-unmute-btn`
@@ -1180,6 +1295,7 @@ let Player = {
 
   /**
    * Send a message to PiPChild to adjust the subtitles position
+   * so that subtitles are visible when showing video controls.
    */
   showVideoControls() {
     // offsetParent returns null when the element or any ancestor has display: none
@@ -1189,6 +1305,18 @@ let Player = {
       isVideoControlsShowing: true,
       playerBottomControlsDOMRect: this.controlsBottom.getBoundingClientRect(),
       isScrubberShowing: !!this.scrubber.offsetParent,
+    });
+  },
+
+  /**
+   * Send a message to PiPChild to adjust the subtitles position
+   * so that subtitles take up remaining space when hiding video controls.
+   */
+  hideVideoControls() {
+    this.actor.sendAsyncMessage("PictureInPicture:HideVideoControls", {
+      isFullscreen: this.isFullscreen,
+      isVideoControlsShowing: false,
+      playerBottomControlsDOMRect: null,
     });
   },
 
@@ -1229,11 +1357,7 @@ let Player = {
           !this.controls.getAttribute("keying") &&
           !this.controls.getAttribute("donthide")
         ) {
-          this.actor.sendAsyncMessage("PictureInPicture:HideVideoControls", {
-            isFullscreen: false,
-            isVideoControlsShowing: false,
-            playerBottomControlsDOMRect: null,
-          });
+          this.hideVideoControls();
         }
       }, CONTROLS_FADE_TIMEOUT_MS);
     }

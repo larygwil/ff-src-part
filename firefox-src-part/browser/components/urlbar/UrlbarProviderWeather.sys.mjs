@@ -241,22 +241,9 @@ class ProviderWeather extends UrlbarProvider {
         url: suggestion.url,
         iconId: suggestion.current_conditions.icon_id,
         helpUrl: lazy.QuickSuggest.HELP_URL,
-        // TODO: Remove helpL10n, isBlockable, and blockL10n once the telemetry
-        // test is updated for the result menu.
-        helpL10n: {
-          id: lazy.UrlbarPrefs.get("resultMenu")
-            ? "urlbar-result-menu-learn-more-about-firefox-suggest"
-            : "firefox-suggest-urlbar-learn-more",
-        },
-        isBlockable: true,
-        blockL10n: {
-          id: lazy.UrlbarPrefs.get("resultMenu")
-            ? "urlbar-result-menu-dismiss-firefox-suggest"
-            : "firefox-suggest-urlbar-block",
-        },
         requestId: suggestion.request_id,
         source: suggestion.source,
-        merinoProvider: suggestion.provider,
+        provider: suggestion.provider,
         dynamicType: WEATHER_DYNAMIC_TYPE,
         city: suggestion.city_name,
         temperatureUnit: unit,
@@ -418,7 +405,7 @@ class ProviderWeather extends UrlbarProvider {
     };
   }
 
-  onEngagement(isPrivate, state, queryContext, details) {
+  onEngagement(state, queryContext, details, controller) {
     // Ignore engagements on other results that didn't end the session.
     if (details.result?.providerName != this.name && details.isSessionOngoing) {
       return;
@@ -433,13 +420,13 @@ class ProviderWeather extends UrlbarProvider {
       // visible result. Otherwise fall back to #getVisibleResultFromLastQuery.
       let { result } = details;
       if (result?.providerName != this.name) {
-        result = this.#getVisibleResultFromLastQuery(queryContext.view);
+        result = this.#getVisibleResultFromLastQuery(controller.view);
       }
 
       if (result) {
         this.#recordEngagementTelemetry(
           result,
-          isPrivate,
+          controller.input.isPrivate,
           details.result == result ? details.selType : ""
         );
       }
@@ -448,7 +435,7 @@ class ProviderWeather extends UrlbarProvider {
     // Handle commands.
     if (details.result?.providerName == this.name) {
       this.#handlePossibleCommand(
-        queryContext,
+        controller.view,
         details.result,
         details.selType
       );
@@ -553,7 +540,7 @@ class ProviderWeather extends UrlbarProvider {
     );
   }
 
-  #handlePossibleCommand(queryContext, result, selType) {
+  #handlePossibleCommand(view, result, selType) {
     switch (selType) {
       case RESULT_MENU_COMMAND.HELP:
         // "help" is handled by UrlbarInput, no need to do anything here.
@@ -564,20 +551,23 @@ class ProviderWeather extends UrlbarProvider {
       case RESULT_MENU_COMMAND.NOT_RELEVANT:
         this.logger.info("Dismissing weather result");
         lazy.UrlbarPrefs.set("suggest.weather", false);
-        queryContext.view.acknowledgeDismissal(result);
+        result.acknowledgeDismissalL10n = {
+          id: "firefox-suggest-dismissal-acknowledgment-all",
+        };
+        view.controller.removeResult(result);
         break;
       case RESULT_MENU_COMMAND.INACCURATE_LOCATION:
         // Currently the only way we record this feedback is in the Glean
         // engagement event. As with all commands, it will be recorded with an
         // `engagement_type` value that is the command's name, in this case
         // `inaccurate_location`.
-        queryContext.view.acknowledgeFeedback(result);
+        view.acknowledgeFeedback(result);
         break;
       case RESULT_MENU_COMMAND.SHOW_LESS_FREQUENTLY:
-        queryContext.view.acknowledgeFeedback(result);
+        view.acknowledgeFeedback(result);
         lazy.QuickSuggest.weather.incrementMinKeywordLength();
         if (!lazy.QuickSuggest.weather.canIncrementMinKeywordLength) {
-          queryContext.view.invalidateResultMenuCommands();
+          view.invalidateResultMenuCommands();
         }
         break;
     }

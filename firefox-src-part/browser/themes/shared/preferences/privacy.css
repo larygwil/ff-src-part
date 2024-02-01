@@ -42,7 +42,7 @@
 }
 
 .speaker-icon {
-  list-style-image: url(chrome://global/skin/media/audio.svg);
+  list-style-image: url(chrome://browser/skin/notification-icons/speaker.svg);
 }
 
 .desktop-notification-icon {
@@ -80,15 +80,18 @@
 }
 
 .privacy-detailedoption,
-#fpiIncompatibilityWarning {
+#fpiIncompatibilityWarning,
+#rfpIncompatibilityWarning {
   margin: 3px 0;
 }
 
-#fpiIncompatibilityWarning {
+#fpiIncompatibilityWarning,
+#rfpIncompatibilityWarning {
   background-color: var(--section-highlight-background-color);
 }
 
 #fpiIncompatibilityWarning,
+#rfpIncompatibilityWarning,
 #contentBlockingCategories {
   margin-top: 16px;
 }
@@ -265,7 +268,8 @@
 }
 
 #blockCookiesMenu,
-#trackingProtectionMenu {
+#trackingProtectionMenu,
+#fingerprintingProtectionMenu {
   margin: 0;
 }
 
@@ -320,12 +324,6 @@
   margin-block-start: 18px;
 }
 
-.firefoxSuggestOptionBox:first-of-type {
-  /* Similar here: Make the apparent vertical space between the last checkbox
-     and first option box the same as elsewhere. */
-  margin-block-start: 11px;
-}
-
 #firefoxSuggestInfoBox {
   margin-block-start: 16px;
 }
@@ -339,8 +337,16 @@
   margin-block-start: 2em;
 }
 
+/* DNS over HTTPS */
+
 #dohDescription,
 #dohLearnMore,
 #dohStatusSection {
   line-height: 1.8em;
+}
+
+/* Logins and Passwords */
+
+#openWindowsPasskeySettings {
+  margin-block-start: 2em;
 }

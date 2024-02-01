@@ -27,7 +27,10 @@ const ERRORS = new Set([
   "NoSuchElementError",
   "NoSuchFrameError",
   "NoSuchHandleError",
+  "NoSuchHistoryEntryError",
+  "NoSuchInterceptError",
   "NoSuchNodeError",
+  "NoSuchRequestError",
   "NoSuchScriptError",
   "NoSuchShadowRootError",
   "NoSuchWindowError",
@@ -35,6 +38,7 @@ const ERRORS = new Set([
   "SessionNotCreatedError",
   "StaleElementReferenceError",
   "TimeoutError",
+  "UnableToCaptureScreen",
   "UnableToSetCookieError",
   "UnexpectedAlertOpenError",
   "UnknownCommandError",
@@ -584,6 +588,36 @@ class NoSuchHandleError extends WebDriverError {
 }
 
 /**
+ * The entry of the history could not be found.
+ *
+ * @param {string=} message
+ *     Optional string describing error situation.
+ * @param {object=} data
+ *     Additional error data helpful in diagnosing the error.
+ */
+class NoSuchHistoryEntryError extends WebDriverError {
+  constructor(message, data = {}) {
+    super(message, data);
+    this.status = "no such history entry";
+  }
+}
+
+/**
+ * Tried to remove an unknown network intercept.
+ *
+ * @param {string=} message
+ *     Optional string describing error situation.
+ * @param {object=} data
+ *     Additional error data helpful in diagnosing the error.
+ */
+class NoSuchInterceptError extends WebDriverError {
+  constructor(message, data = {}) {
+    super(message, data);
+    this.status = "no such intercept";
+  }
+}
+
+/**
  * A node as given by its unique shared id could not be found within the cache
  * of known nodes.
  *
@@ -596,6 +630,21 @@ class NoSuchNodeError extends WebDriverError {
   constructor(message, data = {}) {
     super(message, data);
     this.status = "no such node";
+  }
+}
+
+/**
+ * Tried to continue an unknown request.
+ *
+ * @param {string=} message
+ *     Optional string describing error situation.
+ * @param {object=} data
+ *     Additional error data helpful in diagnosing the error.
+ */
+class NoSuchRequestError extends WebDriverError {
+  constructor(message, data = {}) {
+    super(message, data);
+    this.status = "no such request";
   }
 }
 
@@ -692,6 +741,21 @@ class UnableToSetCookieError extends WebDriverError {
 }
 
 /**
+ * A command to capture a screenshot could not be satisfied.
+ *
+ * @param {string=} message
+ *     Optional string describing error situation.
+ * @param {object=} data
+ *     Additional error data helpful in diagnosing the error.
+ */
+class UnableToCaptureScreen extends WebDriverError {
+  constructor(message, data = {}) {
+    super(message, data);
+    this.status = "unable to capture screen";
+  }
+}
+
+/**
  * A modal dialog was open, blocking this operation.
  *
  * @param {string=} message
@@ -771,7 +835,10 @@ const STATUSES = new Map([
   ["no such element", NoSuchElementError],
   ["no such frame", NoSuchFrameError],
   ["no such handle", NoSuchHandleError],
+  ["no such history entry", NoSuchHistoryEntryError],
+  ["no such intercept", NoSuchInterceptError],
   ["no such node", NoSuchNodeError],
+  ["no such request", NoSuchRequestError],
   ["no such script", NoSuchScriptError],
   ["no such shadow root", NoSuchShadowRootError],
   ["no such window", NoSuchWindowError],
@@ -779,6 +846,7 @@ const STATUSES = new Map([
   ["session not created", SessionNotCreatedError],
   ["stale element reference", StaleElementReferenceError],
   ["timeout", TimeoutError],
+  ["unable to capture screen", UnableToCaptureScreen],
   ["unable to set cookie", UnableToSetCookieError],
   ["unexpected alert open", UnexpectedAlertOpenError],
   ["unknown command", UnknownCommandError],

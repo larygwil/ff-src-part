@@ -37,6 +37,8 @@ div[hidetabs=true] .tabs .tabs-navigation {
   margin: 0;
   margin-inline-end: 15px;
   flex-grow: 1;
+  /* Adjust outline so it's not clipped */
+  outline-offset: -2px;
 }
 
 /* The tab takes entire horizontal space and individual tabs
@@ -88,9 +90,8 @@ div[hidetabs=true] .tabs .tabs-navigation {
   text-align: center;
 }
 
-/* Remove the outline focusring from tabs-menu-item. */
-.tabs .tabs-navigation .tabs-menu-item > a:-moz-focusring {
-  outline: none;
+.tabs .tabs-navigation .tabs-menu-item > a {
+  outline-offset: -2px;
 }
 
 .tabs .tabs-menu-item .tab-badge {

@@ -13,6 +13,8 @@ ChromeUtils.defineESModuleGetters(lazy, {
   error: "chrome://remote/content/shared/webdriver/Errors.sys.mjs",
   generateUUID: "chrome://remote/content/shared/UUID.sys.mjs",
   OwnershipModel: "chrome://remote/content/webdriver-bidi/RemoteValue.sys.mjs",
+  processExtraData:
+    "chrome://remote/content/webdriver-bidi/modules/Intercept.sys.mjs",
   RealmType: "chrome://remote/content/shared/Realm.sys.mjs",
   setDefaultAndAssertSerializationOptions:
     "chrome://remote/content/webdriver-bidi/RemoteValue.sys.mjs",
@@ -38,6 +40,7 @@ const ScriptEvaluateResultType = {
 
 class ScriptModule extends Module {
   #preloadScriptMap;
+  #subscribedEvents;
 
   constructor(messageHandler) {
     super(messageHandler);
@@ -46,10 +49,14 @@ class ScriptModule extends Module {
     // with an item named expression, which is a string,
     // and an item named sandbox which is a string or null.
     this.#preloadScriptMap = new Map();
+
+    // Set of event names which have active subscriptions.
+    this.#subscribedEvents = new Set();
   }
 
   destroy() {
     this.#preloadScriptMap = null;
+    this.#subscribedEvents = null;
   }
 
   /**
@@ -246,6 +253,9 @@ class ScriptModule extends Module {
    *     a RealmTarget or for ContextTarget.
    * @param {RemoteValue=} options.this
    *     The value of the this keyword for the function call.
+   * @param {boolean=} options.userActivation
+   *     Determines whether execution should be treated as initiated by user.
+   *     Defaults to `false`.
    *
    * @returns {ScriptEvaluateResult}
    *
@@ -263,6 +273,7 @@ class ScriptModule extends Module {
       serializationOptions,
       target = {},
       this: thisParameter = null,
+      userActivation = false,
     } = options;
 
     lazy.assert.string(
@@ -273,6 +284,11 @@ class ScriptModule extends Module {
     lazy.assert.boolean(
       awaitPromise,
       `Expected "awaitPromise" to be a boolean, got ${awaitPromise}`
+    );
+
+    lazy.assert.boolean(
+      userActivation,
+      `Expected "userActivation" to be a boolean, got ${userActivation}`
     );
 
     this.#assertResultOwnership(resultOwnership);
@@ -309,6 +325,7 @@ class ScriptModule extends Module {
         sandbox,
         serializationOptions: serializationOptionsWithDefaults,
         thisParameter,
+        userActivation,
       },
     });
 
@@ -377,6 +394,9 @@ class ScriptModule extends Module {
    * @param {object} options.target
    *     The target for the evaluation, which either matches the definition for
    *     a RealmTarget or for ContextTarget.
+   * @param {boolean=} options.userActivation
+   *     Determines whether execution should be treated as initiated by user.
+   *     Defaults to `false`.
    *
    * @returns {ScriptEvaluateResult}
    *
@@ -392,6 +412,7 @@ class ScriptModule extends Module {
       resultOwnership = lazy.OwnershipModel.None,
       serializationOptions,
       target = {},
+      userActivation = false,
     } = options;
 
     lazy.assert.string(
@@ -402,6 +423,11 @@ class ScriptModule extends Module {
     lazy.assert.boolean(
       awaitPromise,
       `Expected "awaitPromise" to be a boolean, got ${awaitPromise}`
+    );
+
+    lazy.assert.boolean(
+      userActivation,
+      `Expected "userActivation" to be a boolean, got ${userActivation}`
     );
 
     this.#assertResultOwnership(resultOwnership);
@@ -424,6 +450,7 @@ class ScriptModule extends Module {
         resultOwnership,
         sandbox,
         serializationOptions: serializationOptionsWithDefaults,
+        userActivation,
       },
     });
 
@@ -657,6 +684,11 @@ class ScriptModule extends Module {
   }
 
   #buildReturnValue(evaluationResult) {
+    evaluationResult = lazy.processExtraData(
+      this.messageHandler.sessionId,
+      evaluationResult
+    );
+
     const rv = { realm: evaluationResult.realmId };
     switch (evaluationResult.evaluationStatus) {
       // TODO: Compare with EvaluationStatus.Normal after Bug 1774444 is fixed.
@@ -739,8 +771,120 @@ class ScriptModule extends Module {
       .filter(realm => realm.context !== null);
   }
 
+  #onRealmCreated = (eventName, { realmInfo }) => {
+    // This event is emitted from the parent process but for a given browsing
+    // context. Set the event's contextInfo to the message handler corresponding
+    // to this browsing context.
+    const contextInfo = {
+      contextId: realmInfo.context.id,
+      type: lazy.WindowGlobalMessageHandler.type,
+    };
+
+    // Resolve browsing context to a TabManager id.
+    const context = lazy.TabManager.getIdForBrowsingContext(realmInfo.context);
+
+    // Don not emit the event, if the browsing context is gone.
+    if (context === null) {
+      return;
+    }
+
+    realmInfo.context = context;
+    this.emitEvent("script.realmCreated", realmInfo, contextInfo);
+  };
+
+  #onRealmDestroyed = (eventName, { realm, context }) => {
+    // This event is emitted from the parent process but for a given browsing
+    // context. Set the event's contextInfo to the message handler corresponding
+    // to this browsing context.
+    const contextInfo = {
+      contextId: context.id,
+      type: lazy.WindowGlobalMessageHandler.type,
+    };
+
+    this.emitEvent("script.realmDestroyed", { realm }, contextInfo);
+  };
+
+  #startListingOnRealmCreated() {
+    if (!this.#subscribedEvents.has("script.realmCreated")) {
+      this.messageHandler.on("realm-created", this.#onRealmCreated);
+    }
+  }
+
+  #stopListingOnRealmCreated() {
+    if (this.#subscribedEvents.has("script.realmCreated")) {
+      this.messageHandler.off("realm-created", this.#onRealmCreated);
+    }
+  }
+
+  #startListingOnRealmDestroyed() {
+    if (!this.#subscribedEvents.has("script.realmDestroyed")) {
+      this.messageHandler.on("realm-destroyed", this.#onRealmDestroyed);
+    }
+  }
+
+  #stopListingOnRealmDestroyed() {
+    if (this.#subscribedEvents.has("script.realmDestroyed")) {
+      this.messageHandler.off("realm-destroyed", this.#onRealmDestroyed);
+    }
+  }
+
+  #subscribeEvent(event) {
+    switch (event) {
+      case "script.realmCreated": {
+        this.#startListingOnRealmCreated();
+        this.#subscribedEvents.add(event);
+        break;
+      }
+      case "script.realmDestroyed": {
+        this.#startListingOnRealmDestroyed();
+        this.#subscribedEvents.add(event);
+        break;
+      }
+    }
+  }
+
+  #unsubscribeEvent(event) {
+    switch (event) {
+      case "script.realmCreated": {
+        this.#stopListingOnRealmCreated();
+        this.#subscribedEvents.delete(event);
+        break;
+      }
+      case "script.realmDestroyed": {
+        this.#stopListingOnRealmDestroyed();
+        this.#subscribedEvents.delete(event);
+        break;
+      }
+    }
+  }
+
+  _applySessionData(params) {
+    // TODO: Bug 1775231. Move this logic to a shared module or an abstract
+    // class.
+    const { category } = params;
+    if (category === "event") {
+      const filteredSessionData = params.sessionData.filter(item =>
+        this.messageHandler.matchesContext(item.contextDescriptor)
+      );
+      for (const event of this.#subscribedEvents.values()) {
+        const hasSessionItem = filteredSessionData.some(
+          item => item.value === event
+        );
+        // If there are no session items for this context, we should unsubscribe from the event.
+        if (!hasSessionItem) {
+          this.#unsubscribeEvent(event);
+        }
+      }
+
+      // Subscribe to all events, which have an item in SessionData.
+      for (const { value } of filteredSessionData) {
+        this.#subscribeEvent(value);
+      }
+    }
+  }
+
   static get supportedEvents() {
-    return ["script.message"];
+    return ["script.message", "script.realmCreated", "script.realmDestroyed"];
   }
 }
 

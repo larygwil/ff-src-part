@@ -14,17 +14,12 @@ const lazy = {};
 ChromeUtils.defineESModuleGetters(lazy, {
   AsyncShutdown: "resource://gre/modules/AsyncShutdown.sys.mjs",
   DeferredTask: "resource://gre/modules/DeferredTask.sys.mjs",
+  ObjectUtils: "resource://gre/modules/ObjectUtils.sys.mjs",
   PlacesUtils: "resource://gre/modules/PlacesUtils.sys.mjs",
   PromiseUtils: "resource://gre/modules/PromiseUtils.sys.mjs",
 });
 
-ChromeUtils.defineModuleGetter(
-  lazy,
-  "ObjectUtils",
-  "resource://gre/modules/ObjectUtils.jsm"
-);
-
-XPCOMUtils.defineLazyGetter(lazy, "logger", function () {
+ChromeUtils.defineLazyGetter(lazy, "logger", function () {
   return lazy.PlacesUtils.getLogger({ prefix: "FrecencyRecalculator" });
 });
 
@@ -164,13 +159,14 @@ export class PlacesFrecencyRecalculator {
    * values to update at the end of the process, it may rearm the task.
    * @param {Number} chunkSize maximum number of entries to update at a time,
    *   set to -1 to update any entry.
-   * @resolves {Number} Number of affected pages.
+   * @resolves {boolean} Whether any entry was recalculated.
    */
   async recalculateSomeFrecencies({ chunkSize = DEFAULT_CHUNK_SIZE } = {}) {
     lazy.logger.trace(
       `Recalculate ${chunkSize >= 0 ? chunkSize : "infinite"} frecency values`
     );
     let affectedCount = 0;
+    let hasRecalculatedAnything = false;
     let db = await lazy.PlacesUtils.promiseUnsafeWritableDBConnection();
     await db.executeTransaction(async function () {
       let affected = await db.executeCached(
@@ -185,22 +181,29 @@ export class PlacesFrecencyRecalculator {
         RETURNING id`
       );
       affectedCount += affected.length;
-      // We've finished recalculating frecencies. Trigger frecency updates for
-      // any affected origin.
-      await db.executeCached(`DELETE FROM moz_updateoriginsupdate_temp`);
     });
-
-    if (affectedCount) {
+    let shouldRestartRecalculation = affectedCount >= chunkSize;
+    hasRecalculatedAnything = affectedCount > 0;
+    if (hasRecalculatedAnything) {
       PlacesObservers.notifyListeners([new PlacesRanking()]);
     }
 
+    // Also recalculate some origins frecency.
+    affectedCount = await this.#recalculateSomeOriginsFrecencies({
+      chunkSize,
+    });
+    shouldRestartRecalculation ||= affectedCount >= chunkSize;
+    hasRecalculatedAnything ||= affectedCount > 0;
+
     // If alternative frecency is enabled, also recalculate a chunk of it.
-    affectedCount +=
+    affectedCount =
       await this.#alternativeFrecencyHelper.recalculateSomeAlternativeFrecencies(
         { chunkSize }
       );
+    shouldRestartRecalculation ||= affectedCount >= chunkSize;
+    hasRecalculatedAnything ||= affectedCount > 0;
 
-    if (chunkSize > 0 && affectedCount >= chunkSize) {
+    if (chunkSize > 0 && shouldRestartRecalculation) {
       // There's more entries to recalculate, rearm the task.
       this.#task.arm();
     } else {
@@ -208,6 +211,56 @@ export class PlacesFrecencyRecalculator {
       lazy.PlacesUtils.history.shouldStartFrecencyRecalculation = false;
       this.#task.disarm();
     }
+    return hasRecalculatedAnything;
+  }
+
+  async #recalculateSomeOriginsFrecencies({ chunkSize }) {
+    lazy.logger.trace(`Recalculate ${chunkSize} origins frecency values`);
+    let affectedCount = 0;
+    let db = await lazy.PlacesUtils.promiseUnsafeWritableDBConnection();
+    await db.executeTransaction(async () => {
+      let affected = await db.executeCached(
+        `
+        UPDATE moz_origins
+        SET frecency = CAST(
+              (SELECT total(frecency)
+               FROM moz_places h
+               WHERE origin_id = moz_origins.id AND frecency > 0)
+              AS INT
+            ),
+            recalc_frecency = 0
+        WHERE id IN (
+          SELECT id FROM moz_origins
+          WHERE recalc_frecency = 1
+          ORDER BY frecency DESC
+          LIMIT ${chunkSize}
+        )
+        RETURNING id`
+      );
+      affectedCount += affected.length;
+
+      // Calculate and store the frecency statistics used to calculate a
+      // thredhold. Origins above that threshold will be considered meaningful
+      // and autofilled.
+      // While it may be tempting to do this only when some frecency was
+      // updated, that won't catch the edge case of the moz_origins table being
+      // emptied.
+      let row = (
+        await db.executeCached(`
+        SELECT count(*), total(frecency), total(pow(frecency,2))
+        FROM moz_origins
+        WHERE frecency > 0
+      `)
+      )[0];
+      await lazy.PlacesUtils.metadata.setMany(
+        new Map([
+          ["origin_frecency_count", row.getResultByIndex(0)],
+          ["origin_frecency_sum", row.getResultByIndex(1)],
+          ["origin_frecency_sum_of_squares", row.getResultByIndex(2)],
+        ])
+      );
+    });
+
     return affectedCount;
   }
 
@@ -278,9 +331,6 @@ export class PlacesFrecencyRecalculator {
             ),
           }
         );
-        // We've finished decaying frecencies. Trigger frecency updates for
-        // any affected origin.
-        await db.executeCached(`DELETE FROM moz_updateoriginsupdate_temp`);
 
         TelemetryStopwatch.finish("PLACES_IDLE_FRECENCY_DECAY_TIME_MS", refObj);
         PlacesObservers.notifyListeners([new PlacesRanking()]);
@@ -339,7 +389,7 @@ class AlternativeFrecencyHelper {
       variables: {
         // Current version of origins alternative frecency.
         //  ! IMPORTANT: Always bump up when making changes to the algorithm.
-        version: 1,
+        version: 2,
         highWeight: Services.prefs.getIntPref(
           "places.frecency.pages.alternative.highWeight",
           100
@@ -479,6 +529,9 @@ class AlternativeFrecencyHelper {
     lazy.logger.trace(
       `Recalculate ${chunkSize} alternative pages frecency values`
     );
+    // Since it takes a long period of time to recalculate frecency of all the
+    // pages, due to the high number of them, we artificially increase the
+    // chunk size here.
     let db = await lazy.PlacesUtils.promiseUnsafeWritableDBConnection();
     let affected = await db.executeCached(
       `UPDATE moz_places
@@ -488,7 +541,7 @@ class AlternativeFrecencyHelper {
         SELECT id FROM moz_places
           WHERE recalc_alt_frecency = 1
           ORDER BY frecency DESC
-          LIMIT ${chunkSize}
+          LIMIT ${chunkSize * 2}
       )
       RETURNING id`
     );

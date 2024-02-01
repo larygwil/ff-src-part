@@ -3,7 +3,6 @@
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { GeckoViewModule } from "resource://gre/modules/GeckoViewModule.sys.mjs";
-import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs";
 
 const lazy = {};
 
@@ -11,9 +10,11 @@ ChromeUtils.defineESModuleGetters(lazy, {
   GeckoViewUtils: "resource://gre/modules/GeckoViewUtils.sys.mjs",
   E10SUtils: "resource://gre/modules/E10SUtils.sys.mjs",
   LoadURIDelegate: "resource://gre/modules/LoadURIDelegate.sys.mjs",
+  isProductURL: "chrome://global/content/shopping/ShoppingProduct.mjs",
+  TranslationsParent: "resource://gre/actors/TranslationsParent.sys.mjs",
 });
 
-XPCOMUtils.defineLazyGetter(lazy, "ReferrerInfo", () =>
+ChromeUtils.defineLazyGetter(lazy, "ReferrerInfo", () =>
   Components.Constructor(
     "@mozilla.org/referrer-info;1",
     "nsIReferrerInfo",
@@ -204,7 +205,7 @@ export class GeckoViewNavigation extends GeckoViewModule {
           // a privileged principal.
           const isExternal =
             navFlags & Ci.nsIWebNavigation.LOAD_FLAGS_FROM_EXTERNAL;
-          if (!isExternal) {
+          if (!isExternal || Services.io.newURI(uri).schemeIs("content")) {
             // Always use the system principal as the triggering principal
             // for user-initiated (ie. no referrer session and not external)
             // loads. See discussion in bug 1573860.
@@ -575,6 +576,14 @@ export class GeckoViewNavigation extends GeckoViewModule {
     };
   }
 
+  async isProductURL(aLocationURI) {
+    if (lazy.isProductURL(aLocationURI)) {
+      this.eventDispatcher.sendRequest({
+        type: "GeckoView:OnProductUrl",
+      });
+    }
+  }
+
   // WebProgress event handler.
   onLocationChange(aWebProgress, aRequest, aLocationURI, aFlags) {
     debug`onLocationChange`;
@@ -640,8 +649,10 @@ export class GeckoViewNavigation extends GeckoViewModule {
       isTopLevel: aWebProgress.isTopLevel,
       permissions,
     };
-
+    lazy.TranslationsParent.onLocationChange(this.browser);
     this.eventDispatcher.sendRequest(message);
+
+    this.isProductURL(aLocationURI);
   }
 }
 

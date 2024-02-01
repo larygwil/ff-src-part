@@ -6,19 +6,11 @@
 
 :root {
   --toolbarbutton-icon-fill-attention: AccentColor;
-  --warning-icon-bgcolor: #FFA436;
+  --warning-icon-bgcolor: light-dark(#FFA436, #FFBD4F);
 }
 
-:root:-moz-lwtheme,
-:where(panel, toolbar, #urlbar, #searchbar):-moz-lwtheme {
-  --toolbarbutton-icon-fill-attention: var(--lwt-toolbarbutton-icon-fill-attention, rgb(0,97,224));
-}
-
-:root[lwt-popup-brighttext] panel,
-:root[lwt-toolbar-field-brighttext] :is(#urlbar, #searchbar),
-toolbar[brighttext]:-moz-lwtheme {
-  --toolbarbutton-icon-fill-attention: var(--lwt-toolbarbutton-icon-fill-attention, rgb(0,221,255));
-  --warning-icon-bgcolor: #FFBD4F;
+:root:-moz-lwtheme {
+  --toolbarbutton-icon-fill-attention: var(--lwt-toolbarbutton-icon-fill-attention, light-dark(rgb(0, 97, 224), rgb(0, 221, 255)));
 }
 
 .toolbarbutton-animatable-box,
@@ -376,6 +368,14 @@ toolbar[brighttext]:-moz-lwtheme {
   list-style-image: url("chrome://mozapps/skin/extensions/extension.svg");
 }
 
+#reset-pbm-toolbar-button {
+  list-style-image: url("chrome://browser/skin/flame.svg");
+
+  :root:not([privatebrowsingmode]) & {
+    display: none;
+  }
+}
+
 #email-link-button {
   list-style-image: url("chrome://browser/skin/mail.svg");
 }
@@ -398,11 +398,7 @@ toolbar[brighttext]:-moz-lwtheme {
 }
 
 #panic-button[open] {
-  fill: rgb(213, 32, 20);
-}
-
-toolbar[brighttext] #panic-button[open] {
-  fill: #ff848b;
+  fill: light-dark(rgb(213, 32, 20), #ff848b);
 }
 
 #library-button {
@@ -417,7 +413,7 @@ toolbar[brighttext] #panic-button[open] {
 #save-to-pocket-button[open="true"],
 #save-to-pocket-button[pocketed="true"] {
   list-style-image: url("chrome://global/skin/icons/pocket.svg");
-  fill: #ef4056;
+  fill: var(--pocket-icon-fill);
 }
 
 /* ----- BOOKMARK BUTTONS ----- */
@@ -466,5 +462,5 @@ toolbarbutton.bookmark-item {
 }
 
 #firefox-view-button {
-  list-style-image: url("chrome://branding/content/icon32.png");
+  list-style-image: url("chrome://browser/skin/firefox-view.svg");
 }

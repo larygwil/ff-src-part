@@ -303,10 +303,14 @@ class ThreadActor extends Actor {
     return this.dbg.getNewestFrame();
   }
 
-  get skipBreakpointsOption() {
+  get shouldSkipAnyBreakpoint() {
     return (
+      // Disable all types of breakpoints if:
+      // - the user explicitly requested it via the option
       this._options.skipBreakpoints ||
-      (this.insideClientEvaluation && this.insideClientEvaluation.eager)
+      // - or when we are evaluating some javascript via the console actor and disableBreaks
+      //   has been set to true (which happens for most evaluating except the console input)
+      this.insideClientEvaluation?.disableBreaks
     );
   }
 
@@ -560,6 +564,11 @@ class ThreadActor extends Actor {
     actor.delete();
   }
 
+  removeAllXHRBreakpoints() {
+    this._xhrBreakpoints = [];
+    return this._updateNetworkObserver();
+  }
+
   removeXHRBreakpoint(path, method) {
     const index = this._findXHRBreakpointIndex(path, method);
 
@@ -735,7 +744,7 @@ class ThreadActor extends Actor {
   }
 
   _onOpeningRequest(subject) {
-    if (this.skipBreakpointsOption) {
+    if (this.shouldSkipAnyBreakpoint) {
       return;
     }
 
@@ -814,7 +823,13 @@ class ThreadActor extends Actor {
       this.setActiveEventBreakpoints(options.eventBreakpoints);
     }
 
-    this.maybePauseOnExceptions();
+    // Only consider this options if an explicit boolean value is passed.
+    if (typeof this._options.shouldPauseOnDebuggerStatement == "boolean") {
+      this.setPauseOnDebuggerStatement(
+        this._options.shouldPauseOnDebuggerStatement
+      );
+    }
+    this.setPauseOnExceptions(this._options.pauseOnExceptions);
   }
 
   _eventBreakpointListener(notification) {
@@ -865,7 +880,7 @@ class ThreadActor extends Actor {
   }
 
   _pauseAndRespondEventBreakpoint(frame, eventBreakpoint) {
-    if (this.skipBreakpointsOption) {
+    if (this.shouldSkipAnyBreakpoint) {
       return undefined;
     }
 
@@ -1061,7 +1076,12 @@ class ThreadActor extends Actor {
     // or a step to a debugger statement.
     const { type } = this._priorPause.why;
 
-    if (type == newType) {
+    // Conditional breakpoint are doing something weird as they are using "breakpoint" type
+    // unless they throw in which case they will be "breakpointConditionThrown".
+    if (
+      type == newType ||
+      (type == "breakpointConditionThrown" && newType == "breakpoint")
+    ) {
       return true;
     }
 
@@ -1334,13 +1354,38 @@ class ThreadActor extends Actor {
 
   /**
    * Set the debugging hook to pause on exceptions if configured to do so.
+   *
+   * Note that this is also called when evaluating conditional breakpoints.
+   *
+   * @param {Boolean} doPause
+   *        Should watch for pause or not. `_onExceptionUnwind` function will
+   *        then be notified about new caught or uncaught exception being fired.
    */
-  maybePauseOnExceptions() {
-    if (this._options.pauseOnExceptions) {
+  setPauseOnExceptions(doPause) {
+    if (doPause) {
       this.dbg.onExceptionUnwind = this._onExceptionUnwind;
     } else {
       this.dbg.onExceptionUnwind = undefined;
     }
+  }
+
+  /**
+   * Set the debugging hook to pause on debugger statement if configured to do so.
+   *
+   * Note that the thread actor will pause on exception by default.
+   * This method has to be called with a falsy value to disable it.
+   *
+   * @param {Boolean} doPause
+   *        Controls whether we should or should not pause on debugger statement.
+   */
+  setPauseOnDebuggerStatement(doPause) {
+    this.dbg.onDebuggerStatement = doPause
+      ? this.onDebuggerStatement
+      : undefined;
+  }
+
+  isPauseOnExceptionsEnabled() {
+    return this.dbg.onExceptionUnwind == this._onExceptionUnwind;
   }
 
   /**
@@ -1497,6 +1542,10 @@ class ThreadActor extends Actor {
     for (const bpActor of this.breakpointActorMap.findActors()) {
       bpActor.removeScripts();
     }
+  }
+
+  removeAllBreakpoints() {
+    this.breakpointActorMap.removeAllBreakpoints();
   }
 
   removeAllWatchpoints() {
@@ -1832,15 +1881,16 @@ class ThreadActor extends Actor {
       throw new Error("Unexpected mutation breakpoint type");
     }
 
+    if (this.shouldSkipAnyBreakpoint) {
+      return undefined;
+    }
+
     const frame = this.dbg.getNewestFrame();
     if (!frame) {
       return undefined;
     }
 
-    if (
-      this.skipBreakpointsOption ||
-      this.sourcesManager.isFrameBlackBoxed(frame)
-    ) {
+    if (this.sourcesManager.isFrameBlackBoxed(frame)) {
       return undefined;
     }
 
@@ -1885,14 +1935,14 @@ class ThreadActor extends Actor {
    *        The stack frame that contained the debugger statement.
    */
   onDebuggerStatement(frame) {
-    // Don't pause if
-    // 1. we have not moved since the last pause
-    // 2. breakpoints are disabled
+    // Don't pause if:
+    // 1. breakpoints are disabled
+    // 2. we have not moved since the last pause
     // 3. the source is blackboxed
     // 4. there is a breakpoint at the same location
     if (
+      this.shouldSkipAnyBreakpoint ||
       !this.hasMoved(frame, "debuggerStatement") ||
-      this.skipBreakpointsOption ||
       this.sourcesManager.isFrameBlackBoxed(frame) ||
       this.atBreakpointLocation(frame)
     ) {
@@ -1934,6 +1984,15 @@ class ThreadActor extends Actor {
       return undefined;
     }
 
+    // Ignore shouldSkipAnyBreakpoint if we are explicitly requested to do so.
+    // Typically, when we are evaluating conditional breakpoints, we want to report any exception.
+    if (
+      this.shouldSkipAnyBreakpoint &&
+      !this.insideClientEvaluation?.reportExceptionsWhenBreaksAreDisabled
+    ) {
+      return undefined;
+    }
+
     let willBeCaught = false;
     for (let frame = youngestFrame; frame != null; frame = frame.older) {
       if (frame.script.isInCatchScope(frame.offset)) {
@@ -1966,10 +2025,7 @@ class ThreadActor extends Actor {
       return undefined;
     }
 
-    if (
-      this.skipBreakpointsOption ||
-      this.sourcesManager.isFrameBlackBoxed(youngestFrame)
-    ) {
+    if (this.sourcesManager.isFrameBlackBoxed(youngestFrame)) {
       return undefined;
     }
 
@@ -2198,7 +2254,11 @@ class ThreadActor extends Actor {
           ...content.substring(0, scriptStartOffset).matchAll("\n"),
         ];
         const startLine = 1 + allLineBreaks.length;
+        // NOTE: Debugger.Source.prototype.startColumn is 1-based.
+        //       Create 1-based column here for the following comparison,
+        //       and also the createSource call below.
         const startColumn =
+          1 +
           scriptStartOffset -
           (allLineBreaks.length ? allLineBreaks.at(-1).index - 1 : 0);
 
@@ -2214,6 +2274,7 @@ class ThreadActor extends Actor {
 
         try {
           const global = this.dbg.getDebuggees()[0];
+          // NOTE: Debugger.Object.prototype.createSource takes 1-based column.
           this._addSource(
             global.createSource({
               text,
@@ -2258,7 +2319,7 @@ class ThreadActor extends Actor {
       pauseOnExceptions: this._options.pauseOnExceptions,
       ignoreCaughtExceptions: this._options.ignoreCaughtExceptions,
       logEventBreakpoints: this._options.logEventBreakpoints,
-      skipBreakpoints: this.skipBreakpointsOption,
+      skipBreakpoints: this.shouldSkipAnyBreakpoint,
       breakpoints: this.breakpointActorMap.listKeys(),
     };
   }

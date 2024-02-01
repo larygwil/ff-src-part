@@ -2,15 +2,13 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs";
-
 const lazy = {};
 
 ChromeUtils.defineESModuleGetters(lazy, {
   setTimeout: "resource://gre/modules/Timer.sys.mjs",
 });
 
-XPCOMUtils.defineLazyGetter(lazy, "console", () => {
+ChromeUtils.defineLazyGetter(lazy, "console", () => {
   return console.createInstance({
     maxLogLevelPref: "browser.translations.logLevel",
     prefix: "Translations",
@@ -25,6 +23,9 @@ XPCOMUtils.defineLazyGetter(lazy, "console", () => {
 const NodeStatus = {
   // This node is ready to translate as is.
   READY_TO_TRANSLATE: NodeFilter.FILTER_ACCEPT,
+
+  // This node is a shadow host and needs to be subdivided further.
+  SHADOW_HOST: NodeFilter.FILTER_ACCEPT,
 
   // This node contains too many block elements and needs to be subdivided further.
   SUBDIVIDE_FURTHER: NodeFilter.FILTER_SKIP,
@@ -59,11 +60,13 @@ const EXCLUDED_TAGS = new Set([
   "APPLET",
 
   // The following are embedded elements, and are not supported (yet).
-  "SVG",
   "MATH",
   "EMBED",
   "OBJECT",
   "IFRAME",
+
+  // This is an SVG tag that can contain arbitrary XML, ignore it.
+  "METADATA",
 
   // These are elements that are treated as opaque by Firefox which causes their
   // innerHTML property to be just the raw text node behind it. Any text that is sent as
@@ -84,47 +87,14 @@ const EXCLUDED_TAGS = new Set([
   "TEXTAREA",
 ]);
 
-// Tags that are treated as assumed inline. This list has been created by heuristics
-// and excludes some commonly inline tags, due to how they are used practically.
-//
-// An actual list of inline elements is available here:
-// https://developer.mozilla.org/en-US/docs/Web/HTML/Inline_elements#list_of_inline_elements
-const INLINE_TAGS = new Set([
-  "ABBR",
-  "B",
-  "CODE",
-  "DEL",
-  "EM",
-  "I",
-  "INS",
-  "KBD",
-  "MARK",
-  "MATH",
-  "OUTPUT",
-  "Q",
-  "RUBY",
-  "SMALL",
-  "STRONG",
-  "SUB",
-  "SUP",
-  "TIME",
-  "U",
-  "VAR",
-  "WBR",
-
-  // These are not really inline, but bergamot-translator treats these as
-  // sentence-breaking.
-  "BR",
-  "TD",
-  "TH",
-  "LI",
-]);
-
 /**
- * Tags that can't reliably be assumed to be inline or block elements. They default
- * to inline, but are often used as block elements.
+ * Options used by the mutation observer
  */
-const GENERIC_TAGS = new Set(["A", "SPAN"]);
+const MUTATION_OBSERVER_OPTIONS = {
+  characterData: true,
+  childList: true,
+  subtree: true,
+};
 
 /**
  * This class manages the process of translating the DOM from one language to another.
@@ -199,6 +169,8 @@ export class TranslationsDocument {
    */
   viewportTranslated = null;
 
+  isDestroyed = false;
+
   /**
    * Construct a new TranslationsDocument. It is tied to a specific Document and cannot
    * be re-used. The translation functions are injected since this class shouldn't
@@ -207,15 +179,20 @@ export class TranslationsDocument {
    * @param {Document} document
    * @param {string} documentLanguage - The BCP 47 language tag.
    * @param {number} innerWindowId - This is used for better profiler marker reporting.
-   * @param {TranslationFunction} translateHTML
-   * @param {TranslationFunction} translateText
+   * @param {MessagePort} port - The port to the translations engine.
+   * @param {() => void} requestNewPort - Used when an engine times out and a new
+   *                                      translation request comes in.
+   * @param {number} translationsStart
+   * @param {() => number} now
    */
   constructor(
     document,
     documentLanguage,
     innerWindowId,
-    translateHTML,
-    translateText
+    port,
+    requestNewPort,
+    translationsStart,
+    now
   ) {
     /**
      * The language of the document. If elements are found that do not match this language,
@@ -231,17 +208,17 @@ export class TranslationsDocument {
       );
     }
 
-    /** @type {TranslationFunction} */
-    this.translateHTML = translateHTML;
-
-    /** @type {TranslationFunction} */
-    this.translateText = translateText;
+    /** @type {QueuedTranslator} */
+    this.translator = new QueuedTranslator(port, requestNewPort);
 
     /** @type {number} */
     this.innerWindowId = innerWindowId;
 
     /** @type {DOMParser} */
     this.domParser = new document.ownerGlobal.DOMParser();
+
+    /** @type {Document} */
+    this.document = document;
 
     /**
      * This selector runs to find child nodes that should be excluded. It should be
@@ -283,6 +260,97 @@ export class TranslationsDocument {
         }
       }
     });
+
+    this.document.addEventListener(
+      "visibilitychange",
+      this.handleVisibilityChange
+    );
+
+    this.addRootElement(document.querySelector("title"));
+    this.addRootElement(document.body, true /* reportWordsInViewport */);
+
+    this.viewportTranslated?.then(() => {
+      ChromeUtils.addProfilerMarker(
+        "TranslationsChild",
+        { innerWindowId, startTime: now() },
+        "Viewport translations"
+      );
+      ChromeUtils.addProfilerMarker(
+        "TranslationsChild",
+        { innerWindowId, startTime: translationsStart },
+        "Time to first translation"
+      );
+    });
+
+    lazy.console.log(
+      "Beginning to translate.",
+      // The defaultView may not be there on tests.
+      document.defaultView?.location.href
+    );
+  }
+
+  /**
+   * Start and stop the translator as the page is shown. For instance, this will
+   * transition into "hidden" when the user tabs away from a document.
+   */
+  handleVisibilityChange = () => {
+    if (this.document.visibilityState === "visible") {
+      this.translator.showPage();
+    } else {
+      ChromeUtils.addProfilerMarker(
+        "Translations",
+        { innerWindowId: this.innerWindowId },
+        "Pausing translations and discarding the port"
+      );
+      this.translator.hidePage();
+    }
+  };
+
+  /**
+   * Remove any dangling event handlers.
+   */
+  destroy() {
+    this.isDestroyed = true;
+    this.translator.destroy();
+    this.stopMutationObserver();
+    this.document.removeEventListener(
+      "visibilitychange",
+      this.handleVisibilityChange
+    );
+  }
+
+  /**
+   * Helper function for adding a new root to the mutation
+   * observer.
+   * @param {Node} root
+   */
+  observeNewRoot(root) {
+    this.#rootNodes.add(root);
+    this.observer.observe(root, MUTATION_OBSERVER_OPTIONS);
+  }
+
+  /**
+   * This function finds all sub shadow trees of node and
+   * add the ShadowRoot of those subtrees to the mutation
+   * observer.
+   */
+  addShadowRootsToObserver(node) {
+    const nodeIterator = node.ownerDocument.createTreeWalker(
+      node,
+      NodeFilter.SHOW_ELEMENT,
+      function (node) {
+        return node.openOrClosedShadowRoot
+          ? NodeFilter.FILTER_ACCEPT
+          : NodeFilter.FILTER_SKIP;
+      }
+    );
+    let currentNode;
+    while ((currentNode = nodeIterator.nextNode())) {
+      // Only shadow hosts are accepted nodes
+      const shadowRoot = currentNode.openOrClosedShadowRoot;
+      this.observeNewRoot(shadowRoot);
+      this.addShadowRootsToObserver(shadowRoot);
+    }
   }
 
   /**
@@ -311,11 +379,35 @@ export class TranslationsDocument {
 
     this.subdivideNodeForTranslations(node);
 
-    this.observer.observe(node, {
-      characterData: true,
-      childList: true,
-      subtree: true,
-    });
+    this.observer.observe(node, MUTATION_OBSERVER_OPTIONS);
+
+    this.addShadowRootsToObserver(node);
+  }
+
+  /**
+   * Add qualified nodes to queueNodeForTranslation by recursively walk
+   * through the DOM tree of node, including elements in Shadow DOM.
+   *
+   * @param {Element} [node]
+   */
+  processSubdivide(node) {
+    const nodeIterator = node.ownerDocument.createTreeWalker(
+      node,
+      NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT,
+      this.determineTranslationStatusForUnprocessedNodes
+    );
+
+    // This iterator will contain each node that has been subdivided enough to
+    // be translated.
+    let currentNode;
+    while ((currentNode = nodeIterator.nextNode())) {
+      const shadowRoot = currentNode.openOrClosedShadowRoot;
+      if (shadowRoot) {
+        this.processSubdivide(shadowRoot);
+      } else {
+        this.queueNodeForTranslation(currentNode);
+      }
+    }
   }
 
   /**
@@ -331,13 +423,24 @@ export class TranslationsDocument {
   subdivideNodeForTranslations(node) {
     if (!this.#rootNodes.has(node)) {
       // This is a non-root node, which means it came from a mutation observer.
-      // Ensure that it is a valid node to translate by checking all of its ancestors.
-      for (let parent of getAncestorsIterator(node)) {
-        if (
-          this.determineTranslationStatus(parent) ===
-          NodeStatus.NOT_TRANSLATABLE
-        ) {
-          return;
+      // This new node could be a host element for shadow tree
+      const shadowRoot = node.openOrClosedShadowRoot;
+      if (shadowRoot && !this.#rootNodes.has(shadowRoot)) {
+        this.observeNewRoot(shadowRoot);
+      } else {
+        // Ensure that it is a valid node to translate by checking all of its ancestors.
+        for (let parent of getAncestorsIterator(node)) {
+          // Parent is ShadowRoot. We can stop here since this is
+          // the top ancestor of the shadow tree.
+          if (parent.containingShadowRoot == parent) {
+            break;
+          }
+          if (
+            this.determineTranslationStatus(parent) ===
+            NodeStatus.NOT_TRANSLATABLE
+          ) {
+            return;
+          }
         }
       }
     }
@@ -347,31 +450,25 @@ export class TranslationsDocument {
         // This node is rejected as it shouldn't be translated.
         return;
 
+      // SHADOW_HOST and READY_TO_TRANSLATE both map to FILTER_ACCEPT
+      case NodeStatus.SHADOW_HOST:
       case NodeStatus.READY_TO_TRANSLATE:
-        // This node is ready for translating, and doesn't need to be subdivided. There
-        // is no reason to run the TreeWalker, it can be directly submitted for
-        // translation.
-        this.queueNodeForTranslation(node);
+        const shadowRoot = node.openOrClosedShadowRoot;
+        if (shadowRoot) {
+          this.processSubdivide(shadowRoot);
+        } else {
+          // This node is ready for translating, and doesn't need to be subdivided. There
+          // is no reason to run the TreeWalker, it can be directly submitted for
+          // translation.
+          this.queueNodeForTranslation(node);
+        }
         break;
 
       case NodeStatus.SUBDIVIDE_FURTHER:
         // This node may be translatable, but it needs to be subdivided into smaller
         // pieces. Create a TreeWalker to walk the subtree, and find the subtrees/nodes
         // that contain enough inline elements to send to be translated.
-        {
-          const nodeIterator = node.ownerDocument.createTreeWalker(
-            node,
-            NodeFilter.SHOW_ELEMENT,
-            this.determineTranslationStatusForUnprocessedNodes
-          );
-
-          // This iterator will contain each node that has been subdivided enough to
-          // be translated.
-          let currentNode;
-          while ((currentNode = nodeIterator.nextNode())) {
-            this.queueNodeForTranslation(currentNode);
-          }
-        }
+        this.processSubdivide(node);
         break;
     }
 
@@ -404,7 +501,12 @@ export class TranslationsDocument {
 
     const { nodeName } = node;
 
-    if (EXCLUDED_TAGS.has(nodeName)) {
+    if (
+      EXCLUDED_TAGS.has(
+        // SVG tags can be lowercased, so ensure everything is uppercased.
+        nodeName.toUpperCase()
+      )
+    ) {
       // This is an excluded tag.
       return true;
     }
@@ -463,6 +565,10 @@ export class TranslationsDocument {
    *   These values also work as a `NodeFilter` value.
    */
   determineTranslationStatus(node) {
+    if (node.openOrClosedShadowRoot) {
+      return NodeStatus.SHADOW_HOST;
+    }
+
     if (isNodeQueued(node, this.#queuedNodes)) {
       // This node or its parent was already queued, reject it.
       return NodeStatus.NOT_TRANSLATABLE;
@@ -476,7 +582,9 @@ export class TranslationsDocument {
     if (node.textContent.trim().length === 0) {
       // Do not use subtrees that are empty of text. This textContent call is fairly
       // expensive.
-      return NodeStatus.NOT_TRANSLATABLE;
+      return !node.hasChildNodes()
+        ? NodeStatus.NOT_TRANSLATABLE
+        : NodeStatus.SUBDIVIDE_FURTHER;
     }
 
     if (nodeNeedsSubdividing(node)) {
@@ -616,13 +724,17 @@ export class TranslationsDocument {
       });
     }
 
-    let text, translate;
+    /** @type {string} */
+    let text;
+    /** @type {boolean} */
+    let isHTML;
+
     if (node.nodeType === Node.ELEMENT_NODE) {
       text = node.innerHTML;
-      translate = this.translateHTML;
+      isHTML = true;
     } else {
       text = node.textContent;
-      translate = this.translateText;
+      isHTML = false;
     }
 
     if (text.trim().length === 0) {
@@ -635,9 +747,17 @@ export class TranslationsDocument {
 
     this.#pendingTranslationsCount++;
     try {
-      const [translatedHTML] = await translate(text);
+      const translatedHTML = await this.translator.translate(
+        node,
+        text,
+        isHTML
+      );
       this.#pendingTranslationsCount--;
-      this.scheduleNodeUpdateWithTranslation(node, translatedHTML);
+      // The translatedHTML is null when the request is stale, for instance when multiple
+      // translations have been queued for the same node.
+      if (translatedHTML != null) {
+        this.scheduleNodeUpdateWithTranslation(node, translatedHTML);
+      }
     } catch (error) {
       this.#pendingTranslationsCount--;
       lazy.console.error("Translation failed", error);
@@ -657,11 +777,7 @@ export class TranslationsDocument {
         // This node is no longer alive.
         continue;
       }
-      this.observer.observe(node, {
-        characterData: true,
-        childList: true,
-        subtree: true,
-      });
+      this.observer.observe(node, MUTATION_OBSERVER_OPTIONS);
     }
   }
 
@@ -784,7 +900,10 @@ export class TranslationsDocument {
  */
 function isNodeHidden(node) {
   /** @type {HTMLElement} */
-  const element = node.nodeType === Node.TEXT_NODE ? node.parentElement : node;
+  const element = getElementForStyle(node);
+  if (!element) {
+    throw new Error("Unable to find the Element to compute the style for node");
+  }
 
   // This flushes the style, which is a performance cost.
   const style = element.ownerGlobal.getComputedStyle(element);
@@ -814,6 +933,31 @@ function langTagsMatch(knownLanguage, otherLanguage) {
 }
 
 /**
+ * This function returns the correct element to determine the
+ * style of node.
+ *
+ * @param {Node} node
+ * @returns {HTMLElement} */
+function getElementForStyle(node) {
+  if (node.nodeType != Node.TEXT_NODE) {
+    return node;
+  }
+
+  if (node.parentElement) {
+    return node.parentElement;
+  }
+
+  // For cases like text node where its parent is ShadowRoot,
+  // we'd like to use flattenedTreeParentNode
+  if (node.flattenedTreeParentNode) {
+    return node.flattenedTreeParentNode;
+  }
+
+  // If the text node is not connected or doesn't have a frame.
+  return null;
+}
+
+/**
  * This function runs when walking the DOM, which means it is a hot function. It runs
  * fairly fast even though it is computing the bounding box. This is all done in a tight
  * loop, and it is done on mutations. Care should be taken with reflows caused by
@@ -836,7 +980,10 @@ function isNodeInViewport(node) {
   const document = node.ownerDocument;
 
   /** @type {HTMLElement} */
-  const element = node.nodeType === Node.TEXT_NODE ? node.parentElement : node;
+  const element = getElementForStyle(node);
+  if (!element) {
+    throw new Error("Unable to find the Element to compute the style for node");
+  }
 
   const rect = element.getBoundingClientRect();
   return (
@@ -905,7 +1052,7 @@ function updateElement(translationsDocument, element) {
     }
 
     // The translated tree dictates the order.
-    const translatedNodes = translatedTree.childNodes;
+    const translatedNodes = [...translatedTree.childNodes];
     for (
       let translatedIndex = 0;
       translatedIndex < translatedNodes.length;
@@ -1171,44 +1318,24 @@ function isNodeQueued(node, queuedNodes) {
 }
 
 /**
- * Test whether this node should be treated as a wrapper of text, e.g.
- * a `<p>`, or as a wrapper for block elements, e.g. `<div>`, based on
- * its ratio of assumed inline elements, and assumed "block" elements. If it is a wrapper
- * of block elements, then it needs more subdividing. This algorithm is based on
- * heuristics and is a best effort attempt at sorting contents without actually computing
- * the style of every element.
+ * Reads the elements computed style and determines if the element is inline or not.
  *
- * If it's a Text node, it's inline and doesn't need subdividing.
- *
- *  "Lorem ipsum"
- *
- * If it is mostly filled with assumed "inline" elements, treat it as inline.
- *   <p>
- *     Lorem ipsum dolor sit amet, consectetur adipiscing elit.
- *     <b>Nullam ut finibus nibh</b>, at tincidunt tellus.
- *   </p>
- *
- *   Since it has 3 "inline" elements.
- *     1. "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
- *     2. <b>Nullam ut finibus nibh</b>
- *     3. ", at tincidunt tellus."
- *
- * If it's mostly filled with block elements, do not treat it as inline, as it will
- * need more subdividing.
- *
- *   <section>
- *     Lorem ipsum <strong>dolor sit amet.</strong>
- *     <div>Nullam ut finibus nibh, at tincidunt tellus.</div>
- *     <div>Morbi pharetra mauris sed nisl mollis molestie.</div>
- *     <div>Donec et nibh sit amet velit tincidunt auctor.</div>
- *   </section>
- *
- *   This node has 2 presumed "inline" elements:
- *       1 "Lorem ipsum"
- *       2. <strong>dolor sit amet.</strong>.
- *
- *   And the 3 div "block" elements. Since 3 "block" elements > 2 "inline" elements,
- *   it is presumed to be "inline".
+ * @param {Element} element
+ */
+function getIsInline(element) {
+  const win = element.ownerGlobal;
+  if (element.namespaceURI === "http://www.w3.org/2000/svg") {
+    // SVG elements will report as inline, but there is no block layout in SVG.
+    // Treat every SVG element as being block so that every node will be subdivided.
+    return false;
+  }
+  return win.getComputedStyle(element).display === "inline";
+}
+
+/**
+ * Determine if this element is an inline element or a block element. Inline elements
+ * should be sent as a contiguous chunk of text, while block elements should be further
+ * subdivided before sending them in for translation.
  *
  * @param {Node} node
  * @returns {boolean}
@@ -1219,51 +1346,28 @@ function nodeNeedsSubdividing(node) {
     return false;
   }
 
-  let inlineElements = 0;
-  let blockElements = 0;
-
-  if (node.nodeName === "TR") {
-    // TR elements always need subdividing, since the cells are the individual "inline"
-    // units. For instance the following would be invalid markup:
-    //
-    //   <tr>
-    //     This is <b>invalid</b>
-    //   </tr>
-    //
-    // You will always have the following, which will need more subdividing.
-    //
-    //   <tr>
-    //     <td>This is <b>valid</b>.</td>
-    //     <td>This is still valid.</td>
-    //   </tr>
-    return true;
+  if (getIsInline(node)) {
+    return false;
   }
 
   for (let child of node.childNodes) {
     switch (child.nodeType) {
       case Node.TEXT_NODE:
-        if (!isNodeTextEmpty(child)) {
-          inlineElements += 1;
-        }
-        break;
+        // Keep checking for more inline or text nodes.
+        continue;
       case Node.ELEMENT_NODE: {
-        // Property access can be expensive, so destructure the required properties.
-        const { nodeName } = child;
-        if (INLINE_TAGS.has(nodeName)) {
-          inlineElements += 1;
-        } else if (GENERIC_TAGS.has(nodeName) && !nodeNeedsSubdividing(child)) {
-          inlineElements += 1;
-        } else {
-          blockElements += 1;
+        if (getIsInline(child)) {
+          // Keep checking for more inline or text nodes.
+          continue;
         }
-        break;
+        // A child element is not inline, so subdivide this node further.
+        return true;
       }
       default:
-        break;
+        return true;
     }
   }
-
-  return inlineElements < blockElements;
+  return false;
 }
 
 /**
@@ -1280,5 +1384,352 @@ function* getAncestorsIterator(node) {
     parent = parent.parentNode
   ) {
     yield parent;
+  }
+}
+
+/**
+ * This contains all of the information needed to perform a translation request.
+ *
+ * @typedef {Object} TranslationRequest
+ * @prop {Node} node
+ * @prop {string} sourceText
+ * @prop {boolean} isHTML
+ * @prop {Function} resolve
+ * @prop {Function} reject
+ */
+
+/**
+ * When a page is hidden, mutations may occur in the DOM. It doesn't make sense to
+ * translate those elements while the page is hidden, especially as it may bring
+ * a translations engine back to life, which can be quite expensive. Queue those
+ * messages here.
+ */
+class QueuedTranslator {
+  /**
+   * @type {MessagePort | null}
+   */
+  #port = null;
+
+  /**
+   * @type {() => void}
+   */
+  #actorRequestNewPort;
+
+  /**
+   * An id for each message sent. This is used to match up the request and response.
+   */
+  #nextMessageId = 0;
+
+  /**
+   * Tie together a message id to a resolved response.
+   * @type {Map<number, TranslationRequest}
+   */
+  #requests = new Map();
+
+  /**
+   * If the translations are paused, they are queued here. This Map is ordered by
+   * from oldest to newest requests with stale requests being removed.
+   * @type {Map<Node, TranslationRequest>}
+   */
+  #queue = new Map();
+
+  /**
+   * @type {"uninitialized" | "ready" | "error" | "closed"}
+   */
+  engineStatus = "uninitialized";
+
+  /**
+   * @param {MessagePort} port
+   * @param {Document} document
+   * @param {() => void} actorRequestNewPort
+   */
+  constructor(port, actorRequestNewPort) {
+    this.#actorRequestNewPort = actorRequestNewPort;
+
+    this.acquirePort(port);
+  }
+
+  /**
+   * When an engine gets closed while still in use, a new one will need to be requested.
+   *
+   * @type {{ promise: Promise<void>, resolve: Function, reject: Function } | null}
+   */
+  #portRequest = null;
+
+  /**
+   * Keep track if the page is shown or hidden. When the page is hidden, no translations
+   * will be posted to the translations engine.
+   */
+  #isPageShown = true;
+
+  /**
+   * Note when a new port is being requested so we don't re-request it.
+   */
+  showPage() {
+    this.#isPageShown = true;
+    if (this.#port) {
+      throw new Error(
+        "Attempting to show the page when there is already port available"
+      );
+    }
+    if (this.#queue.size) {
+      // There are queued translations, request a new port. After the port is retrieved
+      // the pending queue will be processed.
+      this.#requestNewPort();
+    }
+  }
+
+  /**
+   * Hide the page, and move any outstanding translation requests to a queue.
+   */
+  hidePage() {
+    this.#isPageShown = false;
+    this.discardPort();
+
+    if (this.#requests.size) {
+      lazy.console.log(
+        "Pausing translations with pending translation requests."
+      );
+    }
+    this.#moveRequestsToQueue();
+  }
+
+  /**
+   * Request a new port. The port will come in via `acquirePort`, and then resolved
+   * through the `this.#portRequest.resolve`.
+   * @returns {Promise<void>}
+   */
+  #requestNewPort() {
+    if (this.#portRequest) {
+      // A port was already requested.
+      return this.#portRequest.promise;
+    }
+
+    const portRequest = { promise: null, resolve: null, reject: null };
+    portRequest.promise = new Promise((resolve, reject) => {
+      portRequest.resolve = resolve;
+      portRequest.reject = reject;
+    });
+
+    this.#portRequest = portRequest;
+
+    // Send a request through the actor for a new port. The request response will
+    // trigger the method `QueuedTranslator.prototype.acquirePort`
+    this.#actorRequestNewPort();
+
+    this.#portRequest.promise
+      .then(
+        () => {
+          this.#portRequest = null;
+
+          // Resume the queued translations.
+          if (this.#queue.size) {
+            lazy.console.log(
+              `Resuming ${
+                this.#queue.size
+              } translations from the pending translation queue.`
+            );
+
+            const oldQueue = this.#queue;
+            this.#queue = new Map();
+            this.#repostTranslations(oldQueue);
+          }
+        },
+        error => {
+          lazy.console.error(error);
+        }
+      )
+      .finally(() => {
+        this.#portRequest = null;
+      });
+
+    return portRequest.promise;
+  }
+
+  /**
+   * Send a request to translate text to the Translations Engine. If it returns `null`
+   * then the request is stale. A rejection means there was an error in the translation.
+   * This request may be queued.
+   *
+   * @param {node} Node
+   * @param {string} sourceText
+   * @param {boolean} isHTML
+   */
+  async translate(node, sourceText, isHTML) {
+    if (this.#isPageShown && !this.#port) {
+      try {
+        await this.#requestNewPort();
+      } catch {}
+    }
+
+    // At this point we don't know if the page is still shown, or if the attempt
+    // to get a port was successful so check again.
+
+    if (!this.#isPageShown || !this.#port) {
+      // Queue the request while the page isn't shown.
+      return new Promise((resolve, reject) => {
+        const previousRequest = this.#queue.get(node);
+        if (previousRequest) {
+          // Previous requests get resolved as null, as this new one will replace it.
+          previousRequest.resolve(null);
+          // Delete the entry so that the order of the queue is maintained. The
+          // new request will be put on the end.
+          this.#queue.delete(node);
+        }
+
+        // This Promises's resolve and reject will be chained after the translation
+        // request. For now add it to the queue along with the other arguments.
+        this.#queue.set(node, { node, sourceText, isHTML, resolve, reject });
+      });
+    }
+
+    return this.#postTranslationRequest(node, sourceText, isHTML);
+  }
+
+  /**
+   * Posts the translation to the translations engine through the MessagePort.
+   *
+   * @param {Node} node
+   * @param {string} sourceText
+   * @param {boolean} isHTML
+   * @return {{ translateText: TranslationFunction, translateHTML: TranslationFunction}}
+   */
+  #postTranslationRequest(node, sourceText, isHTML) {
+    return new Promise((resolve, reject) => {
+      const messageId = this.#nextMessageId++;
+      // Store the "resolve" for the promise. It will be matched back up with the
+      // `messageId` in #handlePortMessage.
+      this.#requests.set(messageId, {
+        node,
+        sourceText,
+        isHTML,
+        resolve,
+        reject,
+      });
+      this.#port.postMessage({
+        type: "TranslationsPort:TranslationRequest",
+        messageId,
+        sourceText,
+        isHTML,
+      });
+    });
+  }
+
+  /**
+   * Close the port and move any pending translations onto a queue.
+   */
+  discardPort() {
+    if (this.#port) {
+      this.#port.postMessage({ type: "TranslationsPort:DiscardTranslations" });
+      this.#port.close();
+      this.#port = null;
+    }
+    this.#moveRequestsToQueue();
+    this.engineStatus = "uninitialized";
+  }
+
+  /**
+   * Move any unfulfilled requests to the queue so they can be sent again when
+   * the page is active again.
+   */
+  #moveRequestsToQueue() {
+    if (this.#requests.size) {
+      for (const request of this.#requests.values()) {
+        this.#queue.set(request.node, request);
+      }
+      this.#requests = new Map();
+    }
+  }
+
+  /**
+   * Acquires a port, checks on the engine status, and then starts or resumes
+   * translations.
+   * @param {MessagePort} port
+   */
+  acquirePort(port) {
+    if (this.#port) {
+      if (this.engineStatus === "ready") {
+        lazy.console.error(
+          "Received a new translation port while one already existed."
+        );
+      }
+      this.discardPort();
+    }
+
+    this.#port = port;
+
+    const portRequest = this.#portRequest;
+
+    // Match up a response on the port to message that was sent.
+    port.onmessage = ({ data }) => {
+      switch (data.type) {
+        case "TranslationsPort:TranslationResponse": {
+          const { targetText, messageId } = data;
+          // A request may not match match a messageId if there is a race during the pausing
+          // and discarding of the queue.
+          this.#requests.get(messageId)?.resolve(targetText);
+          this.#requests.delete(messageId);
+          break;
+        }
+        case "TranslationsPort:GetEngineStatusResponse": {
+          if (portRequest) {
+            const { resolve, reject } = portRequest;
+            if (data.status === "ready") {
+              resolve();
+            } else {
+              reject(new Error("The engine failed to load."));
+            }
+          }
+          this.engineStatus = data.status;
+          break;
+        }
+        case "TranslationsPort:EngineTerminated": {
+          // The engine was terminated, and if a translation is needed a new port
+          // will need to be requested.
+          this.engineStatus = "closed";
+          this.discardPort();
+          if (this.#queue.size && this.#isPageShown) {
+            this.#requestNewPort();
+          }
+          break;
+        }
+        default:
+          lazy.console.error("Unknown translations port message: " + data.type);
+          break;
+      }
+    };
+
+    port.postMessage({ type: "TranslationsPort:GetEngineStatusRequest" });
+  }
+
+  /**
+   * Re-send a list of translation requests.
+   *
+   * @param {Map<any, TranslationRequest>} mappedRequests
+   *  This is either the this.#queue or this.#requests.
+   */
+  #repostTranslations(mappedRequests) {
+    for (const value of mappedRequests.values()) {
+      const { node, sourceText, isHTML, resolve, reject } = value;
+      if (Cu.isDeadWrapper(node)) {
+        // If the node is dead, resolve without any text. Do not reject as that
+        // will be treated as an error.
+        resolve(null);
+      } else {
+        this.#postTranslationRequest(node, sourceText, isHTML).then(
+          resolve,
+          reject
+        );
+      }
+    }
+  }
+
+  /**
+   * Close the port and remove any pending or queued requests.
+   */
+  destroy() {
+    this.#port.close();
+    this.#requests = new Map();
+    this.#queue = new Map();
   }
 }

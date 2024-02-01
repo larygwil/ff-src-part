@@ -15,12 +15,13 @@ const lazy = {};
 ChromeUtils.defineESModuleGetters(lazy, {
   Downloader: "resource://services-settings/Attachments.sys.mjs",
   ExperimentAPI: "resource://nimbus/ExperimentAPI.sys.mjs",
+  FeatureCalloutBroker:
+    "resource://activity-stream/lib/FeatureCalloutBroker.sys.mjs",
+  KintoHttpClient: "resource://services-common/kinto-http-client.sys.mjs",
   MacAttribution: "resource:///modules/MacAttribution.sys.mjs",
   NimbusFeatures: "resource://nimbus/ExperimentAPI.sys.mjs",
   PanelTestProvider: "resource://activity-stream/lib/PanelTestProvider.sys.mjs",
   RemoteL10n: "resource://activity-stream/lib/RemoteL10n.sys.mjs",
-  SnippetsTestMessageProvider:
-    "resource://activity-stream/lib/SnippetsTestMessageProvider.sys.mjs",
   SpecialMessageActions:
     "resource://messaging-system/lib/SpecialMessageActions.sys.mjs",
   TargetingContext: "resource://messaging-system/targeting/Targeting.sys.mjs",
@@ -41,16 +42,23 @@ XPCOMUtils.defineLazyModuleGetters(lazy, {
     "resource://activity-stream/lib/ASRouterPreferences.jsm",
   ASRouterTriggerListeners:
     "resource://activity-stream/lib/ASRouterTriggerListeners.jsm",
-  KintoHttpClient: "resource://services-common/kinto-http-client.js",
 });
 
 XPCOMUtils.defineLazyServiceGetters(lazy, {
   BrowserHandler: ["@mozilla.org/browser/clh;1", "nsIBrowserHandler"],
 });
+XPCOMUtils.defineLazyGetter(lazy, "log", () => {
+  const { Logger } = ChromeUtils.importESModule(
+    "resource://messaging-system/lib/Logger.sys.mjs"
+  );
+  return new Logger("ASRouter");
+});
 const { actionCreators: ac } = ChromeUtils.importESModule(
   "resource://activity-stream/common/Actions.sys.mjs"
 );
-
+const { MESSAGING_EXPERIMENTS_DEFAULT_FEATURES } = ChromeUtils.importESModule(
+  "resource://activity-stream/lib/MessagingExperimentConstants.sys.mjs"
+);
 const { CFRMessageProvider } = ChromeUtils.importESModule(
   "resource://activity-stream/lib/CFRMessageProvider.sys.mjs"
 );
@@ -71,10 +79,7 @@ const { AttributionCode } = ChromeUtils.importESModule(
 // Key is allowed host, value is a name for the endpoint host.
 const DEFAULT_ALLOWLIST_HOSTS = {
   "activity-stream-icons.services.mozilla.com": "production",
-  "snippets-admin.mozilla.org": "preview",
 };
-const SNIPPETS_ENDPOINT_ALLOWLIST =
-  "browser.newtab.activity-stream.asrouter.allowHosts";
 // Max possible impressions cap for any message
 const MAX_MESSAGE_LIFETIME_CAP = 100;
 
@@ -94,7 +99,7 @@ const RS_DOWNLOAD_MAX_RETRIES = 2;
 // This is the list of providers for which we want to cache the targeting
 // expression result and reuse between calls. Cache duration is defined in
 // ASRouterTargeting where evaluation takes place.
-const JEXL_PROVIDER_CACHE = new Set(["snippets"]);
+const JEXL_PROVIDER_CACHE = new Set();
 
 // To observe the app locale change notification.
 const TOPIC_INTL_LOCALE_CHANGED = "intl:app-locales-changed";
@@ -103,29 +108,16 @@ const TOPIC_EXPERIMENT_ENROLLMENT_CHANGED = "nimbus:enrollments-updated";
 const USE_REMOTE_L10N_PREF =
   "browser.newtabpage.activity-stream.asrouter.useRemoteL10n";
 
-const MESSAGING_EXPERIMENTS_DEFAULT_FEATURES = [
-  "cfr",
-  "fxms-message-1",
-  "fxms-message-2",
-  "fxms-message-3",
-  "fxms-message-4",
-  "fxms-message-5",
-  "fxms-message-6",
-  "fxms-message-7",
-  "fxms-message-8",
-  "fxms-message-9",
-  "fxms-message-10",
-  "fxms-message-11",
-  "infobar",
-  "moments-page",
-  "pbNewtab",
-  "spotlight",
-];
-
 // Experiment groups that need to report the reach event in Messaging-Experiments.
 // If you're adding new groups to it, make sure they're also added in the
 // `messaging_experiments.reach.objects` defined in "toolkit/components/telemetry/Events.yaml"
-const REACH_EVENT_GROUPS = ["cfr", "moments-page", "infobar", "spotlight"];
+const REACH_EVENT_GROUPS = [
+  "cfr",
+  "moments-page",
+  "infobar",
+  "spotlight",
+  "featureCallout",
+];
 const REACH_EVENT_CATEGORY = "messaging_experiments";
 const REACH_EVENT_METHOD = "reach";
 
@@ -639,6 +631,7 @@ class _ASRouter {
       this._onExperimentEnrollmentsUpdated.bind(this);
     this.forcePBWindow = this.forcePBWindow.bind(this);
     Services.telemetry.setEventRecordingEnabled(REACH_EVENT_CATEGORY, true);
+    this.messagesEnabledInAutomation = [];
   }
 
   async onPrefChange(prefName) {
@@ -788,10 +781,6 @@ class _ASRouter {
    * @returns bool
    */
   isExcludedByProvider(message) {
-    // preview snippets are never excluded
-    if (message.provider === "preview") {
-      return false;
-    }
     const provider = this.state.providers.find(p => p.id === message.provider);
     if (!provider) {
       return true;
@@ -911,8 +900,7 @@ class _ASRouter {
         lazy.ASRouterTriggerListeners.get(triggerID).uninit();
       }
 
-      // We don't want to cache preview endpoints, remove them after messages are fetched
-      await this.setState(this._removePreviewEndpoint(newState));
+      await this.setState(newState);
       await this.cleanupImpressions();
     }
 
@@ -996,10 +984,10 @@ class _ASRouter {
     }
     this.initializing = true;
     this._storage = storage;
-    this.ALLOWLIST_HOSTS = this._loadSnippetsAllowHosts();
+    this.ALLOWLIST_HOSTS = this._loadAllowHosts();
     this.clearChildMessages = this.toWaitForInitFunc(clearChildMessages);
     this.clearChildProviders = this.toWaitForInitFunc(clearChildProviders);
-    // NOTE: This is only necessary to sync devtools and snippets when devtools is active.
+    // NOTE: This is only necessary to sync devtools when devtools is active.
     this.updateAdminState = this.toWaitForInitFunc(updateAdminState);
     this.sendTelemetry = sendTelemetry;
     this.dispatchCFRAction = this.toWaitForInitFunc(dispatchCFRAction);
@@ -1128,6 +1116,7 @@ class _ASRouter {
       userPrefs: lazy.ASRouterPreferences.getAllUserPreferences(),
       targetingParameters,
       errors: this.errors,
+      devtoolsEnabled: lazy.ASRouterPreferences.devtoolsEnabled,
     }));
   }
 
@@ -1140,7 +1129,6 @@ class _ASRouter {
     if (lazy.ASRouterPreferences.devtoolsEnabled) {
       this._localProviders = {
         ...this._localProviders,
-        SnippetsTestMessageProvider: lazy.SnippetsTestMessageProvider,
         PanelTestProvider: lazy.PanelTestProvider,
       };
     }
@@ -1163,12 +1151,23 @@ class _ASRouter {
         }
 
         const target = {};
-        const promises = Object.entries(object).map(async ([key, value]) => [
-          key,
-          await resolve(await value),
-        ]);
-        for (const [key, value] of await Promise.all(promises)) {
-          target[key] = value;
+        const promises = Object.entries(object).map(async ([key, value]) => {
+          try {
+            let resolvedValue = await resolve(await value);
+            return [key, resolvedValue];
+          } catch (error) {
+            lazy.ASRouterPreferences.console.debug(
+              `getTargetingParameters: Error resolving ${key}: `,
+              error
+            );
+            throw error;
+          }
+        });
+        for (const { status, value } of await Promise.allSettled(promises)) {
+          if (status === "fulfilled") {
+            const [key, resolvedValue] = value;
+            target[key] = resolvedValue;
+          }
         }
         return target;
       }
@@ -1337,6 +1336,19 @@ class _ASRouter {
       return { message: {} };
     }
 
+    // filter out messages we want to exclude from tests
+    if (
+      message.skip_in_tests &&
+      // `this.messagesEnabledInAutomation` should be stubbed in tests
+      !this.messagesEnabledInAutomation?.includes(message.id) &&
+      (Cu.isInAutomation || Services.env.exists("XPCSHELL_TEST_PROFILE_DIR"))
+    ) {
+      lazy.log.debug(
+        `Skipping message ${message.id} because ${message.skip_in_tests}`
+      );
+      return { message: {} };
+    }
+
     switch (message.template) {
       case "whatsnew_panel_message":
         if (force) {
@@ -1398,6 +1410,20 @@ class _ASRouter {
           this.dispatchCFRAction
         );
         break;
+      case "feature_callout":
+        // featureCalloutCheck only comes from within FeatureCallout, where it
+        // is used to request a matching message. It is not a real trigger.
+        // pdfJsFeatureCalloutCheck is used for PDF.js feature callouts, which
+        // are managed by the trigger listener itself.
+        switch (trigger.id) {
+          case "featureCalloutCheck":
+          case "pdfJsFeatureCalloutCheck":
+          case "newtabFeatureCalloutCheck":
+            break;
+          default:
+            lazy.FeatureCalloutBroker.showFeatureCallout(browser, message);
+        }
+        break;
       case "toast_notification":
         lazy.ToastNotification.showToastNotification(
           message,
@@ -1433,8 +1459,8 @@ class _ASRouter {
       `entering addImpression for ${message.id}`
     );
 
-    const groupsWithFrequency = this.state.groups.filter(
-      ({ frequency, id }) => frequency && message.groups.includes(id)
+    const groupsWithFrequency = this.state.groups?.filter(
+      ({ frequency, id }) => frequency && message.groups?.includes(id)
     );
     // We only need to store impressions for messages that have frequency, or
     // that have providers that have frequency
@@ -1698,8 +1724,7 @@ class _ASRouter {
       const messageBlockList = [...state.messageBlockList];
       idsToUnblock
         .map(id => state.messages.find(m => m.id === id))
-        // Remove all `id`s (or `campaign`s for snippets) from the message
-        // block list
+        // Remove all `id`s from the message block list
         .forEach(message => {
           const idToUnblock =
             message && message.campaign ? message.campaign : message.id;
@@ -1735,6 +1760,50 @@ class _ASRouter {
     }));
   }
 
+  resetScreenImpressions() {
+    const newScreenImpressions = {};
+    this._storage.set("screenImpressions", newScreenImpressions);
+    return this.setState(() => ({ screenImpressions: newScreenImpressions }));
+  }
+
+  /**
+   * Edit the ASRouter state directly. For use by the ASRouter devtools.
+   * Requires browser.newtabpage.activity-stream.asrouter.devtoolsEnabled
+   * @param {string} key Key of the property to edit, one of:
+   *   | "groupImpressions"
+   *   | "messageImpressions"
+   *   | "screenImpressions"
+   *   | "messageBlockList"
+   * @param {object|string[]} value New value to set for state[key]
+   * @returns {Promise<unknown>} The new value in state
+   */
+  async editState(key, value) {
+    if (!lazy.ASRouterPreferences.devtoolsEnabled) {
+      throw new Error("Editing state is only allowed in devtools mode");
+    }
+    switch (key) {
+      case "groupImpressions":
+      case "messageImpressions":
+      case "screenImpressions":
+        if (typeof value !== "object") {
+          throw new Error("Invalid impression data");
+        }
+        break;
+      case "messageBlockList":
+        if (!Array.isArray(value)) {
+          throw new Error("Invalid message block list");
+        }
+        break;
+      default:
+        throw new Error("Invalid state key");
+    }
+    const newState = await this.setState(() => {
+      this._storage.set(key, value);
+      return { [key]: value };
+    });
+    return newState[key];
+  }
+
   _validPreviewEndpoint(url) {
     try {
       const endpoint = new URL(url);
@@ -1754,38 +1823,8 @@ class _ASRouter {
     }
   }
 
-  _loadSnippetsAllowHosts() {
-    let additionalHosts = [];
-    const allowPrefValue = Services.prefs.getStringPref(
-      SNIPPETS_ENDPOINT_ALLOWLIST,
-      ""
-    );
-    try {
-      additionalHosts = JSON.parse(allowPrefValue);
-    } catch (e) {
-      if (allowPrefValue) {
-        console.error(
-          `Pref ${SNIPPETS_ENDPOINT_ALLOWLIST} value is not valid JSON`
-        );
-      }
-    }
-
-    if (!additionalHosts.length) {
-      return DEFAULT_ALLOWLIST_HOSTS;
-    }
-
-    // If there are additional hosts we want to allow, add them as
-    // `preview` so that the updateCycle is 0
-    return additionalHosts.reduce(
-      (allow_hosts, host) => {
-        allow_hosts[host] = "preview";
-        Services.console.logStringMessage(
-          `Adding ${host} to list of allowed hosts.`
-        );
-        return allow_hosts;
-      },
-      { ...DEFAULT_ALLOWLIST_HOSTS }
-    );
+  _loadAllowHosts() {
+    return DEFAULT_ALLOWLIST_HOSTS;
   }
 
   // To be passed to ASRouterTriggerListeners
@@ -1797,30 +1836,13 @@ class _ASRouter {
     return this.sendTriggerMessage({ ...trigger, browser });
   }
 
-  _removePreviewEndpoint(state) {
-    state.providers = state.providers.filter(p => p.id !== "preview");
-    return state;
-  }
-
-  addPreviewEndpoint(url, browser) {
-    const providers = [...this.state.providers];
-    if (
-      this._validPreviewEndpoint(url) &&
-      !providers.find(p => p.url === url)
-    ) {
-      // When you view a preview snippet we want to hide all real content -
-      // sending EnterSnippetsPreviewMode puts this browser tab in that state.
-      browser.sendMessageToActor("EnterSnippetsPreviewMode", {}, "ASRouter");
-      providers.push({
-        id: "preview",
-        type: "remote",
-        enabled: true,
-        url,
-        updateCycleInMs: 0,
-      });
-      return this.setState({ providers });
-    }
-    return Promise.resolve();
+  /** Simple wrapper to make test mocking easier
+   *
+   * @returns {Promise} resolves when the attribution string has been set
+   * succesfully.
+   */
+  setAttributionString(attrStr) {
+    return lazy.MacAttribution.setAttributionString(attrStr);
   }
 
   /**
@@ -1841,16 +1863,9 @@ class _ASRouter {
         encodeURIComponent(attributionData)
       );
     } else if (AppConstants.platform === "macosx") {
-      let appPath = lazy.MacAttribution.applicationPath;
-      let attributionSvc = Cc["@mozilla.org/mac-attribution;1"].getService(
-        Ci.nsIMacAttributionService
+      await this.setAttributionString(
+        `__MOZCUSTOM__${encodeURIComponent(attributionData)}`
       );
-
-      // The attribution data is treated as a url query for mac
-      let referrer = `https://www.mozilla.org/anything/?${attributionData}`;
-
-      // This sets the Attribution to be the referrer
-      attributionSvc.setReferrerUrl(appPath, referrer, true);
 
       // Delete attribution data file
       await AttributionCode.deleteFileAsync();
@@ -1917,36 +1932,6 @@ class _ASRouter {
     });
 
     return { message };
-  }
-
-  async sendNewTabMessage({ endpoint, tabId, browser }) {
-    let message;
-
-    // Load preview endpoint for snippets if one is sent
-    if (endpoint) {
-      await this.addPreviewEndpoint(endpoint.url, browser);
-    }
-
-    // Load all messages
-    await this.loadMessagesFromAllProviders();
-
-    if (endpoint) {
-      message = await this.handleMessageRequest({ provider: "preview" });
-
-      // We don't want to cache preview messages, remove them after we selected the message to show
-      if (message) {
-        await this.setState(state => ({
-          messages: state.messages.filter(m => m.id !== message.id),
-        }));
-      }
-    } else {
-      const telemetryObject = { tabId };
-      TelemetryStopwatch.start("MS_MESSAGE_REQUEST_TIME_MS", telemetryObject);
-      message = await this.handleMessageRequest({ provider: "snippets" });
-      TelemetryStopwatch.finish("MS_MESSAGE_REQUEST_TIME_MS", telemetryObject);
-    }
-
-    return this.routeCFRMessage(message, browser, undefined, false);
   }
 
   _recordReachEvent(message) {

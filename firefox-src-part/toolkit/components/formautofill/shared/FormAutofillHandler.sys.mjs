@@ -4,7 +4,6 @@
 
 import { FormAutofill } from "resource://autofill/FormAutofill.sys.mjs";
 import { FormAutofillUtils } from "resource://gre/modules/shared/FormAutofillUtils.sys.mjs";
-import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs";
 
 const lazy = {};
 ChromeUtils.defineESModuleGetters(lazy, {
@@ -66,9 +65,10 @@ export class FormAutofillHandler {
    * @param {FormLike} form Form that need to be auto filled
    * @param {Function} onFormSubmitted Function that can be invoked
    *                   to simulate form submission. Function is passed
-   *                   three arguments: (1) a FormLike for the form being
-   *                   submitted, (2) the corresponding Window, and (3) the
-   *                   responsible FormAutofillHandler.
+   *                   four arguments: (1) a FormLike for the form being
+   *                   submitted, (2) the reason for infering the form
+   *                   submission (3) the corresponding Window, and (4)
+   *                   the responsible FormAutofillHandler.
    * @param {Function} onAutofillCallback Function that can be invoked
    *                   when we want to suggest autofill on a form.
    */
@@ -92,13 +92,13 @@ export class FormAutofillHandler {
      * This function is used if the form handler (or one of its sections)
      * determines that it needs to act as if the form had been submitted.
      */
-    this.onFormSubmitted = () => {
-      onFormSubmitted(this.form, this.window, this);
+    this.onFormSubmitted = formSubmissionReason => {
+      onFormSubmitted(this.form, formSubmissionReason, this.window, this);
     };
 
     this.onAutofillCallback = onAutofillCallback;
 
-    XPCOMUtils.defineLazyGetter(this, "log", () =>
+    ChromeUtils.defineLazyGetter(this, "log", () =>
       FormAutofill.defineLogGetter(this, "FormAutofillHandler")
     );
   }
@@ -130,9 +130,7 @@ export class FormAutofillHandler {
         }
 
         this.changeFieldState(targetFieldDetail, FIELD_STATES.NORMAL);
-        const section = this.getSectionByElement(
-          targetFieldDetail.elementWeakRef.get()
-        );
+        const section = this.getSectionByElement(targetFieldDetail.element);
         section?.clearFilled(targetFieldDetail);
       }
     }
@@ -238,20 +236,33 @@ export class FormAutofillHandler {
     const sections = lazy.FormAutofillHeuristics.getFormInfo(this.form);
     const allValidDetails = [];
     for (const section of sections) {
+      // We don't support csc field, so remove csc fields from section
+      const fieldDetails = section.fieldDetails.filter(
+        f => !["cc-csc"].includes(f.fieldName)
+      );
+      if (!fieldDetails.length) {
+        continue;
+      }
+
       let autofillableSection;
       if (section.type == lazy.FormSection.ADDRESS) {
         autofillableSection = new lazy.FormAutofillAddressSection(
-          section,
+          fieldDetails,
           this
         );
       } else {
         autofillableSection = new lazy.FormAutofillCreditCardSection(
-          section,
+          fieldDetails,
           this
         );
       }
 
-      if (ignoreInvalid && !autofillableSection.isValidSection()) {
+      // Do not include section that is either disabled or invalid.
+      // We only include invalid section for testing purpose.
+      if (
+        !autofillableSection.isEnabled() ||
+        (ignoreInvalid && !autofillableSection.isValidSection())
+      ) {
         continue;
       }
 
@@ -280,7 +291,7 @@ export class FormAutofillHandler {
    *        Used to determine the next state
    */
   changeFieldState(fieldDetail, nextState) {
-    const element = fieldDetail.elementWeakRef.get();
+    const element = fieldDetail.element;
     if (!element) {
       this.log.warn(
         fieldDetail.fieldName,

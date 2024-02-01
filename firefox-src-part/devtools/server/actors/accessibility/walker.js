@@ -89,20 +89,16 @@ const {
 // that has its name calculated from the said subtree.
 const NAME_FROM_SUBTREE_RULE_ROLES = new Set([
   Ci.nsIAccessibleRole.ROLE_BUTTONDROPDOWN,
-  Ci.nsIAccessibleRole.ROLE_BUTTONDROPDOWNGRID,
   Ci.nsIAccessibleRole.ROLE_BUTTONMENU,
   Ci.nsIAccessibleRole.ROLE_CELL,
   Ci.nsIAccessibleRole.ROLE_CHECKBUTTON,
   Ci.nsIAccessibleRole.ROLE_CHECK_MENU_ITEM,
   Ci.nsIAccessibleRole.ROLE_CHECK_RICH_OPTION,
-  Ci.nsIAccessibleRole.ROLE_COLUMN,
   Ci.nsIAccessibleRole.ROLE_COLUMNHEADER,
   Ci.nsIAccessibleRole.ROLE_COMBOBOX_OPTION,
   Ci.nsIAccessibleRole.ROLE_DEFINITION,
   Ci.nsIAccessibleRole.ROLE_GRID_CELL,
   Ci.nsIAccessibleRole.ROLE_HEADING,
-  Ci.nsIAccessibleRole.ROLE_HELPBALLOON,
-  Ci.nsIAccessibleRole.ROLE_HTML_CONTAINER,
   Ci.nsIAccessibleRole.ROLE_KEY,
   Ci.nsIAccessibleRole.ROLE_LABEL,
   Ci.nsIAccessibleRole.ROLE_LINK,
@@ -126,9 +122,6 @@ const NAME_FROM_SUBTREE_RULE_ROLES = new Set([
   Ci.nsIAccessibleRole.ROLE_ROWHEADER,
   Ci.nsIAccessibleRole.ROLE_SUMMARY,
   Ci.nsIAccessibleRole.ROLE_SWITCH,
-  Ci.nsIAccessibleRole.ROLE_TABLE_COLUMN_HEADER,
-  Ci.nsIAccessibleRole.ROLE_TABLE_ROW_HEADER,
-  Ci.nsIAccessibleRole.ROLE_TEAR_OFF_MENU_ITEM,
   Ci.nsIAccessibleRole.ROLE_TERM,
   Ci.nsIAccessibleRole.ROLE_TOGGLE_BUTTON,
   Ci.nsIAccessibleRole.ROLE_TOOLTIP,
@@ -888,10 +881,7 @@ class AccessibleWalkerActor extends Actor {
    * Check is event handling is allowed.
    */
   _isEventAllowed({ view }) {
-    return (
-      this.rootWin instanceof Ci.nsIDOMChromeWindow ||
-      isWindowIncluded(this.rootWin, view)
-    );
+    return this.rootWin.isChromeWindow || isWindowIncluded(this.rootWin, view);
   }
 
   /**
@@ -1109,11 +1099,17 @@ class AccessibleWalkerActor extends Actor {
    */
   _findAndAttachAccessible(event) {
     const target = event.originalTarget || event.target;
-    const docAcc = this.getRawAccessibleFor(this.rootDoc);
     const win = target.ownerGlobal;
+    // This event might be inside a sub-document, so don't use this.rootDoc.
+    const docAcc = this.getRawAccessibleFor(win.document);
     const zoom = this.isXUL ? 1 : getCurrentZoom(win);
     const scale = this.pixelRatio / zoom;
-    const rawAccessible = docAcc.getDeepestChildAtPointInProcess(
+    // If the target is inside a pop-up widget, we need to query the pop-up
+    // Accessible, not the DocAccessible. The DocAccessible can't hit test
+    // inside pop-ups.
+    const popup = win.isChromeWindow ? target.closest("panel") : null;
+    const containerAcc = popup ? this.getRawAccessibleFor(popup) : docAcc;
+    const rawAccessible = containerAcc.getDeepestChildAtPointInProcess(
       event.screenX * scale,
       event.screenY * scale
     );

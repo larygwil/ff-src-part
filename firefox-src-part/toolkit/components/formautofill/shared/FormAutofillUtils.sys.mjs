@@ -4,6 +4,7 @@
 
 import { FormAutofill } from "resource://autofill/FormAutofill.sys.mjs";
 import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs";
+import { AppConstants } from "resource://gre/modules/AppConstants.sys.mjs";
 
 const lazy = {};
 ChromeUtils.defineESModuleGetters(lazy, {
@@ -12,6 +13,15 @@ ChromeUtils.defineESModuleGetters(lazy, {
     "resource://gre/modules/shared/FormAutofillNameUtils.sys.mjs",
   OSKeyStore: "resource://gre/modules/OSKeyStore.sys.mjs",
 });
+ChromeUtils.defineLazyGetter(
+  lazy,
+  "l10n",
+  () =>
+    new Localization(
+      ["toolkit/formautofill/formAutofill.ftl", "branding/brand.ftl"],
+      true
+    )
+);
 
 export let FormAutofillUtils;
 
@@ -22,7 +32,7 @@ const ADDRESS_REFERENCES_EXT = "addressReferencesExt.js";
 const ADDRESSES_COLLECTION_NAME = "addresses";
 const CREDITCARDS_COLLECTION_NAME = "creditCards";
 const MANAGE_ADDRESSES_L10N_IDS = [
-  "autofill-add-new-address-title",
+  "autofill-add-address-title",
   "autofill-manage-addresses-title",
 ];
 const EDIT_ADDRESS_L10N_IDS = [
@@ -41,8 +51,8 @@ const EDIT_ADDRESS_L10N_IDS = [
   "autofill-address-tel",
 ];
 const MANAGE_CREDITCARDS_L10N_IDS = [
-  "autofill-add-new-card-title",
-  "autofill-manage-credit-cards-title",
+  "autofill-add-card-title",
+  "autofill-manage-payment-methods-title",
 ];
 const EDIT_CREDITCARD_L10N_IDS = [
   "autofill-card-number",
@@ -55,6 +65,11 @@ const FIELD_STATES = {
   NORMAL: "NORMAL",
   AUTO_FILLED: "AUTO_FILLED",
   PREVIEW: "PREVIEW",
+};
+const FORM_SUBMISSION_REASON = {
+  FORM_SUBMIT_EVENT: "form-submit-event",
+  FORM_REMOVAL_AFTER_FETCH: "form-removal-after-fetch",
+  IFRAME_PAGEHIDE: "iframe-pagehide",
 };
 
 const ELIGIBLE_INPUT_TYPES = ["text", "email", "tel", "number", "month"];
@@ -219,6 +234,7 @@ FormAutofillUtils = {
   EDIT_CREDITCARD_L10N_IDS,
   MAX_FIELD_VALUE_LENGTH,
   FIELD_STATES,
+  FORM_SUBMISSION_REASON,
 
   _fieldNameInfo: {
     name: "name",
@@ -253,6 +269,7 @@ FormAutofillUtils = {
     "cc-exp-year": "creditCard",
     "cc-exp": "creditCard",
     "cc-type": "creditCard",
+    "cc-csc": "creditCard",
   },
 
   _collators: {},
@@ -265,11 +282,11 @@ FormAutofillUtils = {
   },
 
   isCreditCardField(fieldName) {
-    return this._fieldNameInfo[fieldName] == "creditCard";
+    return this._fieldNameInfo?.[fieldName] == "creditCard";
   },
 
   isCCNumber(ccNumber) {
-    return lazy.CreditCard.isValidNumber(ccNumber);
+    return ccNumber && lazy.CreditCard.isValidNumber(ccNumber);
   },
 
   ensureLoggedIn(promptMessage) {
@@ -326,7 +343,7 @@ FormAutofillUtils = {
       "address-level2", // City/Town
       "organization", // Company or organization name
       "address-level1", // Province/State (Standardized code if possible)
-      "country-name", // Country name
+      "country", // Country name
       "postal-code", // Postal code
       "tel", // Phone number
       "email", // Email address
@@ -387,25 +404,6 @@ FormAutofillUtils = {
   },
 
   /**
-   * Compares two addresses, removing internal whitespace
-   *
-   * @param {string} a The first address to compare
-   * @param {string} b The second address to compare
-   * @param {Array} collators Search collators that will be used for comparison
-   * @param {string} [delimiter="\n"] The separator that is used between lines in the address
-   * @returns {boolean} True if the addresses are equal, false otherwise
-   */
-  compareStreetAddress(a, b, collators, delimiter = "\n") {
-    let oneLineA = this._toStreetAddressParts(a, delimiter)
-      .map(p => p.replace(/\s/g, ""))
-      .join("");
-    let oneLineB = this._toStreetAddressParts(b, delimiter)
-      .map(p => p.replace(/\s/g, ""))
-      .join("");
-    return this.strCompare(oneLineA, oneLineB, collators);
-  },
-
-  /**
    * In-place concatenate tel-related components into a single "tel" field and
    * delete unnecessary fields.
    *
@@ -456,7 +454,7 @@ FormAutofillUtils = {
    * @returns {boolean} true if the element is visible
    */
   isFieldVisible(element, visibilityCheck = true) {
-    if (visibilityCheck) {
+    if (visibilityCheck && element.checkVisibility) {
       return element.checkVisibility({
         checkOpacity: true,
         checkVisibilityCSS: true,
@@ -464,6 +462,23 @@ FormAutofillUtils = {
     }
 
     return !element.hidden && element.style.display != "none";
+  },
+
+  /**
+   * Determines if an element is focusable
+   * and accessible via keyboard navigation or not.
+   *
+   * @param {HTMLElement} element
+   *
+   * @returns {bool} true if the element is focusable and accessible
+   */
+  isFieldFocusable(element) {
+    return (
+      // The Services.focus.elementIsFocusable API considers elements with
+      // tabIndex="-1" set as focusable. But since they are not accessible
+      // via keyboard navigation we treat them as non-interactive
+      Services.focus.elementIsFocusable(element, 0) && element.tabIndex != "-1"
+    );
   },
 
   /**
@@ -1182,15 +1197,44 @@ FormAutofillUtils = {
     };
     return MAP[key];
   },
+  /**
+   * Generates the localized os dialog message that
+   * prompts the user to reauthenticate
+   *
+   * @param {string} msgMac fluent message id for macos clients
+   * @param {string} msgWin fluent message id for windows clients
+   * @param {string} msgOther fluent message id for other clients
+   * @param {string} msgLin (optional) fluent message id for linux clients
+   * @returns {string} localized os prompt message
+   */
+  reauthOSPromptMessage(msgMac, msgWin, msgOther, msgLin = null) {
+    const platform = AppConstants.platform;
+    let messageID;
+
+    switch (platform) {
+      case "win":
+        messageID = msgWin;
+        break;
+      case "macosx":
+        messageID = msgMac;
+        break;
+      case "linux":
+        messageID = msgLin ?? msgOther;
+        break;
+      default:
+        messageID = msgOther;
+    }
+    return lazy.l10n.formatValueSync(messageID);
+  },
 };
 
-XPCOMUtils.defineLazyGetter(FormAutofillUtils, "stringBundle", function () {
+ChromeUtils.defineLazyGetter(FormAutofillUtils, "stringBundle", function () {
   return Services.strings.createBundle(
     "chrome://formautofill/locale/formautofill.properties"
   );
 });
 
-XPCOMUtils.defineLazyGetter(FormAutofillUtils, "brandBundle", function () {
+ChromeUtils.defineLazyGetter(FormAutofillUtils, "brandBundle", function () {
   return Services.strings.createBundle(
     "chrome://branding/locale/brand.properties"
   );
@@ -1242,6 +1286,13 @@ XPCOMUtils.defineLazyPreferenceGetter(
   "visibilityCheckThreshold",
   "extensions.formautofill.heuristics.visibilityCheckThreshold",
   200
+);
+
+XPCOMUtils.defineLazyPreferenceGetter(
+  FormAutofillUtils,
+  "interactivityCheckMode",
+  "extensions.formautofill.heuristics.interactivityCheckMode",
+  "focusability"
 );
 
 // This is only used in iOS

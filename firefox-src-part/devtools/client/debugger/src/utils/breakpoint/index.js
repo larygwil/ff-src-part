@@ -3,15 +3,14 @@
  * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
 
 import { getSourceActorsForSource } from "../../selectors";
-import { isGenerated } from "../source";
 import { sortSelectedLocations } from "../location";
 export * from "./breakpointPositions";
 
 // The ID for a Breakpoint is derived from its location in its Source.
 export function makeBreakpointId(location) {
-  const { sourceId, line, column } = location;
+  const { source, line, column } = location;
   const columnString = column || "";
-  return `${sourceId}:${line}:${columnString}`;
+  return `${source.id}:${line}:${columnString}`;
 }
 
 export function makeBreakpointServerLocationId(breakpointServerLocation) {
@@ -62,7 +61,7 @@ export function createXHRBreakpoint(path, method, overrides = {}) {
 }
 
 export function getSelectedText(breakpoint, selectedSource) {
-  return !!selectedSource && isGenerated(selectedSource)
+  return !!selectedSource && !selectedSource.isOriginal
     ? breakpoint.text
     : breakpoint.originalText;
 }

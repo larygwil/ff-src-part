@@ -89,20 +89,11 @@ class ASRouterParentProcessMessageHandler {
           browser,
         });
       }
-      case msg.NEWTAB_MESSAGE_REQUEST: {
-        return this._router.sendNewTabMessage({
-          ...data,
-          tabId,
-          browser,
-        });
-      }
 
       // ADMIN Messages
       case msg.ADMIN_CONNECT_STATE: {
         if (data && data.endpoint) {
-          return this._router
-            .addPreviewEndpoint(data.endpoint.url)
-            .then(() => this._router.loadMessagesFromAllProviders());
+          return this._router.loadMessagesFromAllProviders();
         }
         return this._router.updateTargetingParameters();
       }
@@ -170,6 +161,16 @@ class ASRouterParentProcessMessageHandler {
         return this._router
           .resetGroupsState(data)
           .then(() => this._router.loadMessagesFromAllProviders());
+      }
+      case msg.RESET_MESSAGE_STATE: {
+        return this._router.resetMessageState();
+      }
+      case msg.RESET_SCREEN_IMPRESSIONS: {
+        return this._router.resetScreenImpressions();
+      }
+      case msg.EDIT_STATE: {
+        const [[key, value]] = Object.entries(data);
+        return this._router.editState(key, value);
       }
       default: {
         return Promise.reject(new Error(`Unknown message received: ${name}`));

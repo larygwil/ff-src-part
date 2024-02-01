@@ -389,7 +389,10 @@ class WebConsoleWrapper {
           return;
         }
 
-        store.dispatch(actions.messagesAdd(this.queuedMessageAdds));
+        const { ui } = store.getState();
+        store.dispatch(
+          actions.messagesAdd(this.queuedMessageAdds, null, ui.persistLogs)
+        );
 
         const { length } = this.queuedMessageAdds;
 
@@ -468,6 +471,14 @@ class WebConsoleWrapper {
   // Called by pushing close button.
   closeSplitConsole() {
     this.toolbox.closeSplitConsole();
+  }
+
+  toggleOriginalVariableMappingEvaluationNotification(show) {
+    store.dispatch(
+      actions.showEvaluationNotification(
+        show ? Constants.ORIGINAL_VARIABLE_MAPPING : ""
+      )
+    );
   }
 }
 

@@ -101,6 +101,8 @@ exports.getCSSAtRuleTypeName = function (cssRule) {
  * @returns {String} A localized version of the given key.
  */
 exports.l10n = name => styleInspectorL10N.getStr(name);
+exports.l10nFormatStr = (name, ...args) =>
+  styleInspectorL10N.getFormatStr(name, ...args);
 
 /**
  * Is the given property sheet an author stylesheet?
@@ -232,6 +234,7 @@ function getLineCountInComments(text) {
  *         The CSS source to prettify.
  * @param  {Number} ruleCount
  *         The number of CSS rules expected in the CSS source.
+ *         Set to null to force the text to be pretty-printed.
  *
  * @return {Object}
  *         Object with the prettified source and source mappings.
@@ -412,6 +415,13 @@ function prettifyCSS(text, ruleCount) {
     return token;
   };
 
+  // Get preference of the user regarding what to use for indentation,
+  // spaces or tabs.
+  const tabPrefs = getTabPrefs();
+  const baseIndentString = tabPrefs.indentWithTabs
+    ? TAB_CHARS
+    : SPACE_CHARS.repeat(tabPrefs.indentUnit);
+
   while (true) {
     // Set the initial state.
     startIndex = undefined;
@@ -437,20 +447,16 @@ function prettifyCSS(text, ruleCount) {
       }
     }
 
-    // Get preference of the user regarding what to use for indentation,
-    // spaces or tabs.
-    const tabPrefs = getTabPrefs();
-
     if (isCloseBrace) {
       // Even if the stylesheet contains extra closing braces, the indent level should
       // remain > 0.
       indentLevel = Math.max(0, indentLevel - 1);
+      indent = baseIndentString.repeat(indentLevel);
 
+      // FIXME: This is incorrect and should be fixed in Bug 1839297
       if (tabPrefs.indentWithTabs) {
-        indent = TAB_CHARS.repeat(indentLevel);
         indentOffset = 4 * indentLevel;
       } else {
-        indent = SPACE_CHARS.repeat(indentLevel);
         indentOffset = 1 * indentLevel;
       }
       result = result + indent + "}";
@@ -466,11 +472,14 @@ function prettifyCSS(text, ruleCount) {
         columnOffset++;
       }
       result += "{";
+      indentLevel++;
+      indent = baseIndentString.repeat(indentLevel);
+      indentOffset = indent.length;
+
+      // FIXME: This is incorrect and should be fixed in Bug 1839297
       if (tabPrefs.indentWithTabs) {
-        indent = TAB_CHARS.repeat(++indentLevel);
         indentOffset = 4 * indentLevel;
       } else {
-        indent = SPACE_CHARS.repeat(++indentLevel);
         indentOffset = 1 * indentLevel;
       }
     }
@@ -483,6 +492,7 @@ function prettifyCSS(text, ruleCount) {
     // Here we ignore the case where whitespace appears at the end of
     // the text.
     if (
+      ruleCount !== null &&
       pushbackToken &&
       token &&
       token.tokenType === "whitespace" &&
@@ -559,7 +569,8 @@ function hasVisitedState(node) {
     return false;
   }
 
-  const ELEMENT_STATE_VISITED = 1 << 19;
+  // ElementState::VISITED
+  const ELEMENT_STATE_VISITED = 1 << 18;
 
   return (
     !!(InspectorUtils.getContentState(node) & ELEMENT_STATE_VISITED) ||
@@ -801,3 +812,25 @@ function getXPath(ele) {
   return parts.length ? "/" + parts.reverse().join("/") : "";
 }
 exports.getXPath = getXPath;
+
+/**
+ * Build up a regular expression that matches a CSS variable token. This is an
+ * ident token that starts with two dashes "--".
+ *
+ * https://www.w3.org/TR/css-syntax-3/#ident-token-diagram
+ */
+var NON_ASCII = "[^\\x00-\\x7F]";
+var ESCAPE = "\\\\[^\n\r]";
+var VALID_CHAR = ["[_a-z0-9-]", NON_ASCII, ESCAPE].join("|");
+var IS_VARIABLE_TOKEN = new RegExp(`^--(${VALID_CHAR})*$`, "i");
+
+/**
+ * Check that this is a CSS variable.
+ *
+ * @param {String} input
+ * @return {Boolean}
+ */
+function isCssVariable(input) {
+  return !!input.match(IS_VARIABLE_TOKEN);
+}
+exports.isCssVariable = isCssVariable;

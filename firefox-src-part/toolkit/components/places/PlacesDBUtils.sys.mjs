@@ -39,10 +39,8 @@ export var PlacesDBUtils = {
   async maintenanceOnIdle() {
     let tasks = [
       this.checkIntegrity,
-      this.invalidateCaches,
       this.checkCoherence,
       this._refreshUI,
-      this.originFrecencyStats,
       this.incrementalVacuum,
       this.removeOldCorruptDBs,
       this.deleteOrphanPreviews,
@@ -76,10 +74,8 @@ export var PlacesDBUtils = {
   async checkAndFixDatabase() {
     let tasks = [
       this.checkIntegrity,
-      this.invalidateCaches,
       this.checkCoherence,
       this.expire,
-      this.originFrecencyStats,
       this.vacuum,
       this.stats,
       this._refreshUI,
@@ -134,33 +130,6 @@ export var PlacesDBUtils = {
     await check("favicons.sqlite");
 
     return logs;
-  },
-
-  invalidateCaches() {
-    let logs = [];
-    return lazy.PlacesUtils.withConnectionWrapper(
-      "PlacesDBUtils: invalidate caches",
-      async db => {
-        let idsWithStaleGuidsRows = await db.execute(
-          `SELECT id FROM moz_bookmarks
-           WHERE guid IS NULL OR
-                 NOT IS_VALID_GUID(guid) OR
-                 (type = :bookmark_type AND fk IS NULL) OR
-                 (type <> :bookmark_type AND fk NOT NULL) OR
-                 type IS NULL`,
-          { bookmark_type: lazy.PlacesUtils.bookmarks.TYPE_BOOKMARK }
-        );
-        for (let row of idsWithStaleGuidsRows) {
-          let id = row.getResultByName("id");
-          lazy.PlacesUtils.invalidateCachedGuidFor(id);
-        }
-        logs.push("The caches have been invalidated");
-        return logs;
-      }
-    ).catch(ex => {
-      PlacesDBUtils.clearPendingTasks();
-      throw new Error("Unable to invalidate caches");
-    });
   },
 
   /**
@@ -1008,19 +977,6 @@ export var PlacesDBUtils = {
     }
 
     return logs;
-  },
-
-  /**
-   * Recalculates statistical data on the origin frecencies in the database.
-   *
-   * @return {Promise} resolves when statistics are collected.
-   */
-  originFrecencyStats() {
-    return new Promise(resolve => {
-      lazy.PlacesUtils.history.recalculateOriginFrecencyStats(() =>
-        resolve(["Recalculated origin frecency stats"])
-      );
-    });
   },
 
   /**

@@ -10,6 +10,7 @@ const lazy = {};
 // Ignore unused lazy property for PluginManager.
 // eslint-disable-next-line mozilla/valid-lazy
 ChromeUtils.defineESModuleGetters(lazy, {
+  AboutNewTab: "resource:///modules/AboutNewTab.sys.mjs",
   ASRouterNewTabHook:
     "resource://activity-stream/lib/ASRouterNewTabHook.sys.mjs",
   ActorManagerParent: "resource://gre/modules/ActorManagerParent.sys.mjs",
@@ -20,26 +21,35 @@ ChromeUtils.defineESModuleGetters(lazy, {
   BookmarkHTMLUtils: "resource://gre/modules/BookmarkHTMLUtils.sys.mjs",
   BookmarkJSONUtils: "resource://gre/modules/BookmarkJSONUtils.sys.mjs",
   BrowserSearchTelemetry: "resource:///modules/BrowserSearchTelemetry.sys.mjs",
+  BrowserUIUtils: "resource:///modules/BrowserUIUtils.sys.mjs",
+  BrowserUsageTelemetry: "resource:///modules/BrowserUsageTelemetry.sys.mjs",
+  BrowserWindowTracker: "resource:///modules/BrowserWindowTracker.sys.mjs",
   BuiltInThemes: "resource:///modules/BuiltInThemes.sys.mjs",
   ContextualIdentityService:
     "resource://gre/modules/ContextualIdentityService.sys.mjs",
   Corroborate: "resource://gre/modules/Corroborate.sys.mjs",
   DAPTelemetrySender: "resource://gre/modules/DAPTelemetrySender.sys.mjs",
   DeferredTask: "resource://gre/modules/DeferredTask.sys.mjs",
+  Discovery: "resource:///modules/Discovery.sys.mjs",
   DoHController: "resource:///modules/DoHController.sys.mjs",
   DownloadsViewableInternally:
     "resource:///modules/DownloadsViewableInternally.sys.mjs",
   E10SUtils: "resource://gre/modules/E10SUtils.sys.mjs",
+  ExtensionsUI: "resource:///modules/ExtensionsUI.sys.mjs",
   FeatureGate: "resource://featuregates/FeatureGate.sys.mjs",
   FxAccounts: "resource://gre/modules/FxAccounts.sys.mjs",
+  HomePage: "resource:///modules/HomePage.sys.mjs",
   Integration: "resource://gre/modules/Integration.sys.mjs",
   Interactions: "resource:///modules/Interactions.sys.mjs",
   Log: "resource://gre/modules/Log.sys.mjs",
   LoginBreaches: "resource:///modules/LoginBreaches.sys.mjs",
+  MigrationUtils: "resource:///modules/MigrationUtils.sys.mjs",
+  NetUtil: "resource://gre/modules/NetUtil.sys.mjs",
   NewTabUtils: "resource://gre/modules/NewTabUtils.sys.mjs",
   NimbusFeatures: "resource://nimbus/ExperimentAPI.sys.mjs",
   Normandy: "resource://normandy/Normandy.sys.mjs",
   OsEnvironment: "resource://gre/modules/OsEnvironment.sys.mjs",
+  PageActions: "resource:///modules/PageActions.sys.mjs",
   PageDataService: "resource:///modules/pagedata/PageDataService.sys.mjs",
   PageThumbs: "resource://gre/modules/PageThumbs.sys.mjs",
   PdfJs: "resource://pdf.js/PdfJs.sys.mjs",
@@ -50,7 +60,7 @@ ChromeUtils.defineESModuleGetters(lazy, {
   PlacesUtils: "resource://gre/modules/PlacesUtils.sys.mjs",
   PluginManager: "resource:///actors/PluginParent.sys.mjs",
   PrivateBrowsingUtils: "resource://gre/modules/PrivateBrowsingUtils.sys.mjs",
-  ProvenanceData: "resource:///modules/ProvenanceData.sys.mjs",
+  ProcessHangMonitor: "resource:///modules/ProcessHangMonitor.sys.mjs",
   PublicSuffixList:
     "resource://gre/modules/netwerk-dns/PublicSuffixList.sys.mjs",
   QuickSuggest: "resource:///modules/QuickSuggest.sys.mjs",
@@ -58,45 +68,41 @@ ChromeUtils.defineESModuleGetters(lazy, {
   RemoteSecuritySettings:
     "resource://gre/modules/psm/RemoteSecuritySettings.sys.mjs",
   RemoteSettings: "resource://services-settings/remote-settings.sys.mjs",
+  ResetPBMPanel: "resource:///modules/ResetPBMPanel.sys.mjs",
   SafeBrowsing: "resource://gre/modules/SafeBrowsing.sys.mjs",
   Sanitizer: "resource:///modules/Sanitizer.sys.mjs",
   SaveToPocket: "chrome://pocket/content/SaveToPocket.sys.mjs",
   ScreenshotsUtils: "resource:///modules/ScreenshotsUtils.sys.mjs",
+  SearchSERPDomainToCategoriesMap:
+    "resource:///modules/SearchSERPTelemetry.sys.mjs",
   SearchSERPTelemetry: "resource:///modules/SearchSERPTelemetry.sys.mjs",
   SessionStartup: "resource:///modules/sessionstore/SessionStartup.sys.mjs",
   SessionStore: "resource:///modules/sessionstore/SessionStore.sys.mjs",
   ShellService: "resource:///modules/ShellService.sys.mjs",
   ShortcutUtils: "resource://gre/modules/ShortcutUtils.sys.mjs",
+  ShoppingUtils: "resource:///modules/ShoppingUtils.sys.mjs",
   SpecialMessageActions:
     "resource://messaging-system/lib/SpecialMessageActions.sys.mjs",
   TRRRacer: "resource:///modules/TRRPerformance.sys.mjs",
+  TabCrashHandler: "resource:///modules/ContentCrashHandlers.sys.mjs",
+  TabUnloader: "resource:///modules/TabUnloader.sys.mjs",
   TelemetryUtils: "resource://gre/modules/TelemetryUtils.sys.mjs",
   UIState: "resource://services-sync/UIState.sys.mjs",
   UrlbarPrefs: "resource:///modules/UrlbarPrefs.sys.mjs",
   WebChannel: "resource://gre/modules/WebChannel.sys.mjs",
+  WindowsLaunchOnLogin: "resource://gre/modules/WindowsLaunchOnLogin.sys.mjs",
   WindowsRegistry: "resource://gre/modules/WindowsRegistry.sys.mjs",
+  WindowsGPOParser: "resource://gre/modules/policies/WindowsGPOParser.sys.mjs",
   clearTimeout: "resource://gre/modules/Timer.sys.mjs",
   setTimeout: "resource://gre/modules/Timer.sys.mjs",
 });
 
 XPCOMUtils.defineLazyModuleGetters(lazy, {
-  AboutNewTab: "resource:///modules/AboutNewTab.jsm",
   ASRouterDefaultConfig:
     "resource://activity-stream/lib/ASRouterDefaultConfig.jsm",
   ASRouter: "resource://activity-stream/lib/ASRouter.jsm",
-  BrowserUsageTelemetry: "resource:///modules/BrowserUsageTelemetry.jsm",
-  BrowserUIUtils: "resource:///modules/BrowserUIUtils.jsm",
-  BrowserWindowTracker: "resource:///modules/BrowserWindowTracker.jsm",
-  Discovery: "resource:///modules/Discovery.jsm",
-  ExtensionsUI: "resource:///modules/ExtensionsUI.jsm",
-  HomePage: "resource:///modules/HomePage.jsm",
-  NetUtil: "resource://gre/modules/NetUtil.jsm",
   OnboardingMessageProvider:
     "resource://activity-stream/lib/OnboardingMessageProvider.jsm",
-  PageActions: "resource:///modules/PageActions.jsm",
-  ProcessHangMonitor: "resource:///modules/ProcessHangMonitor.jsm",
-  TabCrashHandler: "resource:///modules/ContentCrashHandlers.jsm",
-  TabUnloader: "resource:///modules/TabUnloader.jsm",
 });
 
 if (AppConstants.MOZ_UPDATER) {
@@ -116,7 +122,7 @@ XPCOMUtils.defineLazyServiceGetters(lazy, {
   PushService: ["@mozilla.org/push/Service;1", "nsIPushService"],
 });
 
-XPCOMUtils.defineLazyGetter(
+ChromeUtils.defineLazyGetter(
   lazy,
   "accountsL10n",
   () =>
@@ -153,6 +159,12 @@ const PRIVATE_BROWSING_BINARY = "private_browsing.exe";
 const PRIVATE_BROWSING_EXE_ICON_INDEX = 1;
 const PREF_PRIVATE_BROWSING_SHORTCUT_CREATED =
   "browser.privacySegmentation.createdShortcut";
+// Whether this launch was initiated by the OS.  A launch-on-login will contain
+// the "os-autostart" flag in the initial launch command line.
+let gThisInstanceIsLaunchOnLogin = false;
+// Whether this launch was initiated by a taskbar tab shortcut. A launch from
+// a taskbar tab shortcut will contain the "taskbar-tab" flag.
+let gThisInstanceIsTaskbarTab = false;
 
 /**
  * Fission-compatible JSProcess implementations.
@@ -273,8 +285,8 @@ let JSWINDOWACTORS = {
         visibilitychange: {},
       },
     },
-    // The wildcard on about:newtab is for the ?endpoint query parameter
-    // that is used for snippets debugging. The wildcard for about:home
+    // The wildcard on about:newtab is for the # parameter
+    // that is used for the newtab devtools. The wildcard for about:home
     // is similar, and also allows for falling back to loading the
     // about:home document dynamically if an attempt is made to load
     // about:home?jscache from the AboutHomeStartupCache as a top-level
@@ -283,20 +295,6 @@ let JSWINDOWACTORS = {
     remoteTypes: ["privilegedabout"],
   },
 
-  AboutPlugins: {
-    parent: {
-      esModuleURI: "resource:///actors/AboutPluginsParent.sys.mjs",
-    },
-    child: {
-      esModuleURI: "resource:///actors/AboutPluginsChild.sys.mjs",
-
-      events: {
-        DOMDocElementInserted: { capture: true },
-      },
-    },
-
-    matches: ["about:plugins"],
-  },
   AboutPocket: {
     parent: {
       esModuleURI: "resource:///actors/AboutPocketParent.sys.mjs",
@@ -379,12 +377,26 @@ let JSWINDOWACTORS = {
     matches: ["about:tabcrashed*"],
   },
 
-  AboutWelcome: {
+  AboutWelcomeShopping: {
     parent: {
-      moduleURI: "resource:///actors/AboutWelcomeParent.jsm",
+      esModuleURI: "resource:///actors/AboutWelcomeParent.sys.mjs",
     },
     child: {
-      moduleURI: "resource:///actors/AboutWelcomeChild.jsm",
+      esModuleURI: "resource:///actors/AboutWelcomeChild.sys.mjs",
+      events: {
+        Update: {},
+      },
+    },
+    matches: ["about:shoppingsidebar"],
+    remoteTypes: ["privilegedabout"],
+  },
+
+  AboutWelcome: {
+    parent: {
+      esModuleURI: "resource:///actors/AboutWelcomeParent.sys.mjs",
+    },
+    child: {
+      esModuleURI: "resource:///actors/AboutWelcomeChild.sys.mjs",
       events: {
         // This is added so the actor instantiates immediately and makes
         // methods available to the page js on load.
@@ -569,6 +581,7 @@ let JSWINDOWACTORS = {
     includeChrome: true,
     allFrames: true,
     matches: [
+      "about:asrouter",
       "about:home",
       "about:newtab",
       "about:welcome",
@@ -598,31 +611,6 @@ let JSWINDOWACTORS = {
     },
 
     messageManagerGroups: ["browsers"],
-  },
-
-  MigrationWizard: {
-    parent: {
-      esModuleURI: "resource:///actors/MigrationWizardParent.sys.mjs",
-    },
-
-    child: {
-      esModuleURI: "resource:///actors/MigrationWizardChild.sys.mjs",
-      events: {
-        "MigrationWizard:RequestState": { wantUntrusted: true },
-        "MigrationWizard:BeginMigration": { wantUntrusted: true },
-        "MigrationWizard:RequestSafariPermissions": { wantUntrusted: true },
-        "MigrationWizard:SelectSafariPasswordFile": { wantUntrusted: true },
-      },
-    },
-
-    includeChrome: true,
-    allFrames: true,
-    matches: [
-      "about:welcome",
-      "about:welcome?*",
-      "about:preferences",
-      "chrome://browser/content/migration/migration-dialog-window.html",
-    ],
   },
 
   PageInfo: {
@@ -715,6 +703,15 @@ let JSWINDOWACTORS = {
     },
     child: {
       esModuleURI: "resource:///actors/ScreenshotsComponentChild.sys.mjs",
+      events: {
+        "Screenshots:Close": { wantUntrusted: true },
+        "Screenshots:Copy": { wantUntrusted: true },
+        "Screenshots:Download": { wantUntrusted: true },
+        "Screenshots:HidePanel": { wantUntrusted: true },
+        "Screenshots:OverlaySelection": { wantUntrusted: true },
+        "Screenshots:RecordEvent": { wantUntrusted: true },
+        "Screenshots:ShowPanel": { wantUntrusted: true },
+      },
     },
     enablePreference: "screenshots.browser.component.enabled",
   },
@@ -752,6 +749,41 @@ let JSWINDOWACTORS = {
     matches: ["about:studies*"],
   },
 
+  ShoppingSidebar: {
+    parent: {
+      esModuleURI: "resource:///actors/ShoppingSidebarParent.sys.mjs",
+    },
+    child: {
+      esModuleURI: "resource:///actors/ShoppingSidebarChild.sys.mjs",
+      events: {
+        ContentReady: { wantUntrusted: true },
+        PolledRequestMade: { wantUntrusted: true },
+        // This is added so the actor instantiates immediately and makes
+        // methods available to the page js on load.
+        DOMDocElementInserted: {},
+        ReportProductAvailable: { wantUntrusted: true },
+        AdClicked: { wantUntrusted: true },
+        AdImpression: { wantUntrusted: true },
+      },
+    },
+    matches: ["about:shoppingsidebar"],
+    remoteTypes: ["privilegedabout"],
+  },
+
+  SpeechDispatcher: {
+    parent: {
+      esModuleURI: "resource:///actors/SpeechDispatcherParent.sys.mjs",
+    },
+
+    child: {
+      esModuleURI: "resource:///actors/SpeechDispatcherChild.sys.mjs",
+      observers: ["chrome-synth-voices-error"],
+    },
+
+    messageManagerGroups: ["browsers"],
+    allFrames: true,
+  },
+
   ASRouter: {
     parent: {
       esModuleURI: "resource:///actors/ASRouterParent.sys.mjs",
@@ -765,6 +797,7 @@ let JSWINDOWACTORS = {
       },
     },
     matches: [
+      "about:asrouter*",
       "about:home*",
       "about:newtab*",
       "about:welcome*",
@@ -779,22 +812,6 @@ let JSWINDOWACTORS = {
     },
 
     allFrames: true,
-  },
-
-  // The older translations feature backed by external services.
-  // This is being replaced by a newer ML-backed translation service. See Bug 971044.
-  Translation: {
-    parent: {
-      moduleURI: "resource:///modules/translation/TranslationParent.jsm",
-    },
-    child: {
-      moduleURI: "resource:///modules/translation/TranslationChild.jsm",
-      events: {
-        pageshow: {},
-        load: { mozSystemGroup: true, capture: true },
-      },
-    },
-    enablePreference: "browser.translation.detectLanguage",
   },
 
   UITour: {
@@ -823,28 +840,43 @@ let JSWINDOWACTORS = {
   },
 };
 
-XPCOMUtils.defineLazyGetter(
+ChromeUtils.defineLazyGetter(
   lazy,
   "WeaveService",
   () => Cc["@mozilla.org/weave/service;1"].getService().wrappedJSObject
 );
 
 if (AppConstants.MOZ_CRASHREPORTER) {
-  XPCOMUtils.defineLazyModuleGetters(lazy, {
-    UnsubmittedCrashHandler: "resource:///modules/ContentCrashHandlers.jsm",
+  ChromeUtils.defineESModuleGetters(lazy, {
+    UnsubmittedCrashHandler: "resource:///modules/ContentCrashHandlers.sys.mjs",
   });
 }
 
-XPCOMUtils.defineLazyGetter(lazy, "gBrandBundle", function () {
+ChromeUtils.defineLazyGetter(lazy, "gBrandBundle", function () {
   return Services.strings.createBundle(
     "chrome://branding/locale/brand.properties"
   );
 });
 
-XPCOMUtils.defineLazyGetter(lazy, "gBrowserBundle", function () {
+ChromeUtils.defineLazyGetter(lazy, "gBrowserBundle", function () {
   return Services.strings.createBundle(
     "chrome://browser/locale/browser.properties"
   );
+});
+
+ChromeUtils.defineLazyGetter(lazy, "log", () => {
+  let { ConsoleAPI } = ChromeUtils.importESModule(
+    "resource://gre/modules/Console.sys.mjs"
+  );
+  let consoleOptions = {
+    // tip: set maxLogLevel to "debug" and use lazy.log.debug() to create
+    // detailed messages during development. See LOG_LEVELS in Console.sys.mjs
+    // for details.
+    maxLogLevel: "error",
+    maxLogLevelPref: "browser.policies.loglevel",
+    prefix: "BrowserGlue.sys.mjs",
+  };
+  return new ConsoleAPI(consoleOptions);
 });
 
 const listeners = {
@@ -907,9 +939,9 @@ export function BrowserGlue() {
     "nsIUserIdleService"
   );
 
-  XPCOMUtils.defineLazyGetter(this, "_distributionCustomizer", function () {
-    const { DistributionCustomizer } = ChromeUtils.import(
-      "resource:///modules/distribution.js"
+  ChromeUtils.defineLazyGetter(this, "_distributionCustomizer", function () {
+    const { DistributionCustomizer } = ChromeUtils.importESModule(
+      "resource:///modules/distribution.sys.mjs"
     );
     return new DistributionCustomizer();
   });
@@ -922,6 +954,77 @@ export function BrowserGlue() {
   );
 
   this._init();
+}
+
+function WindowsRegPoliciesGetter(wrk, root, regLocation) {
+  wrk.open(root, regLocation, wrk.ACCESS_READ);
+  let policies;
+  if (wrk.hasChild("Mozilla\\" + Services.appinfo.name)) {
+    policies = lazy.WindowsGPOParser.readPolicies(wrk, policies);
+  }
+  wrk.close();
+  return policies;
+}
+
+function isPrivateBrowsingAllowedInRegistry() {
+  // If there is an attempt to open Private Browsing before
+  // EnterprisePolicies are initialized the Windows registry
+  // can be checked to determine if it is enabled
+  if (Services.policies.status > Ci.nsIEnterprisePolicies.UNINITIALIZED) {
+    // Yield to policies engine if initialized
+    let privateAllowed = Services.policies.isAllowed("privatebrowsing");
+    lazy.log.debug(
+      `Yield to initialized policies engine: Private Browsing Allowed = ${privateAllowed}`
+    );
+    return privateAllowed;
+  }
+  if (AppConstants.platform !== "win") {
+    // Not using Windows so no registry, return true
+    lazy.log.debug(
+      "AppConstants.platform is not 'win': Private Browsing allowed"
+    );
+    return true;
+  }
+  // If all other checks fail only then do we check registry
+  let wrk = Cc["@mozilla.org/windows-registry-key;1"].createInstance(
+    Ci.nsIWindowsRegKey
+  );
+  let regLocation = "SOFTWARE\\Policies";
+  let userPolicies, machinePolicies;
+  // Only check HKEY_LOCAL_MACHINE if not in testing
+  if (!Cu.isInAutomation) {
+    machinePolicies = WindowsRegPoliciesGetter(
+      wrk,
+      wrk.ROOT_KEY_LOCAL_MACHINE,
+      regLocation
+    );
+  }
+  // Check machine policies before checking user policies
+  // HKEY_LOCAL_MACHINE supersedes HKEY_CURRENT_USER so only check
+  // HKEY_CURRENT_USER if the registry key is not present in
+  // HKEY_LOCAL_MACHINE at all
+  if (machinePolicies && "DisablePrivateBrowsing" in machinePolicies) {
+    lazy.log.debug(
+      `DisablePrivateBrowsing in HKEY_LOCAL_MACHINE is ${machinePolicies.DisablePrivateBrowsing}`
+    );
+    return !(machinePolicies.DisablePrivateBrowsing === 1);
+  }
+  userPolicies = WindowsRegPoliciesGetter(
+    wrk,
+    wrk.ROOT_KEY_CURRENT_USER,
+    regLocation
+  );
+  if (userPolicies && "DisablePrivateBrowsing" in userPolicies) {
+    lazy.log.debug(
+      `DisablePrivateBrowsing in HKEY_CURRENT_USER is ${userPolicies.DisablePrivateBrowsing}`
+    );
+    return !(userPolicies.DisablePrivateBrowsing === 1);
+  }
+  // Private browsing allowed if no registry entry exists
+  lazy.log.debug(
+    "No DisablePrivateBrowsing registry entry: Private Browsing allowed"
+  );
+  return true;
 }
 
 BrowserGlue.prototype = {
@@ -1099,22 +1202,6 @@ BrowserGlue.prototype = {
           "urlbar"
         );
         break;
-      case "browser-search-engine-modified":
-        // Ensure we cleanup the hiddenOneOffs pref when removing
-        // an engine, and that newly added engines are visible.
-        if (data == "engine-added" || data == "engine-removed") {
-          let engineName = subject.QueryInterface(Ci.nsISearchEngine).name;
-          let pref = Services.prefs.getStringPref(
-            "browser.search.hiddenOneOffs"
-          );
-          let hiddenList = pref ? pref.split(",") : [];
-          hiddenList = hiddenList.filter(x => x !== engineName);
-          Services.prefs.setStringPref(
-            "browser.search.hiddenOneOffs",
-            hiddenList.join(",")
-          );
-        }
-        break;
       case "xpi-signature-changed":
         let disabledAddons = JSON.parse(data).disabled;
         let addons = await lazy.AddonManager.getAddonsByIDs(disabledAddons);
@@ -1141,6 +1228,37 @@ BrowserGlue.prototype = {
         break;
       case "app-startup":
         this._earlyBlankFirstPaint(subject);
+        gThisInstanceIsTaskbarTab = subject.handleFlag("taskbar-tab", false);
+        gThisInstanceIsLaunchOnLogin = subject.handleFlag(
+          "os-autostart",
+          false
+        );
+        let launchOnLoginPref = "browser.startup.windowsLaunchOnLogin.enabled";
+        let profileSvc = Cc[
+          "@mozilla.org/toolkit/profile-service;1"
+        ].getService(Ci.nsIToolkitProfileService);
+        if (
+          AppConstants.platform == "win" &&
+          !profileSvc.startWithLastProfile
+        ) {
+          // If we don't start with last profile, the user
+          // likely sees the profile selector on launch.
+          if (Services.prefs.getBoolPref(launchOnLoginPref)) {
+            Services.telemetry.setEventRecordingEnabled(
+              "launch_on_login",
+              true
+            );
+            Services.telemetry.recordEvent(
+              "launch_on_login",
+              "last_profile_disable",
+              "startup"
+            );
+          }
+          Services.prefs.setBoolPref(launchOnLoginPref, false);
+          // Only remove registry key, not shortcut here as we can assume
+          // if a user manually created a shortcut they want this behavior.
+          await lazy.WindowsLaunchOnLogin.removeLaunchOnLoginRegistryKey();
+        }
         break;
     }
   },
@@ -1167,7 +1285,6 @@ BrowserGlue.prototype = {
       "handle-xul-text-link",
       "profile-before-change",
       "keyword-search",
-      "browser-search-engine-modified",
       "restart-in-safe-mode",
       "xpi-signature-changed",
       "sync-ui-state:update",
@@ -1184,9 +1301,6 @@ BrowserGlue.prototype = {
     this._firstWindowReady = new Promise(
       resolve => (this._firstWindowLoaded = resolve)
     );
-    if (AppConstants.platform == "win") {
-      JawsScreenReaderVersionCheck.init();
-    }
   },
 
   // cleanup (called on application shutdown)
@@ -1248,6 +1362,14 @@ BrowserGlue.prototype = {
       this._matchCBCategory
     );
     Services.prefs.removeObserver(
+      "privacy.fingerprintingProtection",
+      this._matchCBCategory
+    );
+    Services.prefs.removeObserver(
+      "privacy.fingerprintingProtection.pbmode",
+      this._matchCBCategory
+    );
+    Services.prefs.removeObserver(
       ContentBlockingCategoriesPrefs.PREF_CB_CATEGORY,
       this._updateCBCategory
     );
@@ -1298,6 +1420,8 @@ BrowserGlue.prototype = {
     }
 
     lazy.SaveToPocket.init();
+
+    lazy.ResetPBMPanel.init();
 
     AboutHomeStartupCache.init();
 
@@ -1525,7 +1649,9 @@ BrowserGlue.prototype = {
     // will show up under the regular Firefox taskbar icon first, and then switch
     // to the Private Browsing icon shortly thereafter.
     if (cmdLine.findFlag("private-window", false) != -1) {
-      browserWindowFeatures += ",private";
+      if (isPrivateBrowsingAllowedInRegistry()) {
+        browserWindowFeatures += ",private";
+      }
     }
     let win = Services.ww.openWindow(
       null,
@@ -1758,6 +1884,14 @@ BrowserGlue.prototype = {
       this._matchCBCategory
     );
     Services.prefs.addObserver(
+      "privacy.fingerprintingProtection",
+      this._matchCBCategory
+    );
+    Services.prefs.addObserver(
+      "privacy.fingerprintingProtection.pbmode",
+      this._matchCBCategory
+    );
+    Services.prefs.addObserver(
       ContentBlockingCategoriesPrefs.PREF_CB_CATEGORY,
       this._updateCBCategory
     );
@@ -1962,11 +2096,17 @@ BrowserGlue.prototype = {
       () => lazy.NewTabUtils.uninit(),
       () => lazy.Normandy.uninit(),
       () => lazy.RFPHelper.uninit(),
+      () => lazy.ShoppingUtils.uninit(),
       () => lazy.ASRouterNewTabHook.destroy(),
       () => {
         if (AppConstants.MOZ_UPDATER) {
           lazy.UpdateListener.reset();
         }
+      },
+      () => {
+        // bug 1839426 - The FOG service needs to be instantiated reliably so it
+        // can perform at-shutdown tasks later in shutdown.
+        Services.fog;
       },
     ];
 
@@ -2292,6 +2432,12 @@ BrowserGlue.prototype = {
     this._setupSearchDetection();
 
     this._monitorGPCPref();
+
+    // Loading the MigrationUtils module does the work of registering the
+    // migration wizard JSWindowActor pair. In case nothing else has done
+    // this yet, load the MigrationUtils so that the wizard is ready to be
+    // used.
+    lazy.MigrationUtils;
   },
 
   /**
@@ -2459,18 +2605,144 @@ BrowserGlue.prototype = {
           }
 
           if (!classification) {
-            if (shortcut) {
+            if (gThisInstanceIsLaunchOnLogin) {
+              classification = "Autostart";
+            } else if (shortcut) {
               classification = "OtherShortcut";
             } else {
               classification = "Other";
             }
           }
-
+          // Because of how taskbar tabs work, it may be classifed as a taskbar
+          // shortcut, in which case we want to overwrite it.
+          if (gThisInstanceIsTaskbarTab) {
+            classification = "TaskbarTab";
+          }
           Services.telemetry.scalarSet(
             "os.environment.launch_method",
             classification
           );
         },
+      },
+
+      {
+        name: "dualBrowserProtocolHandler",
+        condition:
+          AppConstants.platform == "win" &&
+          !Services.prefs.getBoolPref(
+            "browser.shell.customProtocolsRegistered"
+          ),
+        task: async () => {
+          Services.prefs.setBoolPref(
+            "browser.shell.customProtocolsRegistered",
+            true
+          );
+          const FIREFOX_HANDLER_NAME = "firefox";
+          const FIREFOX_PRIVATE_HANDLER_NAME = "firefox-private";
+          const path = Services.dirsvc.get("XREExeF", Ci.nsIFile).path;
+          let wrk = Cc["@mozilla.org/windows-registry-key;1"].createInstance(
+            Ci.nsIWindowsRegKey
+          );
+          try {
+            wrk.open(wrk.ROOT_KEY_CLASSES_ROOT, "", wrk.ACCESS_READ);
+            let FxSet = wrk.hasChild(FIREFOX_HANDLER_NAME);
+            let FxPrivateSet = wrk.hasChild(FIREFOX_PRIVATE_HANDLER_NAME);
+            wrk.close();
+            if (FxSet && FxPrivateSet) {
+              return;
+            }
+            wrk.open(
+              wrk.ROOT_KEY_CURRENT_USER,
+              "Software\\Classes",
+              wrk.ACCESS_ALL
+            );
+            const maybeUpdateRegistry = (
+              isSetAlready,
+              handler,
+              protocolName
+            ) => {
+              if (isSetAlready) {
+                return;
+              }
+              let FxKey = wrk.createChild(handler, wrk.ACCESS_ALL);
+              try {
+                // Write URL protocol key
+                FxKey.writeStringValue("", protocolName);
+                FxKey.writeStringValue("URL Protocol", "");
+                FxKey.close();
+                // Write defaultIcon key
+                FxKey.create(
+                  FxKey.ROOT_KEY_CURRENT_USER,
+                  "Software\\Classes\\" + handler + "\\DefaultIcon",
+                  FxKey.ACCESS_ALL
+                );
+                FxKey.open(
+                  FxKey.ROOT_KEY_CURRENT_USER,
+                  "Software\\Classes\\" + handler + "\\DefaultIcon",
+                  FxKey.ACCESS_ALL
+                );
+                FxKey.writeStringValue("", `\"${path}\",1`);
+                FxKey.close();
+                // Write shell\\open\\command key
+                FxKey.create(
+                  FxKey.ROOT_KEY_CURRENT_USER,
+                  "Software\\Classes\\" + handler + "\\shell",
+                  FxKey.ACCESS_ALL
+                );
+                FxKey.create(
+                  FxKey.ROOT_KEY_CURRENT_USER,
+                  "Software\\Classes\\" + handler + "\\shell\\open",
+                  FxKey.ACCESS_ALL
+                );
+                FxKey.create(
+                  FxKey.ROOT_KEY_CURRENT_USER,
+                  "Software\\Classes\\" + handler + "\\shell\\open\\command",
+                  FxKey.ACCESS_ALL
+                );
+                FxKey.open(
+                  FxKey.ROOT_KEY_CURRENT_USER,
+                  "Software\\Classes\\" + handler + "\\shell\\open\\command",
+                  FxKey.ACCESS_ALL
+                );
+                if (handler == FIREFOX_PRIVATE_HANDLER_NAME) {
+                  FxKey.writeStringValue(
+                    "",
+                    `\"${path}\" -osint -private-window \"%1\"`
+                  );
+                } else {
+                  FxKey.writeStringValue("", `\"${path}\" -osint -url \"%1\"`);
+                }
+              } catch (ex) {
+                console.log(ex);
+              } finally {
+                FxKey.close();
+              }
+            };
+            try {
+              maybeUpdateRegistry(
+                FxSet,
+                FIREFOX_HANDLER_NAME,
+                "URL:Firefox Protocol"
+              );
+            } catch (ex) {
+              console.log(ex);
+            }
+            try {
+              maybeUpdateRegistry(
+                FxPrivateSet,
+                FIREFOX_PRIVATE_HANDLER_NAME,
+                "URL:Firefox Private Browsing Protocol"
+              );
+            } catch (ex) {
+              console.log(ex);
+            }
+          } catch (ex) {
+            console.log(ex);
+          } finally {
+            wrk.close();
+          }
+        },
+        timeout: 5000,
       },
 
       // Ensure a Private Browsing Shortcut exists. This is needed in case
@@ -2587,8 +2859,8 @@ BrowserGlue.prototype = {
             WINTASKBAR_CONTRACTID in Cc &&
             Cc[WINTASKBAR_CONTRACTID].getService(Ci.nsIWinTaskbar).available
           ) {
-            const { WinTaskbarJumpList } = ChromeUtils.import(
-              "resource:///modules/WindowsJumpLists.jsm"
+            const { WinTaskbarJumpList } = ChromeUtils.importESModule(
+              "resource:///modules/WindowsJumpLists.sys.mjs"
             );
             WinTaskbarJumpList.startup();
           }
@@ -2653,14 +2925,6 @@ BrowserGlue.prototype = {
       },
 
       {
-        name: "JawsScreenReaderVersionCheck.onWindowsRestored",
-        condition: AppConstants.platform == "win",
-        task: () => {
-          JawsScreenReaderVersionCheck.onWindowsRestored();
-        },
-      },
-
-      {
         name: "RFPHelper.init",
         task: () => {
           lazy.RFPHelper.init();
@@ -2716,6 +2980,18 @@ BrowserGlue.prototype = {
         name: "initializeFOG",
         task: () => {
           Services.fog.initializeFOG();
+
+          // Register Glean to listen for experiment updates releated to the
+          // "gleanInternalSdk" feature defined in the t/c/nimbus/FeatureManifest.yaml
+          // This feature is intended for internal Glean use only. For features wishing
+          // to set a remote metric configuration, please use the "glean" feature for
+          // the purpose of setting the data-control-plane features via Server Knobs.
+          lazy.NimbusFeatures.gleanInternalSdk.onUpdate(() => {
+            let cfg = lazy.NimbusFeatures.gleanInternalSdk.getVariable(
+              "gleanMetricConfiguration"
+            );
+            Services.fog.setMetricsFeatureConfig(JSON.stringify(cfg));
+          });
 
           // Register Glean to listen for experiment updates releated to the
           // "glean" feature defined in the t/c/nimbus/FeatureManifest.yaml
@@ -2858,6 +3134,13 @@ BrowserGlue.prototype = {
       },
 
       {
+        name: "ShoppingUtils.init",
+        task: () => {
+          lazy.ShoppingUtils.init();
+        },
+      },
+
+      {
         // Starts the JSOracle process for ORB JavaScript validation, if it hasn't started already.
         name: "start-orb-javascript-oracle",
         task: () => {
@@ -2866,10 +3149,9 @@ BrowserGlue.prototype = {
       },
 
       {
-        name: "report-attribution-provenance-telemetry",
-        condition: lazy.TelemetryUtils.isTelemetryEnabled,
-        task: async () => {
-          await lazy.ProvenanceData.submitProvenanceTelemetry();
+        name: "SearchSERPDomainToCategoriesMap.init",
+        task: () => {
+          lazy.SearchSERPDomainToCategoriesMap.init().catch(console.error);
         },
       },
 
@@ -2991,6 +3273,8 @@ BrowserGlue.prototype = {
       function reportInstallationTelemetry() {
         lazy.BrowserUsageTelemetry.reportInstallationTelemetry();
       },
+
+      RunOSKeyStoreSelfTest,
     ];
 
     for (let task of idleTasks) {
@@ -3354,7 +3638,19 @@ BrowserGlue.prototype = {
         if (bookmarksUrl) {
           // Import from bookmarks.html file.
           try {
-            if (Services.policies.isAllowed("defaultBookmarks")) {
+            if (
+              Services.policies.isAllowed("defaultBookmarks") &&
+              // Default bookmarks are imported after startup, and they may
+              // influence the outcome of tests, thus it's possible to use
+              // this test-only pref to skip the import.
+              !(
+                Cu.isInAutomation &&
+                Services.prefs.getBoolPref(
+                  "browser.bookmarks.testing.skipDefaultBookmarksImport",
+                  false
+                )
+              )
+            ) {
               await lazy.BookmarkHTMLUtils.importFromURL(bookmarksUrl, {
                 replace: true,
                 source: lazy.PlacesUtils.bookmarks.SOURCES.RESTORE_ON_STARTUP,
@@ -3502,13 +3798,11 @@ BrowserGlue.prototype = {
   },
 
   // eslint-disable-next-line complexity
-  _migrateUI: function BG__migrateUI() {
+  _migrateUI() {
     // Use an increasing number to keep track of the current migration state.
     // Completely unrelated to the current Firefox release number.
-    const UI_VERSION = 137;
+    const UI_VERSION = 142;
     const BROWSER_DOCURL = AppConstants.BROWSER_CHROME_URL;
-
-    const PROFILE_DIR = Services.dirsvc.get("ProfD", Ci.nsIFile).path;
 
     if (!Services.prefs.prefHasUserValue("browser.migration.version")) {
       // This is a new profile, nothing to migrate.
@@ -3526,289 +3820,6 @@ BrowserGlue.prototype = {
     }
 
     let xulStore = Services.xulStore;
-
-    if (currentUIVersion < 64) {
-      IOUtils.remove(PathUtils.join(PROFILE_DIR, "directoryLinks.json"), {
-        ignoreAbsent: true,
-      });
-    }
-
-    if (
-      currentUIVersion < 65 &&
-      Services.prefs.getCharPref("general.config.filename", "") ==
-        "dsengine.cfg"
-    ) {
-      let searchInitializedPromise = new Promise(resolve => {
-        if (Services.search.isInitialized) {
-          resolve();
-        }
-        const SEARCH_SERVICE_TOPIC = "browser-search-service";
-        Services.obs.addObserver(function observer(subject, topic, data) {
-          if (data != "init-complete") {
-            return;
-          }
-          Services.obs.removeObserver(observer, SEARCH_SERVICE_TOPIC);
-          resolve();
-        }, SEARCH_SERVICE_TOPIC);
-      });
-      searchInitializedPromise.then(() => {
-        let engineNames = [
-          "Bing Search Engine",
-          "Yahoo! Search Engine",
-          "Yandex Search Engine",
-        ];
-        for (let engineName of engineNames) {
-          let engine = Services.search.getEngineByName(engineName);
-          if (engine) {
-            Services.search.removeEngine(engine);
-          }
-        }
-      });
-    }
-
-    if (currentUIVersion < 67) {
-      // Migrate devtools firebug theme users to light theme (bug 1378108):
-      if (Services.prefs.getCharPref("devtools.theme") == "firebug") {
-        Services.prefs.setCharPref("devtools.theme", "light");
-      }
-    }
-
-    if (currentUIVersion < 68) {
-      // Remove blocklists legacy storage, now relying on IndexedDB.
-      IOUtils.remove(PathUtils.join(PROFILE_DIR, "kinto.sqlite"), {
-        ignoreAbsent: true,
-      });
-    }
-
-    if (currentUIVersion < 69) {
-      // Clear old social prefs from profile (bug 1460675)
-      let socialPrefs = Services.prefs.getBranch("social.");
-      if (socialPrefs) {
-        let socialPrefsArray = socialPrefs.getChildList("");
-        for (let item of socialPrefsArray) {
-          Services.prefs.clearUserPref("social." + item);
-        }
-      }
-    }
-
-    if (currentUIVersion < 70) {
-      // Migrate old ctrl-tab pref to new one in existing profiles. (This code
-      // doesn't run at all in new profiles.)
-      Services.prefs.setBoolPref(
-        "browser.ctrlTab.recentlyUsedOrder",
-        Services.prefs.getBoolPref("browser.ctrlTab.previews", false)
-      );
-      Services.prefs.clearUserPref("browser.ctrlTab.previews");
-      // Remember that we migrated the pref in case we decide to flip it for
-      // these users.
-      Services.prefs.setBoolPref("browser.ctrlTab.migrated", true);
-    }
-
-    if (currentUIVersion < 71) {
-      // Clear legacy saved prefs for content handlers.
-      let savedContentHandlers = Services.prefs.getChildList(
-        "browser.contentHandlers.types"
-      );
-      for (let savedHandlerPref of savedContentHandlers) {
-        Services.prefs.clearUserPref(savedHandlerPref);
-      }
-    }
-
-    if (currentUIVersion < 72) {
-      // Migrate performance tool's recording interval value from msec to usec.
-      let pref = "devtools.performance.recording.interval";
-      Services.prefs.setIntPref(
-        pref,
-        Services.prefs.getIntPref(pref, 1) * 1000
-      );
-    }
-
-    if (currentUIVersion < 73) {
-      // Remove blocklist JSON local dumps in profile.
-      IOUtils.remove(PathUtils.join(PROFILE_DIR, "blocklists"), {
-        recursive: true,
-        ignoreAbsent: true,
-      });
-      IOUtils.remove(PathUtils.join(PROFILE_DIR, "blocklists-preview"), {
-        recursive: true,
-        ignoreAbsent: true,
-      });
-      for (const filename of ["addons.json", "plugins.json", "gfx.json"]) {
-        // Some old versions used to dump without subfolders. Clean them while we are at it.
-        const path = PathUtils.join(PROFILE_DIR, `blocklists-${filename}`);
-        IOUtils.remove(path, { ignoreAbsent: true });
-      }
-    }
-
-    if (currentUIVersion < 76) {
-      // Clear old onboarding prefs from profile (bug 1462415)
-      let onboardingPrefs = Services.prefs.getBranch("browser.onboarding.");
-      if (onboardingPrefs) {
-        let onboardingPrefsArray = onboardingPrefs.getChildList("");
-        for (let item of onboardingPrefsArray) {
-          Services.prefs.clearUserPref("browser.onboarding." + item);
-        }
-      }
-    }
-
-    if (currentUIVersion < 77) {
-      // Remove currentset from all the toolbars
-      let toolbars = [
-        "nav-bar",
-        "PersonalToolbar",
-        "TabsToolbar",
-        "toolbar-menubar",
-      ];
-      for (let toolbarId of toolbars) {
-        xulStore.removeValue(BROWSER_DOCURL, toolbarId, "currentset");
-      }
-    }
-
-    if (currentUIVersion < 78) {
-      Services.prefs.clearUserPref("browser.search.region");
-    }
-
-    if (currentUIVersion < 79) {
-      // The handler app service will read this. We need to wait with migrating
-      // until the handler service has started up, so just set a pref here.
-      Services.prefs.setCharPref("browser.handlers.migrations", "30boxes");
-    }
-
-    if (currentUIVersion < 80) {
-      let hosts = Services.prefs.getCharPref("network.proxy.no_proxies_on");
-      // remove "localhost" and "127.0.0.1" from the no_proxies_on list
-      const kLocalHosts = new Set(["localhost", "127.0.0.1"]);
-      hosts = hosts
-        .split(/[ ,]+/)
-        .filter(host => !kLocalHosts.has(host))
-        .join(", ");
-      Services.prefs.setCharPref("network.proxy.no_proxies_on", hosts);
-    }
-
-    if (currentUIVersion < 81) {
-      // Reset homepage pref for users who have it set to a default from before Firefox 4:
-      //   <locale>.(start|start2|start3).mozilla.(com|org)
-      if (lazy.HomePage.overridden) {
-        const DEFAULT = lazy.HomePage.getDefault();
-        let value = lazy.HomePage.get();
-        let updated = value.replace(
-          /https?:\/\/([\w\-]+\.)?start\d*\.mozilla\.(org|com)[^|]*/gi,
-          DEFAULT
-        );
-        if (updated != value) {
-          if (updated == DEFAULT) {
-            lazy.HomePage.reset();
-          } else {
-            value = updated;
-            lazy.HomePage.safeSet(value);
-          }
-        }
-      }
-    }
-
-    if (currentUIVersion < 82) {
-      this._migrateXULStoreForDocument(
-        "chrome://browser/content/browser.xul",
-        "chrome://browser/content/browser.xhtml"
-      );
-    }
-
-    if (currentUIVersion < 83) {
-      Services.prefs.clearUserPref("browser.search.reset.status");
-    }
-
-    if (currentUIVersion < 84) {
-      // Reset flash "always allow/block" permissions
-      // We keep session and policy permissions, which could both be
-      // the result of enterprise policy settings. "Never/Always allow"
-      // settings for flash were actually time-bound on recent-ish Firefoxen,
-      // so we remove EXPIRE_TIME entries, too.
-      const { EXPIRE_NEVER, EXPIRE_TIME } = Services.perms;
-      let flashPermissions = Services.perms
-        .getAllWithTypePrefix("plugin:flash")
-        .filter(
-          p =>
-            p.type == "plugin:flash" &&
-            (p.expireType == EXPIRE_NEVER || p.expireType == EXPIRE_TIME)
-        );
-      flashPermissions.forEach(p => Services.perms.removePermission(p));
-    }
-
-    // currentUIVersion < 85 is missing due to the following:
-    // Origianlly, Bug #1568900 added currentUIVersion 85 but was targeting FF70 release.
-    // In between it landing in FF70, Bug #1562601 (currentUIVersion 86) landed and
-    // was uplifted to Beta. To make sure the migration doesn't get skipped, the
-    // code block that was at 85 has been moved/bumped to currentUIVersion 87.
-
-    if (currentUIVersion < 86) {
-      // If the user has set "media.autoplay.allow-muted" to false
-      // migrate that to media.autoplay.default=BLOCKED_ALL.
-      if (
-        Services.prefs.prefHasUserValue("media.autoplay.allow-muted") &&
-        !Services.prefs.getBoolPref("media.autoplay.allow-muted") &&
-        !Services.prefs.prefHasUserValue("media.autoplay.default") &&
-        Services.prefs.getIntPref("media.autoplay.default") ==
-          Ci.nsIAutoplay.BLOCKED
-      ) {
-        Services.prefs.setIntPref(
-          "media.autoplay.default",
-          Ci.nsIAutoplay.BLOCKED_ALL
-        );
-      }
-      Services.prefs.clearUserPref("media.autoplay.allow-muted");
-    }
-
-    if (currentUIVersion < 87) {
-      const TRACKING_TABLE_PREF = "urlclassifier.trackingTable";
-      const CUSTOM_BLOCKING_PREF =
-        "browser.contentblocking.customBlockList.preferences.ui.enabled";
-      // Check if user has set custom tables pref, and show custom block list UI
-      // in the about:preferences#privacy custom panel.
-      if (Services.prefs.prefHasUserValue(TRACKING_TABLE_PREF)) {
-        Services.prefs.setBoolPref(CUSTOM_BLOCKING_PREF, true);
-      }
-    }
-
-    if (currentUIVersion < 88) {
-      // If the user the has "browser.contentblocking.category = custom", but has
-      // the exact same settings as "standard", move them once to "standard". This is
-      // to reset users who we may have moved accidentally, or moved to get ETP early.
-      let category_prefs = [
-        "network.cookie.cookieBehavior",
-        "privacy.trackingprotection.pbmode.enabled",
-        "privacy.trackingprotection.enabled",
-        "privacy.trackingprotection.socialtracking.enabled",
-        "privacy.trackingprotection.fingerprinting.enabled",
-        "privacy.trackingprotection.cryptomining.enabled",
-      ];
-      if (
-        Services.prefs.getStringPref(
-          "browser.contentblocking.category",
-          "standard"
-        ) == "custom"
-      ) {
-        let shouldMigrate = true;
-        for (let pref of category_prefs) {
-          if (Services.prefs.prefHasUserValue(pref)) {
-            shouldMigrate = false;
-          }
-        }
-        if (shouldMigrate) {
-          Services.prefs.setStringPref(
-            "browser.contentblocking.category",
-            "standard"
-          );
-        }
-      }
-    }
-
-    if (currentUIVersion < 89) {
-      // This file was renamed in https://bugzilla.mozilla.org/show_bug.cgi?id=1595636.
-      this._migrateXULStoreForDocument(
-        "chrome://devtools/content/framework/toolbox-window.xul",
-        "chrome://devtools/content/framework/toolbox-window.xhtml"
-      );
-    }
 
     if (currentUIVersion < 90) {
       this._migrateXULStoreForDocument(
@@ -4226,48 +4237,6 @@ BrowserGlue.prototype = {
       }
     }
 
-    if (currentUIVersion < 126) {
-      // Bug 1747343 - Add a pref to set the default download action to "Always
-      // ask" so the UCT dialog will be opened for mime types that are not
-      // stored already. Users who wanted this behavior would have disabled the
-      // experimental pref browser.download.improvements_to_download_panel so we
-      // can migrate its inverted value to this new pref.
-      if (
-        !Services.prefs.getBoolPref(
-          "browser.download.improvements_to_download_panel",
-          true
-        )
-      ) {
-        Services.prefs.setBoolPref(
-          "browser.download.always_ask_before_handling_new_types",
-          true
-        );
-      }
-    }
-
-    // Bug 1769071: The UI Version 127 was used for a clean up code that is not
-    // necessary anymore. Please do not use 127 because this number is probably
-    // set in Nightly and Beta channel.
-
-    // Non-macOS only (on macOS we've never used the tmp folder for downloads):
-    if (AppConstants.platform != "macosx" && currentUIVersion < 128) {
-      // Bug 1738574 - Add a pref to start downloads in the tmp folder.
-      // Users who wanted this behavior would have disabled the experimental
-      // pref browser.download.improvements_to_download_panel so we
-      // can migrate its inverted value to this new pref.
-      if (
-        !Services.prefs.getBoolPref(
-          "browser.download.improvements_to_download_panel",
-          true
-        )
-      ) {
-        Services.prefs.setBoolPref(
-          "browser.download.start_downloads_in_tmp_dir",
-          true
-        );
-      }
-    }
-
     function migrateXULAttributeToStyle(url, id, attr) {
       try {
         let value = Services.xulStore.getValue(url, id, attr);
@@ -4341,6 +4310,100 @@ BrowserGlue.prototype = {
         Services.appinfo.prefersReducedMotion
       ) {
         Services.prefs.setBoolPref("general.smoothScroll", true);
+      }
+    }
+
+    if (currentUIVersion < 138) {
+      // Bug 1757297: Change scheme of all existing 'https-only-load-insecure'
+      // permissions with https scheme to http scheme.
+      try {
+        Services.perms
+          .getAllByTypes(["https-only-load-insecure"])
+          .filter(permission => permission.principal.schemeIs("https"))
+          .forEach(permission => {
+            const capability = permission.capability;
+            const uri = permission.principal.URI.mutate()
+              .setScheme("http")
+              .finalize();
+            const principal =
+              Services.scriptSecurityManager.createContentPrincipal(uri, {});
+            Services.perms.removePermission(permission);
+            Services.perms.addFromPrincipal(
+              principal,
+              "https-only-load-insecure",
+              capability
+            );
+          });
+      } catch (e) {
+        console.error("Error migrating https-only-load-insecure permission", e);
+      }
+    }
+
+    if (currentUIVersion < 139) {
+      // Reset the default permissions to ALLOW_ACTION to rollback issues for
+      // affected users, see Bug 1579517
+      // originInfo in the format [origin, type]
+      [
+        ["https://www.mozilla.org", "uitour"],
+        ["https://support.mozilla.org", "uitour"],
+        ["about:home", "uitour"],
+        ["about:newtab", "uitour"],
+        ["https://addons.mozilla.org", "install"],
+        ["https://support.mozilla.org", "remote-troubleshooting"],
+        ["about:welcome", "autoplay-media"],
+      ].forEach(originInfo => {
+        // Reset permission on the condition that it is set to
+        // UNKNOWN_ACTION, we want to prevent resetting user
+        // manipulated permissions
+        if (
+          Services.perms.UNKNOWN_ACTION ==
+          Services.perms.testPermissionFromPrincipal(
+            Services.scriptSecurityManager.createContentPrincipalFromOrigin(
+              originInfo[0]
+            ),
+            originInfo[1]
+          )
+        ) {
+          // Adding permissions which have default values does not create
+          // new permissions, but rather remove the UNKNOWN_ACTION permission
+          // overrides. User's not affected by Bug 1579517 will not be affected by this addition.
+          Services.perms.addFromPrincipal(
+            Services.scriptSecurityManager.createContentPrincipalFromOrigin(
+              originInfo[0]
+            ),
+            originInfo[1],
+            Services.perms.ALLOW_ACTION
+          );
+        }
+      });
+    }
+
+    if (currentUIVersion < 140) {
+      // Remove browser.fixup.alternate.enabled pref in Bug 1850902.
+      Services.prefs.clearUserPref("browser.fixup.alternate.enabled");
+    }
+
+    if (currentUIVersion < 141) {
+      for (const filename of ["signons.sqlite", "signons.sqlite.corrupt"]) {
+        const filePath = PathUtils.join(PathUtils.profileDir, filename);
+        IOUtils.remove(filePath, { ignoreAbsent: true }).catch(console.error);
+      }
+    }
+
+    if (currentUIVersion < 142) {
+      // Bug 1860392 - Remove incorrectly persisted theming values from sidebar style.
+      try {
+        let value = xulStore.getValue(BROWSER_DOCURL, "sidebar-box", "style");
+        if (value) {
+          // Remove custom properties.
+          value = value
+            .split(";")
+            .filter(v => !v.trim().startsWith("--"))
+            .join(";");
+          xulStore.setValue(BROWSER_DOCURL, "sidebar-box", "style", value);
+        }
+      } catch (ex) {
+        console.error(ex);
       }
     }
 
@@ -4893,6 +4956,8 @@ var ContentBlockingCategoriesPrefs = {
         "privacy.partition.network_state.ocsp_cache": null,
         "privacy.query_stripping.enabled": null,
         "privacy.query_stripping.enabled.pbmode": null,
+        "privacy.fingerprintingProtection": null,
+        "privacy.fingerprintingProtection.pbmode": null,
       },
       standard: {
         "network.cookie.cookieBehavior": null,
@@ -4911,6 +4976,8 @@ var ContentBlockingCategoriesPrefs = {
         "privacy.partition.network_state.ocsp_cache": null,
         "privacy.query_stripping.enabled": null,
         "privacy.query_stripping.enabled.pbmode": null,
+        "privacy.fingerprintingProtection": null,
+        "privacy.fingerprintingProtection.pbmode": null,
       },
     };
     let type = "strict";
@@ -5043,6 +5110,22 @@ var ContentBlockingCategoriesPrefs = {
         case "-qpsPBM":
           this.CATEGORY_PREFS[type][
             "privacy.query_stripping.enabled.pbmode"
+          ] = false;
+          break;
+        case "fpp":
+          this.CATEGORY_PREFS[type]["privacy.fingerprintingProtection"] = true;
+          break;
+        case "-fpp":
+          this.CATEGORY_PREFS[type]["privacy.fingerprintingProtection"] = false;
+          break;
+        case "fppPrivate":
+          this.CATEGORY_PREFS[type][
+            "privacy.fingerprintingProtection.pbmode"
+          ] = true;
+          break;
+        case "-fppPrivate":
+          this.CATEGORY_PREFS[type][
+            "privacy.fingerprintingProtection.pbmode"
           ] = false;
           break;
         case "cookieBehavior0":
@@ -5413,7 +5496,12 @@ export var DefaultBrowserCheck = {
     let buttonNumClicked = rv.get("buttonNumClicked");
     let checkboxState = rv.get("checked");
     if (buttonNumClicked == 0) {
-      shellService.setAsDefault();
+      try {
+        await shellService.setAsDefault();
+      } catch (e) {
+        this.log.error("Failed to set the default browser", e);
+      }
+
       shellService.pinToTaskbar();
     }
     if (checkboxState) {
@@ -5539,102 +5627,6 @@ export var DefaultBrowserCheck = {
     }
 
     return willPrompt;
-  },
-};
-
-/*
- * Prompts users who have an outdated JAWS screen reader informing
- * them they need to update JAWS or switch to esr. Can be removed
- * 12/31/2018.
- */
-var JawsScreenReaderVersionCheck = {
-  _prompted: false,
-
-  init() {
-    Services.obs.addObserver(this, "a11y-init-or-shutdown", true);
-  },
-
-  QueryInterface: ChromeUtils.generateQI([
-    "nsIObserver",
-    "nsISupportsWeakReference",
-  ]),
-
-  observe(subject, topic, data) {
-    if (topic == "a11y-init-or-shutdown" && data == "1") {
-      Services.tm.dispatchToMainThread(() => this._checkVersionAndPrompt());
-    }
-  },
-
-  onWindowsRestored() {
-    Services.tm.dispatchToMainThread(() => this._checkVersionAndPrompt());
-  },
-
-  _checkVersionAndPrompt() {
-    // Make sure we only prompt for versions of JAWS we do not
-    // support and never prompt if e10s is disabled or if we're on
-    // nightly.
-    if (
-      !Services.appinfo.shouldBlockIncompatJaws ||
-      !Services.appinfo.browserTabsRemoteAutostart ||
-      AppConstants.NIGHTLY_BUILD
-    ) {
-      return;
-    }
-
-    let win = lazy.BrowserWindowTracker.getTopWindow();
-    if (!win || !win.gBrowser || !win.gBrowser.selectedBrowser) {
-      Services.console.logStringMessage(
-        "Content access support for older versions of JAWS is disabled " +
-          "due to compatibility issues with this version of Firefox."
-      );
-      this._prompted = false;
-      return;
-    }
-
-    // Only prompt once per session
-    if (this._prompted) {
-      return;
-    }
-    this._prompted = true;
-
-    let browser = win.gBrowser.selectedBrowser;
-
-    // Prompt JAWS users to let them know they need to update
-    let promptMessage = win.gNavigatorBundle.getFormattedString(
-      "e10s.accessibilityNotice.jawsMessage",
-      [lazy.gBrandBundle.GetStringFromName("brandShortName")]
-    );
-    let notification;
-    // main option: an Ok button, keeps running with content accessibility disabled
-    let mainAction = {
-      label: win.gNavigatorBundle.getString(
-        "e10s.accessibilityNotice.acceptButton.label"
-      ),
-      accessKey: win.gNavigatorBundle.getString(
-        "e10s.accessibilityNotice.acceptButton.accesskey"
-      ),
-      callback() {
-        // If the user invoked the button option remove the notification,
-        // otherwise keep the alert icon around in the address bar.
-        notification.remove();
-      },
-    };
-    let options = {
-      popupIconURL: "chrome://browser/skin/e10s-64@2x.png",
-      persistWhileVisible: true,
-      persistent: true,
-      persistence: 100,
-    };
-
-    notification = win.PopupNotifications.show(
-      browser,
-      "e10s_enabled_with_incompat_jaws",
-      promptMessage,
-      null,
-      mainAction,
-      null,
-      options
-    );
   },
 };
 
@@ -6531,3 +6523,70 @@ export var AboutHomeStartupCache = {
     this._cacheEntryResolver(this._cacheEntry);
   },
 };
+
+async function RunOSKeyStoreSelfTest() {
+  // The linux implementation always causes an OS dialog, in contrast to
+  // Windows and macOS (the latter of which causes an OS dialog to appear on
+  // local developer builds), so only run on Windows and macOS and only if this
+  // has been built and signed by Mozilla's infrastructure. Similarly, don't
+  // run this code in automation.
+  if (
+    (AppConstants.platform != "win" && AppConstants.platform != "macosx") ||
+    !AppConstants.MOZILLA_OFFICIAL ||
+    Services.env.get("MOZ_AUTOMATION")
+  ) {
+    return;
+  }
+  let osKeyStore = Cc["@mozilla.org/security/oskeystore;1"].getService(
+    Ci.nsIOSKeyStore
+  );
+  let label = Services.prefs.getCharPref("security.oskeystore.test.label", "");
+  if (!label) {
+    label = Services.uuid.generateUUID().toString().slice(1, -1);
+    Services.prefs.setCharPref("security.oskeystore.test.label", label);
+    try {
+      await osKeyStore.asyncGenerateSecret(label);
+      Glean.oskeystore.selfTest.generate.set(true);
+    } catch (_) {
+      Glean.oskeystore.selfTest.generate.set(false);
+      return;
+    }
+  }
+  let secretAvailable = await osKeyStore.asyncSecretAvailable(label);
+  Glean.oskeystore.selfTest.available.set(secretAvailable);
+  if (!secretAvailable) {
+    return;
+  }
+  let encrypted = Services.prefs.getCharPref(
+    "security.oskeystore.test.encrypted",
+    ""
+  );
+  if (!encrypted) {
+    try {
+      encrypted = await osKeyStore.asyncEncryptBytes(label, [1, 1, 3, 8]);
+      Services.prefs.setCharPref(
+        "security.oskeystore.test.encrypted",
+        encrypted
+      );
+      Glean.oskeystore.selfTest.encrypt.set(true);
+    } catch (_) {
+      Glean.oskeystore.selfTest.encrypt.set(false);
+      return;
+    }
+  }
+  try {
+    let decrypted = await osKeyStore.asyncDecryptBytes(label, encrypted);
+    if (
+      decrypted.length != 4 ||
+      decrypted[0] != 1 ||
+      decrypted[1] != 1 ||
+      decrypted[2] != 3 ||
+      decrypted[3] != 8
+    ) {
+      throw new Error("decrypted value not as expected?");
+    }
+    Glean.oskeystore.selfTest.decrypt.set(true);
+  } catch (_) {
+    Glean.oskeystore.selfTest.decrypt.set(false);
+  }
+}

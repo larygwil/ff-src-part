@@ -423,7 +423,7 @@ export var PageThumbs = {
       let buffer = await TaskUtils.readBlob(blob);
       await this._store(originalURL, url, buffer, channelError);
     } catch (ex) {
-      console.error("Exception thrown during thumbnail capture: '", ex, "'");
+      console.error("Exception thrown during thumbnail capture:", ex);
     }
   },
 
@@ -883,5 +883,5 @@ export var PageThumbsExpiration = {
  * Interface to a dedicated thread handling I/O
  */
 var PageThumbsWorker = new BasePromiseWorker(
-  "resource://gre/modules/PageThumbsWorker.js"
+  "resource://gre/modules/PageThumbs.worker.js"
 );

@@ -86,11 +86,11 @@ var gWeakIntersectingVideosForTesting = new WeakSet();
 // content process, so we set this as a lazy process global.
 // See PictureInPictureToggleChild.getSiteOverrides for a
 // sense of what the return types are.
-XPCOMUtils.defineLazyGetter(lazy, "gSiteOverrides", () => {
+ChromeUtils.defineLazyGetter(lazy, "gSiteOverrides", () => {
   return PictureInPictureToggleChild.getSiteOverrides();
 });
 
-XPCOMUtils.defineLazyGetter(lazy, "logConsole", () => {
+ChromeUtils.defineLazyGetter(lazy, "logConsole", () => {
   return console.createInstance({
     prefix: "PictureInPictureChild",
     maxLogLevel: Services.prefs.getBoolPref(
@@ -139,6 +139,7 @@ export class PictureInPictureLauncherChild extends JSWindowActorChild {
           this.togglePictureInPicture({
             video: event.target,
             reason: event.detail?.reason,
+            eventExtraKeys: event.detail?.eventExtraKeys,
           });
         }
         break;
@@ -161,15 +162,17 @@ export class PictureInPictureLauncherChild extends JSWindowActorChild {
    * Picture-in-Picture window existing, this tells the parent to
    * close it before opening the new one.
    *
-   * @param {Object} pipObject An object containing the video and reason
-   * for toggling the PiP video
+   * @param {Object} pipObject
+   * @param {HTMLVideoElement} pipObject.video
+   * @param {String} pipObject.reason What toggled PiP, e.g. "shortcut"
+   * @param {Object} pipObject.eventExtraKeys Extra telemetry keys to record
    *
    * @return {Promise}
    * @resolves {undefined} Once the new Picture-in-Picture window
    * has been requested.
    */
   async togglePictureInPicture(pipObject) {
-    let { video, reason } = pipObject;
+    let { video, reason, eventExtraKeys = {} } = pipObject;
     if (video.isCloningElementVisually) {
       // The only way we could have entered here for the same video is if
       // we are toggling via the context menu or via the urlbar button,
@@ -224,20 +227,20 @@ export class PictureInPictureLauncherChild extends JSWindowActorChild {
       webVTTSubtitles: !!video.textTracks?.length,
       scrubberPosition,
       timestamp,
+      volume: PictureInPictureChild.videoWrapper.getVolume(video),
     });
-
-    let args = {
-      firstTimeToggle: (!Services.prefs.getBoolPref(
-        TOGGLE_HAS_USED_PREF
-      )).toString(),
-    };
 
     Services.telemetry.recordEvent(
       "pictureinpicture",
       "opened_method",
       reason,
       null,
-      args
+      {
+        firstTimeToggle: (!Services.prefs.getBoolPref(
+          TOGGLE_HAS_USED_PREF
+        )).toString(),
+        ...eventExtraKeys,
+      }
     );
   }
 
@@ -306,7 +309,7 @@ export class PictureInPictureToggleChild extends JSWindowActorChild {
   receiveMessage(message) {
     switch (message.name) {
       case "PictureInPicture:UrlbarToggle": {
-        this.urlbarToggle();
+        this.urlbarToggle(message.data);
         break;
       }
     }
@@ -629,10 +632,7 @@ export class PictureInPictureToggleChild extends JSWindowActorChild {
       pipCount: videos.length,
       pipDisabledCount: videos.reduce(
         (accumulator, currentVal) =>
-          accumulator +
-          (currentVal.getAttribute("disablePictureInPicture") === "true"
-            ? 1
-            : 0),
+          accumulator + (currentVal.disablePictureInPicture ? 1 : 0),
         0
       ),
     });
@@ -652,16 +652,13 @@ export class PictureInPictureToggleChild extends JSWindowActorChild {
       pipCount: videos.length,
       pipDisabledCount: videos.reduce(
         (accumulator, currentVal) =>
-          accumulator +
-          (currentVal.getAttribute("disablePictureInPicture") === "true"
-            ? 1
-            : 0),
+          accumulator + (currentVal.disablePictureInPicture ? 1 : 0),
         0
       ),
     });
   }
 
-  urlbarToggle() {
+  urlbarToggle(eventExtraKeys) {
     let video = ChromeUtils.nondeterministicGetWeakSetKeys(
       this.eligiblePipVideos
     )[0];
@@ -670,7 +667,7 @@ export class PictureInPictureToggleChild extends JSWindowActorChild {
         "MozTogglePictureInPicture",
         {
           bubbles: true,
-          detail: { reason: "urlBar" },
+          detail: { reason: "urlBar", eventExtraKeys },
         }
       );
       video.dispatchEvent(pipEvent);
@@ -1530,7 +1527,7 @@ export class PictureInPictureToggleChild extends JSWindowActorChild {
       this.sendAsyncMessage("PictureInPicture:OpenToggleContextMenu", {
         screenXDevPx: event.screenX * devicePixelRatio,
         screenYDevPx: event.screenY * devicePixelRatio,
-        mozInputSource: event.mozInputSource,
+        inputSource: event.inputSource,
       });
       event.stopImmediatePropagation();
       event.preventDefault();
@@ -1939,6 +1936,9 @@ export class PictureInPictureChild extends JSWindowActorChild {
         } else {
           this.sendAsyncMessage("PictureInPicture:Unmuting");
         }
+        this.sendAsyncMessage("PictureInPicture:VolumeChange", {
+          volume: this.videoWrapper.getVolume(video),
+        });
         break;
       }
       case "resize": {
@@ -2141,6 +2141,12 @@ export class PictureInPictureChild extends JSWindowActorChild {
       case "PictureInPicture:SetVideoTime": {
         const { scrubberPosition, wasPlaying } = message.data;
         this.setVideoTime(scrubberPosition, wasPlaying);
+        break;
+      }
+      case "PictureInPicture:SetVolume": {
+        const { volume } = message.data;
+        let video = this.getWeakVideo();
+        this.videoWrapper.setVolume(video, volume);
         break;
       }
     }
@@ -2565,12 +2571,16 @@ export class PictureInPictureChild extends JSWindowActorChild {
           this.closePictureInPicture({ reason: "closePlayerShortcut" });
           break;
         case "downArrow" /* Volume decrease */:
-          if (this.isKeyDisabled(lazy.KEYBOARD_CONTROLS.VOLUME)) {
+          if (
+            this.isKeyDisabled(lazy.KEYBOARD_CONTROLS.VOLUME) ||
+            this.videoWrapper.isMuted(video)
+          ) {
             return;
           }
           oldval = this.videoWrapper.getVolume(video);
-          this.videoWrapper.setVolume(video, oldval < 0.1 ? 0 : oldval - 0.1);
-          this.videoWrapper.setMuted(video, false);
+          newval = oldval < 0.1 ? 0 : oldval - 0.1;
+          this.videoWrapper.setVolume(video, newval);
+          this.videoWrapper.setMuted(video, newval === 0);
           break;
         case "upArrow" /* Volume increase */:
           if (this.isKeyDisabled(lazy.KEYBOARD_CONTROLS.VOLUME)) {

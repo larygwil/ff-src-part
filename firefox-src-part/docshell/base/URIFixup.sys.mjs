@@ -70,12 +70,6 @@ XPCOMUtils.defineLazyPreferenceGetter(
 );
 XPCOMUtils.defineLazyPreferenceGetter(
   lazy,
-  "alternateEnabled",
-  "browser.fixup.alternate.enabled",
-  false
-);
-XPCOMUtils.defineLazyPreferenceGetter(
-  lazy,
   "alternateProtocol",
   "browser.fixup.alternate.protocol",
   "https"
@@ -94,7 +88,6 @@ const {
   FIXUP_FLAGS_MAKE_ALTERNATE_URI,
   FIXUP_FLAG_PRIVATE_CONTEXT,
   FIXUP_FLAG_FIX_SCHEME_TYPOS,
-  FIXUP_FLAG_FORCE_ALTERNATE_URI,
 } = Ci.nsIURIFixup;
 
 const COMMON_PROTOCOLS = ["http", "https", "file"];
@@ -102,20 +95,20 @@ const COMMON_PROTOCOLS = ["http", "https", "file"];
 // Regex used to identify user:password tokens in url strings.
 // This is not a strict valid characters check, because we try to fixup this
 // part of the url too.
-XPCOMUtils.defineLazyGetter(
+ChromeUtils.defineLazyGetter(
   lazy,
   "userPasswordRegex",
   () => /^([a-z+.-]+:\/{0,3})*([^\/@]+@).+/i
 );
 
 // Regex used to identify the string that starts with port expression.
-XPCOMUtils.defineLazyGetter(lazy, "portRegex", () => /^:\d{1,5}([?#/]|$)/);
+ChromeUtils.defineLazyGetter(lazy, "portRegex", () => /^:\d{1,5}([?#/]|$)/);
 
 // Regex used to identify numbers.
-XPCOMUtils.defineLazyGetter(lazy, "numberRegex", () => /^[0-9]+(\.[0-9]+)?$/);
+ChromeUtils.defineLazyGetter(lazy, "numberRegex", () => /^[0-9]+(\.[0-9]+)?$/);
 
 // Regex used to identify tab separated content (having at least 2 tabs).
-XPCOMUtils.defineLazyGetter(lazy, "maxOneTabRegex", () => /^[^\t]*\t?[^\t]*$/);
+ChromeUtils.defineLazyGetter(lazy, "maxOneTabRegex", () => /^[^\t]*\t?[^\t]*$/);
 
 // Regex used to test if a string with a protocol might instead be a url
 // without a protocol but with a port:
@@ -134,20 +127,20 @@ XPCOMUtils.defineLazyGetter(lazy, "maxOneTabRegex", () => /^[^\t]*\t?[^\t]*$/);
 //
 // Note: Parser could be a lot tighter, tossing out silly hostnames
 //       such as those containing consecutive dots and so on.
-XPCOMUtils.defineLazyGetter(
+ChromeUtils.defineLazyGetter(
   lazy,
   "possiblyHostPortRegex",
   () => /^[a-z0-9-]+(\.[a-z0-9-]+)*:[0-9]{1,5}([/?#]|$)/i
 );
 
 // Regex used to strip newlines.
-XPCOMUtils.defineLazyGetter(lazy, "newLinesRegex", () => /[\r\n]/g);
+ChromeUtils.defineLazyGetter(lazy, "newLinesRegex", () => /[\r\n]/g);
 
 // Regex used to match a possible protocol.
 // This resembles the logic in Services.io.extractScheme, thus \t is admitted
 // and stripped later. We don't use Services.io.extractScheme because of
 // performance bottleneck caused by crossing XPConnect.
-XPCOMUtils.defineLazyGetter(
+ChromeUtils.defineLazyGetter(
   lazy,
   "possibleProtocolRegex",
   () => /^([a-z][a-z0-9.+\t-]*)(:|;)?(\/\/)?/i
@@ -156,12 +149,12 @@ XPCOMUtils.defineLazyGetter(
 // Regex used to match IPs. Note that these are not made to validate IPs, but
 // just to detect strings that look like an IP. They also skip protocol.
 // For IPv4 this also accepts a shorthand format with just 2 dots.
-XPCOMUtils.defineLazyGetter(
+ChromeUtils.defineLazyGetter(
   lazy,
   "IPv4LikeRegex",
   () => /^(?:[a-z+.-]+:\/*(?!\/))?(?:\d{1,3}\.){2,3}\d{1,3}(?::\d+|\/)?/i
 );
-XPCOMUtils.defineLazyGetter(
+ChromeUtils.defineLazyGetter(
   lazy,
   "IPv6LikeRegex",
   () =>
@@ -169,7 +162,7 @@ XPCOMUtils.defineLazyGetter(
 );
 
 // Cache of known domains.
-XPCOMUtils.defineLazyGetter(lazy, "knownDomains", () => {
+ChromeUtils.defineLazyGetter(lazy, "knownDomains", () => {
   const branch = "browser.fixup.domainwhitelist.";
   let domains = new Set(
     Services.prefs
@@ -206,7 +199,7 @@ XPCOMUtils.defineLazyGetter(lazy, "knownDomains", () => {
 // When searching we can restrict the linear scan based on the last part.
 // The ideal structure for this would be a Directed Acyclic Word Graph, but
 // since we expect this list to be small it's not worth the complication.
-XPCOMUtils.defineLazyGetter(lazy, "knownSuffixes", () => {
+ChromeUtils.defineLazyGetter(lazy, "knownSuffixes", () => {
   const branch = "browser.fixup.domainsuffixwhitelist.";
   let suffixes = new Map();
   let prefs = Services.prefs
@@ -274,9 +267,6 @@ URIFixup.prototype = {
   },
   get FIXUP_FLAGS_MAKE_ALTERNATE_URI() {
     return FIXUP_FLAGS_MAKE_ALTERNATE_URI;
-  },
-  get FIXUP_FLAG_FORCE_ALTERNATE_URI() {
-    return FIXUP_FLAG_FORCE_ALTERNATE_URI;
   },
   get FIXUP_FLAG_PRIVATE_CONTEXT() {
     return FIXUP_FLAG_PRIVATE_CONTEXT;
@@ -394,6 +384,7 @@ URIFixup.prototype = {
       if (uriWithProtocol) {
         info.fixedURI = uriWithProtocol;
         info.fixupChangedProtocol = true;
+        info.wasSchemelessInput = true;
         maybeSetAlternateFixedURI(info, fixupFlags);
         info.preferredURI = info.fixedURI;
         // Check if it's a forced visit. The user can enforce a visit by
@@ -696,6 +687,13 @@ URIFixupInfo.prototype = {
     return this._keywordAsSent || "";
   },
 
+  set wasSchemelessInput(changed) {
+    this._wasSchemelessInput = changed;
+  },
+  get wasSchemelessInput() {
+    return !!this._wasSchemelessInput;
+  },
+
   set fixupChangedProtocol(changed) {
     this._fixupChangedProtocol = changed;
   },
@@ -872,11 +870,8 @@ function tryKeywordFixupForURIInfo(uriString, fixupInfo, isPrivateContext) {
  */
 function maybeSetAlternateFixedURI(info, fixupFlags) {
   let uri = info.fixedURI;
-  let canUseAlternate =
-    fixupFlags & FIXUP_FLAG_FORCE_ALTERNATE_URI ||
-    (lazy.alternateEnabled && fixupFlags & FIXUP_FLAGS_MAKE_ALTERNATE_URI);
   if (
-    !canUseAlternate ||
+    !(fixupFlags & FIXUP_FLAGS_MAKE_ALTERNATE_URI) ||
     // Code only works for http. Not for any other protocol including https!
     !uri.schemeIs("http") ||
     // Security - URLs with user / password info should NOT be fixed up
@@ -925,8 +920,8 @@ function fileURIFixup(uriString) {
       path = uriString.replace(/\//g, "\\");
     }
   } else {
-    // UNIX: Check if it starts with "/".
-    attemptFixup = uriString.startsWith("/");
+    // UNIX: Check if it starts with "/" or "~".
+    attemptFixup = /^[~/]/.test(uriString);
   }
   if (attemptFixup) {
     try {
@@ -1135,11 +1130,7 @@ function extractScheme(uriString, fixupFlags = FIXUP_FLAG_NONE) {
 function fixupViewSource(uriString, fixupFlags) {
   // We disable keyword lookup and alternate URIs so that small typos don't
   // cause us to look at very different domains.
-  let newFixupFlags =
-    fixupFlags &
-    ~FIXUP_FLAG_ALLOW_KEYWORD_LOOKUP &
-    ~FIXUP_FLAGS_MAKE_ALTERNATE_URI;
-
+  let newFixupFlags = fixupFlags & ~FIXUP_FLAG_ALLOW_KEYWORD_LOOKUP;
   let innerURIString = uriString.substring(12).trim();
 
   // Prevent recursion.

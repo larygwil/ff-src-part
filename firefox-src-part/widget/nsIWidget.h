@@ -1218,14 +1218,6 @@ class nsIWidget : public nsISupports {
   virtual void PrepareWindowEffects() = 0;
 
   /**
-   * Called on the main thread at the end of WebRender display list building.
-   */
-  virtual void AddWindowOverlayWebRenderCommands(
-      mozilla::layers::WebRenderBridgeChild* aWrBridge,
-      mozilla::wr::DisplayListBuilder& aBuilder,
-      mozilla::wr::IpcResourceUpdateQueue& aResources) {}
-
-  /**
    * Called when Gecko knows which themed widgets exist in this window.
    * The passed array contains an entry for every themed widget of the right
    * type (currently only StyleAppearance::Toolbar) within the window, except
@@ -1435,19 +1427,6 @@ class nsIWidget : public nsISupports {
    * included, including those not targeted at this nsIwidget instance.
    */
   virtual bool HasPendingInputEvent() = 0;
-
-  /**
-   * If set to true, the window will draw its contents into the titlebar
-   * instead of below it.
-   *
-   * Ignored on any platform that does not support it. Ignored by widgets that
-   * do not represent windows.
-   * May result in a resize event, so should only be called from places where
-   * reflow and painting is allowed.
-   *
-   * @param aState Whether drawing into the titlebar should be activated.
-   */
-  virtual void SetDrawsInTitlebar(bool aState) = 0;
 
   /*
    * Determine whether the widget shows a resize widget. If it does,
@@ -1988,6 +1967,11 @@ class nsIWidget : public nsISupports {
    * return the compositor which is doing that on our behalf.
    */
   virtual CompositorBridgeChild* GetRemoteRenderer() { return nullptr; }
+
+  /**
+   * If there is a remote renderer, pause or resume it.
+   */
+  virtual void PauseOrResumeCompositor(bool aPause);
 
   /**
    * Clear WebRender resources

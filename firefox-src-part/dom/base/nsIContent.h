@@ -30,6 +30,16 @@ struct IMEState;
 }  // namespace widget
 }  // namespace mozilla
 
+struct Focusable {
+  bool mFocusable = false;
+  // The computed tab index:
+  //         < 0 if not tabbable
+  //         == 0 if in normal tab order
+  //         > 0 can be tabbed to in the order specified by this value
+  int32_t mTabIndex = -1;
+  explicit operator bool() const { return mFocusable; }
+};
+
 // IID for the nsIContent interface
 // Must be kept in sync with xpcom/rust/xpcom/src/interfaces/nonidl.rs
 #define NS_ICONTENT_IID                              \
@@ -65,7 +75,8 @@ class nsIContent : public nsINode {
 
   NS_DECLARE_STATIC_IID_ACCESSOR(NS_ICONTENT_IID)
 
-  NS_DECL_CYCLE_COLLECTING_ISUPPORTS_FINAL_DELETECYCLECOLLECTABLE
+  NS_DECL_ISUPPORTS_INHERITED
+  NS_IMETHOD_(void) DeleteCycleCollectable(void) final;
 
   NS_DECL_CYCLE_COLLECTION_CLASS(nsIContent)
 
@@ -279,21 +290,15 @@ class nsIContent : public nsINode {
    * Also, depending on either the accessibility.tabfocus pref or
    * a system setting (nowadays: Full keyboard access, mac only)
    * some widgets may be focusable but removed from the tab order.
-   * @param  [inout, optional] aTabIndex the computed tab index
-   *         In: default tabindex for element (-1 nonfocusable, == 0 focusable)
-   *         Out: computed tabindex
-   * @param  [optional] aTabIndex the computed tab index
-   *         < 0 if not tabbable
-   *         == 0 if in normal tab order
-   *         > 0 can be tabbed to in the order specified by this value
    * @return whether the content is focusable via mouse, kbd or script.
    */
-  bool IsFocusable(int32_t* aTabIndex = nullptr, bool aWithMouse = false);
-  virtual bool IsFocusableInternal(int32_t* aTabIndex, bool aWithMouse);
+  virtual Focusable IsFocusableWithoutStyle(bool aWithMouse = false);
 
   // https://html.spec.whatwg.org/multipage/interaction.html#focus-delegate
-  mozilla::dom::Element* GetFocusDelegate(bool aWithMouse,
-                                          bool aAutofocusOnly = false) const;
+  mozilla::dom::Element* GetFocusDelegate(bool aWithMouse) const;
+
+  // https://html.spec.whatwg.org/multipage/interaction.html#autofocus-delegate
+  mozilla::dom::Element* GetAutofocusDelegate(bool aWithMouse) const;
 
   /*
    * Get desired IME state for the content.
@@ -446,19 +451,6 @@ class nsIContent : public nsINode {
   virtual void DoneAddingChildren(bool aHaveNotified) {}
 
   /**
-   * For HTML textarea, select, and object elements, returns true if all
-   * children have been added OR if the element was not created by the parser.
-   * Returns true for all other elements.
-   *
-   * @returns false if the element was created by the parser and
-   *                   it is an HTML textarea, select, or object
-   *                   element and not all children have been added.
-   *
-   * @returns true otherwise.
-   */
-  virtual bool IsDoneAddingChildren() { return true; }
-
-  /**
    * Returns true if an element needs its DoneCreatingElement method to be
    * called after it has been created.
    * @see nsIContent::DoneCreatingElement
@@ -468,14 +460,20 @@ class nsIContent : public nsINode {
    */
   static inline bool RequiresDoneCreatingElement(int32_t aNamespace,
                                                  nsAtom* aName) {
-    if (aNamespace == kNameSpaceID_XHTML &&
-        (aName == nsGkAtoms::input || aName == nsGkAtoms::button ||
-         aName == nsGkAtoms::audio || aName == nsGkAtoms::video)) {
-      MOZ_ASSERT(
-          !RequiresDoneAddingChildren(aNamespace, aName),
-          "Both DoneCreatingElement and DoneAddingChildren on a same element "
-          "isn't supported.");
-      return true;
+    if (aNamespace == kNameSpaceID_XHTML) {
+      if (aName == nsGkAtoms::input || aName == nsGkAtoms::button ||
+          aName == nsGkAtoms::audio || aName == nsGkAtoms::video) {
+        MOZ_ASSERT(!RequiresDoneAddingChildren(aNamespace, aName),
+                   "Both DoneCreatingElement and DoneAddingChildren on a "
+                   "same element isn't supported.");
+        return true;
+      }
+      if (aName->IsDynamic()) {
+        // This could be a form-associated custom element, so check if its
+        // name includes a -.
+        nsDependentString name(aName->GetUTF16String());
+        return name.Contains('-');
+      }
     }
     return false;
   }
@@ -611,13 +609,19 @@ class nsIContent : public nsINode {
 
   void RemovePurple() { mRefCnt.RemovePurple(); }
 
-  bool OwnedOnlyByTheDOMTree() {
+  // Note, currently this doesn't handle the case when frame tree has multiple
+  // references to the nsIContent object.
+  bool OwnedOnlyByTheDOMAndFrameTrees() {
+    return OwnedOnlyByTheDOMTree(GetPrimaryFrame() ? 1 : 0);
+  }
+
+  bool OwnedOnlyByTheDOMTree(uint32_t aExpectedRefs = 0) {
     uint32_t rc = mRefCnt.get();
     if (GetParent()) {
       --rc;
     }
     rc -= GetChildCount();
-    return rc == 0;
+    return rc == aExpectedRefs;
   }
 
   /**
@@ -661,7 +665,7 @@ class nsIContent : public nsINode {
 
   class nsContentSlots : public nsINode::nsSlots {
    public:
-    nsContentSlots() : nsINode::nsSlots(), mExtendedSlots(0) {}
+    nsContentSlots() : mExtendedSlots(0) {}
 
     ~nsContentSlots() {
       if (!(mExtendedSlots & sNonOwningExtendedSlotsFlag)) {
@@ -794,6 +798,8 @@ class nsIContent : public nsINode {
   // the tabfocus bit field applies to xul elements.
   static bool sTabFocusModelAppliesToXUL;
 };
+
+NON_VIRTUAL_ADDREF_RELEASE(nsIContent)
 
 NS_DEFINE_STATIC_IID_ACCESSOR(nsIContent, NS_ICONTENT_IID)
 

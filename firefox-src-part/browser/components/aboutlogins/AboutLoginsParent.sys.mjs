@@ -21,7 +21,7 @@ ChromeUtils.defineESModuleGetters(lazy, {
   UIState: "resource://services-sync/UIState.sys.mjs",
 });
 
-XPCOMUtils.defineLazyGetter(lazy, "log", () => {
+ChromeUtils.defineLazyGetter(lazy, "log", () => {
   return lazy.LoginHelper.createLogger("AboutLoginsParent");
 });
 XPCOMUtils.defineLazyPreferenceGetter(
@@ -48,7 +48,7 @@ XPCOMUtils.defineLazyPreferenceGetter(
   "signon.management.page.vulnerable-passwords.enabled",
   false
 );
-XPCOMUtils.defineLazyGetter(lazy, "AboutLoginsL10n", () => {
+ChromeUtils.defineLazyGetter(lazy, "AboutLoginsL10n", () => {
   return new Localization(["branding/brand.ftl", "browser/aboutLogins.ftl"]);
 });
 
@@ -76,6 +76,11 @@ const augmentVanillaLoginObject = login => {
   return Object.assign({}, login, {
     title,
   });
+};
+
+const EXPORT_PASSWORD_OS_AUTH_DIALOG_MESSAGE_IDS = {
+  win: "about-logins-export-password-os-auth-dialog-message2-win",
+  macosx: "about-logins-export-password-os-auth-dialog-message2-macosx",
 };
 
 export class AboutLoginsParent extends JSWindowActorParent {
@@ -163,7 +168,7 @@ export class AboutLoginsParent extends JSWindowActorParent {
   }
 
   get #ownerGlobal() {
-    return this.browsingContext.embedderElement.ownerGlobal;
+    return this.browsingContext.embedderElement?.ownerGlobal;
   }
 
   async #createLogin(newLogin) {
@@ -199,6 +204,14 @@ export class AboutLoginsParent extends JSWindowActorParent {
     } catch (error) {
       this.#handleLoginStorageErrors(newLogin, error);
     }
+  }
+
+  get preselectedLogin() {
+    const preselectedLogin =
+      this.#ownerGlobal?.gBrowser.selectedTab.getAttribute("preselect-login") ||
+      this.browsingContext.currentURI?.ref;
+    this.#ownerGlobal?.gBrowser.selectedTab.removeAttribute("preselect-login");
+    return preselectedLogin || null;
   }
 
   #deleteLogin(loginObject) {
@@ -316,6 +329,7 @@ export class AboutLoginsParent extends JSWindowActorParent {
         importVisible:
           Services.policies.isAllowed("profileImport") &&
           AppConstants.platform != "linux",
+        preselectedLogin: this.preselectedLogin,
       });
 
       await AboutLogins.sendAllLoginRelatedObjects(
@@ -369,9 +383,13 @@ export class AboutLoginsParent extends JSWindowActorParent {
     // the proper auth_details for Telemetry.
     // See bug 1614874 for Linux support.
     if (lazy.OSKeyStore.canReauth()) {
-      let messageId =
-        "about-logins-export-password-os-auth-dialog-message-" +
-        AppConstants.platform;
+      const messageId =
+        EXPORT_PASSWORD_OS_AUTH_DIALOG_MESSAGE_IDS[AppConstants.platform];
+      if (!messageId) {
+        throw new Error(
+          `AboutLoginsParent: Cannot find l10n id for platform ${AppConstants.platform} for export passwords os auth dialog message`
+        );
+      }
       [messageText, captionText] = await lazy.AboutLoginsL10n.formatMessages([
         {
           id: messageId,
@@ -411,10 +429,10 @@ export class AboutLoginsParent extends JSWindowActorParent {
     let [title, defaultFilename, okButtonLabel, csvFilterTitle] =
       await lazy.AboutLoginsL10n.formatValues([
         {
-          id: "about-logins-export-file-picker-title",
+          id: "about-logins-export-file-picker-title2",
         },
         {
-          id: "about-logins-export-file-picker-default-filename",
+          id: "about-logins-export-file-picker-default-filename2",
         },
         {
           id: "about-logins-export-file-picker-export-button",
@@ -437,7 +455,7 @@ export class AboutLoginsParent extends JSWindowActorParent {
     let [title, okButtonLabel, csvFilterTitle, tsvFilterTitle] =
       await lazy.AboutLoginsL10n.formatValues([
         {
-          id: "about-logins-import-file-picker-title",
+          id: "about-logins-import-file-picker-title2",
         },
         {
           id: "about-logins-import-file-picker-import-button",

@@ -20,12 +20,12 @@ ChromeUtils.defineESModuleGetters(lazy, {
   UIState: "resource://services-sync/UIState.sys.mjs",
 });
 
-XPCOMUtils.defineLazyGetter(lazy, "syncUtils", () => {
+ChromeUtils.defineLazyGetter(lazy, "syncUtils", () => {
   return ChromeUtils.importESModule("resource://services-sync/util.sys.mjs")
     .Utils;
 });
 
-XPCOMUtils.defineLazyGetter(lazy, "fxAccounts", () => {
+ChromeUtils.defineLazyGetter(lazy, "fxAccounts", () => {
   return ChromeUtils.importESModule(
     "resource://gre/modules/FxAccounts.sys.mjs"
   ).getFxAccountsSingleton();
@@ -52,6 +52,10 @@ function openTabInWindow(window, url) {
   const { switchToTabHavingURI } =
     window.docShell.chromeEventHandler.ownerGlobal;
   switchToTabHavingURI(url, true, {});
+}
+
+function isFirefoxViewNext(window) {
+  return window.location.pathname === "firefoxview-next";
 }
 
 export const TabsSetupFlowManager = new (class {
@@ -200,6 +204,7 @@ export const TabsSetupFlowManager = new (class {
       syncState.syncEnabled
     );
   }
+
   get secondaryDeviceConnected() {
     if (!this.fxaSignedIn) {
       return false;
@@ -616,7 +621,10 @@ export const TabsSetupFlowManager = new (class {
       );
     this.didFxaTabOpen = true;
     openTabInWindow(window, url, true);
-    Services.telemetry.recordEvent("firefoxview", "fxa_continue", "sync", null);
+    const category = isFirefoxViewNext(window)
+      ? "firefoxview_next"
+      : "firefoxview";
+    Services.telemetry.recordEvent(category, "fxa_continue", "sync", null);
   }
 
   async openFxAPairDevice(window) {
@@ -625,7 +633,10 @@ export const TabsSetupFlowManager = new (class {
     });
     this.didFxaTabOpen = true;
     openTabInWindow(window, url, true);
-    Services.telemetry.recordEvent("firefoxview", "fxa_mobile", "sync", null, {
+    const category = isFirefoxViewNext(window)
+      ? "firefoxview_next"
+      : "firefoxview";
+    Services.telemetry.recordEvent(category, "fxa_mobile", "sync", null, {
       has_devices: this.secondaryDeviceConnected.toString(),
     });
   }

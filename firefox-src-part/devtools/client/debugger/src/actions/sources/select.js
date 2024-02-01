@@ -7,14 +7,11 @@
  * @module actions/sources
  */
 
-import { isOriginalId } from "devtools/client/shared/source-map-loader/index";
-
 import { setSymbols } from "./symbols";
 import { setInScopeLines } from "../ast";
-import { togglePrettyPrint } from "./prettyPrint";
+import { prettyPrintAndSelectSource } from "./prettyPrint";
 import { addTab, closeTab } from "../tabs";
 import { loadSourceText } from "./loadSourceText";
-import { mapDisplayNames } from "../pause";
 import { setBreakableLines } from ".";
 
 import { prefs } from "../../utils/prefs";
@@ -30,36 +27,34 @@ import {
   getSelectedLocation,
   getShouldSelectOriginalLocation,
   canPrettyPrintSource,
-  getIsCurrentThreadPaused,
   getSourceTextContent,
   tabExists,
+  hasSource,
+  hasSourceActor,
+  hasPrettyTab,
 } from "../../selectors";
 
 // This is only used by jest tests (and within this module)
 export const setSelectedLocation = (
-  cx,
   location,
   shouldSelectOriginalLocation
 ) => ({
   type: "SET_SELECTED_LOCATION",
-  cx,
   location,
   shouldSelectOriginalLocation,
 });
 
 // This is only used by jest tests (and within this module)
-export const setPendingSelectedLocation = (cx, url, options) => ({
+export const setPendingSelectedLocation = (url, options) => ({
   type: "SET_PENDING_SELECTED_LOCATION",
-  cx,
   url,
   line: options?.line,
   column: options?.column,
 });
 
 // This is only used by jest tests (and within this module)
-export const clearSelectedLocation = cx => ({
+export const clearSelectedLocation = () => ({
   type: "CLEAR_SELECTED_LOCATION",
-  cx,
 });
 
 /**
@@ -70,15 +65,15 @@ export const clearSelectedLocation = cx => ({
  * This exists mostly for external things to interact with the
  * debugger.
  */
-export function selectSourceURL(cx, url, options) {
+export function selectSourceURL(url, options) {
   return async ({ dispatch, getState }) => {
     const source = getSourceByURL(getState(), url);
     if (!source) {
-      return dispatch(setPendingSelectedLocation(cx, url, options));
+      return dispatch(setPendingSelectedLocation(url, options));
     }
 
     const location = createLocation({ ...options, source });
-    return dispatch(selectLocation(cx, location));
+    return dispatch(selectLocation(location));
   };
 }
 
@@ -87,20 +82,19 @@ export function selectSourceURL(cx, url, options) {
  * Note that it ignores the currently selected source and will select
  * the precise generated/original source passed as argument.
  *
- * @param {Object} cx
  * @param {String} source
  *        The precise source to select.
  * @param {String} sourceActor
  *        The specific source actor of the source to
  *        select the source text. This is optional.
  */
-export function selectSource(cx, source, sourceActor) {
+export function selectSource(source, sourceActor) {
   return async ({ dispatch }) => {
     // `createLocation` requires a source object, but we may use selectSource to close the last tab,
     // where source will be null and the location will be an empty object.
     const location = source ? createLocation({ source, sourceActor }) : {};
 
-    return dispatch(selectSpecificLocation(cx, location));
+    return dispatch(selectSpecificLocation(location));
   };
 }
 
@@ -113,7 +107,6 @@ export function selectSource(cx, source, sourceActor) {
  * Note that by default, this may map your passed location to the original
  * or generated location based on the selected source state. (see keepContext)
  *
- * @param {Object} cx
  * @param {Object} location
  * @param {Object} options
  * @param {boolean} options.keepContext
@@ -121,7 +114,7 @@ export function selectSource(cx, source, sourceActor) {
  *        and select the generated or original location, even if we
  *        were currently selecting the other source type.
  */
-export function selectLocation(cx, location, { keepContext = true } = {}) {
+export function selectLocation(location, { keepContext = true } = {}) {
   return async thunkArgs => {
     const { dispatch, getState, client } = thunkArgs;
 
@@ -135,7 +128,7 @@ export function selectLocation(cx, location, { keepContext = true } = {}) {
 
     if (!source) {
       // If there is no source we deselect the current selected source
-      dispatch(clearSelectedLocation(cx));
+      dispatch(clearSelectedLocation());
       return;
     }
 
@@ -151,7 +144,19 @@ export function selectLocation(cx, location, { keepContext = true } = {}) {
       getState()
     );
     if (keepContext) {
-      if (shouldSelectOriginalLocation != isOriginalId(location.sourceId)) {
+      // Pretty print source may not be registered yet and getRelatedMapLocation may not return it.
+      // Wait for the pretty print source to be fully processed.
+      if (
+        !location.source.isOriginal &&
+        shouldSelectOriginalLocation &&
+        hasPrettyTab(getState(), location.source)
+      ) {
+        // Note that prettyPrintAndSelectSource has already been called a bit before when this generated source has been added
+        // but it is a slow operation and is most likely not resolved yet.
+        // prettyPrintAndSelectSource uses memoization to avoid doing the operation more than once, while waiting from both callsites.
+        await dispatch(prettyPrintAndSelectSource(location.source));
+      }
+      if (shouldSelectOriginalLocation != location.source.isOriginal) {
         // getRelatedMapLocation will convert to the related generated/original location.
         // i.e if the original location is passed, the related generated location will be returned and vice versa.
         location = await getRelatedMapLocation(location, thunkArgs);
@@ -164,7 +169,7 @@ export function selectLocation(cx, location, { keepContext = true } = {}) {
         source = location.source;
       }
     } else {
-      shouldSelectOriginalLocation = isOriginalId(location.sourceId);
+      shouldSelectOriginalLocation = location.source.isOriginal;
     }
 
     let sourceActor = location.sourceActor;
@@ -180,11 +185,11 @@ export function selectLocation(cx, location, { keepContext = true } = {}) {
       dispatch(addTab(source, sourceActor));
     }
 
-    dispatch(setSelectedLocation(cx, location, shouldSelectOriginalLocation));
+    dispatch(setSelectedLocation(location, shouldSelectOriginalLocation));
 
-    await dispatch(loadSourceText(cx, source, sourceActor));
+    await dispatch(loadSourceText(source, sourceActor));
 
-    await dispatch(setBreakableLines(cx, location));
+    await dispatch(setBreakableLines(location));
 
     const loadedSource = getSource(getState(), source.id);
 
@@ -202,16 +207,13 @@ export function selectLocation(cx, location, { keepContext = true } = {}) {
       canPrettyPrintSource(getState(), location) &&
       isMinified(source, sourceTextContent)
     ) {
-      await dispatch(togglePrettyPrint(cx, loadedSource.id));
-      dispatch(closeTab(cx, loadedSource));
+      await dispatch(prettyPrintAndSelectSource(loadedSource));
+      dispatch(closeTab(loadedSource));
     }
 
-    await dispatch(setSymbols({ cx, location }));
-    dispatch(setInScopeLines(cx));
-
-    if (getIsCurrentThreadPaused(getState())) {
-      await dispatch(mapDisplayNames(cx));
-    }
+    await dispatch(setSymbols(location));
+    // /!\ we don't historicaly wait for this async action
+    dispatch(setInScopeLines());
   };
 }
 
@@ -220,13 +222,59 @@ export function selectLocation(cx, location, { keepContext = true } = {}) {
  * This will select the generated location even if the currently
  * select source is an original source. And the other way around.
  *
- * @param {Object} cx
  * @param {Object} location
  *        The location to select, object which includes enough
  *        information to specify a precise source, line and column.
  */
-export function selectSpecificLocation(cx, location) {
-  return selectLocation(cx, location, { keepContext: false });
+export function selectSpecificLocation(location) {
+  return selectLocation(location, { keepContext: false });
+}
+
+/**
+ * Similar to `selectSpecificLocation`, but if the precise Source object
+ * is missing, this will fallback to select any source having the same URL.
+ * In this fallback scenario, sources without a URL will be ignored.
+ *
+ * This is typically used when trying to select a source (e.g. in project search result)
+ * after reload, because the source objects are new on each new page load, but source
+ * with the same URL may still exist.
+ *
+ * @param {Object} location
+ *        The location to select.
+ * @return {function}
+ *        The action will return true if a matching source was found.
+ */
+export function selectSpecificLocationOrSameUrl(location) {
+  return async ({ dispatch, getState }) => {
+    // If this particular source no longer exists, open any matching URL.
+    // This will typically happen on reload.
+    if (!hasSource(getState(), location.source.id)) {
+      // Some sources, like evaled script won't have a URL attribute
+      // and can't be re-selected if we don't find the exact same source object.
+      if (!location.source.url) {
+        return false;
+      }
+      const source = getSourceByURL(getState(), location.source.url);
+      if (!source) {
+        return false;
+      }
+      // Also reset the sourceActor, as it won't match the same source.
+      const sourceActor = getFirstSourceActorForGeneratedSource(
+        getState(),
+        location.source.id
+      );
+      location = createLocation({ ...location, source, sourceActor });
+    } else if (!hasSourceActor(getState(), location.sourceActor.id)) {
+      // If the specific source actor no longer exists, match any still available.
+      const sourceActor = getFirstSourceActorForGeneratedSource(
+        getState(),
+        location.source.id
+      );
+      location = createLocation({ ...location, sourceActor });
+    }
+    await dispatch(selectSpecificLocation(location));
+    return true;
+  };
 }
 
 /**
@@ -237,7 +285,7 @@ export function selectSpecificLocation(cx, location) {
  * If the passed location is on an original source, select the
  * related location in the generated source.
  */
-export function jumpToMappedLocation(cx, location) {
+export function jumpToMappedLocation(location) {
   return async function (thunkArgs) {
     const { client, dispatch } = thunkArgs;
     if (!client) {
@@ -247,18 +295,18 @@ export function jumpToMappedLocation(cx, location) {
     // Map to either an original or a generated source location
     const pairedLocation = await getRelatedMapLocation(location, thunkArgs);
 
-    return dispatch(selectSpecificLocation(cx, pairedLocation));
+    return dispatch(selectSpecificLocation(pairedLocation));
   };
 }
 
 // This is only used by tests
-export function jumpToMappedSelectedLocation(cx) {
+export function jumpToMappedSelectedLocation() {
   return async function ({ dispatch, getState }) {
     const location = getSelectedLocation(getState());
     if (!location) {
       return;
     }
 
-    await dispatch(jumpToMappedLocation(cx, location));
+    await dispatch(jumpToMappedLocation(location));
   };
 }

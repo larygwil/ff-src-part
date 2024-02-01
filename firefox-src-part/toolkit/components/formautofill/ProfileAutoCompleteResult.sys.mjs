@@ -2,8 +2,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs";
-
 const lazy = {};
 
 ChromeUtils.defineESModuleGetters(lazy, {
@@ -11,13 +9,15 @@ ChromeUtils.defineESModuleGetters(lazy, {
   FormAutofillUtils: "resource://gre/modules/shared/FormAutofillUtils.sys.mjs",
 });
 
-XPCOMUtils.defineLazyGetter(
+ChromeUtils.defineLazyGetter(
   lazy,
   "l10n",
   () => new Localization(["browser/preferences/formAutofill.ftl"], true)
 );
 
 class ProfileAutoCompleteResult {
+  externalEntries = [];
+
   constructor(
     searchString,
     focusedFieldName,
@@ -61,10 +61,10 @@ class ProfileAutoCompleteResult {
     // The result code of this result object.
     if (resultCode) {
       this.searchResult = resultCode;
-    } else if (matchingProfiles.length) {
-      this.searchResult = Ci.nsIAutoCompleteResult.RESULT_SUCCESS;
     } else {
-      this.searchResult = Ci.nsIAutoCompleteResult.RESULT_NOMATCH;
+      this.searchResult = matchingProfiles.length
+        ? Ci.nsIAutoCompleteResult.RESULT_SUCCESS
+        : Ci.nsIAutoCompleteResult.RESULT_NOMATCH;
     }
 
     // An array of primary and secondary labels for each profile.
@@ -75,20 +75,25 @@ class ProfileAutoCompleteResult {
     );
   }
 
+  getAt(index) {
+    for (const group of [this._popupLabels, this.externalEntries]) {
+      if (index < group.length) {
+        return group[index];
+      }
+      index -= group.length;
+    }
+
+    throw Components.Exception(
+      "Index out of range.",
+      Cr.NS_ERROR_ILLEGAL_VALUE
+    );
+  }
+
   /**
    * @returns {number} The number of results
    */
   get matchCount() {
-    return this._popupLabels.length;
-  }
-
-  _checkIndexBounds(index) {
-    if (index < 0 || index >= this._popupLabels.length) {
-      throw Components.Exception(
-        "Index out of range.",
-        Cr.NS_ERROR_ILLEGAL_VALUE
-      );
-    }
+    return this._popupLabels.length + this.externalEntries.length;
   }
 
   /**
@@ -117,14 +122,12 @@ class ProfileAutoCompleteResult {
    * @returns {string} The result at the specified index
    */
   getValueAt(index) {
-    this._checkIndexBounds(index);
+    this.getAt(index);
     return "";
   }
 
   getLabelAt(index) {
-    this._checkIndexBounds(index);
-
-    let label = this._popupLabels[index];
+    const label = this.getAt(index);
     if (typeof label == "string") {
       return label;
     }
@@ -138,8 +141,8 @@ class ProfileAutoCompleteResult {
    * @returns {string} The comment at the specified index
    */
   getCommentAt(index) {
-    this._checkIndexBounds(index);
-    return JSON.stringify(this._matchingProfiles[index]);
+    const item = this.getAt(index);
+    return item.comment ?? JSON.stringify(this._matchingProfiles[index]);
   }
 
   /**
@@ -149,8 +152,12 @@ class ProfileAutoCompleteResult {
    * @returns {string} The style hint at the specified index
    */
   getStyleAt(index) {
-    this._checkIndexBounds(index);
-    if (index == this.matchCount - 1) {
+    const itemStyle = this.getAt(index).style;
+    if (itemStyle) {
+      return itemStyle;
+    }
+
+    if (index == this._popupLabels.length - 1) {
       return "autofill-footer";
     }
     if (this._isInputAutofilled) {
@@ -167,8 +174,7 @@ class ProfileAutoCompleteResult {
    * @returns {string} The image url at the specified index
    */
   getImageAt(index) {
-    this._checkIndexBounds(index);
-    return "";
+    return this.getAt(index).image ?? "";
   }
 
   /**
@@ -188,7 +194,7 @@ class ProfileAutoCompleteResult {
    * @returns {boolean} True if the value is removable
    */
   isRemovableAt(index) {
-    return true;
+    return false;
   }
 
   /**
@@ -202,10 +208,6 @@ class ProfileAutoCompleteResult {
 }
 
 export class AddressResult extends ProfileAutoCompleteResult {
-  constructor(...args) {
-    super(...args);
-  }
-
   _getSecondaryLabel(focusedFieldName, allFieldNames, profile) {
     // We group similar fields into the same field name so we won't pick another
     // field in the same group as the secondary label.
@@ -324,15 +326,6 @@ export class AddressResult extends ProfileAutoCompleteResult {
 }
 
 export class CreditCardResult extends ProfileAutoCompleteResult {
-  constructor(...args) {
-    super(...args);
-    this._cardTypes = this._generateCardTypes(
-      this._focusedFieldName,
-      this._allFieldNames,
-      this._matchingProfiles
-    );
-  }
-
   _getSecondaryLabel(focusedFieldName, allFieldNames, profile) {
     const GROUP_FIELDS = {
       "cc-name": [
@@ -370,10 +363,7 @@ export class CreditCardResult extends ProfileAutoCompleteResult {
 
       if (matching) {
         if (currentFieldName == "cc-number") {
-          let { affix, label } = lazy.CreditCard.formatMaskedNumber(
-            profile[currentFieldName]
-          );
-          return affix + label;
+          return lazy.CreditCard.formatMaskedNumber(profile[currentFieldName]);
         }
         return profile[currentFieldName];
       }
@@ -408,13 +398,10 @@ export class CreditCardResult extends ProfileAutoCompleteResult {
         return !!profile[focusedFieldName];
       })
       .map(profile => {
-        let primaryAffix;
         let primary = profile[focusedFieldName];
 
         if (focusedFieldName == "cc-number") {
-          let { affix, label } = lazy.CreditCard.formatMaskedNumber(primary);
-          primaryAffix = affix;
-          primary = label;
+          primary = lazy.CreditCard.formatMaskedNumber(primary);
         }
         const secondary = this._getSecondaryLabel(
           focusedFieldName,
@@ -425,18 +412,23 @@ export class CreditCardResult extends ProfileAutoCompleteResult {
         // to expose it as text. We do this using aria-label. However,
         // aria-label overrides the text content, so we must include that also.
         const ccType = profile["cc-type"];
+        const image = lazy.CreditCard.getCreditCardLogo(ccType);
         const ccTypeL10nId = lazy.CreditCard.getNetworkL10nId(ccType);
         const ccTypeName = ccTypeL10nId
           ? lazy.l10n.formatValueSync(ccTypeL10nId)
           : ccType ?? ""; // Unknown card type
-        const ariaLabel = [ccTypeName, primaryAffix, primary, secondary]
+        const ariaLabel = [
+          ccTypeName,
+          primary.toString().replaceAll("*", ""),
+          secondary,
+        ]
           .filter(chunk => !!chunk) // Exclude empty chunks.
           .join(" ");
         return {
-          primaryAffix,
           primary,
           secondary,
           ariaLabel,
+          image,
         };
       });
     // Add an empty result entry for footer.
@@ -445,41 +437,16 @@ export class CreditCardResult extends ProfileAutoCompleteResult {
     return labels;
   }
 
-  // This method needs to return an array that parallels the
-  // array returned by _generateLabels, above. As a consequence,
-  // its logic follows very closely.
-  _generateCardTypes(focusedFieldName, allFieldNames, profiles) {
-    if (this._isInputAutofilled) {
-      return [
-        "", // Clear button
-        "", // Footer
-      ];
+  getStyleAt(index) {
+    const itemStyle = this.getAt(index).style;
+    if (itemStyle) {
+      return itemStyle;
     }
 
-    // Skip results without a primary label.
-    let cardTypes = profiles
-      .filter(profile => {
-        return !!profile[focusedFieldName];
-      })
-      .map(profile => profile["cc-type"]);
-
-    // Add an empty result entry for footer.
-    cardTypes.push("");
-    return cardTypes;
-  }
-
-  getStyleAt(index) {
-    this._checkIndexBounds(index);
     if (!this._isSecure) {
       return "autofill-insecureWarning";
     }
 
     return super.getStyleAt(index);
-  }
-
-  getImageAt(index) {
-    this._checkIndexBounds(index);
-    let network = this._cardTypes[index];
-    return lazy.CreditCard.getCreditCardLogo(network);
   }
 }

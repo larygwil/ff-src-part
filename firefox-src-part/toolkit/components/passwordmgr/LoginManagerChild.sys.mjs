@@ -23,6 +23,24 @@ const SUBMIT_FORM_IS_REMOVED = 3;
 const LOG_MESSAGE_FORM_SUBMISSION = "form submission";
 const LOG_MESSAGE_FIELD_EDIT = "field edit";
 
+export const AUTOFILL_RESULT = {
+  FILLED: "filled",
+  NO_PASSWORD_FIELD: "no_password_field",
+  PASSWORD_DISABLED_READONLY: "password_disabled_readonly",
+  NO_LOGINS_FIT: "no_logins_fit",
+  NO_SAVED_LOGINS: "no_saved_logins",
+  EXISTING_PASSWORD: "existing_password",
+  EXISTING_USERNAME: "existing_username",
+  MULTIPLE_LOGINS: "multiple_logins",
+  NO_AUTOFILL_FORMS: "no_autofill_forms",
+  AUTOCOMPLETE_OFF: "autocomplete_off",
+  INSECURE: "insecure",
+  PASSWORD_AUTOCOMPLETE_NEW_PASSWORD: "password_autocomplete_new_password",
+  TYPE_NO_LONGER_PASSWORD: "type_no_longer_password",
+  FORM_IN_CROSSORIGIN_SUBFRAME: "form_in_crossorigin_subframe",
+  FILLED_USERNAME_ONLY_FORM: "filled_username_only_form",
+};
+
 import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs";
 import { AppConstants } from "resource://gre/modules/AppConstants.sys.mjs";
 import { PrivateBrowsingUtils } from "resource://gre/modules/PrivateBrowsingUtils.sys.mjs";
@@ -34,11 +52,12 @@ ChromeUtils.defineESModuleGetters(lazy, {
   ContentDOMReference: "resource://gre/modules/ContentDOMReference.sys.mjs",
   DeferredTask: "resource://gre/modules/DeferredTask.sys.mjs",
   FormLikeFactory: "resource://gre/modules/FormLikeFactory.sys.mjs",
+  FormScenarios: "resource://gre/modules/FormScenarios.sys.mjs",
   InsecurePasswordUtils: "resource://gre/modules/InsecurePasswordUtils.sys.mjs",
   LoginFormFactory: "resource://gre/modules/LoginFormFactory.sys.mjs",
   LoginHelper: "resource://gre/modules/LoginHelper.sys.mjs",
   LoginRecipesContent: "resource://gre/modules/LoginRecipes.sys.mjs",
-  SignUpFormRuleset: "resource://gre/modules/SignUpFormRuleset.sys.mjs",
+  LoginManagerTelemetry: "resource://gre/modules/LoginManagerTelemetry.sys.mjs",
 });
 
 XPCOMUtils.defineLazyServiceGetter(
@@ -48,7 +67,7 @@ XPCOMUtils.defineLazyServiceGetter(
   "nsIFormFillController"
 );
 
-XPCOMUtils.defineLazyGetter(lazy, "log", () => {
+ChromeUtils.defineLazyGetter(lazy, "log", () => {
   let logger = lazy.LoginHelper.createLogger("LoginManagerChild");
   return logger.log.bind(logger);
 });
@@ -147,7 +166,7 @@ const observer = {
       case "autocomplete-did-enter-text": {
         let input = subject.QueryInterface(Ci.nsIAutoCompleteInput);
         let { selectedIndex } = input.popup;
-        if (selectedIndex < 0) {
+        if (selectedIndex < 0 || selectedIndex >= input.controller.matchCount) {
           break;
         }
 
@@ -193,209 +212,228 @@ const observer = {
 
     switch (aEvent.type) {
       // Used to mask fields with filled generated passwords when blurred.
-      case "blur": {
-        if (docState.generatedPasswordFields.has(field)) {
-          docState._togglePasswordFieldMasking(field, false);
-        }
+      case "blur":
+        this.handleBlur(docState, field);
         break;
-      }
 
       // Used to watch for changes to username and password fields.
-      case "change": {
-        let formLikeRoot = lazy.FormLikeFactory.findRootForField(field);
-        if (!docState.fieldModificationsByRootElement.get(formLikeRoot)) {
-          lazy.log(
-            "Ignoring change event on form that hasn't been user-modified."
-          );
-          if (field.hasBeenTypePassword) {
-            // Send notification that the password field has not been changed.
-            // This is used only for testing.
-            loginManagerChild._ignorePasswordEdit();
-          }
-          break;
-        }
+      case "change":
+        this.handleChange(docState, field, loginManagerChild);
+        break;
 
-        docState.storeUserInput(field);
-        let detail = {
-          possibleValues: {
-            usernames: docState.possibleUsernames,
-            passwords: docState.possiblePasswords,
-          },
-        };
-        loginManagerChild.sendAsyncMessage(
-          "PasswordManager:updateDoorhangerSuggestions",
-          detail
+      case "input":
+        this.handleInput(
+          aEvent,
+          docState,
+          field,
+          loginManagerChild,
+          ownerDocument
         );
-
-        if (field.hasBeenTypePassword) {
-          let triggeredByFillingGenerated =
-            docState.generatedPasswordFields.has(field);
-          // Autosave generated password initial fills and subsequent edits
-          if (triggeredByFillingGenerated) {
-            loginManagerChild._passwordEditedOrGenerated(field, {
-              triggeredByFillingGenerated,
-            });
-          } else {
-            // Send a notification that we are not saving the edit to the password field.
-            // This is used only for testing.
-            loginManagerChild._ignorePasswordEdit();
-          }
-        }
         break;
-      }
 
-      case "input": {
-        let isPasswordType = lazy.LoginHelper.isPasswordFieldType(field);
-        // React to input into fields filled with generated passwords.
-        if (
-          docState.generatedPasswordFields.has(field) &&
-          // Depending on the edit, we may no longer want to consider
-          // the field a generated password field to avoid autosaving.
-          loginManagerChild._doesEventClearPrevFieldValue(aEvent)
-        ) {
-          docState._stopTreatingAsGeneratedPasswordField(field);
-        }
-
-        if (!isPasswordType && !lazy.LoginHelper.isUsernameFieldType(field)) {
-          break;
-        }
-
-        // React to input into potential username or password fields
-        let formLikeRoot = lazy.FormLikeFactory.findRootForField(field);
-
-        if (formLikeRoot !== aEvent.currentTarget) {
-          break;
-        }
-        // flag this form as user-modified for the closest form/root ancestor
-        let alreadyModified =
-          docState.fieldModificationsByRootElement.get(formLikeRoot);
-        let { login: filledLogin, userTriggered: fillWasUserTriggered } =
-          docState.fillsByRootElement.get(formLikeRoot) || {};
-
-        // don't flag as user-modified if the form was autofilled and doesn't appear to have changed
-        let isAutofillInput = filledLogin && !fillWasUserTriggered;
-        if (!alreadyModified && isAutofillInput) {
-          if (isPasswordType && filledLogin.password == field.value) {
-            lazy.log(
-              "Ignoring password input event that doesn't change autofilled values."
-            );
-            break;
-          }
-          if (
-            !isPasswordType &&
-            filledLogin.usernameField &&
-            filledLogin.username == field.value
-          ) {
-            lazy.log(
-              "Ignoring username input event that doesn't change autofilled values."
-            );
-            break;
-          }
-        }
-        docState.fieldModificationsByRootElement.set(formLikeRoot, true);
-        // Keep track of the modified formless password field to trigger form submission
-        // when it is removed from DOM.
-        let alreadyModifiedFormLessField = true;
-        if (!HTMLFormElement.isInstance(formLikeRoot)) {
-          alreadyModifiedFormLessField =
-            docState.formlessModifiedPasswordFields.has(field);
-          if (!alreadyModifiedFormLessField) {
-            docState.formlessModifiedPasswordFields.add(field);
-          }
-        }
-
-        // Infer form submission only when there has been an user interaction on the form
-        // or the formless password field.
-        if (
-          lazy.LoginHelper.formRemovalCaptureEnabled &&
-          (!alreadyModified || !alreadyModifiedFormLessField)
-        ) {
-          ownerDocument.setNotifyFetchSuccess(true);
-        }
-
-        if (
-          // When the password field value is cleared or entirely replaced we don't treat it as
-          // an autofilled form any more. We don't do the same for username edits to avoid snooping
-          // on the autofilled password in the resulting doorhanger
-          isPasswordType &&
-          loginManagerChild._doesEventClearPrevFieldValue(aEvent) &&
-          // Don't clear last recorded autofill if THIS is an autofilled value. This will be true
-          // when filling from the context menu.
-          filledLogin &&
-          filledLogin.password !== field.value
-        ) {
-          docState.fillsByRootElement.delete(formLikeRoot);
-        }
-
-        if (!lazy.LoginHelper.passwordEditCaptureEnabled) {
-          break;
-        }
-        if (field.hasBeenTypePassword) {
-          // When a field is filled with a generated password, we also fill a confirm password field
-          // if found. To do this, _fillConfirmFieldWithGeneratedPassword calls setUserInput, which fires
-          // an "input" event on the confirm password field. compareAndUpdatePreviouslySentValues will
-          // allow that message through due to triggeredByFillingGenerated, so early return here.
-          let form = lazy.LoginFormFactory.createFromField(field);
-          if (
-            docState.generatedPasswordFields.has(field) &&
-            docState._getFormFields(form).confirmPasswordField === field
-          ) {
-            break;
-          }
-          // Don't check for triggeredByFillingGenerated, as we do not want to autosave
-          // a field marked as a generated password field on every "input" event
-          loginManagerChild._passwordEditedOrGenerated(field);
-        } else {
-          let [usernameField, passwordField] =
-            docState.getUserNameAndPasswordFields(field);
-          if (field == usernameField && passwordField?.value) {
-            loginManagerChild._passwordEditedOrGenerated(passwordField, {
-              triggeredByFillingGenerated:
-                docState.generatedPasswordFields.has(passwordField),
-            });
-          }
-        }
+      case "keydown":
+        this.handleKeydown(aEvent, field, loginManagerChild, ownerDocument);
         break;
-      }
 
-      case "keydown": {
-        if (
-          field.value &&
-          (aEvent.keyCode == aEvent.DOM_VK_TAB ||
-            aEvent.keyCode == aEvent.DOM_VK_RETURN)
-        ) {
-          const autofillForm =
-            lazy.LoginHelper.autofillForms &&
-            !PrivateBrowsingUtils.isContentWindowPrivate(
-              ownerDocument.defaultView
-            );
-
-          if (autofillForm) {
-            loginManagerChild.onUsernameAutocompleted(field);
-          }
-        }
+      case "focus":
+        this.handleFocus(field, docState, aEvent.target);
         break;
-      }
 
-      case "focus": {
-        //@sg see if we can drop focusedField (aEvent.target) and use field (aEvent.composedTarget)
-        docState.onFocus(field, aEvent.target);
+      case "mousedown":
+        this.handleMousedown(aEvent.button);
         break;
-      }
-
-      case "mousedown": {
-        if (aEvent.button == 2) {
-          // Date.now() is used instead of event.timeStamp since
-          // dom.event.highrestimestamp.enabled isn't true on all channels yet.
-          gLastRightClickTimeStamp = Date.now();
-        }
-
-        break;
-      }
 
       default: {
         throw new Error("Unexpected event");
       }
+    }
+  },
+
+  handleBlur(docState, field) {
+    if (docState.generatedPasswordFields.has(field)) {
+      docState._togglePasswordFieldMasking(field, false);
+    }
+  },
+
+  handleChange(docState, field, loginManagerChild) {
+    let formLikeRoot = lazy.FormLikeFactory.findRootForField(field);
+    if (!docState.fieldModificationsByRootElement.get(formLikeRoot)) {
+      lazy.log("Ignoring change event on form that hasn't been user-modified.");
+      if (field.hasBeenTypePassword) {
+        // Send notification that the password field has not been changed.
+        // This is used only for testing.
+        loginManagerChild._ignorePasswordEdit();
+      }
+      return;
+    }
+
+    docState.storeUserInput(field);
+    let detail = {
+      possibleValues: {
+        usernames: docState.possibleUsernames,
+        passwords: docState.possiblePasswords,
+      },
+    };
+    loginManagerChild.sendAsyncMessage(
+      "PasswordManager:updateDoorhangerSuggestions",
+      detail
+    );
+
+    if (field.hasBeenTypePassword) {
+      let triggeredByFillingGenerated =
+        docState.generatedPasswordFields.has(field);
+      // Autosave generated password initial fills and subsequent edits
+      if (triggeredByFillingGenerated) {
+        loginManagerChild._passwordEditedOrGenerated(field, {
+          triggeredByFillingGenerated,
+        });
+      } else {
+        // Send a notification that we are not saving the edit to the password field.
+        // This is used only for testing.
+        loginManagerChild._ignorePasswordEdit();
+      }
+    }
+  },
+
+  handleInput(aEvent, docState, field, loginManagerChild, ownerDocument) {
+    let isPasswordType = lazy.LoginHelper.isPasswordFieldType(field);
+    // React to input into fields filled with generated passwords.
+    if (
+      docState.generatedPasswordFields.has(field) &&
+      // Depending on the edit, we may no longer want to consider
+      // the field a generated password field to avoid autosaving.
+      loginManagerChild._doesEventClearPrevFieldValue(aEvent)
+    ) {
+      docState._stopTreatingAsGeneratedPasswordField(field);
+    }
+
+    if (!isPasswordType && !lazy.LoginHelper.isUsernameFieldType(field)) {
+      return;
+    }
+
+    // React to input into potential username or password fields
+    let formLikeRoot = lazy.FormLikeFactory.findRootForField(field);
+
+    if (formLikeRoot !== aEvent.currentTarget) {
+      return;
+    }
+    // flag this form as user-modified for the closest form/root ancestor
+    let alreadyModified =
+      docState.fieldModificationsByRootElement.get(formLikeRoot);
+    let { login: filledLogin, userTriggered: fillWasUserTriggered } =
+      docState.fillsByRootElement.get(formLikeRoot) || {};
+
+    // don't flag as user-modified if the form was autofilled and doesn't appear to have changed
+    let isAutofillInput = filledLogin && !fillWasUserTriggered;
+    if (!alreadyModified && isAutofillInput) {
+      if (isPasswordType && filledLogin.password == field.value) {
+        lazy.log(
+          "Ignoring password input event that doesn't change autofilled values."
+        );
+        return;
+      }
+      if (
+        !isPasswordType &&
+        filledLogin.usernameField &&
+        filledLogin.username == field.value
+      ) {
+        lazy.log(
+          "Ignoring username input event that doesn't change autofilled values."
+        );
+        return;
+      }
+    }
+    docState.fieldModificationsByRootElement.set(formLikeRoot, true);
+    // Keep track of the modified formless password field to trigger form submission
+    // when it is removed from DOM.
+    let alreadyModifiedFormLessField = true;
+    if (!HTMLFormElement.isInstance(formLikeRoot)) {
+      alreadyModifiedFormLessField =
+        docState.formlessModifiedPasswordFields.has(field);
+      if (!alreadyModifiedFormLessField) {
+        docState.formlessModifiedPasswordFields.add(field);
+      }
+    }
+
+    // Infer form submission only when there has been an user interaction on the form
+    // or the formless password field.
+    if (
+      lazy.LoginHelper.formRemovalCaptureEnabled &&
+      (!alreadyModified || !alreadyModifiedFormLessField)
+    ) {
+      loginManagerChild.registerDOMDocFetchSuccessEventListener(ownerDocument);
+    }
+
+    if (
+      // When the password field value is cleared or entirely replaced we don't treat it as
+      // an autofilled form any more. We don't do the same for username edits to avoid snooping
+      // on the autofilled password in the resulting doorhanger
+      isPasswordType &&
+      loginManagerChild._doesEventClearPrevFieldValue(aEvent) &&
+      // Don't clear last recorded autofill if THIS is an autofilled value. This will be true
+      // when filling from the context menu.
+      filledLogin &&
+      filledLogin.password !== field.value
+    ) {
+      docState.fillsByRootElement.delete(formLikeRoot);
+    }
+
+    if (!lazy.LoginHelper.passwordEditCaptureEnabled) {
+      return;
+    }
+    if (field.hasBeenTypePassword) {
+      // When a field is filled with a generated password, we also fill a confirm password field
+      // if found. To do this, _fillConfirmFieldWithGeneratedPassword calls setUserInput, which fires
+      // an "input" event on the confirm password field. compareAndUpdatePreviouslySentValues will
+      // allow that message through due to triggeredByFillingGenerated, so early return here.
+      let form = lazy.LoginFormFactory.createFromField(field);
+      if (
+        docState.generatedPasswordFields.has(field) &&
+        docState._getFormFields(form).confirmPasswordField === field
+      ) {
+        return;
+      }
+      // Don't check for triggeredByFillingGenerated, as we do not want to autosave
+      // a field marked as a generated password field on every "input" event
+      loginManagerChild._passwordEditedOrGenerated(field);
+    } else {
+      let [usernameField, passwordField] =
+        docState.getUserNameAndPasswordFields(field);
+      if (field == usernameField && passwordField?.value) {
+        loginManagerChild._passwordEditedOrGenerated(passwordField, {
+          triggeredByFillingGenerated:
+            docState.generatedPasswordFields.has(passwordField),
+        });
+      }
+    }
+  },
+
+  handleKeydown(aEvent, field, loginManagerChild, ownerDocument) {
+    if (
+      field.value &&
+      (aEvent.keyCode == aEvent.DOM_VK_TAB ||
+        aEvent.keyCode == aEvent.DOM_VK_RETURN)
+    ) {
+      const autofillForm =
+        lazy.LoginHelper.autofillForms &&
+        !PrivateBrowsingUtils.isContentWindowPrivate(ownerDocument.defaultView);
+
+      if (autofillForm) {
+        loginManagerChild.onUsernameAutocompleted(field);
+      }
+    }
+  },
+
+  handleFocus(field, docState, target) {
+    //@sg see if we can drop focusedField (aEvent.target) and use field (aEvent.composedTarget)
+    docState.onFocus(field, target);
+  },
+
+  handleMousedown(button) {
+    if (button == 2) {
+      // Date.now() is used instead of event.timeStamp since
+      // dom.event.highrestimestamp.enabled isn't true on all channels yet.
+      gLastRightClickTimeStamp = Date.now();
     }
   },
 };
@@ -463,11 +501,6 @@ export class LoginFormState {
   #cachedIsInferredUsernameField = new WeakMap();
   #cachedIsInferredEmailField = new WeakMap();
   #cachedIsInferredLoginForm = new WeakMap();
-
-  /**
-   * Caches the scores when running the SignUpFormRuleset against a form
-   */
-  #cachedSignUpFormScore = new WeakMap();
 
   /**
    * Records the mock username field when its associated form is submitted.
@@ -580,37 +613,6 @@ export class LoginFormState {
     }
 
     return result;
-  }
-
-  /**
-   * Determine if the form is a sign-up form.
-   * This is done by running the rules of the Fathom SignUpFormRuleset against the form and calucating a score between 0 and 1.
-   * It's considered a sign-up form, if the score is higher than the confidence threshold (default=0.75)
-   *
-   * @param {HTMLFormElement} formElement
-   * @returns {boolean} returns true if the calculcated score is higher than the confidenceThreshold
-   */
-  isProbablyASignUpForm(formElement) {
-    if (!HTMLFormElement.isInstance(formElement)) {
-      return false;
-    }
-    const threshold = lazy.LoginHelper.signupDetectionConfidenceThreshold;
-    let score = this.#cachedSignUpFormScore.get(formElement);
-    if (!score) {
-      TelemetryStopwatch.start("PWMGR_SIGNUP_FORM_DETECTION_MS");
-      try {
-        const { rules, type } = lazy.SignUpFormRuleset;
-        const results = rules.against(formElement);
-        score = results.get(formElement).scoreFor(type);
-        TelemetryStopwatch.finish("PWMGR_SIGNUP_FORM_DETECTION_MS");
-      } finally {
-        if (TelemetryStopwatch.running("PWMGR_SIGNUP_FORM_DETECTION_MS")) {
-          TelemetryStopwatch.cancel("PWMGR_SIGNUP_FORM_DETECTION_MS");
-        }
-      }
-      this.#cachedSignUpFormScore.set(formElement, score);
-    }
-    return score > threshold;
   }
 
   /**
@@ -808,6 +810,12 @@ export class LoginFormState {
         `Not opening autocomplete after focus since a context menu was opened within ${timeDiff}ms.`
       );
       return;
+    }
+
+    // The login manager is responsible for fields with the "webauthn" credential type.
+    let acCredentialType = focusedField.getAutocompleteInfo()?.credentialType;
+    if (acCredentialType == "webauthn") {
+      lazy.gFormFillService.markAsLoginManagerField(focusedField);
     }
 
     lazy.log("Opening the autocomplete popup.");
@@ -1168,7 +1176,7 @@ export class LoginFormState {
     }
 
     if (!pwFields) {
-      // Locate the password field(s) in the form. Up to 3 supported.
+      // Locate the password field(s) in the form. Up to 5 supported.
       // If there's no password field, there's nothing for us to do.
       const minSubmitPasswordLength = 2;
       pwFields = LoginFormState._getPasswordFields(form, {
@@ -1559,6 +1567,23 @@ export class LoginManagerChild extends JSWindowActorChild {
     );
   }
 
+  registerDOMDocFetchSuccessEventListener(document) {
+    document.setNotifyFetchSuccess(true);
+    this.docShell.chromeEventHandler.addEventListener(
+      "DOMDocFetchSuccess",
+      this,
+      true
+    );
+  }
+
+  unregisterDOMDocFetchSuccessEventListener(document) {
+    document.setNotifyFetchSuccess(false);
+    this.docShell.chromeEventHandler.removeEventListener(
+      "DOMDocFetchSuccess",
+      this
+    );
+  }
+
   handleEvent(event) {
     if (
       AppConstants.platform == "android" &&
@@ -1721,8 +1746,8 @@ export class LoginManagerChild extends JSWindowActorChild {
       }
     }
 
-    // Observers have been setted up, removed the listener.
-    document.setNotifyFetchSuccess(false);
+    // Observers have been set up, remove the listener.
+    this.unregisterDOMDocFetchSuccessEventListener(document);
   }
 
   /*
@@ -2771,24 +2796,7 @@ export class LoginManagerChild extends JSWindowActorChild {
 
     lazy.log(`Found ${form.elements.length} form elements.`);
     // Will be set to one of AUTOFILL_RESULT in the `try` block.
-    let autofillResult = -1;
-    const AUTOFILL_RESULT = {
-      FILLED: 0,
-      NO_PASSWORD_FIELD: 1,
-      PASSWORD_DISABLED_READONLY: 2,
-      NO_LOGINS_FIT: 3,
-      NO_SAVED_LOGINS: 4,
-      EXISTING_PASSWORD: 5,
-      EXISTING_USERNAME: 6,
-      MULTIPLE_LOGINS: 7,
-      NO_AUTOFILL_FORMS: 8,
-      AUTOCOMPLETE_OFF: 9,
-      INSECURE: 10,
-      PASSWORD_AUTOCOMPLETE_NEW_PASSWORD: 11,
-      TYPE_NO_LONGER_PASSWORD: 12,
-      FORM_IN_CROSSORIGIN_SUBFRAME: 13,
-      FILLED_USERNAME_ONLY_FORM: 14,
-    };
+    let autofillResult;
     const docState = this.stateForDocument(form.ownerDocument);
 
     // Heuristically determine what the user/pass fields are
@@ -2802,21 +2810,17 @@ export class LoginManagerChild extends JSWindowActorChild {
 
     let scenario;
 
-    // For SignUpFormScenario we expect an email like username
-    if (this.#relayIsAvailableOrEnabled() && usernameField) {
-      // Sign-up detection ruleset requires a <form>.
-      // When form.rootElement is not a form, fall back on the heuristic that
-      // assumes a form/document and a passwordField with autocomplete new-password
-      if (
-        HTMLFormElement.isInstance(form.rootElement) &&
-        lazy.LoginHelper.signupDetectionEnabled
-      ) {
-        if (docState.isProbablyASignUpForm(form.rootElement)) {
-          scenario = new SignUpFormScenario(usernameField, passwordField);
-        }
-      } else if (passwordACFieldName == "new-password") {
+    if (usernameField) {
+      const isSignUpForm =
+        lazy.FormScenarios.detect({
+          input: usernameField,
+          formRoot: form.rootElement,
+        }).signUpForm ?? passwordACFieldName == "new-password";
+
+      if (isSignUpForm) {
         scenario = new SignUpFormScenario(usernameField, passwordField);
       }
+
       if (scenario) {
         docState.setScenario(form.rootElement, scenario);
         lazy.gFormFillService.markAsLoginManagerField(usernameField);
@@ -3127,16 +3131,15 @@ export class LoginManagerChild extends JSWindowActorChild {
       console.error(ex);
       throw ex;
     } finally {
-      if (autofillResult == -1) {
+      if (!autofillResult) {
         // eslint-disable-next-line no-unsafe-finally
         throw new Error("_fillForm: autofillResult must be specified");
       }
 
       if (!userTriggered) {
         // Ignore fills as a result of user action for this probe.
-        Services.telemetry
-          .getHistogramById("PWMGR_FORM_AUTOFILL_RESULT")
-          .add(autofillResult);
+
+        lazy.LoginManagerTelemetry.recordAutofillResult(autofillResult);
 
         if (usernameField) {
           let focusedElement = lazy.gFormFillService.focusedInput;
@@ -3144,7 +3147,7 @@ export class LoginManagerChild extends JSWindowActorChild {
             usernameField == focusedElement &&
             ![
               AUTOFILL_RESULT.FILLED,
-              AUTOFILL_STATE.FILLED_USERNAME_ONLY_FORM,
+              AUTOFILL_RESULT.FILLED_USERNAME_ONLY_FORM,
             ].includes(autofillResult)
           ) {
             lazy.log(
@@ -3163,17 +3166,9 @@ export class LoginManagerChild extends JSWindowActorChild {
 
       this.sendAsyncMessage("PasswordManager:formProcessed", {
         formid: form.rootElement.id,
+        autofillResult,
       });
     }
-  }
-  #relayIsAvailableOrEnabled() {
-    // This code is a mirror of what FirefoxRelay.jsm is doing,
-    // but we can not load Relay module in the child process.
-    const value = Services.prefs.getStringPref(
-      "signon.firefoxRelay.feature",
-      undefined
-    );
-    return ["available", "offered", "enabled"].includes(value);
   }
 
   getScenario(inputElement) {

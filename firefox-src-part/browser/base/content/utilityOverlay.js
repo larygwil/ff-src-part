@@ -12,22 +12,20 @@ var { XPCOMUtils } = ChromeUtils.importESModule(
 );
 
 ChromeUtils.defineESModuleGetters(this, {
+  AboutNewTab: "resource:///modules/AboutNewTab.sys.mjs",
   BrowserUtils: "resource://gre/modules/BrowserUtils.sys.mjs",
+  BrowserWindowTracker: "resource:///modules/BrowserWindowTracker.sys.mjs",
   ContextualIdentityService:
     "resource://gre/modules/ContextualIdentityService.sys.mjs",
   ExtensionSettingsStore:
     "resource://gre/modules/ExtensionSettingsStore.sys.mjs",
   PrivateBrowsingUtils: "resource://gre/modules/PrivateBrowsingUtils.sys.mjs",
+  ReportBrokenSite: "resource:///modules/ReportBrokenSite.sys.mjs",
   ShellService: "resource:///modules/ShellService.sys.mjs",
   URILoadingHelper: "resource:///modules/URILoadingHelper.sys.mjs",
 });
 
-XPCOMUtils.defineLazyModuleGetters(this, {
-  AboutNewTab: "resource:///modules/AboutNewTab.jsm",
-  BrowserWindowTracker: "resource:///modules/BrowserWindowTracker.jsm",
-});
-
-XPCOMUtils.defineLazyGetter(this, "ReferrerInfo", () =>
+ChromeUtils.defineLazyGetter(this, "ReferrerInfo", () =>
   Components.Constructor(
     "@mozilla.org/referrer-info;1",
     "nsIReferrerInfo",
@@ -165,7 +163,7 @@ function checkForMiddleClick(node, event) {
       event.metaKey,
       0,
       event,
-      event.mozInputSource
+      event.inputSource
     );
     node.dispatchEvent(cmdEvent);
 
@@ -196,24 +194,19 @@ function createUserContextMenu(
     event.target.firstChild.remove();
   }
 
-  let bundle = Services.strings.createBundle(
-    "chrome://browser/locale/browser.properties"
-  );
   let docfrag = document.createDocumentFragment();
 
   // If we are excluding a userContextId, we want to add a 'no-container' item.
   if (excludeUserContextId || showDefaultTab) {
     let menuitem = document.createXULElement("menuitem");
+    if (useAccessKeys) {
+      document.l10n.setAttributes(menuitem, "user-context-none");
+    } else {
+      const label =
+        ContextualIdentityService.formatContextLabel("user-context-none");
+      menuitem.setAttribute("label", label);
+    }
     menuitem.setAttribute("data-usercontextid", "0");
-    menuitem.setAttribute(
-      "label",
-      bundle.GetStringFromName("userContextNone.label")
-    );
-    menuitem.setAttribute(
-      "accesskey",
-      bundle.GetStringFromName("userContextNone.accesskey")
-    );
-
     if (!isContextMenu) {
       menuitem.setAttribute("command", "Browser:NewUserContextTab");
     }
@@ -231,16 +224,15 @@ function createUserContextMenu(
 
     let menuitem = document.createXULElement("menuitem");
     menuitem.setAttribute("data-usercontextid", identity.userContextId);
-    menuitem.setAttribute(
-      "label",
-      ContextualIdentityService.getUserContextLabel(identity.userContextId)
-    );
-
-    if (identity.accessKey && useAccessKeys) {
-      menuitem.setAttribute(
-        "accesskey",
-        bundle.GetStringFromName(identity.accessKey)
+    if (identity.name) {
+      menuitem.setAttribute("label", identity.name);
+    } else if (useAccessKeys) {
+      document.l10n.setAttributes(menuitem, identity.l10nId);
+    } else {
+      const label = ContextualIdentityService.formatContextLabel(
+        identity.l10nId
       );
+      menuitem.setAttribute("label", label);
     }
 
     menuitem.classList.add("menuitem-iconic");
@@ -259,15 +251,13 @@ function createUserContextMenu(
     docfrag.appendChild(document.createXULElement("menuseparator"));
 
     let menuitem = document.createXULElement("menuitem");
-    menuitem.setAttribute(
-      "label",
-      bundle.GetStringFromName("userContext.aboutPage.label")
-    );
     if (useAccessKeys) {
-      menuitem.setAttribute(
-        "accesskey",
-        bundle.GetStringFromName("userContext.aboutPage.accesskey")
+      document.l10n.setAttributes(menuitem, "user-context-manage-containers");
+    } else {
+      const label = ContextualIdentityService.formatContextLabel(
+        "user-context-manage-containers"
       );
+      menuitem.setAttribute("label", label);
     }
     menuitem.setAttribute("command", "Browser:OpenAboutContainers");
     docfrag.appendChild(menuitem);
@@ -541,30 +531,6 @@ function buildHelpMenu() {
   // Enable/disable the "Report Web Forgery" menu item.
   if (typeof gSafeBrowsing != "undefined") {
     gSafeBrowsing.setReportPhishingMenu();
-  }
-
-  // We're testing to see if the WebCompat team's "Report Site Issue"
-  // access point makes sense in the Help menu. Normally checking this
-  // pref wouldn't be enough, since there's also the case that the
-  // add-on has somehow been disabled by the user or third-party software
-  // without flipping the pref. Since this add-on is only used on pre-release
-  // channels, and since the jury is still out on whether or not the Help menu
-  // is the right place for this item, we're going to do a least-effort
-  // approach here and assume that the pref is enough to determine whether the
-  // menuitem should appear.
-  //
-  // See bug 1690573 for further details.
-  let reportSiteIssueEnabled = Services.prefs.getBoolPref(
-    "extensions.webcompat-reporter.enabled",
-    false
-  );
-  let reportSiteIssue = document.getElementById("help_reportSiteIssue");
-  reportSiteIssue.hidden = !reportSiteIssueEnabled;
-  if (reportSiteIssueEnabled) {
-    let uri = gBrowser.currentURI;
-    let isReportablePage =
-      uri && (uri.schemeIs("http") || uri.schemeIs("https"));
-    reportSiteIssue.disabled = !isReportablePage;
   }
 
   if (NimbusFeatures.deviceMigration.getVariable("helpMenuHidden")) {

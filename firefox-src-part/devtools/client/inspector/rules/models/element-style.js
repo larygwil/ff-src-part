@@ -25,7 +25,7 @@ loader.lazyRequireGetter(
 loader.lazyRequireGetter(
   this,
   "isCssVariable",
-  "resource://devtools/client/fronts/css-properties.js",
+  "resource://devtools/shared/inspector/css-logic.js",
   true
 );
 
@@ -322,11 +322,18 @@ class ElementStyle {
     //   If the new property is a lower or equal priority, mark it as
     //   overridden.
     //
+    //   Note that this is different if layers are involved: if both
+    //   old and new properties have a high priority, and if the new
+    //   property is in a rule belonging to a layer that is different
+    //   from the the one the old property rule might be in,
+    //   mark the old property overridden and mark the property name as
+    //   taken by the new property.
+    //
     // _overriddenDirty will be set on each prop, indicating whether its
     // dirty status changed during this pass.
-    const taken = {};
+    const taken = new Map();
     for (const computedProp of computedProps) {
-      const earlier = taken[computedProp.name];
+      const earlier = taken.get(computedProp.name);
 
       // Prevent -webkit-gradient from being selected after unchecking
       // linear-gradient in this case:
@@ -342,7 +349,13 @@ class ElementStyle {
       if (
         earlier &&
         computedProp.priority === "important" &&
-        earlier.priority !== "important" &&
+        (earlier.priority !== "important" ||
+          // Even if the earlier property was important, if the current rule is in a layer
+          // it will take precedence, unless the earlier property rule was in the same layer.
+          (computedProp.textProp.rule?.isInLayer() &&
+            computedProp.textProp.rule.isInDifferentLayer(
+              earlier.textProp.rule
+            ))) &&
         // For !important only consider rules applying to the same parent node.
         computedProp.textProp.rule.inherited == earlier.textProp.rule.inherited
       ) {
@@ -359,9 +372,17 @@ class ElementStyle {
       computedProp.overridden = overridden;
 
       if (!computedProp.overridden && computedProp.textProp.enabled) {
-        taken[computedProp.name] = computedProp;
+        taken.set(computedProp.name, computedProp);
 
-        if (isCssVariable(computedProp.name)) {
+        // At this point, we can get CSS variable from "inherited" rules.
+        // When this is a registered custom property with `inherits` set to false,
+        // the text prop is "invisible" (i.e. not shown in the rule view).
+        // In such case, we don't want to get the value in the Map, and we'll rather
+        // get the initial value from the registered property definition.
+        if (
+          isCssVariable(computedProp.name) &&
+          !computedProp.textProp.invisible
+        ) {
           variables.set(computedProp.name, computedProp.value);
         }
       }
@@ -455,7 +476,7 @@ class ElementStyle {
       // longer matches the node. This strict check avoids accidentally causing
       // declarations to be overridden in the remaining matching rules.
       const isStyleRule =
-        rule.pseudoElement === "" && !!rule.matchedSelectors.length;
+        rule.pseudoElement === "" && !!rule.matchedDesugaredSelectors.length;
 
       // Style rules for pseudo-elements must always be considered, regardless if their
       // selector matches the node. As a convenience, declarations in rules for

@@ -5,7 +5,7 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <title data-l10n-id="autofill-add-new-card-title"></title>
+    <title data-l10n-id="autofill-add-card-title"></title>
     <link rel="localization" href="browser/preferences/formAutofill.ftl" />
     <link
       rel="stylesheet"
@@ -26,7 +26,7 @@
     <form id="form" class="editCreditCardForm contentPane" autocomplete="off">
       <!--
         The <span class="label-text" …/> needs to be after the form field in the same element in
-        order to get proper label styling with :focus and :moz-ui-invalid.
+        order to get proper label styling with :focus and :user-invalid
       -->
       <label id="cc-number-container" class="container" role="none">
         <span
@@ -43,7 +43,7 @@
           type="text"
           required="required"
           minlength="14"
-          pattern="[- 0-9]+"
+          pattern="[\- 0-9]+"
           aria-labelledby="cc-number-label"
         />
         <span

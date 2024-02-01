@@ -73,7 +73,7 @@ PlacesInsertionPoint.prototype = {
 
 function PlacesController(aView) {
   this._view = aView;
-  XPCOMUtils.defineLazyGetter(this, "profileName", function () {
+  ChromeUtils.defineLazyGetter(this, "profileName", function () {
     return Services.dirsvc.get("ProfD", Ci.nsIFile).leafName;
   });
 
@@ -913,7 +913,10 @@ PlacesController.prototype = {
         this._view.result,
         totalItems,
         async () => {
-          await PlacesTransactions.batch(transactions);
+          await PlacesTransactions.batch(
+            transactions,
+            "PlacesController::removeRowsFromBookmarks"
+          );
         }
       );
     }
@@ -1010,7 +1013,7 @@ PlacesController.prototype = {
       } else if (queryType == Ci.nsINavHistoryQueryOptions.QUERY_TYPE_HISTORY) {
         await this._removeRowsFromHistory();
       } else {
-        throw new Error("implement support for QUERY_TYPE_UNIFIED");
+        throw new Error("Unknown query type");
       }
     } else {
       throw new Error("unexpected root");

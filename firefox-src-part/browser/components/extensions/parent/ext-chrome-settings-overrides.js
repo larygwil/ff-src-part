@@ -17,13 +17,8 @@ ChromeUtils.defineESModuleGetters(this, {
   ExtensionPermissions: "resource://gre/modules/ExtensionPermissions.sys.mjs",
   ExtensionSettingsStore:
     "resource://gre/modules/ExtensionSettingsStore.sys.mjs",
+  HomePage: "resource:///modules/HomePage.sys.mjs",
 });
-
-ChromeUtils.defineModuleGetter(
-  this,
-  "HomePage",
-  "resource:///modules/HomePage.jsm"
-);
 
 const DEFAULT_SEARCH_STORE_TYPE = "default_search";
 const DEFAULT_SEARCH_SETTING_NAME = "defaultSearch";
@@ -37,7 +32,7 @@ const HOMEPAGE_CONFIRMED_TYPE = "homepageNotification";
 const HOMEPAGE_SETTING_TYPE = "prefs";
 const HOMEPAGE_SETTING_NAME = "homepage_override";
 
-XPCOMUtils.defineLazyGetter(this, "homepagePopup", () => {
+ChromeUtils.defineLazyGetter(this, "homepagePopup", () => {
   return new ExtensionControlledPopup({
     confirmedType: HOMEPAGE_CONFIRMED_TYPE,
     observerTopic: "browser-open-homepage-start",
@@ -46,7 +41,6 @@ XPCOMUtils.defineLazyGetter(this, "homepagePopup", () => {
     settingKey: HOMEPAGE_SETTING_NAME,
     descriptionId: "extension-homepage-notification-description",
     descriptionMessageId: "homepageControlled.message",
-    learnMoreMessageId: "homepageControlled.learnMore",
     learnMoreLink: "extension-home",
     preferencesLocation: "home-homeOverride",
     preferencesEntrypoint: "addon-manage-home-override",
@@ -290,8 +284,9 @@ this.chrome_settings_overrides = class extends ExtensionAPI {
     }
     if (manifest.chrome_settings_overrides.search_provider) {
       // Registering a search engine can potentially take a long while,
-      // or not complete at all (when searchInitialized is never resolved),
-      // so we are deliberately not awaiting the returned promise here.
+      // or not complete at all (when Services.search.promiseInitialized is
+      // never resolved), so we are deliberately not awaiting the returned
+      // promise here.
       let searchStartupPromise =
         this.processSearchProviderManifestEntry().finally(() => {
           if (
@@ -411,7 +406,7 @@ this.chrome_settings_overrides = class extends ExtensionAPI {
       return;
     }
 
-    await searchInitialized;
+    await Services.search.promiseInitialized;
     if (!this.extension) {
       Cu.reportError(
         `Extension shut down before search provider was registered`

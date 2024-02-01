@@ -612,7 +612,7 @@ class JQueryLiveEventCollector extends MainEventCollector {
       // function gets name at compile time by SetFunctionName, its guessed
       // atom doesn't contain "proxy/".  In that case, check if the caller is
       // "proxy" function, as a fallback.
-      const calleeDS = funcDO.environment.calleeScript;
+      const calleeDS = funcDO.environment?.calleeScript;
       if (!calleeDS) {
         return false;
       }
@@ -623,9 +623,11 @@ class JQueryLiveEventCollector extends MainEventCollector {
     function getFirstFunctionVariable(funcDO) {
       // The handler function inside the |proxy| function should point the
       // unwrapped function via environment variable.
-      const names = funcDO.environment.names();
+      const names = funcDO.environment ? funcDO.environment.names() : [];
       for (const varName of names) {
-        const varDO = handlerDO.environment.getVariable(varName);
+        const varDO = handlerDO.environment
+          ? handlerDO.environment.getVariable(varName)
+          : null;
         if (!varDO) {
           continue;
         }
@@ -966,8 +968,13 @@ class EventCollector {
       if (script) {
         const scriptSource = script.source.text;
 
+        // NOTE: Debugger.Script.prototype.startColumn is 1-based.
+        //       Convert to 0-based, while keeping the wasm's column (1) as is.
+        //       (bug 1863878)
+        const columnBase = script.format === "wasm" ? 0 : 1;
+
         line = script.startLine;
-        column = script.startColumn;
+        column = script.startColumn - columnBase;
         url = script.url;
         const actor = this.targetActor.sourcesManager.getOrCreateSourceActor(
           script.source

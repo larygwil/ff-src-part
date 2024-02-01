@@ -8,18 +8,17 @@
 export const AttributionIOUtils = {
   write: async (path, bytes) => IOUtils.write(path, bytes),
   read: async path => IOUtils.read(path),
-  readUTF8: async path => IOUtils.readUTF8(path),
   exists: async path => IOUtils.exists(path),
 };
 
-import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs";
 import { AppConstants } from "resource://gre/modules/AppConstants.sys.mjs";
 
 const lazy = {};
 ChromeUtils.defineESModuleGetters(lazy, {
   MacAttribution: "resource:///modules/MacAttribution.sys.mjs",
+  UpdateUtils: "resource://gre/modules/UpdateUtils.sys.mjs",
 });
-XPCOMUtils.defineLazyGetter(lazy, "log", () => {
+ChromeUtils.defineLazyGetter(lazy, "log", () => {
   let { ConsoleAPI } = ChromeUtils.importESModule(
     "resource://gre/modules/Console.sys.mjs"
   );
@@ -108,7 +107,21 @@ export var AttributionCode = {
           throw ex;
         }
       }
-      file.append("macAttributionData");
+      // Note: this file is in a location that includes the absolute path
+      // to the running install, and the filename includes the update channel.
+      // To ensure consistency regardless of when `attributionFile` is accessed we
+      // explicitly do not include partner IDs that may be part of the full update channel.
+      // These are not necessarily applied when this is first accessed, and we want to
+      // ensure consistency between early and late accesses.
+      // Partner builds never contain attribution information, so this has no known
+      // consequences.
+      // For example:
+      // ~/Library/Caches/Mozilla/updates/Applications/Firefox/macAttributionDataCache-release
+      // This is done to ensure that attribution data is preserved through a
+      // pave over install of an install on the same channel.
+      file.append(
+        "macAttributionDataCache-" + lazy.UpdateUtils.getUpdateChannel(false)
+      );
       return file;
     }
 
@@ -193,43 +206,6 @@ export var AttributionCode = {
   },
 
   /**
-   * Returns an object containing a key-value pair for each piece of attribution
-   * data included in the passed-in URL containing a query string encoding an
-   * attribution code.
-   *
-   * We have less control of the attribution codes on macOS so we accept more
-   * URLs than we accept attribution codes on Windows.
-   *
-   * If the URL is empty, returns an empty object.
-   *
-   * If the URL doesn't parse, throws.
-   */
-  parseAttributionCodeFromUrl(url) {
-    if (!url) {
-      return {};
-    }
-
-    let parsed = {};
-
-    let params = new URL(url).searchParams;
-    for (let key of ATTR_CODE_KEYS) {
-      // We support the key prefixed with utm_ or not, but intentionally
-      // choose non-utm params over utm params.
-      for (let paramKey of [`utm_${key}`, `funnel_${key}`, key]) {
-        if (params.has(paramKey)) {
-          // We expect URI-encoded components in our attribution codes.
-          let value = encodeURIComponent(params.get(paramKey));
-          if (value && ATTR_CODE_VALUE_REGEX.test(value)) {
-            parsed[key] = value;
-          }
-        }
-      }
-    }
-
-    return parsed;
-  },
-
-  /**
    * Returns a string serializing the given attribution data.
    *
    * It is expected that the given values are already URL-encoded.
@@ -269,6 +245,17 @@ export var AttributionCode = {
       return gCachedAttrData;
     }
 
+    // This is a temporary block until we're ready to enable macOS reporting by default.
+    if (
+      AppConstants.platform == "macosx" &&
+      !Services.prefs.getBoolPref("browser.attribution.macos.enabled")
+    ) {
+      lazy.log.debug(
+        "getAttrDataSync: macOS attribution disabled by pref; skipping"
+      );
+      return {};
+    }
+
     gCachedAttrData = {};
     let attributionFile = this.attributionFile;
     if (!attributionFile) {
@@ -287,14 +274,15 @@ export var AttributionCode = {
         `getAttrDataAsync: macOS && !exists("${attributionFile.path}")`
       );
 
-      // On macOS, we fish the attribution data from the system quarantine DB.
+      // On macOS, we fish the attribution data from an extended attribute on
+      // the .app bundle directory.
       try {
-        let referrer = await lazy.MacAttribution.getReferrerUrl();
+        let attrStr = await lazy.MacAttribution.getAttributionString();
         lazy.log.debug(
-          `getAttrDataAsync: macOS attribution getReferrerUrl: "${referrer}"`
+          `getAttrDataAsync: macOS attribution getAttributionString: "${attrStr}"`
         );
 
-        gCachedAttrData = this.parseAttributionCodeFromUrl(referrer);
+        gCachedAttrData = this.parseAttributionCode(attrStr);
       } catch (ex) {
         // Avoid partial attribution data.
         gCachedAttrData = {};
@@ -317,8 +305,7 @@ export var AttributionCode = {
         `macOS attribution data is ${JSON.stringify(gCachedAttrData)}`
       );
 
-      // We only want to try to fetch the referrer from the quarantine
-      // database once on macOS.
+      // We only want to try to fetch the attribution string once on macOS
       try {
         let code = this.serializeAttributionData(gCachedAttrData);
         lazy.log.debug(`macOS attribution data serializes as "${code}"`);

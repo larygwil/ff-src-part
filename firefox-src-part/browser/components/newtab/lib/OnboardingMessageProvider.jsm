@@ -2,7 +2,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 "use strict";
-/* globals Localization */
 
 const { XPCOMUtils } = ChromeUtils.importESModule(
   "resource://gre/modules/XPCOMUtils.sys.mjs"
@@ -51,6 +50,7 @@ const L10N = new Localization([
 
 const HOMEPAGE_PREF = "browser.startup.homepage";
 const NEWTAB_PREF = "browser.newtabpage.enabled";
+const FOURTEEN_DAYS_IN_MS = 14 * 24 * 60 * 60 * 1000;
 
 const BASE_MESSAGES = () => [
   {
@@ -78,38 +78,26 @@ const BASE_MESSAGES = () => [
     trigger: { id: "protectionsPanelOpen" },
   },
   {
-    id: "CFR_FIREFOX_VIEW",
+    id: "MILESTONE_MESSAGE_87",
     groups: ["cfr"],
-    template: "cfr_doorhanger",
-    //If Firefox View button has been moved to the overflow menu, we want to change the anchor element
     content: {
-      bucket_id: "CFR_FIREFOX_VIEW",
-      anchor_id: "firefox-view-button",
-      alt_anchor_id: "nav-bar-overflow-button",
-      layout: "icon_and_message",
-      icon: "chrome://browser/content/cfr-lightning.svg",
-      icon_dark_theme: "chrome://browser/content/cfr-lightning-dark.svg",
-      icon_class: "cfr-doorhanger-small-icon",
-      heading_text: {
-        string_id: "firefoxview-cfr-header-v2",
-      },
-      text: {
-        string_id: "firefoxview-cfr-body-v2",
-      },
+      text: "",
+      layout: "short_message",
       buttons: {
         primary: {
+          event: "PROTECTION",
           label: {
-            string_id: "firefoxview-cfr-primarybutton",
+            string_id: "cfr-doorhanger-milestone-ok-button",
           },
           action: {
-            type: "OPEN_FIREFOX_VIEW",
-            navigate: true,
+            type: "OPEN_PROTECTION_REPORT",
           },
         },
         secondary: [
           {
+            event: "DISMISS",
             label: {
-              string_id: "firefoxview-cfr-secondarybutton",
+              string_id: "cfr-doorhanger-milestone-close-button",
             },
             action: {
               type: "CANCEL",
@@ -117,16 +105,24 @@ const BASE_MESSAGES = () => [
           },
         ],
       },
+      category: "cfrFeatures",
+      anchor_id: "tracking-protection-icon-container",
+      bucket_id: "CFR_MILESTONE_MESSAGE",
+      heading_text: {
+        string_id: "cfr-doorhanger-milestone-heading2",
+      },
+      notification_text: "",
       skip_address_bar_notifier: true,
     },
-    frequency: {
-      lifetime: 1,
-    },
     trigger: {
-      id: "nthTabClosed",
+      id: "contentBlocking",
+      params: ["ContentBlockingMilestone"],
     },
-    // Avoid breaking existing tests that close tabs for now.
-    targeting: `!inMr2022Holdback && fxViewButtonAreaType != null && (currentDate|date - profileAgeCreated) / 86400000 >= 2 && tabsClosedCount >= 3 && 'browser.firefox-view.view-count'|preferenceValue == 0 && !'browser.newtabpage.activity-stream.asrouter.providers.cfr'|preferenceIsUserSet`,
+    template: "milestone_message",
+    frequency: {
+      lifetime: 7,
+    },
+    targeting: "pageLoad >= 4 && userPrefs.cfrFeatures",
   },
   {
     id: "FX_MR_106_UPGRADE",
@@ -238,31 +234,23 @@ const BASE_MESSAGES = () => [
           },
         },
         {
-          id: "UPGRADE_IMPORT_SETTINGS",
+          id: "UPGRADE_IMPORT_SETTINGS_EMBEDDED",
           content: {
+            tiles: { type: "migration-wizard" },
             position: "split",
             split_narrow_bkg_position: "-42px",
             image_alt_text: {
               string_id: "mr2022-onboarding-import-image-alt",
             },
-            progress_bar: "true",
             background:
               "url('chrome://activity-stream/content/data/content/assets/mr-import.svg') var(--mr-secondary-position) no-repeat var(--mr-screen-background-color)",
-            logo: {},
-            title: {
-              string_id: "mr2022-onboarding-import-header",
+            progress_bar: true,
+            hide_secondary_section: "responsive",
+            migrate_start: {
+              action: {},
             },
-            subtitle: {
-              string_id: "mr2022-onboarding-import-subtitle",
-            },
-            primary_button: {
-              label: {
-                string_id:
-                  "mr2022-onboarding-import-primary-button-label-no-attribution",
-              },
+            migrate_close: {
               action: {
-                type: "SHOW_MIGRATION_WIZARD",
-                data: {},
                 navigate: true,
               },
             },
@@ -823,20 +811,6 @@ const BASE_MESSAGES = () => [
     targeting: "localeLanguageCode == 'de'",
   },
   {
-    id: "PB_NEWTAB_INFO_SECTION",
-    template: "pb_newtab",
-    content: {
-      promoEnabled: false,
-      infoEnabled: true,
-      infoIcon: "",
-      infoTitle: "",
-      infoBody: "fluent:about-private-browsing-info-description-private-window",
-      infoLinkText: "fluent:about-private-browsing-learn-more-link",
-      infoTitleEnabled: false,
-    },
-    targeting: "true",
-  },
-  {
     id: "PB_NEWTAB_PIN_PROMO",
     template: "pb_newtab",
     type: "default",
@@ -919,14 +893,13 @@ const BASE_MESSAGES = () => [
       infoTitleEnabled: false,
       promoEnabled: true,
       promoType: "COOKIE_BANNERS",
-      promoHeader: "fluent:about-private-browsing-cookie-banners-promo-header",
+      promoHeader: "fluent:about-private-browsing-cookie-banners-promo-heading",
       promoImageLarge:
         "chrome://browser/content/assets/cookie-banners-begone.svg",
-      promoLinkText:
-        "fluent:about-private-browsing-cookie-banners-promo-button",
-      promoLinkType: "button",
+      promoLinkText: "fluent:about-private-browsing-learn-more-link",
+      promoLinkType: "link",
       promoSectionStyle: "below-search",
-      promoTitle: "fluent:about-private-browsing-cookie-banners-promo-message",
+      promoTitle: "fluent:about-private-browsing-cookie-banners-promo-body",
       promoTitleEnabled: true,
       promoButton: {
         action: {
@@ -934,32 +907,10 @@ const BASE_MESSAGES = () => [
           data: {
             actions: [
               {
-                type: "SET_PREF",
+                type: "OPEN_URL",
                 data: {
-                  pref: {
-                    name: "cookiebanners.service.mode",
-                    value: Ci.nsICookieBannerService.MODE_REJECT,
-                  },
-                },
-              },
-              {
-                // This pref may be removed (with the normal pref controlling
-                // both modes), at which time we should remove this action.
-                type: "SET_PREF",
-                data: {
-                  pref: {
-                    name: "cookiebanners.service.mode.privateBrowsing",
-                    value: Ci.nsICookieBannerService.MODE_REJECT,
-                  },
-                },
-              },
-              {
-                // Reset this pref to default
-                type: "SET_PREF",
-                data: {
-                  pref: {
-                    name: "cookiebanners.service.detectOnly",
-                  },
+                  args: "https://support.mozilla.org/1/firefox/%VERSION%/%OS%/%LOCALE%/cookie-banner-reduction",
+                  where: "tabshifted",
                 },
               },
               {
@@ -967,10 +918,6 @@ const BASE_MESSAGES = () => [
                 data: {
                   id: "PB_NEWTAB_COOKIE_BANNERS_PROMO",
                 },
-              },
-              {
-                type: "OPEN_ABOUT_PAGE",
-                data: { args: "privatebrowsing", where: "current" },
               },
             ],
           },
@@ -987,31 +934,36 @@ const BASE_MESSAGES = () => [
       ],
       lifetime: 12,
     },
-    targeting: `!'cookiebanners.service.mode'|preferenceIsUserSet`,
+    targeting: `'cookiebanners.service.mode.privateBrowsing'|preferenceValue != 0 || 'cookiebanners.service.mode'|preferenceValue != 0`,
   },
   {
-    id: "CFR_COOKIEBANNER",
+    id: "INFOBAR_LAUNCH_ON_LOGIN",
     groups: ["cfr"],
-    template: "cfr_doorhanger",
+    template: "infobar",
     content: {
-      bucket_id: "CFR_COOKIEBANNER",
-      anchor_id: "tracking-protection-icon-container",
-      layout: "icon_and_message",
-      icon: "chrome://browser/skin/controlcenter/3rdpartycookies.svg",
-      icon_class: "cfr-doorhanger-small-icon",
-      persistent_doorhanger: true,
-      show_in_private_browsing: true,
-      heading_text: {
-        string_id: "cfr-cbh-header",
-      },
+      type: "global",
       text: {
-        string_id: "cfr-cbh-body",
+        string_id: "launch-on-login-infobar-message",
       },
-      buttons: {
-        primary: {
+      buttons: [
+        {
           label: {
-            string_id: "cfr-cbh-confirm-button",
+            string_id: "launch-on-login-learnmore",
           },
+          supportPage: "make-firefox-automatically-open-when-you-start",
+          action: {
+            type: "CANCEL",
+          },
+        },
+        {
+          label: { string_id: "launch-on-login-infobar-reject-button" },
+          action: {
+            type: "CANCEL",
+          },
+        },
+        {
+          label: { string_id: "launch-on-login-infobar-confirm-button" },
+          primary: true,
           action: {
             type: "MULTI_ACTION",
             data: {
@@ -1020,57 +972,171 @@ const BASE_MESSAGES = () => [
                   type: "SET_PREF",
                   data: {
                     pref: {
-                      name: "cookiebanners.service.mode",
-                      value: 1,
+                      name: "browser.startup.windowsLaunchOnLogin.disableLaunchOnLoginPrompt",
+                      value: true,
                     },
                   },
                 },
                 {
-                  type: "SET_PREF",
-                  data: {
-                    pref: {
-                      name: "cookiebanners.service.mode.privateBrowsing",
-                      value: 1,
-                    },
-                  },
-                },
-                {
-                  type: "SET_PREF",
-                  data: {
-                    pref: {
-                      name: "cookiebanners.service.detectOnly",
-                      value: false,
-                    },
-                  },
-                },
-                {
-                  type: "RELOAD_BROWSER",
+                  type: "CONFIRM_LAUNCH_ON_LOGIN",
                 },
               ],
             },
           },
         },
-        secondary: [
-          {
-            label: {
-              string_id: "cfr-cbh-dismiss-button",
-            },
-            action: {
-              type: "CANCEL",
-            },
-          },
-        ],
-      },
-      skip_address_bar_notifier: true,
+      ],
     },
     frequency: {
-      custom: [{ period: 24 * 60 * 60 * 1000 * 2, cap: 1 }],
+      lifetime: 1,
+    },
+    trigger: { id: "defaultBrowserCheck" },
+    targeting: `source == 'newtab'
+    && 'browser.startup.windowsLaunchOnLogin.disableLaunchOnLoginPrompt'|preferenceValue == false
+    && 'browser.startup.windowsLaunchOnLogin.enabled'|preferenceValue == true && isDefaultBrowser && !activeNotifications
+    && !launchOnLoginEnabled`,
+  },
+  {
+    id: "INFOBAR_LAUNCH_ON_LOGIN_FINAL",
+    groups: ["cfr"],
+    template: "infobar",
+    content: {
+      type: "global",
+      text: {
+        string_id: "launch-on-login-infobar-final-message",
+      },
+      buttons: [
+        {
+          label: {
+            string_id: "launch-on-login-learnmore",
+          },
+          supportPage: "make-firefox-automatically-open-when-you-start",
+          action: {
+            type: "CANCEL",
+          },
+        },
+        {
+          label: { string_id: "launch-on-login-infobar-final-reject-button" },
+          action: {
+            type: "SET_PREF",
+            data: {
+              pref: {
+                name: "browser.startup.windowsLaunchOnLogin.disableLaunchOnLoginPrompt",
+                value: true,
+              },
+            },
+          },
+        },
+        {
+          label: { string_id: "launch-on-login-infobar-confirm-button" },
+          primary: true,
+          action: {
+            type: "MULTI_ACTION",
+            data: {
+              actions: [
+                {
+                  type: "SET_PREF",
+                  data: {
+                    pref: {
+                      name: "browser.startup.windowsLaunchOnLogin.disableLaunchOnLoginPrompt",
+                      value: true,
+                    },
+                  },
+                },
+                {
+                  type: "CONFIRM_LAUNCH_ON_LOGIN",
+                },
+              ],
+            },
+          },
+        },
+      ],
+    },
+    frequency: {
+      lifetime: 1,
+    },
+    trigger: { id: "defaultBrowserCheck" },
+    targeting: `source == 'newtab'
+    && 'browser.startup.windowsLaunchOnLogin.disableLaunchOnLoginPrompt'|preferenceValue == false
+    && 'browser.startup.windowsLaunchOnLogin.enabled'|preferenceValue == true && isDefaultBrowser && !activeNotifications
+    && messageImpressions.INFOBAR_LAUNCH_ON_LOGIN[messageImpressions.INFOBAR_LAUNCH_ON_LOGIN | length - 1]
+    && messageImpressions.INFOBAR_LAUNCH_ON_LOGIN[messageImpressions.INFOBAR_LAUNCH_ON_LOGIN | length - 1] <
+      currentDate|date - ${FOURTEEN_DAYS_IN_MS}
+    && !launchOnLoginEnabled`,
+  },
+  {
+    id: "FOX_DOODLE_SET_DEFAULT",
+    template: "spotlight",
+    groups: ["eco"],
+    skip_in_tests: "it fails unrelated tests",
+    content: {
+      backdrop: "transparent",
+      id: "FOX_DOODLE_SET_DEFAULT",
+      screens: [
+        {
+          content: {
+            logo: {
+              height: "125px",
+              imageURL:
+                "chrome://activity-stream/content/data/content/assets/fox-doodle-waving.gif",
+              reducedMotionImageURL:
+                "chrome://activity-stream/content/data/content/assets/fox-doodle-waving-static.png",
+            },
+            title: {
+              fontSize: "22px",
+              fontWeight: 590,
+              letterSpacing: 0,
+              paddingInline: "24px",
+              paddingBlock: "4px 0",
+              string_id: "fox-doodle-pin-headline",
+            },
+            subtitle: {
+              fontSize: "15px",
+              letterSpacing: 0,
+              lineHeight: "1.4",
+              marginBlock: "8px 16px",
+              paddingInline: "24px",
+              string_id: "fox-doodle-pin-body",
+            },
+            primary_button: {
+              action: {
+                navigate: true,
+                type: "SET_DEFAULT_BROWSER",
+              },
+              label: {
+                paddingBlock: "0",
+                paddingInline: "16px",
+                marginBlock: "4px 0",
+                string_id: "fox-doodle-pin-primary",
+              },
+            },
+            secondary_button: {
+              action: {
+                navigate: true,
+              },
+              label: {
+                marginBlock: "0 -20px",
+                string_id: "fox-doodle-pin-secondary",
+              },
+            },
+            dismiss_button: {
+              action: {
+                navigate: true,
+              },
+            },
+          },
+        },
+      ],
+      template: "multistage",
+      transitions: true,
+    },
+    frequency: {
       lifetime: 2,
     },
+    targeting:
+      "source == 'startup' && !isMajorUpgrade && !activeNotifications && !isDefaultBrowser && !willShowDefaultPrompt && (currentDate|date - profileAgeCreated|date) / 86400000 >= 28",
     trigger: {
-      id: "cookieBannerDetected",
+      id: "defaultBrowserCheck",
     },
-    targeting: `'cookiebanners.ui.desktop.enabled'|preferenceValue == true && 'cookiebanners.service.detectOnly'|preferenceValue == true`,
   },
 ];
 
@@ -1202,7 +1268,9 @@ const OnboardingMessageProvider = {
 
     //If a user has Firefox as default remove import screen
     if (!needDefault) {
-      removeScreens(screen => screen.id?.startsWith("UPGRADE_IMPORT_SETTINGS"));
+      removeScreens(screen =>
+        screen.id?.startsWith("UPGRADE_IMPORT_SETTINGS_EMBEDDED")
+      );
     }
 
     // If already pinned, convert "pin" screen to "welcome" with desired action.

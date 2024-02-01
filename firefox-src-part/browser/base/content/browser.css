@@ -73,56 +73,6 @@ body {
   flex: 1;
 }
 
-#navigator-toolbox:-moz-lwtheme {
-  background-image: var(--lwt-additional-images);
-  background-repeat: var(--lwt-background-tiling);
-  background-position: var(--lwt-background-alignment);
-}
-
-/* TODO bug 1695280: Remove these media selectors and merge the rule below
-   with the ruleset above. We must set background properties on :root and not
-   #navigator-toolbox on Windows 7/8 due to a WebRender bug that hides the
-   minimize/maximize/close buttons. */
-@media not (-moz-platform: windows-win7) {
-  @media not (-moz-platform: windows-win8) {
-    #navigator-toolbox:-moz-lwtheme {
-      background-color: var(--lwt-accent-color);
-    }
-
-    /* When a theme defines both theme_frame and additional_backgrounds, show
-       the latter atop the former. */
-   :root[lwtheme-image] #navigator-toolbox {
-     background-image: var(--lwt-header-image), var(--lwt-additional-images);
-     background-repeat: no-repeat, var(--lwt-background-tiling);
-     background-position: right top, var(--lwt-background-alignment);
-   }
-
-   #navigator-toolbox:-moz-window-inactive:-moz-lwtheme {
-     background-color: var(--lwt-accent-color-inactive, var(--lwt-accent-color));
-   }
-  }
-}
-/* TODO bug 1695280: Remove this block. */
-@media (-moz-platform: windows-win7),
-       (-moz-platform: windows-win8) {
-  :root:-moz-lwtheme {
-    background-color: var(--lwt-accent-color);
-    background-image: var(--lwt-additional-images);
-    background-repeat: var(--lwt-background-tiling);
-    background-position: var(--lwt-background-alignment);
-  }
-
-  :root[lwtheme-image] {
-    background-image: var(--lwt-header-image, linear-gradient(transparent, transparent)),  var(--lwt-additional-images) !important;
-    background-repeat: no-repeat, var(--lwt-background-tiling);
-    background-position: right top, var(--lwt-background-alignment) !important;
-  }
-
-  :root:-moz-lwtheme:-moz-window-inactive {
-    background-color: var(--lwt-accent-color-inactive, var(--lwt-accent-color));
-  }
-}
-
 #titlebar {
   -moz-window-dragging: drag;
 }
@@ -183,19 +133,20 @@ panelview:not([visible]) {
   transition: height var(--panelui-subview-transition-duration);
 }
 
-@supports not -moz-bool-pref("browser.tabs.tabmanager.enabled") {
-  #tabbrowser-tabs:not([overflow="true"], [hashiddentabs]) ~ #alltabs-button {
+/* stylelint-disable-next-line media-query-no-invalid */
+@media not (-moz-bool-pref: "browser.tabs.tabmanager.enabled") {
+  #tabbrowser-tabs:not([overflow], [hashiddentabs]) ~ #alltabs-button {
     display: none;
   }
-  #tabbrowser-tabs:not([overflow="true"])[using-closing-tabs-spacer] ~ #alltabs-button {
+  #tabbrowser-tabs:not([overflow])[using-closing-tabs-spacer] ~ #alltabs-button {
     /* temporary space to keep a tab's close button under the cursor */
     display: flex;
     visibility: hidden;
   }
 }
 
-#tabbrowser-tabs[hasadjacentnewtabbutton]:not([overflow="true"]) ~ #new-tab-button,
-#tabbrowser-tabs[overflow="true"] > #tabbrowser-arrowscrollbox > #tabbrowser-arrowscrollbox-periphery > #tabs-newtab-button,
+#tabbrowser-tabs[hasadjacentnewtabbutton]:not([overflow]) ~ #new-tab-button,
+#tabbrowser-tabs[overflow] > #tabbrowser-arrowscrollbox > #tabbrowser-arrowscrollbox-periphery > #tabs-newtab-button,
 #tabbrowser-tabs:not([hasadjacentnewtabbutton]) > #tabbrowser-arrowscrollbox > #tabbrowser-arrowscrollbox-periphery > #tabs-newtab-button,
 #TabsToolbar[customizing="true"] #tabs-newtab-button {
   display: none;
@@ -424,69 +375,31 @@ toolbarpaletteitem {
   width: 16px;
 }
 
-@media not all and (min-resolution: 1.1dppx) {
-  .webextension-browser-action {
-    list-style-image: var(--webextension-toolbar-image, inherit);
-  }
+.webextension-browser-action {
+  list-style-image: var(--webextension-toolbar-image, inherit);
 
-  toolbar[brighttext] .webextension-browser-action {
+  toolbar[brighttext] & {
     list-style-image: var(--webextension-toolbar-image-light, inherit);
   }
-
-  toolbar:not([brighttext]) .webextension-browser-action:-moz-lwtheme {
+  toolbar:not([brighttext]) &:-moz-lwtheme {
     list-style-image: var(--webextension-toolbar-image-dark, inherit);
   }
-
-  toolbaritem:is([overflowedItem="true"], [cui-areatype="panel"]) > .webextension-browser-action {
+  toolbaritem:is([overflowedItem="true"], [cui-areatype="panel"]) > & {
     list-style-image: var(--webextension-menupanel-image, inherit);
-  }
-
-  :root[lwt-popup-brighttext] toolbaritem:is([overflowedItem="true"], [cui-areatype="panel"]) > .webextension-browser-action {
-    list-style-image: var(--webextension-menupanel-image-light, inherit);
-  }
-
-  :root:not([lwt-popup-brighttext]) toolbaritem:is([overflowedItem="true"], [cui-areatype="panel"]) > .webextension-browser-action:-moz-lwtheme  {
-    list-style-image: var(--webextension-menupanel-image-dark, inherit);
-  }
-
-  .webextension-menuitem {
-    list-style-image: var(--webextension-menuitem-image, inherit) !important;
+    /* TODO: This feels a bit odd, why do we have three images? It feels we
+     * should probably have only two (light/dark), and choose based on
+     * prefers-color-scheme + lwt-popup */
+    :root[lwt-popup="dark"] & {
+      list-style-image: var(--webextension-menupanel-image-light, inherit);
+    }
+    :root[lwt-popup="light"] & {
+      list-style-image: var(--webextension-menupanel-image-dark, inherit);
+    }
   }
 }
 
-@media (min-resolution: 1.1dppx) {
-  .webextension-browser-action {
-    list-style-image: var(--webextension-toolbar-image-2x, inherit);
-  }
-
-  toolbar[brighttext] .webextension-browser-action {
-    list-style-image: var(--webextension-toolbar-image-2x-light, inherit);
-  }
-
-  toolbar:not([brighttext]) .webextension-browser-action:-moz-lwtheme {
-    list-style-image: var(--webextension-toolbar-image-2x-dark, inherit);
-  }
-
-  toolbaritem:is([overflowedItem="true"], [cui-areatype="panel"]) > .webextension-browser-action {
-    list-style-image: var(--webextension-menupanel-image-2x, inherit);
-  }
-
-  :root[lwt-popup-brighttext] toolbaritem:is([overflowedItem="true"], [cui-areatype="panel"]) > .webextension-browser-action {
-    list-style-image: var(--webextension-menupanel-image-2x-light, inherit);
-  }
-
-  :root:not([lwt-popup-brighttext]) toolbaritem:is([overflowedItem="true"], [cui-areatype="panel"]) > .webextension-browser-action:-moz-lwtheme {
-    list-style-image: var(--webextension-menupanel-image-2x-dark, inherit);
-  }
-
-  .webextension-menuitem {
-    list-style-image: var(--webextension-menuitem-image-2x, inherit) !important;
-  }
-}
-
-toolbarbutton.webextension-menuitem > .toolbarbutton-icon {
-  width: 16px;
-  height: 16px;
+.webextension-menuitem {
+  list-style-image: var(--webextension-menuitem-image, inherit) !important;
 }
 
 toolbarpaletteitem[removable="false"] {
@@ -494,9 +407,7 @@ toolbarpaletteitem[removable="false"] {
 }
 
 @media not (-moz-platform: macos) {
-  toolbarpaletteitem[place="palette"],
-  toolbarpaletteitem[place="panel"],
-  toolbarpaletteitem[place="toolbar"] {
+  toolbarpaletteitem:is([place="palette"], [place="panel"], [place="toolbar"]) {
     -moz-user-focus: normal;
   }
 }
@@ -690,7 +601,7 @@ toolbar:not(#TabsToolbar) > #personal-bookmarks {
   }
 }
 
-#urlbar[actiontype="switchtab"][actionoverride] > #urlbar-input-container > #urlbar-label-box,
+#urlbar[actiontype="switchtab"][action-override] > #urlbar-input-container > #urlbar-label-box,
 #urlbar:not([actiontype="switchtab"], [actiontype="extension"], [searchmode]) > #urlbar-input-container > #urlbar-label-box,
 #urlbar:not([actiontype="switchtab"]) > #urlbar-input-container > #urlbar-label-box > #urlbar-label-switchtab,
 #urlbar:not([actiontype="extension"]) > #urlbar-input-container > #urlbar-label-box > #urlbar-label-extension,
@@ -1008,53 +919,6 @@ browser[tabmodalPromptShowing], browser[tabDialogShowing] {
   -moz-user-focus: none !important;
 }
 
-/* Status panel */
-
-#statuspanel:not([hidden]) {
-  max-width: calc(100% - 5px);
-  pointer-events: none;
-
-  /* Take a bit more space vertically for the mouse tracker to hit us more
-   * easily */
-  padding-top: 2em;
-
-  position: absolute;
-  bottom: 0;
-  left: 0;
-}
-
-#statuspanel:not([mirror]):-moz-locale-dir(rtl),
-#statuspanel[mirror]:-moz-locale-dir(ltr) {
-  left: auto;
-  right: 0;
-}
-
-#statuspanel[sizelimit] {
-  max-width: 50%;
-}
-
-#statuspanel[type=status] {
-  min-width: min(23em, 33%);
-}
-
-#statuspanel[type=overLink] {
-  transition: opacity 120ms ease-out, visibility 120ms;
-}
-
-#statuspanel:is([type=overLink], [inactive][previoustype=overLink]) {
-  direction: ltr;
-}
-
-#statuspanel[inactive] {
-  transition: none;
-  opacity: 0;
-  visibility: hidden;
-}
-
-#statuspanel[inactive][previoustype=overLink] {
-  transition: opacity 200ms ease-out, visibility 200ms;
-}
-
 /*** Visibility of downloads indicator controls ***/
 
 /* Hide the default icon, show the anchor instead. */
@@ -1237,15 +1101,6 @@ toolbarpaletteitem[dragover] {
   flex-wrap: wrap;
 }
 
-#customization-toolbar-visibility-button > .box-inherit > .button-menu-dropmarker {
-  display: flex;
-}
-
-#customization-lwtheme-button > .box-inherit > .button-menu-dropmarker,
-#customization-uidensity-button > .box-inherit > .button-menu-dropmarker {
-  display: flex;
-}
-
 toolbarpaletteitem[place="palette"] {
   flex-direction: column;
   width: 7em;
@@ -1350,12 +1205,6 @@ toolbarpaletteitem:not([place="palette"]) > #stop-reload-button {
   animation-duration: 2s;
 }
 
-/* Combined context-menu items */
-#context-navigation > .menuitem-iconic > .menu-iconic-text,
-#context-navigation > .menuitem-iconic > .menu-accel-container {
-  display: none;
-}
-
 .popup-notification-invalid-input {
   box-shadow: 0 0 1.5px 1px red;
 }
@@ -1375,19 +1224,9 @@ toolbarpaletteitem:not([place="palette"]) > #stop-reload-button {
 }
 
 /* Page action buttons */
-.pageAction-panel-button > .toolbarbutton-icon {
-  list-style-image: var(--pageAction-image-16px, inherit);
-}
+.pageAction-panel-button > .toolbarbutton-icon,
 .urlbar-page-action {
-  list-style-image: var(--pageAction-image-16px, inherit);
-}
-@media (min-resolution: 1.1dppx) {
-  .pageAction-panel-button > .toolbarbutton-icon {
-    list-style-image: var(--pageAction-image-32px, inherit);
-  }
-  .urlbar-page-action {
-    list-style-image: var(--pageAction-image-32px, inherit);
-  }
+  list-style-image: var(--pageAction-image, inherit);
 }
 
 /* Print pending */
@@ -1485,12 +1324,6 @@ printpreview-pagination:focus-within,
   fill: currentColor;
   width: 16px;
   height: 16px;
-}
-
-@media (min-resolution: 1.1dppx) {
-  #sidebar-box[sidebarcommand$="-sidebar-action"] > #sidebar-header > #sidebar-switcher-target > #sidebar-icon {
-    list-style-image: var(--webextension-menuitem-image-2x, inherit);
-  }
 }
 
 toolbar[keyNav=true]:not([collapsed=true], [customizing=true]) toolbartabstop {
@@ -1640,6 +1473,12 @@ toolbar[keyNav=true]:not([collapsed=true], [customizing=true]) toolbartabstop {
   /* This makes the dialog top-aligned by default (the dialog box will move via
    * margin-top above) */
   bottom: auto;
+  /* When showModal() is called on a <dialog>, the <dialog> itself will be
+   * focused when there's no content, hence the focus ring. However, this
+   * focus ring is not needed because we always setup the content of the dialog
+   * after its opened and manually focus an element within it.
+   */
+  outline: none;
 }
 
 #window-modal-dialog.spotlight {

@@ -8,20 +8,8 @@ const { XPCOMUtils } = ChromeUtils.importESModule(
 const { AppConstants } = ChromeUtils.importESModule(
   "resource://gre/modules/AppConstants.sys.mjs"
 );
-const { showStreamSharingMenu, webrtcUI } = ChromeUtils.import(
-  "resource:///modules/webrtcUI.jsm"
-);
-
-ChromeUtils.defineModuleGetter(
-  this,
-  "MacOSWebRTCStatusbarIndicator",
-  "resource:///modules/webrtcUI.jsm"
-);
-
-ChromeUtils.defineModuleGetter(
-  this,
-  "BrowserWindowTracker",
-  "resource:///modules/BrowserWindowTracker.jsm"
+const { showStreamSharingMenu, webrtcUI } = ChromeUtils.importESModule(
+  "resource:///modules/webrtcUI.sys.mjs"
 );
 
 XPCOMUtils.defineLazyServiceGetter(
@@ -80,10 +68,9 @@ const WebRTCIndicator = {
       false
     );
 
-    this.hideGlobalIndicator = Services.prefs.getBoolPref(
-      "privacy.webrtc.hideGlobalIndicator",
-      false
-    );
+    this.hideGlobalIndicator =
+      Services.prefs.getBoolPref("privacy.webrtc.hideGlobalIndicator", false) ||
+      Services.appinfo.isWayland;
 
     if (this.hideGlobalIndicator) {
       this.setVisibility(false);

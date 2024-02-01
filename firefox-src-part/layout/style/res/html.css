@@ -82,6 +82,7 @@ ol,
 p,
 plaintext,
 pre,
+search,
 section,
 summary,
 table,
@@ -124,6 +125,7 @@ hgroup,
 html,
 main,
 nav,
+search,
 section,
 summary {
   display: block;
@@ -473,9 +475,7 @@ th {
   text-align: -moz-center-or-inherit;
 }
 
-tr > form:-moz-is-html, tbody > form:-moz-is-html,
-thead > form:-moz-is-html, tfoot > form:-moz-is-html,
-table > form:-moz-is-html {
+:is(tr, tbody, thead, tfoot, table) > form:-moz-is-html {
   /* Important: don't show these forms in HTML */
   display: none !important;
 }
@@ -640,15 +640,6 @@ input[type=image]::before,
 img::before {
   content: -moz-alt-content !important;
   unicode-bidi: isolate;
-}
-
-object:-moz-broken > *|* {
-  /*
-    Inherit in the object's alignment so that if we aren't aligned explicitly
-    we'll end up in the right place vertically.  See bug 36997.  Note that this
-    is not !important because we _might_ be aligned explicitly.
-  */
-  vertical-align: inherit;
 }
 
 img[usemap], object[usemap] {
@@ -904,8 +895,16 @@ slot {
   }
 }
 
+@media print {
+  input, textarea, select, button, details {
+    -moz-user-input: none !important;
+    pointer-events: none !important;
+  }
+}
+
 /* Popover UA style, https://html.spec.whatwg.org/#flow-content-3 */
-@media (-moz-popover-enabled) {
+/* stylelint-disable-next-line media-query-no-invalid */
+@media (-moz-bool-pref: "dom.element.popover.enabled") {
   [popover]:not(:popover-open):not(dialog[open]) {
     display:none;
   }

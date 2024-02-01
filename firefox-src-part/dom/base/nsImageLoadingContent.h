@@ -80,6 +80,7 @@ class nsImageLoadingContent : public nsIImageLoadingContent {
   void ForceReload(bool aNotify, mozilla::ErrorResult& aError);
 
   mozilla::dom::Element* FindImageMap();
+  static mozilla::dom::Element* FindImageMap(mozilla::dom::Element*);
 
   /**
    * Toggle whether or not to synchronously decode an image on draw.
@@ -554,14 +555,13 @@ class nsImageLoadingContent : public nsIImageLoadingContent {
 
   bool mLoadingEnabled : 1;
 
+ protected:
   /**
    * The state we had the last time we checked whether we needed to notify the
    * document of a state change.  These are maintained by UpdateImageState.
    */
   bool mLoading : 1;
-  bool mBroken : 1;
 
- protected:
   /**
    * A hack to get animations to reset, see bug 594771. On requests
    * that originate from setting .src, we mark them for needing their animation

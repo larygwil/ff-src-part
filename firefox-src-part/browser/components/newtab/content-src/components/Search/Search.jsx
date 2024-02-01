@@ -77,7 +77,7 @@ export class _Search extends React.PureComponent {
   onInputMount(input) {
     if (input) {
       // The "healthReportKey" and needs to be "newtab" or "abouthome" so that
-      // BrowserUsageTelemetry.jsm knows to handle events with this name, and
+      // BrowserUsageTelemetry.sys.mjs knows to handle events with this name, and
       // can add the appropriate telemetry probes for search. Without the correct
       // name, certain tests like browser_UsageTelemetry_content.js will fail
       // (See github ticket #2348 for more details)
@@ -112,35 +112,6 @@ export class _Search extends React.PureComponent {
       // changes to default engine to keep everything in sync.
       this._handoffSearchController = new ContentSearchHandoffUIController();
     }
-  }
-
-  getDefaultEngineName() {
-    // _handoffSearchController will manage engine names once it is initialized.
-    return this.props.Prefs.values["urlbar.placeholderName"];
-  }
-
-  getHandoffInputL10nAttributes() {
-    let defaultEngineName = this.getDefaultEngineName();
-    return defaultEngineName
-      ? {
-          "data-l10n-id": "newtab-search-box-handoff-input",
-          "data-l10n-args": `{"engine": "${defaultEngineName}"}`,
-        }
-      : {
-          "data-l10n-id": "newtab-search-box-handoff-input-no-engine",
-        };
-  }
-
-  getHandoffTextL10nAttributes() {
-    let defaultEngineName = this.getDefaultEngineName();
-    return defaultEngineName
-      ? {
-          "data-l10n-id": "newtab-search-box-handoff-text",
-          "data-l10n-args": `{"engine": "${defaultEngineName}"}`,
-        }
-      : {
-          "data-l10n-id": "newtab-search-box-handoff-text-no-engine",
-        };
   }
 
   onSearchHandoffButtonMount(button) {
@@ -191,15 +162,11 @@ export class _Search extends React.PureComponent {
           <div className="search-inner-wrapper">
             <button
               className="search-handoff-button"
-              {...this.getHandoffInputL10nAttributes()}
               ref={this.onSearchHandoffButtonMount}
               onClick={this.onSearchHandoffClick}
               tabIndex="-1"
             >
-              <div
-                className="fake-textbox"
-                {...this.getHandoffTextL10nAttributes()}
-              />
+              <div className="fake-textbox" />
               <input
                 type="search"
                 className="fake-editable"

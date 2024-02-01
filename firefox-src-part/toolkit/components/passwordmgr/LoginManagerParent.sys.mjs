@@ -13,14 +13,14 @@ const LoginInfo = new Components.Constructor(
 
 const lazy = {};
 
-XPCOMUtils.defineLazyGetter(lazy, "LoginRelatedRealmsParent", () => {
+ChromeUtils.defineLazyGetter(lazy, "LoginRelatedRealmsParent", () => {
   const { LoginRelatedRealmsParent } = ChromeUtils.importESModule(
     "resource://gre/modules/LoginRelatedRealms.sys.mjs"
   );
   return new LoginRelatedRealmsParent();
 });
 
-XPCOMUtils.defineLazyGetter(lazy, "PasswordRulesManager", () => {
+ChromeUtils.defineLazyGetter(lazy, "PasswordRulesManager", () => {
   const { PasswordRulesManagerParent } = ChromeUtils.importESModule(
     "resource://gre/modules/PasswordRulesManager.sys.mjs"
   );
@@ -33,6 +33,7 @@ ChromeUtils.defineESModuleGetters(lazy, {
   LoginHelper: "resource://gre/modules/LoginHelper.sys.mjs",
   MigrationUtils: "resource:///modules/MigrationUtils.sys.mjs",
   NimbusFeatures: "resource://nimbus/ExperimentAPI.sys.mjs",
+  WebAuthnFeature: "resource://gre/modules/WebAuthnFeature.sys.mjs",
   PasswordGenerator: "resource://gre/modules/PasswordGenerator.sys.mjs",
   PrivateBrowsingUtils: "resource://gre/modules/PrivateBrowsingUtils.sys.mjs",
 });
@@ -44,11 +45,11 @@ XPCOMUtils.defineLazyServiceGetter(
   Ci.nsILoginManagerPrompter
 );
 
-XPCOMUtils.defineLazyGetter(lazy, "log", () => {
+ChromeUtils.defineLazyGetter(lazy, "log", () => {
   let logger = lazy.LoginHelper.createLogger("LoginManagerParent");
   return logger.log.bind(logger);
 });
-XPCOMUtils.defineLazyGetter(lazy, "debug", () => {
+ChromeUtils.defineLazyGetter(lazy, "debug", () => {
   let logger = lazy.LoginHelper.createLogger("LoginManagerParent");
   return logger.debug.bind(logger);
 });
@@ -287,7 +288,7 @@ export class LoginManagerParent extends JSWindowActorParent {
       );
     }
     let context = {};
-    XPCOMUtils.defineLazyGetter(context, "origin", () => {
+    ChromeUtils.defineLazyGetter(context, "origin", () => {
       // We still need getLoginOrigin to remove the path for file: URIs until we fix bug 1625391.
       let origin = lazy.LoginHelper.getLoginOrigin(
         this.manager.documentPrincipal?.originNoSuffix
@@ -364,7 +365,7 @@ export class LoginManagerParent extends JSWindowActorParent {
       // Used by tests to detect that a form-fill has occurred. This redirects
       // to the top-level browsing context.
       case "PasswordManager:formProcessed": {
-        this.#onFormProcessed(data.formid);
+        this.#onFormProcessed(data.formid, data.autofillResult);
         break;
       }
 
@@ -372,8 +373,7 @@ export class LoginManagerParent extends JSWindowActorParent {
         FirefoxRelayTelemetry.recordRelayOfferedEvent(
           "clicked",
           data.telemetry.flowId,
-          data.telemetry.scenarioName,
-          data.telemetry.isRelayUser
+          data.telemetry.scenarioName
         );
         return this.#offerRelayIntegration(context.origin);
       }
@@ -384,6 +384,10 @@ export class LoginManagerParent extends JSWindowActorParent {
           data.telemetry.flowId
         );
         return this.#generateRelayUsername(context.origin);
+      }
+
+      case "PasswordManager:promptForAuthenticator": {
+        return this.#promptForAuthenticator(data.selection);
       }
     }
 
@@ -498,13 +502,17 @@ export class LoginManagerParent extends JSWindowActorParent {
     });
   }
 
-  #onFormProcessed(formid) {
+  #onFormProcessed(formid, autofillResult) {
     const topActor =
       this.browsingContext.currentWindowGlobal.getActor("LoginManager");
     topActor.sendAsyncMessage("PasswordManager:formProcessed", { formid });
     if (gListenerForTests) {
       gListenerForTests("FormProcessed", {
         browsingContext: this.browsingContext,
+        data: {
+          formId: formid,
+          autofillResult,
+        },
       });
     }
   }
@@ -517,6 +525,11 @@ export class LoginManagerParent extends JSWindowActorParent {
   async #generateRelayUsername(origin) {
     const browser = lazy.LoginHelper.getBrowserForPrompt(this.getRootBrowser());
     return lazy.FirefoxRelay.generateUsername(browser, origin);
+  }
+
+  async #promptForAuthenticator(selection) {
+    const browser = lazy.LoginHelper.getBrowserForPrompt(this.getRootBrowser());
+    return lazy.WebAuthnFeature.promptForAuthenticator(browser, selection);
   }
 
   /**
@@ -707,6 +720,7 @@ export class LoginManagerParent extends JSWindowActorParent {
       isProbablyANewPasswordField,
       scenarioName,
       inputMaxLength,
+      isWebAuthn,
     }
   ) {
     // Note: previousResult is a regular object, not an
@@ -804,16 +818,31 @@ export class LoginManagerParent extends JSWindowActorParent {
     // doesn't support structured cloning.
     let jsLogins = lazy.LoginHelper.loginsToVanillaObjects(matchingLogins);
 
+    let autocompleteItems = [];
+
+    if (!hasBeenTypePassword) {
+      autocompleteItems.push(
+        ...(await lazy.FirefoxRelay.autocompleteItemsAsync({
+          formOrigin,
+          scenarioName,
+          hasInput: !!searchStringLower.length,
+        }))
+      );
+    }
+    autocompleteItems.push(
+      ...(await lazy.WebAuthnFeature.autocompleteItemsAsync(
+        this._overrideBrowsingContextId ??
+          this.getRootBrowser().browsingContext.id,
+        formOrigin,
+        scenarioName,
+        isWebAuthn
+      ))
+    );
+
     return {
       generatedPassword,
       importable: await getImportableLogins(formOrigin),
-      autocompleteItems: hasBeenTypePassword
-        ? []
-        : await lazy.FirefoxRelay.autocompleteItemsAsync({
-            formOrigin,
-            scenarioName,
-            hasInput: !!searchStringLower.length,
-          }),
+      autocompleteItems,
       logins: jsLogins,
       willAutoSaveGeneratedPassword,
     };

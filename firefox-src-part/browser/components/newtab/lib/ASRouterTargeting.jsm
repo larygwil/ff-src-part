@@ -23,22 +23,23 @@ const lazy = {};
 
 ChromeUtils.defineESModuleGetters(lazy, {
   AddonManager: "resource://gre/modules/AddonManager.sys.mjs",
+  AboutNewTab: "resource:///modules/AboutNewTab.sys.mjs",
   AttributionCode: "resource:///modules/AttributionCode.sys.mjs",
+  BrowserWindowTracker: "resource:///modules/BrowserWindowTracker.sys.mjs",
   ClientEnvironment: "resource://normandy/lib/ClientEnvironment.sys.mjs",
   CustomizableUI: "resource:///modules/CustomizableUI.sys.mjs",
+  HomePage: "resource:///modules/HomePage.sys.mjs",
   NimbusFeatures: "resource://nimbus/ExperimentAPI.sys.mjs",
   ProfileAge: "resource://gre/modules/ProfileAge.sys.mjs",
   Region: "resource://gre/modules/Region.sys.mjs",
   TargetingContext: "resource://messaging-system/targeting/Targeting.sys.mjs",
   TelemetryEnvironment: "resource://gre/modules/TelemetryEnvironment.sys.mjs",
   TelemetrySession: "resource://gre/modules/TelemetrySession.sys.mjs",
+  WindowsLaunchOnLogin: "resource://gre/modules/WindowsLaunchOnLogin.sys.mjs",
 });
 
 XPCOMUtils.defineLazyModuleGetters(lazy, {
   ASRouterPreferences: "resource://activity-stream/lib/ASRouterPreferences.jsm",
-  HomePage: "resource:///modules/HomePage.jsm",
-  AboutNewTab: "resource:///modules/AboutNewTab.jsm",
-  BrowserWindowTracker: "resource:///modules/BrowserWindowTracker.jsm",
 });
 
 XPCOMUtils.defineLazyGetter(lazy, "fxAccounts", () => {
@@ -109,14 +110,14 @@ XPCOMUtils.defineLazyPreferenceGetter(
 );
 XPCOMUtils.defineLazyPreferenceGetter(
   lazy,
-  "snippetsUserPref",
-  "browser.newtabpage.activity-stream.feeds.snippets",
+  "hasMigratedBookmarks",
+  "browser.migrate.interactions.bookmarks",
   false
 );
 XPCOMUtils.defineLazyPreferenceGetter(
   lazy,
-  "hasMigratedBookmarks",
-  "browser.migrate.interactions.bookmarks",
+  "hasMigratedCSVPasswords",
+  "browser.migrate.interactions.csvpasswords",
   false
 );
 XPCOMUtils.defineLazyPreferenceGetter(
@@ -254,7 +255,11 @@ function CheckBrowserNeedsUpdate(
       );
       let result = await check.result;
       if (!result.succeeded) {
-        throw result.request;
+        lazy.ASRouterPreferences.console.error(
+          "CheckBrowserNeedsUpdate failed :>> ",
+          result.request
+        );
+        return false;
       }
       checker._value = !!result.updates.length;
       return checker._value;
@@ -486,7 +491,7 @@ async function getAutofillRecords(data) {
     name: "FormAutofill:GetRecords",
     data,
   });
-  return records?.length ?? 0;
+  return records?.records?.length ?? 0;
 }
 
 // Attribution data can be encoded multiple times so we need this function to
@@ -694,7 +699,6 @@ const TargetingGetters = {
     return {
       cfrFeatures: lazy.cfrFeaturesUserPref,
       cfrAddons: lazy.cfrAddonsUserPref,
-      snippets: lazy.snippetsUserPref,
     };
   },
   get totalBlockedCount() {
@@ -833,6 +837,13 @@ const TargetingGetters = {
     return QueryCache.getters.doesAppNeedPrivatePin.get();
   },
 
+  get launchOnLoginEnabled() {
+    if (AppConstants.platform !== "win") {
+      return false;
+    }
+    return lazy.WindowsLaunchOnLogin.getLaunchOnLoginEnabled();
+  },
+
   /**
    * Is this invocation running in background task mode?
    *
@@ -922,6 +933,16 @@ const TargetingGetters = {
   },
 
   /**
+   * Has the user ever used the Migration Wizard to migrate passwords from
+   * a CSV file?
+   * @return {boolean} `true` if CSV passwords have been imported via the
+   *   migration wizard.
+   */
+  get hasMigratedCSVPasswords() {
+    return lazy.hasMigratedCSVPasswords;
+  },
+
+  /**
    * Has the user ever used the Migration Wizard to migrate history?
    * @return {boolean} `true` if history migration has occurred.
    */
@@ -971,6 +992,51 @@ const TargetingGetters = {
     const { attributionData } = this;
 
     return attributionData?.campaign === "migration";
+  },
+
+  /**
+   * The values of the height and width available to the browser to display
+   * web content. The available height and width are each calculated taking
+   * into account the presence of menu bars, docks, and other similar OS elements
+   * @returns {Object} resolution The resolution object containing width and height
+   * @returns {string} resolution.width The available width of the primary monitor
+   * @returns {string} resolution.height The available height of the primary monitor
+   */
+  get primaryResolution() {
+    // Using hidden dom window ensures that we have a window object
+    // to grab a screen from in certain edge cases such as targeting evaluation
+    // during first startup before the browser is available, and in MacOS
+    let window = Services.appShell.hiddenDOMWindow;
+    return {
+      width: window?.screen.availWidth,
+      height: window?.screen.availHeight,
+    };
+  },
+
+  get archBits() {
+    let bits = null;
+    try {
+      bits = Services.sysinfo.getProperty("archbits", null);
+    } catch (_e) {
+      // getProperty can throw if the memsize does not exist
+    }
+    if (bits) {
+      bits = Number(bits);
+    }
+    return bits;
+  },
+
+  get memoryMB() {
+    let memory = null;
+    try {
+      memory = Services.sysinfo.getProperty("memsize", null);
+    } catch (_e) {
+      // getProperty can throw if the memsize does not exist
+    }
+    if (memory) {
+      memory = Number(memory) / 1024 / 1024;
+    }
+    return memory;
   },
 };
 

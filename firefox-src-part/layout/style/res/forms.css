@@ -84,9 +84,9 @@ input {
   appearance: auto;
   -moz-default-appearance: textfield;
   /* The sum of border and padding on block-start and block-end
-     must be the same here, for buttons, and for <select> (including its
-     internal padding magic) */
-  padding: 1px;
+     must be the same here, for buttons, and for <select> */
+  padding-block: 1px;
+  padding-inline: 2px;
   border: 2px inset ButtonBorder;
   background-color: Field;
   color: FieldText;
@@ -94,12 +94,6 @@ input {
   text-rendering: optimizeLegibility;
   cursor: text;
   overflow-clip-box: padding-box content-box;
-}
-
-@media (-moz-non-native-content-theme) {
-  input {
-    padding-inline: 2px;
-  }
 }
 
 textarea {
@@ -274,6 +268,9 @@ select > button {
   block-size: 100%;
   box-sizing: border-box;
 
+  /* Draw the arrow in the select's color */
+  color: inherit;
+
   /*
     Make sure to align properly with the display frame.  Note that we
     want the baseline of the combobox to match the baseline of the
@@ -301,6 +298,11 @@ option[label]::before {
   content: attr(label);
 }
 
+select:-moz-select-list-box option,
+select:-moz-select-list-box optgroup {
+  line-height: normal !important;
+}
+
 option {
   display: block;
   float: none !important;
@@ -310,18 +312,15 @@ option {
 
   min-block-size: 1em;
   padding-block: 2px;
+  user-select: none;
   /*
    * Note that the "UA !important" tests in
    * layout/style/test/test_animations.html depend on this rule, because
    * they need some UA !important rule to test.  If this changes, use a
    * different one there.
    */
-  line-height: normal !important;
-  user-select: none;
-  text-indent: 0;
   white-space: nowrap !important;
   word-wrap: normal !important;
-  text-align: match-parent;
 }
 
 select > option {
@@ -333,7 +332,7 @@ option:checked {
   color: -moz-cellhighlighttext;
 }
 
-select:focus option:checked {
+select:-moz-select-list-box:focus option:checked {
   background-color: SelectedItem !important;
   color: SelectedItemText !important;
 }
@@ -342,13 +341,10 @@ optgroup {
   display: block;
   float: none !important;
   position: static !important;
-  font: -moz-list;
-  line-height: normal !important;
   font-style: italic;
   font-weight: bold;
   font-size: unset;
   user-select: none;
-  text-indent: 0;
   white-space: nowrap !important;
   word-wrap: normal !important;
 }
@@ -361,7 +357,7 @@ optgroup > option {
 
 optgroup:before {
   display: block;
-  content: attr(label);
+  content: "\200b" attr(label);
 }
 
 @media (-moz-platform: android) {
@@ -521,30 +517,19 @@ input:is([type=reset], [type=button], [type=submit]) {
   white-space: pre;
   text-align: center;
   overflow-clip-box: padding-box;
+  padding-inline: 4px;
 }
 
 input[type=color] {
   inline-size: 64px;
   block-size: 32px;
-}
-
-@media (-moz-non-native-content-theme) {
-  button,
-  ::file-selector-button,
-  input:is([type=reset], [type=button], [type=submit]) {
-    padding-inline: 4px;
-  }
-
-  input[type=color] {
-    padding: 4px;
-  }
+  padding: 4px;
 }
 
 button,
 ::file-selector-button {
   /* Buttons should lay out like "normal" html, mostly */
   white-space: unset;
-  text-indent: 0;
   /* But no text-decoration reaching inside, by default */
   display: inline-block;
 }
@@ -691,12 +676,6 @@ optgroup:before {
   text-overflow: inherit;
 }
 
-@media print {
-  input, textarea, select, button {
-    -moz-user-input: none !important;
-  }
-}
-
 progress {
   appearance: auto;
   -moz-default-appearance: progress-bar;
@@ -712,7 +691,8 @@ progress {
   overflow: clip;
 }
 
-::-moz-progress-bar {
+progress::-moz-progress-bar,
+progress::slider-fill {
   /* Prevent styling that would change the type of frame we construct. */
   display: inline-block !important;
   float: none !important;
@@ -738,7 +718,8 @@ meter {
   overflow: clip;
 }
 
-::-moz-meter-bar {
+meter::-moz-meter-bar,
+meter::slider-fill {
   /* Block styles that would change the type of frame we construct. */
   display: inline-block !important;
   float: none !important;
@@ -751,15 +732,18 @@ meter {
   width: 100%;
 }
 
-:-moz-meter-optimum::-moz-meter-bar {
+meter:-moz-meter-optimum::-moz-meter-bar,
+meter:-moz-meter-optimum::slider-fill {
   /* green. */
   background: linear-gradient(#ad7, #ad7, #cea 20%, #7a3 45%, #7a3 55%);
 }
-:-moz-meter-sub-optimum::-moz-meter-bar {
+meter:-moz-meter-sub-optimum::-moz-meter-bar,
+meter:-moz-meter-sub-optimum::slider-fill {
   /* orange. */
   background: linear-gradient(#fe7, #fe7, #ffc 20%, #db3 45%, #db3 55%);
 }
-:-moz-meter-sub-sub-optimum::-moz-meter-bar {
+meter:-moz-meter-sub-sub-optimum::-moz-meter-bar,
+meter:-moz-meter-sub-sub-optimum::slider-fill {
   /* red. */
   background: linear-gradient(#f77, #f77, #fcc 20%, #d44 45%, #d44 55%);
 }
@@ -784,8 +768,12 @@ input[type=range] {
  *
  * If content authors want to have a vertical range, they will also need to
  * set the width/height of this pseudo-element.
+ *
+ * TODO(emilio, bug 1663819): Losen these restrictions once these
+ * pseudo-elements are better spec'd out.
  */
-input[type=range]::-moz-range-track {
+input[type=range]::-moz-range-track,
+input[type=range]::slider-track {
   /* Prevent styling that would change the type of frame we construct. */
   display: block !important;
   float: none !important;
@@ -797,7 +785,8 @@ input[type=range]::-moz-range-track {
   user-select: none !important;
 }
 
-input[type=range][orient=vertical]::-moz-range-track {
+input[type=range][orient=vertical]::-moz-range-track,
+input[type=range][orient=vertical]::slider-track {
   inline-size: 0.2em; /* same as block-size above */
   block-size: 100%;
 }
@@ -810,7 +799,8 @@ input[type=range][orient=vertical]::-moz-range-track {
  * property is ignored, and if the range range is vertical, the height property
  * is ignored.
  */
-input[type=range]::-moz-range-progress {
+input[type=range]::-moz-range-progress,
+input[type=range]::slider-fill {
   /* Prevent styling that would change the type of frame we construct. */
   display: block !important;
   float: none !important;
@@ -818,8 +808,7 @@ input[type=range]::-moz-range-progress {
   writing-mode: unset !important;
   direction: unset !important;
   /* Since one of width/height will be ignored, this just sets the "other"
-     dimension.
-   */
+     dimension. */
   width: 0.2em;
   height: 0.2em;
   /* Prevent nsIFrame::HandlePress setting mouse capture to this element. */
@@ -832,7 +821,8 @@ input[type=range]::-moz-range-progress {
  * logic to position it). Specifically the 'margin', 'top' and 'left'
  * properties are ignored.
  */
-input[type=range]::-moz-range-thumb {
+input[type=range]::-moz-range-thumb,
+input[type=range]::slider-thumb {
   /* Native theming is atomic for range. Set appearance on the range
    * to get rid of it. The thumb's appearance is fixed.
    */
@@ -884,11 +874,6 @@ input[type=number]::-moz-number-spin-down {
 
 input[type=number]::-moz-number-spin-down {
   -moz-default-appearance: spinner-downbutton;
-}
-
-input[type=number] > div > div > div:hover {
-  /* Give some indication of hover state for the up/down buttons */
-  background-color: lightblue;
 }
 
 input::-moz-search-clear-button,

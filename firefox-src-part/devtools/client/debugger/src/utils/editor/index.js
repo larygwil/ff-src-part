@@ -3,10 +3,9 @@
  * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
 
 export * from "./source-documents";
-export * from "./get-token-location";
 export * from "./source-search";
 export * from "../ui";
-export { onMouseOver } from "./token-events";
+export * from "./tokens";
 
 import { createEditor } from "./create-editor";
 
@@ -68,17 +67,13 @@ export function fromEditorLine(sourceId, line, sourceIsWasm) {
 }
 
 export function toEditorPosition(location) {
+  // Note that Spidermonkey, Debugger frontend and CodeMirror are all consistant regarding column
+  // and are 0-based. But only CodeMirror consider the line to be 0-based while the two others
+  // consider lines to be 1-based.
   return {
-    line: toEditorLine(location.sourceId, location.line),
-    column: isWasm(location.sourceId) || !location.column ? 0 : location.column,
-  };
-}
-
-export function toEditorRange(sourceId, location) {
-  const { start, end } = location;
-  return {
-    start: toEditorPosition({ ...start, sourceId }),
-    end: toEditorPosition({ ...end, sourceId }),
+    line: toEditorLine(location.source.id, location.line),
+    column:
+      isWasm(location.source.id) || (!location.column ? 0 : location.column),
   };
 }
 
@@ -86,7 +81,14 @@ export function toSourceLine(sourceId, line) {
   return isWasm(sourceId) ? lineToWasmOffset(sourceId, line) : line + 1;
 }
 
-export function scrollToColumn(codeMirror, line, column) {
+export function scrollToPosition(codeMirror, line, column) {
+  // For all cases where these are on the first line and column,
+  // avoid the possibly slow computation of cursor location on large bundles.
+  if (!line && !column) {
+    codeMirror.scrollTo(0, 0);
+    return;
+  }
+
   const { top, left } = codeMirror.charCoords({ line, ch: column }, "local");
 
   if (!isVisible(codeMirror, top, left)) {
@@ -217,14 +219,4 @@ export function getCursorLine(codeMirror) {
 
 export function getCursorColumn(codeMirror) {
   return codeMirror.getCursor().ch;
-}
-
-export function getTokenEnd(codeMirror, line, column) {
-  const token = codeMirror.getTokenAt({
-    line,
-    ch: column + 1,
-  });
-  const tokenString = token.string;
-
-  return tokenString === "{" || tokenString === "[" ? null : token.end;
 }

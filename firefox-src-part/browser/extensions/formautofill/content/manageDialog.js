@@ -13,14 +13,11 @@ const EDIT_CREDIT_CARD_URL =
 const { AppConstants } = ChromeUtils.importESModule(
   "resource://gre/modules/AppConstants.sys.mjs"
 );
-const { XPCOMUtils } = ChromeUtils.importESModule(
-  "resource://gre/modules/XPCOMUtils.sys.mjs"
-);
 const { FormAutofill } = ChromeUtils.importESModule(
   "resource://autofill/FormAutofill.sys.mjs"
 );
-const { AutofillTelemetry } = ChromeUtils.import(
-  "resource://autofill/AutofillTelemetry.jsm"
+const { AutofillTelemetry } = ChromeUtils.importESModule(
+  "resource://autofill/AutofillTelemetry.sys.mjs"
 );
 
 ChromeUtils.defineESModuleGetters(this, {
@@ -30,19 +27,8 @@ ChromeUtils.defineESModuleGetters(this, {
   formAutofillStorage: "resource://autofill/FormAutofillStorage.sys.mjs",
 });
 
-const lazy = {};
-XPCOMUtils.defineLazyGetter(
-  lazy,
-  "l10n",
-  () =>
-    new Localization([
-      "browser/preferences/formAutofill.ftl",
-      "branding/brand.ftl",
-    ])
-);
-
 this.log = null;
-XPCOMUtils.defineLazyGetter(this, "log", () =>
+ChromeUtils.defineLazyGetter(this, "log", () =>
   FormAutofill.defineLogGetter(this, "manageAddresses")
 );
 
@@ -366,12 +352,13 @@ class ManageCreditCards extends ManageRecords {
   async openEditDialog(creditCard) {
     // Ask for reauth if user is trying to edit an existing credit card.
     if (creditCard) {
-      const reauthPasswordPromptMessage = await lazy.l10n.formatValue(
-        "autofill-edit-card-password-prompt"
+      const promptMessage = FormAutofillUtils.reauthOSPromptMessage(
+        "autofill-edit-payment-method-os-prompt-macos",
+        "autofill-edit-payment-method-os-prompt-windows",
+        "autofill-edit-payment-method-os-prompt-other"
       );
-      const loggedIn = await FormAutofillUtils.ensureLoggedIn(
-        reauthPasswordPromptMessage
-      );
+
+      const loggedIn = await FormAutofillUtils.ensureLoggedIn(promptMessage);
       if (!loggedIn.authenticated) {
         return;
       }

@@ -2,13 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-<!--
-  GTK needs to draw behind the lightweight theme toolbox backgrounds, thus the extra box.
-  Also this box allows a negative margin-top to slide the toolbox off screen in
-  fullscreen layout.
--->
-<box id="navigator-toolbox-background">
-<toolbox id="navigator-toolbox" flex="1">
+<toolbox id="navigator-toolbox">
 
   <vbox id="titlebar">
     <!-- Menu -->
@@ -43,7 +37,7 @@
         <hbox id="TabsToolbar-customization-target" flex="1">
           <toolbarbutton id="firefox-view-button"
                          class="toolbarbutton-1 chromeclass-toolbar-additional"
-                         data-l10n-id="toolbar-button-firefox-view"
+                         data-l10n-id="toolbar-button-firefox-view-2"
                          role="button"
                          aria-pressed="false"
                          oncommand="FirefoxViewHandler.openTab(event);"
@@ -63,7 +57,7 @@
 # DisplayPortUtils::MaybeCreateDisplayPortInFirstScrollFrameEncountered based
 # the current structure that we may want to revisit.
             <arrowscrollbox id="tabbrowser-arrowscrollbox" orient="horizontal" flex="1" style="min-width: 1px;" clicktoscroll="true" scrolledtostart="true" scrolledtoend="true">
-              <tab is="tabbrowser-tab" class="tabbrowser-tab" selected="true" visuallyselected="true" fadein="true"/>
+              <tab is="tabbrowser-tab" class="tabbrowser-tab" selected="true" visuallyselected="" fadein=""/>
               <hbox id="tabbrowser-arrowscrollbox-periphery">
                 <toolbartabstop/>
                 <toolbarbutton id="tabs-newtab-button"
@@ -102,7 +96,6 @@
 
       <hbox class="titlebar-spacer" type="post-tabs"/>
 
-      <hbox class="private-browsing-indicator"/>
       <hbox id="private-browsing-indicator-with-label">
         <image class="private-browsing-indicator-icon"/>
         <label data-l10n-id="private-browsing-indicator-label"></label>
@@ -279,10 +272,6 @@
                        data-l10n-id="urlbar-indexed-db-notification-anchor"/>
                 <image id="password-notification-icon" class="notification-anchor-icon" role="button"
                        data-l10n-id="urlbar-password-notification-anchor"/>
-                <stack id="plugins-notification-icon" class="notification-anchor-icon" role="button" align="center" data-l10n-id="urlbar-plugins-notification-anchor">
-                  <image class="plugin-icon" />
-                  <image id="plugin-icon-badge" />
-                </stack>
                 <image id="web-notifications-notification-icon" class="notification-anchor-icon desktop-notification-icon" role="button"
                        data-l10n-id="urlbar-web-notification-anchor"/>
                 <image id="webRTC-shareDevices-notification-icon" class="notification-anchor-icon camera-icon" role="button"
@@ -318,7 +307,9 @@
               <html:span id="urlbar-search-mode-indicator-title"/>
               <html:div id="urlbar-search-mode-indicator-close"
                      class="close-button"
-                     role="button"/>
+                     role="button"
+                     aria-labelledby="urlbar-search-mode-indicator-close urlbar-search-mode-indicator-title"
+                     data-l10n-id="urlbar-search-mode-indicator-close"/>
             </html:div>
             <moz-input-box tooltip="aHTMLTooltip"
                            class="urlbar-input-box"
@@ -337,6 +328,7 @@
             </moz-input-box>
             <image id="urlbar-go-button"
                    class="urlbar-icon"
+                   role="button"
                    onclick="gURLBar.handleCommand(event);"
                    data-l10n-id="urlbar-go-button"/>
             <hbox id="page-action-buttons" context="pageActionContextMenu" align="center">
@@ -376,15 +368,25 @@
               <hbox id="translations-button"
                     class="urlbar-page-action"
                     role="button"
-                    data-l10n-id="urlbar-translations-button"
+                    data-l10n-id="urlbar-translations-button2"
                     hidden="true"
-                    onclick="TranslationsPanel.open(event);">
+                    onclick="TranslationsPanel.open(event);"
+                    onkeypress="TranslationsPanel.open(event);">
                 <image class="urlbar-icon" id="translations-button-icon" />
                 <image class="urlbar-icon" id="translations-button-circle-arrows" />
-                <html:span id="translations-button-locale" />
+                <html:span id="translations-button-locale" aria-hidden="true" />
+              </hbox>
+              <hbox id="shopping-sidebar-button"
+                  class="urlbar-page-action"
+                  role="button"
+                  data-l10n-id="shopping-sidebar-open-button2"
+                  hidden="true"
+                  onclick="ShoppingSidebarParent.urlbarButtonClick(event);">
+                <image id="shopping-sidebar-button-icon"
+                       class="urlbar-icon"/>
               </hbox>
               <toolbarbutton id="urlbar-zoom-button"
-                     onclick="FullZoom.reset(); FullZoom.resetScalingZoom();"
+                     onclick="FullZoom.resetFromURLBar(event);"
                      tooltip="dynamic-shortcut-tooltip"
                      hidden="true"/>
               <hbox id="pageActionButton"
@@ -559,7 +561,7 @@
           <menupopup id="PlacesChevronPopup"
                       is="places-popup"
                       placespopup="true"
-                      type="arrow"
+                      class="toolbar-menupopup"
                       tooltip="bhTooltip" popupsinherittooltip="true"
                       context="placesContext"
                       onpopupshowing="document.getElementById('PlacesToolbar')
@@ -606,11 +608,9 @@
                    ondrop="PlacesMenuDNDHandler.onDrop(event);"
                    oncommand="BookmarkingUI.onCommand(event);">
       <menupopup id="BMB_bookmarksPopup"
-                 type="arrow"
                  is="places-popup-arrow"
-                 class="cui-widget-panel cui-widget-panelview PanelUI-subView"
+                 class="toolbar-menupopup"
                  placespopup="true"
-                 appendclasstochildren="subviewbutton"
                  context="placesContext"
                  openInTabs="children"
                  side="top"
@@ -622,35 +622,30 @@
                                    new PlacesMenu(event, `place:parent=${PlacesUtils.bookmarks.menuGuid}`);"
                  tooltip="bhTooltip" popupsinherittooltip="true">
         <menuitem id="BMB_viewBookmarksSidebar"
-                  class="subviewbutton"
                   data-l10n-id="bookmarks-tools-sidebar-visibility"
                   data-l10n-args='{ "isVisible": false }'
                   oncommand="SidebarUI.toggle('viewBookmarksSidebar');"
                   key="viewBookmarksSidebarKb"/>
         <menuitem id="BMB_searchBookmarks"
-                  class="subviewbutton"
                   data-l10n-id="bookmarks-search"
                   oncommand="PlacesCommandHook.searchBookmarks();"/>
         <!-- NB: temporary solution for bug 985024, this should go away soon. -->
         <menuitem id="BMB_bookmarksShowAllTop"
-                  class="subviewbutton"
                   data-l10n-id="bookmarks-manage-bookmarks"
                   command="Browser:ShowAllBookmarks"
                   key="manBookmarkKb"/>
         <menuseparator/>
         <menu id="BMB_bookmarksToolbar"
-              class="bookmark-item subviewbutton menu-iconic"
+              class="bookmark-item menu-iconic"
               data-l10n-id="bookmarks-toolbar-menu"
               container="true">
           <menupopup id="BMB_bookmarksToolbarPopup"
                      is="places-popup"
                      placespopup="true"
-                     appendclasstochildren="subviewbutton"
                      context="placesContext"
                      onpopupshowing="if (!this.parentNode._placesView)
                                        new PlacesMenu(event, `place:parent=${PlacesUtils.bookmarks.toolbarGuid}`);">
             <menuitem id="BMB_viewBookmarksToolbar"
-                      class="subviewbutton"
                       data-l10n-id="bookmarks-tools-toolbar-visibility-menuitem"
                       data-l10n-args='{ "isVisible": false }'
                       oncommand="BookmarkingUI.toggleBookmarksToolbar('bookmarks-widget');"/>
@@ -659,13 +654,12 @@
           </menupopup>
         </menu>
         <menu id="BMB_unsortedBookmarks"
-              class="bookmark-item subviewbutton menu-iconic"
+              class="bookmark-item menu-iconic"
               data-l10n-id="bookmarks-other-bookmarks-menu"
               container="true">
           <menupopup id="BMB_unsortedBookmarksPopup"
                      is="places-popup"
                      placespopup="true"
-                     appendclasstochildren="subviewbutton"
                      context="placesContext"
                      onpopupshowing="if (!this.parentNode._placesView)
                                        new PlacesMenu(event, `place:parent=${PlacesUtils.bookmarks.unfiledGuid}`);"/>
@@ -678,7 +672,6 @@
           <menupopup id="BMB_mobileBookmarksPopup"
                      is="places-popup"
                      placespopup="true"
-                     appendclasstochildren="subviewbutton"
                      context="placesContext"
                      onpopupshowing="if (!this.parentNode._placesView)
                                        new PlacesMenu(event, `place:parent=${PlacesUtils.bookmarks.mobileGuid}`);"/>
@@ -686,8 +679,10 @@
 
         <menuseparator/>
         <!-- Bookmarks menu items will go here -->
+        <menuseparator class="hide-if-empty-places-result"
+                       afterplacescontent="true"/>
+
         <menuitem id="BMB_bookmarksShowAll"
-                  class="subviewbutton"
                   data-l10n-id="bookmarks-manage-bookmarks"
                   afterplacescontent="true"
                   command="Browser:ShowAllBookmarks"
@@ -725,4 +720,3 @@
                    data-l10n-id="navbar-library"/>
   </html:template>
 </toolbox>
-</box>

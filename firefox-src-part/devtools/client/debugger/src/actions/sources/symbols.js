@@ -10,23 +10,18 @@ import { loadSourceText } from "./loadSourceText";
 import { memoizeableAction } from "../../utils/memoizableAction";
 import { fulfilled } from "../../utils/async-value";
 
-async function doSetSymbols(
-  cx,
-  location,
-  { dispatch, getState, parserWorker }
-) {
-  await dispatch(loadSourceText(cx, location.source, location.sourceActor));
+async function doSetSymbols(location, { dispatch, getState, parserWorker }) {
+  await dispatch(loadSourceText(location.source, location.sourceActor));
 
   await dispatch({
     type: "SET_SYMBOLS",
-    cx,
     location,
-    [PROMISE]: parserWorker.getSymbols(location.sourceId),
+    [PROMISE]: parserWorker.getSymbols(location.source.id),
   });
 }
 
 export const setSymbols = memoizeableAction("setSymbols", {
-  getValue: ({ location }, { getState, parserWorker }) => {
+  getValue: (location, { getState, parserWorker }) => {
     if (!parserWorker.isLocationSupported(location)) {
       return fulfilled(null);
     }
@@ -38,7 +33,22 @@ export const setSymbols = memoizeableAction("setSymbols", {
 
     return fulfilled(symbols);
   },
-  createKey: ({ location }) => location.sourceId,
-  action: ({ cx, location }, thunkArgs) =>
-    doSetSymbols(cx, location, thunkArgs),
+  createKey: location => location.source.id,
+  action: (location, thunkArgs) => doSetSymbols(location, thunkArgs),
 });
+
+export function getFunctionSymbols(location, maxResults) {
+  return async ({ parserWorker, dispatch }) => {
+    // Make sure the source for the symbols exist in the parser worker.
+    await dispatch(loadSourceText(location.source, location.sourceActor));
+    return parserWorker.getFunctionSymbols(location.source.id, maxResults);
+  };
+}
+
+export function getClassSymbols(location) {
+  return async ({ parserWorker, dispatch }) => {
+    // See  comment in getFunctionSymbols
+    await dispatch(loadSourceText(location.source, location.sourceActor));
+    return parserWorker.getClassSymbols(location.source.id);
+  };
+}

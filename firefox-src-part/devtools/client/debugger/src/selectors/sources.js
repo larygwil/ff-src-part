@@ -4,12 +4,7 @@
 
 import { createSelector } from "reselect";
 
-import {
-  getPrettySourceURL,
-  isGenerated,
-  isPretty,
-  isJavaScript,
-} from "../utils/source";
+import { getPrettySourceURL, isPretty, isJavaScript } from "../utils/source";
 
 import { findPosition } from "../utils/breakpoint/breakpointPositions";
 import { isFulfilled } from "../utils/async-value";
@@ -77,7 +72,7 @@ export function getGeneratedSource(state, source) {
     return null;
   }
 
-  if (isGenerated(source)) {
+  if (!source.isOriginal) {
     return source;
   }
 
@@ -187,7 +182,7 @@ export function isSourceWithMap(state, id) {
 }
 
 export function canPrettyPrintSource(state, location) {
-  const { sourceId } = location;
+  const sourceId = location.source.id;
   const source = getSource(state, sourceId);
   if (
     !source ||
@@ -258,7 +253,7 @@ export function getBreakpointPositionsForLine(state, sourceId, line) {
 }
 
 export function getBreakpointPositionsForLocation(state, location) {
-  const { sourceId } = location;
+  const sourceId = location.source.id;
   const positions = getBreakpointPositionsForSource(state, sourceId);
   return findPosition(positions, location);
 }

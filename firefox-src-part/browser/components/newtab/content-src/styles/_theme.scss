@@ -14,7 +14,7 @@ $inner-box-shadow: 0 0 0 1px var(--newtab-inner-box-shadow-color);
 $input-border: 1px solid var(--newtab-border-color);
 $input-border-active: 1px solid var(--newtab-textbox-focus-color);
 $input-error-border: 1px solid var(--newtab-status-error);
-$input-error-boxshadow: textbox-shadow(var(--newtab-status-error));
+$input-error-boxshadow: #{textbox-shadow(var(--newtab-status-error))};
 $shadow-primary: 0 0 0 5px var(--newtab-element-secondary-color);
 $shadow-secondary: 0 1px 4px 0 $grey-90-20;
 $shadow-large: 0 2px 14px 0 $black-20;
@@ -57,8 +57,6 @@ $shadow-image-inset: inset 0 0 0 0.5px $black-15;
   --newtab-status-error: #{$red-60};
   --newtab-inner-box-shadow-color: #{$black-10};
   --newtab-overlay-color: color-mix(in srgb, var(--newtab-background-color) 85%, transparent);
-  --newtab-text-emphasis-background: #{$yellow-50};
-  --newtab-text-emphasis-text-color: #{$grey-90};
 
   @include textbox-focus(var(--newtab-primary-action-background));
 

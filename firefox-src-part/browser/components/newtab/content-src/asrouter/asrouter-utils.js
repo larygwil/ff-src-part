@@ -64,45 +64,16 @@ export const ASRouterUtils = {
       data: { id },
     });
   },
+  editState(key, value) {
+    return ASRouterUtils.sendMessage({
+      type: msg.EDIT_STATE,
+      data: { [key]: value },
+    });
+  },
   sendTelemetry(ping) {
     return ASRouterUtils.sendMessage(ac.ASRouterUserEvent(ping));
   },
   getPreviewEndpoint() {
-    if (
-      global.document &&
-      global.document.location &&
-      global.document.location.href.includes("endpoint")
-    ) {
-      const params = new URLSearchParams(
-        global.document.location.href.slice(
-          global.document.location.href.indexOf("endpoint")
-        )
-      );
-      try {
-        const endpoint = new URL(params.get("endpoint"));
-        return {
-          url: endpoint.href,
-          snippetId: params.get("snippetId"),
-          theme: this.getPreviewTheme(),
-          dir: this.getPreviewDir(),
-        };
-      } catch (e) {}
-    }
-
     return null;
-  },
-  getPreviewTheme() {
-    return new URLSearchParams(
-      global.document.location.href.slice(
-        global.document.location.href.indexOf("theme")
-      )
-    ).get("theme");
-  },
-  getPreviewDir() {
-    return new URLSearchParams(
-      global.document.location.href.slice(
-        global.document.location.href.indexOf("dir")
-      )
-    ).get("dir");
   },
 };

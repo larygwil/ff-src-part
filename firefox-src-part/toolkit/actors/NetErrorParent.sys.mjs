@@ -18,13 +18,8 @@ const lazy = {};
 
 ChromeUtils.defineESModuleGetters(lazy, {
   BrowserUtils: "resource://gre/modules/BrowserUtils.sys.mjs",
+  HomePage: "resource:///modules/HomePage.sys.mjs",
 });
-
-ChromeUtils.defineModuleGetter(
-  lazy,
-  "HomePage",
-  "resource:///modules/HomePage.jsm"
-);
 
 class CaptivePortalObserver {
   constructor(actor) {
@@ -282,12 +277,6 @@ export class NetErrorParent extends JSWindowActorParent {
         break;
       case "Browser:SSLErrorGoBack":
         this.goBackFromErrorPage(this.browser);
-        break;
-      case "Browser:SSLErrorReportTelemetry":
-        let reportStatus = message.data.reportStatus;
-        Services.telemetry
-          .getHistogramById("TLS_ERROR_REPORT_UI")
-          .add(reportStatus);
         break;
       case "GetChangedCertPrefs":
         let hasChangedCertPrefs = this.hasChangedCertPrefs();

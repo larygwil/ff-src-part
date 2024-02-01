@@ -23,7 +23,6 @@ const {
 } = require("resource://devtools/client/inspector/shared/utils.js");
 const { debounce } = require("resource://devtools/shared/debounce.js");
 const EventEmitter = require("resource://devtools/shared/event-emitter.js");
-const DOUBLESPACE = "  ";
 
 loader.lazyRequireGetter(
   this,
@@ -76,6 +75,9 @@ const FILTER_PROP_RE = /\s*([^:\s]*)\s*:\s*(.*?)\s*;?$/;
 // This is used to parse the filter search value to see if the filter
 // should be strict or not
 const FILTER_STRICT_RE = /\s*`(.*?)`\s*$/;
+
+const RULE_VIEW_HEADER_CLASSNAME = "ruleview-header";
+const PSEUDO_ELEMENTS_CONTAINER_ID = "pseudo-elements-container";
 
 /**
  * Our model looks like this:
@@ -142,6 +144,7 @@ function CssRuleView(inspector, document, store) {
   this.childHasDragged = false;
 
   this._outputParser = new OutputParser(document, this.cssProperties);
+  this._abortController = new this.styleWindow.AbortController();
 
   this._onAddRule = this._onAddRule.bind(this);
   this._onContextMenu = this._onContextMenu.bind(this);
@@ -353,14 +356,12 @@ CssRuleView.prototype = {
   },
 
   isPanelVisible() {
-    if (this.inspector.is3PaneModeEnabled) {
-      return true;
-    }
     return (
       this.inspector.toolbox &&
       this.inspector.sidebar &&
       this.inspector.toolbox.currentToolId === "inspector" &&
-      this.inspector.sidebar.getCurrentTabID() == "ruleview"
+      (this.inspector.sidebar.getCurrentTabID() == "ruleview" ||
+        this.inspector.is3PaneModeEnabled)
     );
   },
 
@@ -416,9 +417,9 @@ CssRuleView.prototype = {
     // Handle click on the icon next to a CSS selector.
     if (target.classList.contains("js-toggle-selector-highlighter")) {
       event.stopPropagation();
-      let selector = target.dataset.selector;
-      // dataset.selector will be empty for inline styles (inherited or not)
-      // Rules associated with a regular selector should have this data-attirbute
+      let selector = target.dataset.computedSelector;
+      // dataset.computedSelector will be initially empty for inline styles (inherited or not)
+      // Rules associated with a regular selector should have this data-attribute
       // set in devtools/client/inspector/rules/views/rule-editor.js
       if (selector === "") {
         try {
@@ -433,9 +434,8 @@ CssRuleView.prototype = {
               await this.inspector.selection.nodeFront.getUniqueSelector();
           }
 
-          // Now that the selector was computed, we can store it in
-          // dataset.selector for subsequent usage.
-          target.dataset.selector = selector;
+          // Now that the selector was computed, we can store it for subsequent usage.
+          target.dataset.computedSelector = selector;
         } finally {
           // Could not resolve a unique selector for the inline style.
         }
@@ -485,12 +485,11 @@ CssRuleView.prototype = {
             return;
           }
 
-          const query = `.js-toggle-selector-highlighter[data-selector='${selector}']`;
+          const query = `.js-toggle-selector-highlighter[data-computed-selector='${selector}']`;
           for (const node of this.styleDocument.querySelectorAll(query)) {
-            node.classList.toggle(
-              "highlighted",
-              eventName == "highlighter-shown"
-            );
+            const isHighlighterDisplayed = eventName == "highlighter-shown";
+            node.classList.toggle("highlighted", isHighlighterDisplayed);
+            node.setAttribute("aria-pressed", isHighlighterDisplayed);
           }
         }
         break;
@@ -657,9 +656,6 @@ CssRuleView.prototype = {
 
         // Remove any double newlines.
         text = text.replace(/(\r?\n)\r?\n/g, "$1");
-
-        // Replace 4 space indentation with 2 Spaces.
-        text = text.replace(/\ {4}/g, DOUBLESPACE);
       }
 
       clipboardHelper.copyString(text);
@@ -671,28 +667,55 @@ CssRuleView.prototype = {
   /**
    * Add a new rule to the current element.
    */
-  _onAddRule() {
+  async _onAddRule() {
     const elementStyle = this._elementStyle;
     const element = elementStyle.element;
     const pseudoClasses = element.pseudoClassLocks;
 
-    // Adding a new rule with authored styles will cause the actor to
-    // emit an event, which will in turn cause the rule view to be
-    // updated.  So, we wait for this update and for the rule creation
-    // request to complete, and then focus the new rule's selector.
-    const eventPromise = this.once("ruleview-refreshed");
-    const newRulePromise = this.pageStyle.addNewRule(element, pseudoClasses);
-    Promise.all([eventPromise, newRulePromise]).then(values => {
-      const options = values[1];
-      // Be sure the reference the correct |rules| here.
-      for (const rule of this._elementStyle.rules) {
-        if (options.rule === rule.domRule) {
-          rule.editor.selectorText.click();
-          elementStyle._changed();
-          break;
-        }
-      }
-    });
+    this._focusNextUserAddedRule = true;
+    this.pageStyle.addNewRule(element, pseudoClasses);
+  },
+
+  maybeShowEnterKeyNotice() {
+    const SHOW_RULES_VIEW_ENTER_KEY_NOTICE_PREF =
+      "devtools.inspector.showRulesViewEnterKeyNotice";
+    // Make the Enter key notice visible
+    // if it wasn't dismissed by the user yet.
+    if (
+      !Services.prefs.getBoolPref(SHOW_RULES_VIEW_ENTER_KEY_NOTICE_PREF, false)
+    ) {
+      return;
+    }
+
+    const enterKeyNoticeEl = this.styleDocument.getElementById(
+      "ruleview-kbd-enter-notice"
+    );
+
+    if (!enterKeyNoticeEl.hasAttribute("hidden")) {
+      return;
+    }
+
+    // Compute the right key (Cmd / Ctrl) depending on the OS
+    enterKeyNoticeEl.querySelector(
+      "#ruleview-kbd-enter-notice-ctrl-cmd"
+    ).textContent = Services.appinfo.OS === "Darwin" ? "Cmd" : "Ctrl";
+    enterKeyNoticeEl.removeAttribute("hidden");
+
+    enterKeyNoticeEl
+      .querySelector("#ruleview-kbd-enter-notice-dismiss-button")
+      .addEventListener(
+        "click",
+        () => {
+          // Hide the notice
+          enterKeyNoticeEl.setAttribute("hidden", "");
+          // And set the pref to false so we don't show the notice on next startup.
+          Services.prefs.setBoolPref(
+            SHOW_RULES_VIEW_ENTER_KEY_NOTICE_PREF,
+            false
+          );
+        },
+        { once: true, signal: this._abortController.signal }
+      );
   },
 
   /**
@@ -898,6 +921,8 @@ CssRuleView.prototype = {
     this.tooltips.destroy();
 
     // Remove bound listeners
+    this._abortController.abort();
+    this._abortController = null;
     this.shortcuts.destroy();
     this.styleDocument.removeEventListener("click", this, { capture: true });
     this.element.removeEventListener("copy", this._onCopy);
@@ -1244,33 +1269,44 @@ CssRuleView.prototype = {
    *
    * @param  {String} label
    *         The label for the container header
+   * @param  {String} containerId
+   *         The id that will be set on the container
    * @param  {Boolean} isPseudo
    *         Whether or not the container will hold pseudo element rules
    * @return {DOMNode} The container element
    */
-  createExpandableContainer(label, isPseudo = false) {
+  createExpandableContainer(label, containerId, isPseudo = false) {
     const header = this.styleDocument.createElementNS(HTML_NS, "div");
-    header.className = this._getRuleViewHeaderClassName(true);
+    header.classList.add(
+      RULE_VIEW_HEADER_CLASSNAME,
+      "ruleview-expandable-header"
+    );
     header.setAttribute("role", "heading");
-    header.textContent = label;
+
+    const toggleButton = this.styleDocument.createElementNS(HTML_NS, "button");
+    toggleButton.setAttribute(
+      "title",
+      l10n("rule.expandableContainerToggleButton.title")
+    );
+    toggleButton.setAttribute("aria-expanded", "true");
+    toggleButton.setAttribute("aria-controls", containerId);
 
     const twisty = this.styleDocument.createElementNS(HTML_NS, "span");
     twisty.className = "ruleview-expander theme-twisty";
-    twisty.setAttribute("open", "true");
-    twisty.setAttribute("role", "button");
-    twisty.setAttribute("aria-label", l10n("rule.twistyCollapse.label"));
 
-    header.insertBefore(twisty, header.firstChild);
-    this.element.appendChild(header);
+    toggleButton.append(twisty, this.styleDocument.createTextNode(label));
+    header.append(toggleButton);
 
     const container = this.styleDocument.createElementNS(HTML_NS, "div");
+    container.id = containerId;
     container.classList.add("ruleview-expandable-container");
     container.hidden = false;
-    this.element.appendChild(container);
 
-    header.addEventListener("click", () => {
+    this.element.append(header, container);
+
+    toggleButton.addEventListener("click", () => {
       this._toggleContainerVisibility(
-        twisty,
+        toggleButton,
         container,
         isPseudo,
         !this.showPseudoElements
@@ -1278,10 +1314,8 @@ CssRuleView.prototype = {
     });
 
     if (isPseudo) {
-      container.id = "pseudo-elements-container";
-      twisty.id = "pseudo-elements-header-twisty";
       this._toggleContainerVisibility(
-        twisty,
+        toggleButton,
         container,
         isPseudo,
         this.showPseudoElements
@@ -1303,8 +1337,8 @@ CssRuleView.prototype = {
    * @param  {Boolean}  showPseudo
    *         Whether or not pseudo element rules should be displayed
    */
-  _toggleContainerVisibility(twisty, container, isPseudo, showPseudo) {
-    let isOpen = twisty.getAttribute("open");
+  _toggleContainerVisibility(toggleButton, container, isPseudo, showPseudo) {
+    let isOpen = toggleButton.getAttribute("aria-expanded") === "true";
 
     if (isPseudo) {
       this._showPseudoElements = !!showPseudo;
@@ -1320,20 +1354,7 @@ CssRuleView.prototype = {
       container.hidden = !container.hidden;
     }
 
-    if (isOpen) {
-      twisty.removeAttribute("open");
-      twisty.setAttribute("aria-label", l10n("rule.twistyExpand.label"));
-    } else {
-      twisty.setAttribute("open", "true");
-      twisty.setAttribute("aria-label", l10n("rule.twistyCollapse.label"));
-    }
-  },
-
-  _getRuleViewHeaderClassName(isPseudo) {
-    const baseClassName = "ruleview-header";
-    return isPseudo
-      ? baseClassName + " ruleview-expandable-header"
-      : baseClassName;
+    toggleButton.setAttribute("aria-expanded", !isOpen);
   },
 
   /**
@@ -1379,7 +1400,7 @@ CssRuleView.prototype = {
       if (seenPseudoElement && !seenNormalElement && !rule.pseudoElement) {
         seenNormalElement = true;
         const div = this.styleDocument.createElementNS(HTML_NS, "div");
-        div.className = this._getRuleViewHeaderClassName();
+        div.className = RULE_VIEW_HEADER_CLASSNAME;
         div.setAttribute("role", "heading");
         div.textContent = this.selectedElementLabel;
         this.element.appendChild(div);
@@ -1388,7 +1409,7 @@ CssRuleView.prototype = {
       const inheritedSource = rule.inherited;
       if (inheritedSource && inheritedSource !== lastInheritedSource) {
         const div = this.styleDocument.createElementNS(HTML_NS, "div");
-        div.className = this._getRuleViewHeaderClassName();
+        div.className = RULE_VIEW_HEADER_CLASSNAME;
         div.setAttribute("role", "heading");
         div.setAttribute("aria-level", "3");
         div.textContent = rule.inheritedSource;
@@ -1400,6 +1421,7 @@ CssRuleView.prototype = {
         seenPseudoElement = true;
         container = this.createExpandableContainer(
           this.pseudoElementLabel,
+          PSEUDO_ELEMENTS_CONTAINER_ID,
           true
         );
       }
@@ -1407,7 +1429,10 @@ CssRuleView.prototype = {
       const keyframes = rule.keyframes;
       if (keyframes && keyframes !== lastKeyframes) {
         lastKeyframes = keyframes;
-        container = this.createExpandableContainer(rule.keyframesName);
+        container = this.createExpandableContainer(
+          rule.keyframesName,
+          `keyframes-container-${keyframes.name}`
+        );
       }
 
       rule.editor.element.setAttribute("role", "article");
@@ -1415,6 +1440,13 @@ CssRuleView.prototype = {
         container.appendChild(rule.editor.element);
       } else {
         this.element.appendChild(rule.editor.element);
+      }
+
+      // Automatically select the selector input when we are adding a user-added rule
+      if (this._focusNextUserAddedRule && rule.domRule.userAdded) {
+        this._focusNextUserAddedRule = null;
+        rule.editor.selectorText.click();
+        this.emitForTests("new-rule-added");
       }
     }
 
@@ -1503,9 +1535,12 @@ CssRuleView.prototype = {
       return false;
     }
 
+    const ancestorSelectors = element.querySelectorAll(
+      ".ruleview-rule-ancestor-selectorcontainer"
+    );
+
     let isHighlighted = false;
-    for (let i = 0; i < element.childNodes.length; i++) {
-      const child = element.childNodes[i];
+    for (const child of ancestorSelectors) {
       const dataText = child.innerText.toLowerCase();
       const matches = this.searchData.strictSearchValue
         ? dataText === this.searchData.strictSearchValue
@@ -1733,7 +1768,7 @@ CssRuleView.prototype = {
   showPseudoClassPanel() {
     this.hideClassPanel();
 
-    this.pseudoClassToggle.classList.add("checked");
+    this.pseudoClassToggle.setAttribute("aria-pressed", "true");
     this.pseudoClassCheckboxes.forEach(checkbox => {
       checkbox.setAttribute("tabindex", "0");
     });
@@ -1741,7 +1776,7 @@ CssRuleView.prototype = {
   },
 
   hidePseudoClassPanel() {
-    this.pseudoClassToggle.classList.remove("checked");
+    this.pseudoClassToggle.setAttribute("aria-pressed", "false");
     this.pseudoClassCheckboxes.forEach(checkbox => {
       checkbox.setAttribute("tabindex", "-1");
     });
@@ -1772,14 +1807,14 @@ CssRuleView.prototype = {
   showClassPanel() {
     this.hidePseudoClassPanel();
 
-    this.classToggle.classList.add("checked");
+    this.classToggle.setAttribute("aria-pressed", "true");
     this.classPanel.hidden = false;
 
     this.classListPreviewer.focusAddClassField();
   },
 
   hideClassPanel() {
-    this.classToggle.classList.remove("checked");
+    this.classToggle.setAttribute("aria-pressed", "false");
     this.classPanel.hidden = true;
   },
 
@@ -1813,13 +1848,15 @@ CssRuleView.prototype = {
 
   async _onToggleLightColorSchemeSimulation() {
     const shouldSimulateLightScheme =
-      this.colorSchemeLightSimulationButton.classList.toggle("checked");
+      this.colorSchemeLightSimulationButton.getAttribute("aria-pressed") !==
+      "true";
 
-    const darkColorSchemeEnabled =
-      this.colorSchemeDarkSimulationButton.classList.contains("checked");
-    if (shouldSimulateLightScheme && darkColorSchemeEnabled) {
-      this.colorSchemeDarkSimulationButton.classList.toggle("checked");
-    }
+    this.colorSchemeLightSimulationButton.setAttribute(
+      "aria-pressed",
+      shouldSimulateLightScheme
+    );
+
+    this.colorSchemeDarkSimulationButton.setAttribute("aria-pressed", "false");
 
     await this.inspector.commands.targetConfigurationCommand.updateConfiguration(
       {
@@ -1832,13 +1869,15 @@ CssRuleView.prototype = {
 
   async _onToggleDarkColorSchemeSimulation() {
     const shouldSimulateDarkScheme =
-      this.colorSchemeDarkSimulationButton.classList.toggle("checked");
+      this.colorSchemeDarkSimulationButton.getAttribute("aria-pressed") !==
+      "true";
 
-    const lightColorSchemeEnabled =
-      this.colorSchemeLightSimulationButton.classList.contains("checked");
-    if (shouldSimulateDarkScheme && lightColorSchemeEnabled) {
-      this.colorSchemeLightSimulationButton.classList.toggle("checked");
-    }
+    this.colorSchemeDarkSimulationButton.setAttribute(
+      "aria-pressed",
+      shouldSimulateDarkScheme
+    );
+
+    this.colorSchemeLightSimulationButton.setAttribute("aria-pressed", "false");
 
     await this.inspector.commands.targetConfigurationCommand.updateConfiguration(
       {
@@ -1850,7 +1889,9 @@ CssRuleView.prototype = {
   },
 
   async _onTogglePrintSimulation() {
-    const enabled = this.printSimulationButton.classList.toggle("checked");
+    const enabled =
+      this.printSimulationButton.getAttribute("aria-pressed") !== "true";
+    this.printSimulationButton.setAttribute("aria-pressed", enabled);
     await this.inspector.commands.targetConfigurationCommand.updateConfiguration(
       {
         printSimulationEnabled: enabled,
@@ -1925,12 +1966,12 @@ CssRuleView.prototype = {
    */
   _togglePseudoElementRuleContainer() {
     const container = this.styleDocument.getElementById(
-      "pseudo-elements-container"
+      PSEUDO_ELEMENTS_CONTAINER_ID
     );
-    const twisty = this.styleDocument.getElementById(
-      "pseudo-elements-header-twisty"
+    const toggle = this.styleDocument.querySelector(
+      `[aria-controls="${PSEUDO_ELEMENTS_CONTAINER_ID}"]`
     );
-    this._toggleContainerVisibility(twisty, container, true, true);
+    this._toggleContainerVisibility(toggle, container, true, true);
   },
 
   /**
@@ -2056,52 +2097,85 @@ CssRuleView.prototype = {
   },
 };
 
-function RuleViewTool(inspector, window) {
-  this.inspector = inspector;
-  this.document = window.document;
+class RuleViewTool {
+  constructor(inspector, window) {
+    this.inspector = inspector;
+    this.document = window.document;
 
-  this.view = new CssRuleView(this.inspector, this.document);
+    this.view = new CssRuleView(this.inspector, this.document);
 
-  this._onResourceAvailable = this._onResourceAvailable.bind(this);
-  this.refresh = this.refresh.bind(this);
-  this.onDetachedFront = this.onDetachedFront.bind(this);
-  this.onPanelSelected = this.onPanelSelected.bind(this);
-  this.onDetachedFront = this.onDetachedFront.bind(this);
-  this.onSelected = this.onSelected.bind(this);
-  this.onViewRefreshed = this.onViewRefreshed.bind(this);
+    this.refresh = this.refresh.bind(this);
+    this.onDetachedFront = this.onDetachedFront.bind(this);
+    this.onPanelSelected = this.onPanelSelected.bind(this);
+    this.onDetachedFront = this.onDetachedFront.bind(this);
+    this.onSelected = this.onSelected.bind(this);
+    this.onViewRefreshed = this.onViewRefreshed.bind(this);
 
-  this.view.on("ruleview-refreshed", this.onViewRefreshed);
-  this.inspector.selection.on("detached-front", this.onDetachedFront);
-  this.inspector.selection.on("new-node-front", this.onSelected);
-  this.inspector.selection.on("pseudoclass", this.refresh);
-  this.inspector.ruleViewSideBar.on("ruleview-selected", this.onPanelSelected);
-  this.inspector.sidebar.on("ruleview-selected", this.onPanelSelected);
-  this.inspector.styleChangeTracker.on("style-changed", this.refresh);
+    this.#abortController = new window.AbortController();
+    const { signal } = this.#abortController;
+    const baseEventConfig = { signal };
 
-  this.inspector.commands.resourceCommand.watchResources(
-    [this.inspector.commands.resourceCommand.TYPES.DOCUMENT_EVENT],
-    {
-      onAvailable: this._onResourceAvailable,
-      ignoreExistingResources: true,
-    }
-  );
+    this.view.on("ruleview-refreshed", this.onViewRefreshed, baseEventConfig);
+    this.inspector.selection.on(
+      "detached-front",
+      this.onDetachedFront,
+      baseEventConfig
+    );
+    this.inspector.selection.on(
+      "new-node-front",
+      this.onSelected,
+      baseEventConfig
+    );
+    this.inspector.selection.on("pseudoclass", this.refresh, baseEventConfig);
+    this.inspector.ruleViewSideBar.on(
+      "ruleview-selected",
+      this.onPanelSelected,
+      baseEventConfig
+    );
+    this.inspector.sidebar.on(
+      "ruleview-selected",
+      this.onPanelSelected,
+      baseEventConfig
+    );
+    this.inspector.toolbox.on(
+      "inspector-selected",
+      this.onPanelSelected,
+      baseEventConfig
+    );
+    this.inspector.styleChangeTracker.on(
+      "style-changed",
+      this.refresh,
+      baseEventConfig
+    );
 
-  // At the moment `readyPromise` is only consumed in tests (see `openRuleView`) to be
-  // notified when the ruleview was first populated to match the initial selected node.
-  this.readyPromise = this.onSelected();
-}
+    this.inspector.commands.resourceCommand.watchResources(
+      [
+        this.inspector.commands.resourceCommand.TYPES.DOCUMENT_EVENT,
+        this.inspector.commands.resourceCommand.TYPES.STYLESHEET,
+      ],
+      {
+        onAvailable: this.#onResourceAvailable,
+        ignoreExistingResources: true,
+      }
+    );
 
-RuleViewTool.prototype = {
+    // At the moment `readyPromise` is only consumed in tests (see `openRuleView`) to be
+    // notified when the ruleview was first populated to match the initial selected node.
+    this.readyPromise = this.onSelected();
+  }
+
+  #abortController;
+
   isPanelVisible() {
     if (!this.view) {
       return false;
     }
     return this.view.isPanelVisible();
-  },
+  }
 
   onDetachedFront() {
     this.onSelected(false);
-  },
+  }
 
   onSelected(selectElement = true) {
     // Ignore the event if the view has been destroyed, or if it's inactive.
@@ -2133,15 +2207,20 @@ RuleViewTool.prototype = {
     return this.view
       .selectElement(this.inspector.selection.nodeFront)
       .then(done, done);
-  },
+  }
 
   refresh() {
     if (this.isPanelVisible()) {
       this.view.refreshPanel();
     }
-  },
+  }
 
-  _onResourceAvailable(resources) {
+  #onResourceAvailable = resources => {
+    if (!this.inspector) {
+      return;
+    }
+
+    let hasNewStylesheet = false;
     for (const resource of resources) {
       if (
         resource.resourceType ===
@@ -2150,15 +2229,31 @@ RuleViewTool.prototype = {
         resource.targetFront.isTopLevel
       ) {
         this.clearUserProperties();
+        continue;
+      }
+
+      if (
+        resource.resourceType ===
+          this.inspector.commands.resourceCommand.TYPES.STYLESHEET &&
+        // resource.isNew is only true when the stylesheet was added from DevTools,
+        // for example when adding a rule in the rule view. In such cases, we're already
+        // updating the rule view, so ignore those.
+        !resource.isNew
+      ) {
+        hasNewStylesheet = true;
       }
     }
-  },
+
+    if (hasNewStylesheet) {
+      this.refresh();
+    }
+  };
 
   clearUserProperties() {
     if (this.view && this.view.store && this.view.store.userProperties) {
       this.view.store.userProperties.clear();
     }
-  },
+  }
 
   onPanelSelected() {
     if (this.inspector.selection.nodeFront === this.view._viewedElement) {
@@ -2166,34 +2261,34 @@ RuleViewTool.prototype = {
     } else {
       this.onSelected();
     }
-  },
+  }
 
   onViewRefreshed() {
     this.inspector.emit("rule-view-refreshed");
-  },
+  }
 
   destroy() {
-    this.inspector.styleChangeTracker.off("style-changed", this.refresh);
-    this.inspector.selection.off("detached-front", this.onDetachedFront);
-    this.inspector.selection.off("pseudoclass", this.refresh);
-    this.inspector.selection.off("new-node-front", this.onSelected);
-    this.inspector.currentTarget.off("navigate", this.clearUserProperties);
-    this.inspector.sidebar.off("ruleview-selected", this.onPanelSelected);
+    if (this.#abortController) {
+      this.#abortController.abort();
+    }
 
     this.inspector.commands.resourceCommand.unwatchResources(
       [this.inspector.commands.resourceCommand.TYPES.DOCUMENT_EVENT],
       {
-        onAvailable: this._onResourceAvailable,
+        onAvailable: this.#onResourceAvailable,
       }
     );
 
-    this.view.off("ruleview-refreshed", this.onViewRefreshed);
-
     this.view.destroy();
 
-    this.view = this.document = this.inspector = this.readyPromise = null;
-  },
-};
+    this.view =
+      this.document =
+      this.inspector =
+      this.readyPromise =
+      this.#abortController =
+        null;
+  }
+}
 
 exports.CssRuleView = CssRuleView;
 exports.RuleViewTool = RuleViewTool;

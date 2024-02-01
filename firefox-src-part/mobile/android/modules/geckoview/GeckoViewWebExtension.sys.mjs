@@ -2,7 +2,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs";
 import { GeckoViewUtils } from "resource://gre/modules/GeckoViewUtils.sys.mjs";
 import { EventEmitter } from "resource://gre/modules/EventEmitter.sys.mjs";
 
@@ -15,21 +14,17 @@ const lazy = {};
 
 ChromeUtils.defineESModuleGetters(lazy, {
   AddonManager: "resource://gre/modules/AddonManager.sys.mjs",
+  AddonRepository: "resource://gre/modules/addons/AddonRepository.sys.mjs",
+  AddonSettings: "resource://gre/modules/addons/AddonSettings.sys.mjs",
   EventDispatcher: "resource://gre/modules/Messaging.sys.mjs",
   Extension: "resource://gre/modules/Extension.sys.mjs",
   ExtensionData: "resource://gre/modules/Extension.sys.mjs",
   ExtensionPermissions: "resource://gre/modules/ExtensionPermissions.sys.mjs",
+  ExtensionProcessCrashObserver: "resource://gre/modules/Extension.sys.mjs",
   GeckoViewTabBridge: "resource://gre/modules/GeckoViewTab.sys.mjs",
   Management: "resource://gre/modules/Extension.sys.mjs",
   PrivateBrowsingUtils: "resource://gre/modules/PrivateBrowsingUtils.sys.mjs",
 });
-
-XPCOMUtils.defineLazyServiceGetter(
-  lazy,
-  "mimeService",
-  "@mozilla.org/mime;1",
-  "nsIMIMEService"
-);
 
 const { debug, warn } = GeckoViewUtils.initLogging("Console");
 
@@ -295,23 +290,30 @@ async function exportExtension(aAddon, aPermissions, aSourceURI) {
     policy = await policy.readyPromise;
   }
   const {
+    amoListingURL,
+    averageRating,
+    blocklistState,
     creator,
     description,
-    homepageURL,
-    signedState,
-    name,
-    icons,
-    version,
-    optionsURL,
-    optionsType,
-    isRecommended,
-    blocklistState,
-    userDisabled,
     embedderDisabled,
-    temporarilyInstalled,
+    fullDescription,
+    homepageURL,
+    icons,
+    id,
     isActive,
     isBuiltin,
-    id,
+    isCorrectlySigned,
+    isRecommended,
+    name,
+    optionsType,
+    optionsURL,
+    reviewCount,
+    reviewURL,
+    signedState,
+    sourceURI,
+    temporarilyInstalled,
+    userDisabled,
+    version,
   } = aAddon;
   let creatorName = null;
   let creatorURL = null;
@@ -332,36 +334,63 @@ async function exportExtension(aAddon, aPermissions, aSourceURI) {
   if (embedderDisabled) {
     disabledFlags.push("appDisabled");
   }
+  // Add-ons without an `isCorrectlySigned` property are correctly signed as
+  // they aren't the correct type for signing.
+  if (lazy.AddonSettings.REQUIRE_SIGNING && isCorrectlySigned === false) {
+    disabledFlags.push("signatureDisabled");
+  }
+  if (lazy.AddonManager.checkCompatibility && !aAddon.isCompatible) {
+    disabledFlags.push("appVersionDisabled");
+  }
   const baseURL = policy ? policy.getURL() : "";
   const privateBrowsingAllowed = policy ? policy.privateBrowsingAllowed : false;
   const promptPermissions = aPermissions
     ? await filterPromptPermissions(aPermissions.permissions)
     : [];
+
+  let updateDate;
+  try {
+    updateDate = aAddon.updateDate?.toISOString();
+  } catch {
+    // `installDate` is used as a fallback for `updateDate` but only when the
+    // add-on is installed. Before that, `installDate` might be undefined,
+    // which would cause `updateDate` (and `installDate`) to be an "invalid
+    // date".
+    updateDate = null;
+  }
+
   return {
     webExtensionId: id,
     locationURI: aSourceURI != null ? aSourceURI.spec : "",
     isBuiltIn: isBuiltin,
     webExtensionFlags: exportFlags(policy),
     metaData: {
-      origins: aPermissions ? aPermissions.origins : [],
-      promptPermissions,
-      description,
-      enabled: isActive,
-      temporary: temporarilyInstalled,
-      disabledFlags,
-      version,
+      amoListingURL,
+      averageRating,
+      baseURL,
+      blocklistState,
       creatorName,
       creatorURL,
+      description,
+      disabledFlags,
+      downloadUrl: sourceURI?.displaySpec,
+      enabled: isActive,
+      fullDescription,
       homepageURL,
-      name,
-      optionsPageURL: optionsURL,
-      openOptionsPageInTab,
-      isRecommended,
-      blocklistState,
-      signedState,
       icons,
-      baseURL,
+      isRecommended,
+      name,
+      openOptionsPageInTab,
+      optionsPageURL: optionsURL,
+      origins: aPermissions ? aPermissions.origins : [],
       privateBrowsingAllowed,
+      promptPermissions,
+      reviewCount,
+      reviewURL,
+      signedState,
+      temporary: temporarilyInstalled,
+      updateDate,
+      version,
     },
   };
 }
@@ -405,6 +434,7 @@ class ExtensionInstallListener {
   }
 
   onDownloadCancelled(aInstall) {
+    debug`onDownloadCancelled state=${aInstall.state}`;
     // Do not resolve we were told to CancelInstall,
     // to prevent racing with that handler.
     if (!this.cancelling) {
@@ -414,6 +444,7 @@ class ExtensionInstallListener {
   }
 
   onDownloadFailed(aInstall) {
+    debug`onDownloadFailed state=${aInstall.state}`;
     const { error: installError, state } = aInstall;
     this.resolve({ installError, state });
   }
@@ -422,52 +453,38 @@ class ExtensionInstallListener {
     // Nothing to do
   }
 
-  onInstallCancelled(aInstall) {
+  onInstallCancelled(aInstall, aCancelledByUser) {
+    debug`onInstallCancelled state=${aInstall.state} cancelledByUser=${aCancelledByUser}`;
     // Do not resolve we were told to CancelInstall,
     // to prevent racing with that handler.
     if (!this.cancelling) {
       const { error: installError, state } = aInstall;
-      this.resolve({ installError, state });
+      // An install can be cancelled by the user OR something else, e.g. when
+      // the blocklist prevents the install of a blocked add-on.
+      this.resolve({ installError, state, cancelledByUser: aCancelledByUser });
     }
   }
 
   onInstallFailed(aInstall) {
+    debug`onInstallFailed state=${aInstall.state}`;
     const { error: installError, state } = aInstall;
     this.resolve({ installError, state });
   }
 
   onInstallPostponed(aInstall) {
+    debug`onInstallPostponed state=${aInstall.state}`;
     const { error: installError, state } = aInstall;
     this.resolve({ installError, state });
   }
 
   async onInstallEnded(aInstall, aAddon) {
-    const addonId = aAddon.id;
-    const { sourceURI } = aInstall;
-
-    if (aAddon.userDisabled || aAddon.embedderDisabled) {
-      const extension = await exportExtension(
-        aAddon,
-        aAddon.userPermissions,
-        sourceURI
-      );
-      this.resolve({ extension });
-      return; // we don't want to wait until extension is enabled, so return early.
-    }
-
-    const onReady = async (name, { id }) => {
-      if (id != addonId) {
-        return;
-      }
-      lazy.Management.off("ready", onReady);
-      const extension = await exportExtension(
-        aAddon,
-        aAddon.userPermissions,
-        sourceURI
-      );
-      this.resolve({ extension });
-    };
-    lazy.Management.on("ready", onReady);
+    debug`onInstallEnded addonId=${aAddon.id}`;
+    const extension = await exportExtension(
+      aAddon,
+      aAddon.userPermissions,
+      aInstall.sourceURI
+    );
+    this.resolve({ extension });
   }
 }
 
@@ -521,11 +538,89 @@ class ExtensionPromptObserver {
   }
 }
 
+class AddonInstallObserver {
+  constructor() {
+    Services.obs.addObserver(this, "addon-install-failed");
+  }
+
+  async onInstallationFailed(aAddon, aAddonName, aError) {
+    // aAddon could be null if we have a network error where we can't download the xpi file.
+    // aAddon could also be a valid object without an ID when the xpi file is corrupt.
+    let extension = null;
+    if (aAddon?.id) {
+      extension = await exportExtension(
+        aAddon,
+        aAddon.userPermissions,
+        /* aSourceURI */ null
+      );
+    }
+
+    lazy.EventDispatcher.instance.sendRequest({
+      type: "GeckoView:WebExtension:OnInstallationFailed",
+      extension,
+      addonName: aAddonName,
+      error: aError,
+    });
+  }
+
+  observe(aSubject, aTopic, aData) {
+    debug`observe ${aTopic}`;
+    switch (aTopic) {
+      case "addon-install-failed": {
+        aSubject.wrappedJSObject.installs.forEach(install => {
+          const { addon, error, name } = install;
+          // For some errors, we have a valid `addon` but not the `name` set on
+          // the `install` object yet so we check both here.
+          const addonName = name || addon?.name;
+
+          this.onInstallationFailed(addon, addonName, error);
+        });
+        break;
+      }
+    }
+  }
+}
+
 new ExtensionPromptObserver();
+new AddonInstallObserver();
 
 class AddonManagerListener {
   constructor() {
     lazy.AddonManager.addAddonListener(this);
+    // Some extension properties are not going to be available right away after the extension
+    // have been installed (e.g. in particular metaData.optionsPageURL), the GeckoView event
+    // dispatched from onExtensionReady listener will be providing updated extension metadata to
+    // the GeckoView side when it is actually going to be available.
+    this.onExtensionReady = this.onExtensionReady.bind(this);
+    lazy.Management.on("ready", this.onExtensionReady);
+  }
+
+  async onExtensionReady(name, extInstance) {
+    // In xpcshell tests there wil be test extensions that trigger this event while the
+    // AddonManager has not been started at all, on the contrary on a regular browser
+    // instance the AddonManager is expected to be already fully started for an extension
+    // for the extension to be able to reach the "ready" state, and so we just silently
+    // early exit here if the AddonManager is not ready.
+    if (!lazy.AddonManager.isReady) {
+      return;
+    }
+
+    debug`onExtensionReady ${extInstance.id}`;
+
+    const addonWrapper = await lazy.AddonManager.getAddonByID(extInstance.id);
+    if (!addonWrapper) {
+      return;
+    }
+
+    const extension = await exportExtension(
+      addonWrapper,
+      addonWrapper.userPermissions,
+      /* aSourceURI */ null
+    );
+    lazy.EventDispatcher.instance.sendRequest({
+      type: "GeckoView:WebExtension:OnReady",
+      extension,
+    });
   }
 
   async onDisabling(aAddon) {
@@ -642,6 +737,49 @@ class AddonManagerListener {
 }
 
 new AddonManagerListener();
+
+class ExtensionProcessListener {
+  constructor() {
+    this.onExtensionProcessCrash = this.onExtensionProcessCrash.bind(this);
+    lazy.Management.on("extension-process-crash", this.onExtensionProcessCrash);
+
+    lazy.EventDispatcher.instance.registerListener(this, [
+      "GeckoView:WebExtension:EnableProcessSpawning",
+      "GeckoView:WebExtension:DisableProcessSpawning",
+    ]);
+  }
+
+  async onEvent(aEvent, aData, aCallback) {
+    debug`onEvent ${aEvent} ${aData}`;
+
+    switch (aEvent) {
+      case "GeckoView:WebExtension:EnableProcessSpawning": {
+        debug`Extension process crash -> re-enable process spawning`;
+        lazy.ExtensionProcessCrashObserver.enableProcessSpawning();
+        break;
+      }
+    }
+  }
+
+  async onExtensionProcessCrash(name, { childID, processSpawningDisabled }) {
+    debug`Extension process crash -> childID=${childID} processSpawningDisabled=${processSpawningDisabled}`;
+
+    // When an extension process has crashed too many times, Gecko will set
+    // `processSpawningDisabled` and no longer allow the extension process
+    // spawning. We only want to send a request to the embedder when we are
+    // disabling the process spawning.  If process spawning is still enabled
+    // then we short circuit and don't notify the embedder.
+    if (!processSpawningDisabled) {
+      return;
+    }
+
+    lazy.EventDispatcher.instance.sendRequest({
+      type: "GeckoView:WebExtension:OnDisabledProcessSpawning",
+    });
+  }
+}
+
+new ExtensionProcessListener();
 
 class MobileWindowTracker extends EventEmitter {
   constructor() {
@@ -788,10 +926,11 @@ export var GeckoViewWebExtension = {
     return { extension: exported };
   },
 
-  async installWebExtension(aInstallId, aUri) {
+  async installWebExtension(aInstallId, aUri, installMethod) {
     const install = await lazy.AddonManager.getInstallForURL(aUri.spec, {
       telemetryInfo: {
         source: "geckoview-app",
+        method: installMethod || undefined,
       },
     });
     const promise = new Promise(resolve => {
@@ -800,14 +939,7 @@ export var GeckoViewWebExtension = {
       );
     });
 
-    const systemPrincipal = Services.scriptSecurityManager.getSystemPrincipal();
-    const mimeType = lazy.mimeService.getTypeFromURI(aUri);
-    lazy.AddonManager.installAddonFromWebpage(
-      mimeType,
-      null,
-      systemPrincipal,
-      install
-    );
+    lazy.AddonManager.installAddonFromAOM(null, aUri, install);
 
     return promise;
   },
@@ -938,6 +1070,20 @@ export var GeckoViewWebExtension = {
   },
 
   async updateWebExtension(aId) {
+    // Refresh the cached metadata when necessary. This allows us to always
+    // export relatively recent metadata to the embedder.
+    if (lazy.AddonRepository.isMetadataStale()) {
+      // We use a promise to avoid more than one call to `backgroundUpdateCheck()`
+      // when `updateWebExtension()` is called for multiple add-ons in parallel.
+      if (!this._promiseAddonRepositoryUpdate) {
+        this._promiseAddonRepositoryUpdate =
+          lazy.AddonRepository.backgroundUpdateCheck().finally(() => {
+            this._promiseAddonRepositoryUpdate = null;
+          });
+      }
+      await this._promiseAddonRepositoryUpdate;
+    }
+
     const extension = await this.extensionById(aId);
 
     const install = await this.checkForUpdate(extension);
@@ -1042,7 +1188,7 @@ export var GeckoViewWebExtension = {
       }
 
       case "GeckoView:WebExtension:Install": {
-        const { locationUri, installId } = aData;
+        const { locationUri, installId, installMethod } = aData;
         let uri;
         try {
           uri = Services.io.newURI(locationUri);
@@ -1052,7 +1198,11 @@ export var GeckoViewWebExtension = {
         }
 
         try {
-          const result = await this.installWebExtension(installId, uri);
+          const result = await this.installWebExtension(
+            installId,
+            uri,
+            installMethod
+          );
           if (result.extension) {
             aCallback.onSuccess(result);
           } else {

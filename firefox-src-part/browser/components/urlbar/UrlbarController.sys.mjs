@@ -2,8 +2,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs";
-
 import { AppConstants } from "resource://gre/modules/AppConstants.sys.mjs";
 
 const lazy = {};
@@ -92,7 +90,7 @@ export class UrlbarController {
       options.eventTelemetryCategory
     );
 
-    XPCOMUtils.defineLazyGetter(this, "logger", () =>
+    ChromeUtils.defineLazyGetter(this, "logger", () =>
       lazy.UrlbarUtils.getLogger({ prefix: "Controller" })
     );
   }
@@ -302,6 +300,17 @@ export class UrlbarController {
     }
 
     if (this.view.isOpen && executeAction && this._lastQueryContextWrapper) {
+      // In native inputs on most platforms, Shift+Up/Down moves the caret to the
+      // start/end of the input and changes its selection, so in that case defer
+      // handling to the input instead of changing the view's selection.
+      if (
+        event.shiftKey &&
+        (event.keyCode === KeyEvent.DOM_VK_UP ||
+          event.keyCode === KeyEvent.DOM_VK_DOWN)
+      ) {
+        return;
+      }
+
       let { queryContext } = this._lastQueryContextWrapper;
       let handled = this.view.oneOffSearchButtons.handleKeyDown(
         event,
@@ -331,6 +340,7 @@ export class UrlbarController {
         }
       // Fall through, we want the SPACE key to activate this element.
       case KeyEvent.DOM_VK_RETURN:
+        this.logger.debug(`Enter pressed${executeAction ? "" : " delayed"}`);
         if (executeAction) {
           this.input.handleCommand(event);
         }
@@ -700,7 +710,6 @@ class TelemetryEvent {
   constructor(controller, category) {
     this._controller = controller;
     this._category = category;
-    this._isPrivate = controller.input.isPrivate;
     this.#exposureResultTypes = new Set();
     this.#beginObservingPingPrefs();
   }
@@ -778,13 +787,11 @@ class TelemetryEvent {
     };
 
     let { queryContext } = this._controller._lastQueryContextWrapper || {};
-
     this._controller.manager.notifyEngagementChange(
-      this._isPrivate,
       "start",
       queryContext,
       {},
-      this._controller.browserWindow
+      this._controller
     );
   }
 
@@ -890,11 +897,10 @@ class TelemetryEvent {
       if (this._discarded && this._category && details?.selType !== "dismiss") {
         let { queryContext } = this._controller._lastQueryContextWrapper || {};
         this._controller.manager.notifyEngagementChange(
-          this._isPrivate,
           "discard",
           queryContext,
           {},
-          this._controller.browserWindow
+          this._controller
         );
       }
       return;
@@ -982,56 +988,13 @@ class TelemetryEvent {
 
     if (skipLegacyTelemetry) {
       this._controller.manager.notifyEngagementChange(
-        this._isPrivate,
         method,
         queryContext,
         details,
-        this._controller.browserWindow
+        this._controller
       );
       return;
     }
-
-    if (action == "go_button") {
-      // Fall back since the conventional telemetry dones't support "go_button" action.
-      action = "click";
-    }
-
-    let endTime = (event && event.timeStamp) || Cu.now();
-    let startTime = startEventInfo.timeStamp || endTime;
-    // Synthesized events in tests may have a bogus timeStamp, causing a
-    // subtraction between monotonic and non-monotonic timestamps; that's why
-    // abs is necessary here. It should only happen in tests, anyway.
-    let elapsed = Math.abs(Math.round(endTime - startTime));
-
-    // Rather than listening to the pref, just update status when we record an
-    // event, if the pref changed from the last time.
-    let recordingEnabled = lazy.UrlbarPrefs.get("eventTelemetry.enabled");
-    if (this._eventRecordingEnabled != recordingEnabled) {
-      this._eventRecordingEnabled = recordingEnabled;
-      Services.telemetry.setEventRecordingEnabled("urlbar", recordingEnabled);
-    }
-
-    let extra = {
-      elapsed: elapsed.toString(),
-      numChars,
-      numWords,
-    };
-
-    if (method == "engagement") {
-      extra.selIndex = details.selIndex.toString();
-      extra.selType = details.selType;
-      extra.provider = details.provider || "";
-    }
-
-    // We invoke recordEvent regardless, if recording is disabled this won't
-    // report the events remotely, but will count it in the event_counts scalar.
-    Services.telemetry.recordEvent(
-      this._category,
-      method,
-      action,
-      startEventInfo.interactionType,
-      extra
-    );
 
     Services.telemetry.scalarAdd(
       method == "engagement"
@@ -1042,21 +1005,20 @@ class TelemetryEvent {
 
     if (
       method === "engagement" &&
-      queryContext?.view?.visibleResults?.[0]?.autofill
+      this._controller.view?.visibleResults?.[0]?.autofill
     ) {
       // Record autofill impressions upon engagement.
       const type = lazy.UrlbarUtils.telemetryTypeFromResult(
-        queryContext.view.visibleResults[0]
+        this._controller.view.visibleResults[0]
       );
       Services.telemetry.scalarAdd(`urlbar.impression.${type}`, 1);
     }
 
     this._controller.manager.notifyEngagementChange(
-      this._isPrivate,
       method,
       queryContext,
       details,
-      this._controller.browserWindow
+      this._controller
     );
   }
 
@@ -1101,7 +1063,7 @@ class TelemetryEvent {
       searchMode
     );
     const search_mode = this.#getSearchMode(searchMode);
-    const currentResults = queryContext?.view?.visibleResults ?? [];
+    const currentResults = this._controller.view?.visibleResults ?? [];
     let numResults = currentResults.length;
     let groups = currentResults
       .map(r => lazy.UrlbarUtils.searchEngagementTelemetryGroup(r))
@@ -1109,6 +1071,7 @@ class TelemetryEvent {
     let results = currentResults
       .map(r => lazy.UrlbarUtils.searchEngagementTelemetryType(r))
       .join(",");
+    const search_engine_default_id = Services.search.defaultEngine.telemetryId;
 
     let eventInfo;
     if (method === "engagement") {
@@ -1122,7 +1085,7 @@ class TelemetryEvent {
           selectedElement
         );
 
-      if (selected_result === "input_field" && !queryContext?.view?.isOpen) {
+      if (selected_result === "input_field" && !this._controller.view?.isOpen) {
         numResults = 0;
         groups = "";
         results = "";
@@ -1135,11 +1098,13 @@ class TelemetryEvent {
         n_chars: numChars,
         n_words: numWords,
         n_results: numResults,
+        selected_position: selIndex + 1,
         selected_result,
         selected_result_subtype,
         provider,
         engagement_type:
           selType === "help" || selType === "dismiss" ? selType : action,
+        search_engine_default_id,
         groups,
         results,
       };
@@ -1151,6 +1116,7 @@ class TelemetryEvent {
         n_chars: numChars,
         n_words: numWords,
         n_results: numResults,
+        search_engine_default_id,
         groups,
         results,
       };
@@ -1163,6 +1129,7 @@ class TelemetryEvent {
         n_chars: numChars,
         n_words: numWords,
         n_results: numResults,
+        search_engine_default_id,
         groups,
         results,
       };
@@ -1349,18 +1316,12 @@ class TelemetryEvent {
     if (!element) {
       return "none";
     }
-    if (
-      element.classList.contains("urlbarView-button-help") ||
-      element.dataset.command == "help"
-    ) {
+    if (element.dataset.command == "help") {
       return result?.type == lazy.UrlbarUtils.RESULT_TYPE.TIP
         ? "tiphelp"
         : "help";
     }
-    if (
-      element.classList.contains("urlbarView-button-block") ||
-      element.dataset.command == "dismiss"
-    ) {
+    if (element.dataset.command == "dismiss") {
       return "block";
     }
     // Now handle the result.
@@ -1376,6 +1337,10 @@ class TelemetryEvent {
 
   #PING_PREFS = {
     maxRichResults: Glean.urlbar.prefMaxResults,
+    "quicksuggest.dataCollection.enabled":
+      Glean.urlbar.prefSuggestDataCollection,
+    "suggest.quicksuggest.nonsponsored": Glean.urlbar.prefSuggestNonsponsored,
+    "suggest.quicksuggest.sponsored": Glean.urlbar.prefSuggestSponsored,
     "suggest.topsites": Glean.urlbar.prefSuggestTopsites,
   };
 

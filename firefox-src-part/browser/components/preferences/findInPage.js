@@ -105,10 +105,13 @@ var gSearchResultsPane = {
     if (!this.categoriesInitialized) {
       this.categoriesInitialized = true;
       // Each element of gCategoryInits is a name
-      for (let [, /* name */ category] of gCategoryInits) {
-        if (!category.inited) {
-          await category.init();
-        }
+      for (let category of gCategoryInits.values()) {
+        category.init();
+      }
+      if (document.hasPendingL10nMutations) {
+        await new Promise(r =>
+          document.addEventListener("L10nMutationsFinished", r, { once: true })
+        );
       }
     }
   },
@@ -415,7 +418,8 @@ var gSearchResultsPane = {
       nodeObject.tagName == "label" ||
       nodeObject.tagName == "description" ||
       nodeObject.tagName == "menulist" ||
-      nodeObject.tagName == "menuitem"
+      nodeObject.tagName == "menuitem" ||
+      nodeObject.tagName == "checkbox"
     ) {
       let simpleTextNodes = this.textNodeDescendants(nodeObject);
       for (let node of simpleTextNodes) {

@@ -15,7 +15,7 @@ ChromeUtils.defineESModuleGetters(lazy, {
   UIState: "resource://services-sync/UIState.sys.mjs",
 });
 
-XPCOMUtils.defineLazyGetter(lazy, "syncUtils", () => {
+ChromeUtils.defineLazyGetter(lazy, "syncUtils", () => {
   return ChromeUtils.importESModule("resource://services-sync/util.sys.mjs")
     .Utils;
 });
@@ -180,7 +180,7 @@ export const SyncedTabsErrorHandler = {
     },
     [ErrorType.SIGNED_OUT]: {
       header: "firefoxview-tabpickup-signed-out-header",
-      description: "firefoxview-tabpickup-signed-out-description",
+      description: "firefoxview-tabpickup-signed-out-description2",
       buttonLabel: "firefoxview-tabpickup-signed-out-primarybutton",
     },
   },

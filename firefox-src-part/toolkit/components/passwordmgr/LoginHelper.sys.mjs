@@ -19,14 +19,14 @@ ChromeUtils.defineESModuleGetters(lazy, {
 });
 
 export class ParentAutocompleteOption {
-  icon;
+  image;
   title;
   subtitle;
   fillMessageName;
   fillMessageData;
 
-  constructor(icon, title, subtitle, fillMessageName, fillMessageData) {
-    this.icon = icon;
+  constructor(image, title, subtitle, fillMessageName, fillMessageData) {
+    this.image = image;
     this.title = title;
     this.subtitle = subtitle;
     this.fillMessageName = fillMessageName;
@@ -171,14 +171,15 @@ class ImportRowProcessor {
    *        A login object.
    * @returns {boolean} True if the entry is similar or identical to another previously processed entry, false otherwise.
    */
-  checkConflictingWithExistingLogins(login) {
+  async checkConflictingWithExistingLogins(login) {
     // While here we're passing formActionOrigin and httpRealm, they could be empty/null and get
     // ignored in that case, leading to multiple logins for the same username.
-    let existingLogins = Services.logins.findLogins(
-      login.origin,
-      login.formActionOrigin,
-      login.httpRealm
-    );
+    let existingLogins = await Services.logins.searchLoginsAsync({
+      origin: login.origin,
+      formActionOrigin: login.formActionOrigin,
+      httpRealm: login.httpRealm,
+    });
+
     // Check for an existing login that matches *including* the password.
     // If such a login exists, we do not need to add a new login.
     if (
@@ -390,7 +391,6 @@ export const LoginHelper = {
   schemeUpgrades: null,
   showAutoCompleteFooter: null,
   showAutoCompleteImport: null,
-  signupDectectionConfidenceThreshold: null,
   testOnlyUserHasInteractedWithDocument: null,
   userInputRequiredToCapture: null,
   captureInputChanges: null,
@@ -401,6 +401,13 @@ export const LoginHelper = {
     this.updateSignonPrefs();
     Services.telemetry.setEventRecordingEnabled("pwmgr", true);
     Services.telemetry.setEventRecordingEnabled("form_autocomplete", true);
+
+    // Watch for FXA Logout to reset signon.firefoxRelay to 'available'
+    // Using hard-coded value for FxAccountsCommon.ONLOGOUT_NOTIFICATION because
+    // importing FxAccountsCommon here caused hard-to-diagnose crash.
+    Services.obs.addObserver(() => {
+      Services.prefs.clearUserPref("signon.firefoxRelay.feature");
+    }, "fxaccounts:onlogout");
   },
 
   updateSignonPrefs() {
@@ -455,12 +462,6 @@ export const LoginHelper = {
     this.showAutoCompleteImport = Services.prefs.getStringPref(
       "signon.showAutoCompleteImport",
       ""
-    );
-    this.signupDetectionConfidenceThreshold = parseFloat(
-      Services.prefs.getStringPref("signon.signupDetection.confidenceThreshold")
-    );
-    this.signupDetectionEnabled = Services.prefs.getBoolPref(
-      "signon.signupDetection.enabled"
     );
 
     this.storeWhenAutocompleteOff = Services.prefs.getBoolPref(
@@ -665,7 +666,6 @@ export const LoginHelper = {
    * Strip out things like the userPass portion and handle javascript:.
    */
   getLoginOrigin(uriString, allowJS = false) {
-    let realm = "";
     try {
       const mozProxyRegex = /^moz-proxy:\/\//i;
       const isMozProxy = !!uriString.match(mozProxyRegex);
@@ -678,26 +678,16 @@ export const LoginHelper = {
         );
       }
 
-      let uri = Services.io.newURI(uriString);
-
+      const uri = Services.io.newURI(uriString);
       if (allowJS && uri.scheme == "javascript") {
         return "javascript:";
       }
 
       // Build this manually instead of using prePath to avoid including the userPass portion.
-      realm = uri.scheme + "://" + uri.displayHostPort;
-    } catch (e) {
-      // bug 159484 - disallow url types that don't support a hostPort.
-      // (although we handle "javascript:..." as a special case above.)
-      if (uriString && !uriString.startsWith("data")) {
-        lazy.log.warn(
-          `Couldn't parse specified uri ${uriString} with error ${e.name}`
-        );
-      }
-      realm = null;
+      return uri.scheme + "://" + uri.displayHostPort;
+    } catch {
+      return null;
     }
-
-    return realm;
   },
 
   getFormActionOrigin(form) {
@@ -965,7 +955,7 @@ export const LoginHelper = {
           "Can't add a login with both a httpRealm and formActionOrigin."
         );
       }
-    } else if (newLogin.httpRealm) {
+    } else if (newLogin.httpRealm || newLogin.httpRealm == "") {
       // We have a HTTP realm. Can't have a form submit URL.
       if (newLogin.formActionOrigin != null) {
         throw new Error(
@@ -1264,7 +1254,6 @@ export const LoginHelper = {
     // Get currently active tab's origin
     const openedFrom =
       window.gBrowser?.selectedTab.linkedBrowser.currentURI.spec;
-
     // If no loginGuid is set, get sanitized origin, this will return null for about:* uris
     const preselectedLogin = loginGuid ?? this.getLoginOrigin(openedFrom);
 
@@ -1274,13 +1263,14 @@ export const LoginHelper = {
     });
 
     const paramsPart = params.toString() ? `?${params}` : "";
-    const fragmentsPart = preselectedLogin
-      ? `#${window.encodeURIComponent(preselectedLogin)}`
-      : "";
-    const destination = `about:logins${paramsPart}${fragmentsPart}`;
 
-    // We assume that managementURL has a '?' already
-    window.openTrustedLinkIn(destination, "tab");
+    const browser = window.gBrowser ?? window.opener?.gBrowser;
+
+    const tab = browser.addTrustedTab(`about:logins${paramsPart}`, {
+      inBackground: false,
+    });
+
+    tab.setAttribute("preselect-login", preselectedLogin);
   },
 
   /**
@@ -1356,6 +1346,7 @@ export const LoginHelper = {
     if (
       !(
         acFieldName == "username" ||
+        acFieldName == "webauthn" ||
         // Bug 1540154: Some sites use tel/email on their username fields.
         acFieldName == "email" ||
         acFieldName == "tel" ||
@@ -1502,7 +1493,7 @@ export const LoginHelper = {
         if (processor.checkConflictingOriginWithPreviousRows(login)) {
           continue;
         }
-        if (processor.checkConflictingWithExistingLogins(login)) {
+        if (await processor.checkConflictingWithExistingLogins(login)) {
           continue;
         }
         processor.addLoginToSummary(login, "added");
@@ -1512,6 +1503,7 @@ export const LoginHelper = {
       this.importing = false;
 
       Services.obs.notifyObservers(null, "passwordmgr-reload-all");
+      this.notifyStorageChanged("importLogins", []);
     }
   },
 
@@ -1733,7 +1725,7 @@ export const LoginHelper = {
 
   async getAllUserFacingLogins() {
     try {
-      let logins = await Services.logins.getAllLoginsAsync();
+      let logins = await Services.logins.getAllLogins();
       return logins.filter(this.isUserFacingLogin);
     } catch (e) {
       if (e.result == Cr.NS_ERROR_ABORT) {
@@ -1791,7 +1783,7 @@ export const LoginHelper = {
   },
 };
 
-XPCOMUtils.defineLazyGetter(lazy, "log", () => {
+ChromeUtils.defineLazyGetter(lazy, "log", () => {
   let processName =
     Services.appinfo.processType === Services.appinfo.PROCESS_TYPE_DEFAULT
       ? "Main"

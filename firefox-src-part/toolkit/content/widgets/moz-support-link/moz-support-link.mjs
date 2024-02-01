@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-MozXULElement.insertFTLIfNeeded("browser/components/mozSupportLink.ftl");
+window.MozXULElement?.insertFTLIfNeeded("toolkit/global/mozSupportLink.ftl");
 
 /**
  * An extension of the anchor element that helps create links to Mozilla's
@@ -28,7 +28,7 @@ export default class MozSupportLink extends HTMLAnchorElement {
    * @memberof MozSupportLink
    */
   #register() {
-    if (!window.IS_STORYBOOK) {
+    if (window.document.nodePrincipal?.isSystemPrincipal) {
       // eslint-disable-next-line no-shadow
       let { XPCOMUtils } = window.XPCOMUtils
         ? window
@@ -42,6 +42,10 @@ export default class MozSupportLink extends HTMLAnchorElement {
         "",
         null,
         val => Services.urlFormatter.formatURL(val)
+      );
+    } else if (!window.IS_STORYBOOK) {
+      MozSupportLink.SUPPORT_URL = window.RPMGetFormatURLPref(
+        "app.support.baseURL"
       );
     }
   }

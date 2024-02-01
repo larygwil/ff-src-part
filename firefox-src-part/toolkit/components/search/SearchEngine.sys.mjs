@@ -5,7 +5,6 @@
 /* eslint no-shadow: error, mozilla/no-aArgs: error */
 
 import { AppConstants } from "resource://gre/modules/AppConstants.sys.mjs";
-import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs";
 
 const lazy = {};
 
@@ -20,7 +19,7 @@ const BinaryInputStream = Components.Constructor(
   "setInputStream"
 );
 
-XPCOMUtils.defineLazyGetter(lazy, "logConsole", () => {
+ChromeUtils.defineLazyGetter(lazy, "logConsole", () => {
   return console.createInstance({
     prefix: "SearchEngine",
     maxLogLevel: lazy.SearchUtils.loggingEnabled ? "Debug" : "Warn",
@@ -149,8 +148,15 @@ const ParamPreferenceCache = {
   onNimbusUpdate() {
     let extraParams =
       lazy.NimbusFeatures.search.getVariable("extraParams") || [];
-    for (const { key, value } of extraParams) {
-      this.nimbusCache.set(key, value);
+    this.nimbusCache.clear();
+    // The try catch ensures that if the params were incorrect for some reason,
+    // the search service can still startup properly.
+    try {
+      for (const { key, value } of extraParams) {
+        this.nimbusCache.set(key, value);
+      }
+    } catch (ex) {
+      console.error("Failed to load nimbus variables for extraParams:", ex);
     }
   },
 
@@ -715,8 +721,8 @@ export class SearchEngine {
    * icon's data through getIcons() and getIconURIBySize() APIs.
    *
    * @param {string} iconURL
-   *   A URI string pointing to the engine's icon. Must have a http[s],
-   *   ftp, or data scheme. Icons with HTTP[S] or FTP schemes will be
+   *   A URI string pointing to the engine's icon. Must have a http[s]
+   *   or data scheme. Icons with HTTP[S] schemes will be
    *   downloaded and converted to data URIs for storage in the engine
    *   XML files, if the engine is not built-in.
    * @param {boolean} isPreferred
@@ -741,7 +747,7 @@ export class SearchEngine {
       "to",
       limitURILength(uri.spec)
     );
-    // Only accept remote icons from http[s] or ftp
+    // Only accept remote icons from http[s]
     switch (uri.scheme) {
       // Fall through to the data case
       case "moz-extension":
@@ -758,7 +764,6 @@ export class SearchEngine {
         break;
       case "http":
       case "https":
-      case "ftp":
         let iconLoadCallback = function (byteArray, contentType) {
           // This callback may run after we've already set a preferred icon,
           // so check again.
@@ -805,7 +810,10 @@ export class SearchEngine {
           this._hasPreferredIcon = isPreferred;
         };
 
-        let chan = lazy.SearchUtils.makeChannel(uri);
+        let chan = lazy.SearchUtils.makeChannel(
+          uri,
+          Ci.nsIContentPolicy.TYPE_IMAGE
+        );
         let listener = new lazy.SearchUtils.LoadListener(
           chan,
           /^image\//,
@@ -1017,6 +1025,10 @@ export class SearchEngine {
         }
       );
       this._urls.push(trending);
+    }
+
+    if (configuration.clickUrl) {
+      this.clickUrl = configuration.clickUrl;
     }
 
     if (details.encoding) {
@@ -1264,6 +1276,20 @@ export class SearchEngine {
     var value = !!val;
     if (value != this.hidden) {
       this.setAttr("hidden", value);
+      lazy.SearchUtils.notifyAction(
+        this,
+        lazy.SearchUtils.MODIFIED_TYPE.CHANGED
+      );
+    }
+  }
+
+  get hideOneOffButton() {
+    return this.getAttr("hideOneOffButton") || false;
+  }
+  set hideOneOffButton(val) {
+    const value = !!val;
+    if (value != this.hideOneOffButton) {
+      this.setAttr("hideOneOffButton", value);
       lazy.SearchUtils.notifyAction(
         this,
         lazy.SearchUtils.MODIFIED_TYPE.CHANGED

@@ -242,24 +242,7 @@ export class UrlbarProviderExtension extends UrlbarProvider {
     this._notifyListener("resultPicked", result.payload, dynamicElementName);
   }
 
-  /**
-   * Called when the user starts and ends an engagement with the urlbar.  For
-   * details on parameters, see UrlbarProvider.onEngagement().
-   *
-   * @param {boolean} isPrivate
-   *   True if the engagement is in a private context.
-   * @param {string} state
-   *   The state of the engagement, one of: start, engagement, abandonment,
-   *   discard
-   * @param {UrlbarQueryContext} queryContext
-   *   The engagement's query context.  This is *not* guaranteed to be defined
-   *   when `state` is "start".  It will always be defined for "engagement" and
-   *   "abandonment".
-   * @param {object} details
-   *   This is defined only when `state` is "engagement" or "abandonment", and
-   *   it describes the search string and picked result.
-   */
-  onEngagement(isPrivate, state, queryContext, details) {
+  onEngagement(state, queryContext, details, controller) {
     let { result, element } = details;
     // By design, the "resultPicked" extension event should not be fired when
     // the picked element has a URL.
@@ -267,7 +250,7 @@ export class UrlbarProviderExtension extends UrlbarProvider {
       this.#pickResult(result, element);
     }
 
-    this._notifyListener("engagement", isPrivate, state);
+    this._notifyListener("engagement", controller.input.isPrivate, state);
   }
 
   /**
@@ -360,9 +343,7 @@ export class UrlbarProviderExtension extends UrlbarProvider {
     if (type == UrlbarUtils.RESULT_TYPE.TIP) {
       extResult.payload.type ||= "extension";
       extResult.payload.helpL10n = {
-        id: lazy.UrlbarPrefs.get("resultMenu")
-          ? "urlbar-result-menu-tip-get-help"
-          : "urlbar-tip-help-icon",
+        id: "urlbar-result-menu-tip-get-help",
       };
     }
 

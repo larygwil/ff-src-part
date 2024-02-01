@@ -15,11 +15,22 @@ XPCOMUtils.defineLazyPreferenceGetter(
   lazy,
   "serpEventsEnabled",
   "browser.search.serpEventTelemetry.enabled",
+  true
+);
+
+XPCOMUtils.defineLazyPreferenceGetter(
+  lazy,
+  "serpEventTelemetryCategorization",
+  "browser.search.serpEventTelemetryCategorization.enabled",
   false
 );
 
-const SHARED_DATA_KEY = "SearchTelemetry:ProviderInfo";
-export const ADLINK_CHECK_TIMEOUT_MS = 1000;
+// Duplicated from SearchSERPTelemetry to avoid loading the module on content
+// startup.
+const SEARCH_TELEMETRY_SHARED = {
+  PROVIDER_INFO: "SearchTelemetry:ProviderInfo",
+  LOAD_TIMEOUT: "SearchTelemetry:LoadTimeout",
+};
 
 /**
  * SearchProviders looks after keeping track of the search provider information
@@ -45,7 +56,9 @@ class SearchProviders {
       return this._searchProviderInfo;
     }
 
-    this._searchProviderInfo = Services.cpmm.sharedData.get(SHARED_DATA_KEY);
+    this._searchProviderInfo = Services.cpmm.sharedData.get(
+      SEARCH_TELEMETRY_SHARED.PROVIDER_INFO
+    );
 
     if (!this._searchProviderInfo) {
       return null;
@@ -81,7 +94,7 @@ class SearchProviders {
   handleEvent(event) {
     switch (event.type) {
       case "change": {
-        if (event.changedKeys.includes(SHARED_DATA_KEY)) {
+        if (event.changedKeys.includes(SEARCH_TELEMETRY_SHARED.PROVIDER_INFO)) {
           // Just null out the provider information for now, we'll fetch it next
           // time we need it.
           this._searchProviderInfo = null;
@@ -848,6 +861,154 @@ class SearchAdImpression {
   }
 }
 
+/**
+ * An object indicating which elements to examine for domains to extract and
+ * which heuristic technique to use to extract that element's domain.
+ *
+ * @typedef {object} ExtractorInfo
+ * @property {string} selectors
+ *  A string representing the CSS selector that targets the elements on the
+ *  page that contain domains we want to extract.
+ * @property {string} method
+ *  A string representing which domain extraction heuristic to use.
+ *  One of: "href" or "data-attribute".
+ * @property {object | null} options
+ *  Options related to the domain extraction heuristic used.
+ * @property {string | null} options.dataAttributeKey
+ *  The key name of the data attribute to lookup.
+ * @property {string | null} options.queryParamKey
+ *  The key name of the query param value to lookup.
+ */
+
+/**
+ * DomainExtractor examines elements on a page to retrieve the domains.
+ */
+class DomainExtractor {
+  /**
+   * Extract domains from the page using an array of information pertaining to
+   * the SERP.
+   *
+   * @param {Document} document
+   *  The document for the SERP we are extracting domains from.
+   * @param {Array<ExtractorInfo>} extractorInfos
+   *  Information used to target the domains we need to extract.
+   * @return {Set<string>}
+   *  A set of the domains extracted from the page.
+   */
+  extractDomainsFromDocument(document, extractorInfos) {
+    let extractedDomains = new Set();
+    if (!extractorInfos?.length) {
+      return extractedDomains;
+    }
+
+    for (let extractorInfo of extractorInfos) {
+      if (!extractorInfo.selectors) {
+        continue;
+      }
+
+      let elements = document.querySelectorAll(extractorInfo.selectors);
+      if (!elements) {
+        continue;
+      }
+
+      switch (extractorInfo.method) {
+        case "href": {
+          // Origin is used in case a URL needs to be made absolute.
+          let origin = new URL(document.documentURI).origin;
+          this.#fromElementsConvertHrefsIntoDomains(
+            elements,
+            origin,
+            extractedDomains,
+            extractorInfo.options?.queryParamKey
+          );
+          break;
+        }
+        case "data-attribute": {
+          this.#fromElementsRetrieveDataAttributeValues(
+            elements,
+            extractorInfo.options?.dataAttributeKey,
+            extractedDomains
+          );
+          break;
+        }
+      }
+    }
+
+    return extractedDomains;
+  }
+
+  /**
+   * Given a list of elements, extract domains using href attributes. If the
+   * URL in the href includes the specified query param, the domain will be
+   * that query param's value. Otherwise it will be the hostname of the href
+   * attribute's URL.
+   *
+   * @param {NodeList<Element>} elements
+   *  A list of elements from the page whose href attributes we want to
+   *  inspect.
+   * @param {string} origin
+   *  Origin of the current page.
+   * @param {Set<string>} extractedDomains
+   *  The result set of domains extracted from the page.
+   * @param {string | null} queryParam
+   *  An optional query param to search for in an element's href attribute.
+   */
+  #fromElementsConvertHrefsIntoDomains(
+    elements,
+    origin,
+    extractedDomains,
+    queryParam
+  ) {
+    for (let element of elements) {
+      let href = element.getAttribute("href");
+
+      let url;
+      try {
+        url = new URL(href, origin);
+      } catch (ex) {
+        continue;
+      }
+
+      // Ignore non-standard protocols.
+      if (url.protocol != "https:" && url.protocol != "http:") {
+        continue;
+      }
+
+      let domain = queryParam ? url.searchParams.get(queryParam) : url.hostname;
+      if (domain && !extractedDomains.has(domain)) {
+        extractedDomains.add(domain);
+      }
+    }
+  }
+
+  /**
+   * Given a list of elements, examine each for the specified data attribute.
+   * If found, add that data attribute's value to the result set of extracted
+   * domains as is.
+   *
+   * @param {NodeList<Element>} elements
+   *  A list of elements from the page whose data attributes we want to
+   *  inspect.
+   * @param {string} attribute
+   *  The name of a data attribute to search for within an element.
+   * @param {Set<string>} extractedDomains
+   *  The result set of domains extracted from the page.
+   */
+  #fromElementsRetrieveDataAttributeValues(
+    elements,
+    attribute,
+    extractedDomains
+  ) {
+    for (let element of elements) {
+      let value = element.dataset[attribute];
+      if (value && !extractedDomains.has(value)) {
+        extractedDomains.add(value);
+      }
+    }
+  }
+}
+
+export const domainExtractor = new DomainExtractor();
 const searchProviders = new SearchProviders();
 const searchAdImpression = new SearchAdImpression();
 
@@ -863,6 +1024,13 @@ const documentToEventCallbackMap = new WeakMap();
  * given.
  */
 export class SearchSERPTelemetryChild extends JSWindowActorChild {
+  /**
+   * Amount of time to wait after a page event before examining the page
+   * for ads.
+   *
+   * @type {number | null}
+   */
+  #adTimeout;
   /**
    * Determines if there is a provider that matches the supplied URL and returns
    * the information associated with that provider.
@@ -967,6 +1135,34 @@ export class SearchSERPTelemetryChild extends JSWindowActorChild {
         });
       }
     }
+
+    if (
+      lazy.serpEventTelemetryCategorization &&
+      providerInfo.domainExtraction &&
+      (eventType == "load" || eventType == "pageshow")
+    ) {
+      let start = Cu.now();
+      let nonAdDomains = domainExtractor.extractDomainsFromDocument(
+        doc,
+        providerInfo.domainExtraction.nonAds
+      );
+      let adDomains = domainExtractor.extractDomainsFromDocument(
+        doc,
+        providerInfo.domainExtraction.ads
+      );
+
+      this.sendAsyncMessage("SearchTelemetry:Domains", {
+        url,
+        nonAdDomains,
+        adDomains,
+      });
+
+      ChromeUtils.addProfilerMarker(
+        "SearchSERPTelemetryChild._checkForAdLink",
+        start,
+        "Extract domains from elements"
+      );
+    }
   }
 
   /**
@@ -1049,8 +1245,10 @@ export class SearchSERPTelemetryChild extends JSWindowActorChild {
       // To check this, we look for the presence of the query parameter
       // that contains a search term.
       let queries = new URLSearchParams(url.split("#")[0].split("?")[1]);
-      if (queries.has(provider.queryParamName)) {
-        return true;
+      for (let queryParamName of provider.queryParamNames) {
+        if (queries.get(queryParamName)) {
+          return true;
+        }
       }
     }
     return false;
@@ -1063,9 +1261,14 @@ export class SearchSERPTelemetryChild extends JSWindowActorChild {
   }
 
   #check(eventType) {
+    if (!this.#adTimeout) {
+      this.#adTimeout = Services.cpmm.sharedData.get(
+        SEARCH_TELEMETRY_SHARED.LOAD_TIMEOUT
+      );
+    }
     this.#cancelCheck();
     this._waitForContentTimeout = lazy.setTimeout(() => {
       this._checkForAdLink(eventType);
-    }, ADLINK_CHECK_TIMEOUT_MS);
+    }, this.#adTimeout);
   }
 }

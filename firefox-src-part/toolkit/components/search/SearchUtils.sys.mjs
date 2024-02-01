@@ -9,7 +9,7 @@ import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs";
 
 const lazy = {};
 
-XPCOMUtils.defineLazyGetter(lazy, "logConsole", () => {
+ChromeUtils.defineLazyGetter(lazy, "logConsole", () => {
   return console.createInstance({
     prefix: "SearchUtils",
     maxLogLevel: SearchUtils.loggingEnabled ? "Debug" : "Warn",
@@ -113,8 +113,6 @@ class LoadListener {
 export var SearchUtils = {
   BROWSER_SEARCH_PREF,
 
-  SETTINGS_KEY: "search-config",
-
   /**
    * This is the Remote Settings key that we use to get the ignore lists for
    * engines.
@@ -126,6 +124,49 @@ export var SearchUtils = {
    * overriding the default engines.
    */
   SETTINGS_ALLOWLIST_KEY: "search-default-override-allowlist",
+
+  /**
+   * This is the Remote Settings key for getting the older search engine
+   * configuration. Tests may use `SETTINGS_KEY` if they want to get the key
+   * for the current configuration according to the preference.
+   */
+  OLD_SETTINGS_KEY: "search-config",
+
+  /**
+   * This is the Remote Settings key for getting the newer search engine
+   * configuration. Tests may use `SETTINGS_KEY` if they want to get the key
+   * for the current configuration according to the preference.
+   */
+  NEW_SETTINGS_KEY: "search-config-v2",
+
+  /**
+   * This is the Remote Settings key for getting the overrides for the
+   * older search engine configuration. Tests may use `SETTINGS_OVERRIDES_KEY`
+   * for the current configuration according to the preference.
+   */
+  OLD_SETTINGS_OVERRIDES_KEY: "search-config-overrides",
+
+  /**
+   * This is the Remote Settings key that we use to get the search engine
+   * configurations.
+   *
+   * @returns {string}
+   */
+  get SETTINGS_KEY() {
+    return SearchUtils.newSearchConfigEnabled
+      ? SearchUtils.NEW_SETTINGS_KEY
+      : SearchUtils.OLD_SETTINGS_KEY;
+  },
+
+  /**
+   * This is the Remote Settings key that we use to get the search engine
+   * configuration overrides.
+   *
+   * @returns {string}
+   */
+  get SETTINGS_OVERRIDES_KEY() {
+    return SearchUtils.OLD_SETTINGS_OVERRIDES_KEY;
+  },
 
   /**
    * Topic used for events involving the service itself.
@@ -248,19 +289,24 @@ export var SearchUtils = {
    *
    * @param {string|nsIURI} url
    *   The URL string from which to create an nsIChannel.
+   * @param {nsIContentPolicy} contentPolicyType
+   *   The type of document being loaded.
    * @returns {nsIChannel}
    *   an nsIChannel object, or null if the url is invalid.
    */
-  makeChannel(url) {
+  makeChannel(url, contentPolicyType) {
+    if (!contentPolicyType) {
+      throw new Error("makeChannel called with invalid content policy type");
+    }
     try {
       let uri = typeof url == "string" ? Services.io.newURI(url) : url;
       return Services.io.newChannelFromURI(
         uri,
         null /* loadingNode */,
-        Services.scriptSecurityManager.getSystemPrincipal(),
+        Services.scriptSecurityManager.createNullPrincipal({}),
         null /* triggeringPrincipal */,
         Ci.nsILoadInfo.SEC_ALLOW_CROSS_ORIGIN_SEC_CONTEXT_IS_NULL,
-        Ci.nsIContentPolicy.TYPE_OTHER
+        contentPolicyType
       );
     } catch (ex) {}
 
@@ -285,7 +331,7 @@ export var SearchUtils = {
    *   The current settings version.
    */
   get SETTINGS_VERSION() {
-    return 8;
+    return 9;
   },
 
   /**
@@ -381,8 +427,15 @@ XPCOMUtils.defineLazyPreferenceGetter(
   false
 );
 
+XPCOMUtils.defineLazyPreferenceGetter(
+  SearchUtils,
+  "newSearchConfigEnabled",
+  "browser.search.newSearchConfig.enabled",
+  false
+);
+
 // Can't use defineLazyPreferenceGetter because we want the value
 // from the default branch
-XPCOMUtils.defineLazyGetter(SearchUtils, "distroID", () => {
+ChromeUtils.defineLazyGetter(SearchUtils, "distroID", () => {
   return Services.prefs.getDefaultBranch("distribution.").getCharPref("id", "");
 });

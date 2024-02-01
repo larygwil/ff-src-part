@@ -11,6 +11,7 @@ const lazy = {};
 
 ChromeUtils.defineESModuleGetters(lazy, {
   DEFAULT_SITES: "resource://activity-stream/lib/DefaultSites.sys.mjs",
+  DefaultPrefs: "resource://activity-stream/lib/ActivityStreamPrefs.sys.mjs",
   NimbusFeatures: "resource://nimbus/ExperimentAPI.sys.mjs",
   Region: "resource://gre/modules/Region.sys.mjs",
 });
@@ -24,11 +25,6 @@ ChromeUtils.defineModuleGetter(
   lazy,
   "AboutPreferences",
   "resource://activity-stream/lib/AboutPreferences.jsm"
-);
-ChromeUtils.defineModuleGetter(
-  lazy,
-  "DefaultPrefs",
-  "resource://activity-stream/lib/ActivityStreamPrefs.jsm"
 );
 ChromeUtils.defineModuleGetter(
   lazy,
@@ -162,9 +158,16 @@ const PREFS_CONFIG = new Map([
   [
     "showSponsored",
     {
-      title:
-        "Show sponsored cards in spoc experiment (show_spocs in topstories.options has to be set to true as well)",
+      title: "User pref for sponsored Pocket content",
       value: true,
+    },
+  ],
+  [
+    "system.showSponsored",
+    {
+      title: "System pref for sponsored Pocket content",
+      // This pref is dynamic as the sponsored content depends on the region
+      getValue: showSpocs,
     },
   ],
   [
@@ -191,13 +194,6 @@ const PREFS_CONFIG = new Map([
     {
       title: "Show the Search bar",
       value: true,
-    },
-  ],
-  [
-    "feeds.snippets",
-    {
-      title: "Show snippets on activity stream",
-      value: false,
     },
   ],
   [
@@ -362,11 +358,6 @@ const PREFS_CONFIG = new Map([
           api_key_pref: "extensions.pocket.oAuthConsumerKey",
           collapsible: true,
           enabled: true,
-          show_spocs: showSpocs({ geo }),
-          hardcoded_layout: true,
-          // This is currently an exmple layout used for dev purposes.
-          layout_endpoint:
-            "https://getpocket.cdn.mozilla.net/v3/newtab/layout?version=1&consumer_key=$apiKey&layout_variant=basic",
         });
       },
     },
