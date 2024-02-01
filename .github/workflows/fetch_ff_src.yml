@@ -2,9 +2,9 @@ name: Fetch latest Firefox src
 
 on:
   schedule:
-    - cron: '35 6 * * 4'
+    - cron: '50 5 * * 4'
     # * is a special character in YAML so you have to quote this string
-    # Thu 06:35
+    # Thu 05:50
     
   
   workflow_dispatch:
