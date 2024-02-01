@@ -37,21 +37,27 @@ cd $HOME || exit 1
 SOURCE_TAR="firefox-${VER_LATEST}.source.tar.xz"
 SOURCE_TAR_URL="https://ftp.mozilla.org/pub/firefox/releases/${VER_LATEST}/source/${SOURCE_TAR}"
 echo "Download new source tarball ..."
-wget "$SOURCE_TAR_URL"  || exit 1
+wget --no-verbose "$SOURCE_TAR_URL"  || exit 1
 
 echo "Extract tarball..."
 tar -xf "$SOURCE_TAR" || exit 1
-EXTRACTED_DIR="firefox-${VER_LATEST/esr/}"
+
+ls # see extracted folder
+# EXTRACTED_DIR="firefox-${VER_LATEST/esr/}"
+EXTRACTED_DIR="$(find .   -name "firefox*" -maxdepth 1 -type d)"
+EXTRACTED_DIR=${EXTRACTED_DIR/\.\//}
 FF_LATEST_TMP="$PWD/$EXTRACTED_DIR"
 
 # 删除FF_SRC_GIT中除了.git之外的所有文件和目录
 cd "$FF_SRC_GIT" || exit 1
+pwd 
 echo "Delete old Firefox source..."
 # find "$FF_SRC_GIT" -mindepth 1 ! -regex '^.*\.git.*$' -exec rm -r {} \;
 rm -r * || exit 1
 
 # 切换到FF_LATEST_TMP目录并执行$GITREPO/del-uneeded.sh
 cd "$FF_LATEST_TMP" || exit 1
+pwd
 function del_uneeded() {
     rm -r   intl/icu \
             third_party \
