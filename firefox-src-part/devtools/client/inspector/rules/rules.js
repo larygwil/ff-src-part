@@ -66,6 +66,8 @@ const HTML_NS = "http://www.w3.org/1999/xhtml";
 const PREF_UA_STYLES = "devtools.inspector.showUserAgentStyles";
 const PREF_DEFAULT_COLOR_UNIT = "devtools.defaultColorUnit";
 const PREF_DRAGGABLE = "devtools.inspector.draggable_properties";
+const PREF_INPLACE_EDITOR_FOCUS_NEXT_ON_ENTER =
+  "devtools.inspector.rule-view.focusNextOnEnter";
 const FILTER_CHANGED_TIMEOUT = 150;
 // Removes the flash-out class from an element after 1 second.
 const PROPERTY_FLASHING_DURATION = 1000;
@@ -238,6 +240,8 @@ function CssRuleView(inspector, document, store) {
   this._handleDefaultColorUnitPrefChange =
     this._handleDefaultColorUnitPrefChange.bind(this);
   this._handleDraggablePrefChange = this._handleDraggablePrefChange.bind(this);
+  this._handleInplaceEditorFocusNextOnEnterPrefChange =
+    this._handleInplaceEditorFocusNextOnEnterPrefChange.bind(this);
 
   this._prefObserver = new PrefObserver("devtools.");
   this._prefObserver.on(PREF_UA_STYLES, this._handleUAStylePrefChange);
@@ -248,6 +252,13 @@ function CssRuleView(inspector, document, store) {
   this._prefObserver.on(PREF_DRAGGABLE, this._handleDraggablePrefChange);
   // Initialize value of this.draggablePropertiesEnabled
   this._handleDraggablePrefChange();
+
+  this._prefObserver.on(
+    PREF_INPLACE_EDITOR_FOCUS_NEXT_ON_ENTER,
+    this._handleInplaceEditorFocusNextOnEnterPrefChange
+  );
+  // Initialize value of this.inplaceEditorFocusNextOnEnter
+  this._handleInplaceEditorFocusNextOnEnterPrefChange();
 
   this.pseudoClassCheckboxes = this._createPseudoClassCheckboxes();
   this.showUserAgentStyles = Services.prefs.getBoolPref(PREF_UA_STYLES);
@@ -676,48 +687,6 @@ CssRuleView.prototype = {
     this.pageStyle.addNewRule(element, pseudoClasses);
   },
 
-  maybeShowEnterKeyNotice() {
-    const SHOW_RULES_VIEW_ENTER_KEY_NOTICE_PREF =
-      "devtools.inspector.showRulesViewEnterKeyNotice";
-    // Make the Enter key notice visible
-    // if it wasn't dismissed by the user yet.
-    if (
-      !Services.prefs.getBoolPref(SHOW_RULES_VIEW_ENTER_KEY_NOTICE_PREF, false)
-    ) {
-      return;
-    }
-
-    const enterKeyNoticeEl = this.styleDocument.getElementById(
-      "ruleview-kbd-enter-notice"
-    );
-
-    if (!enterKeyNoticeEl.hasAttribute("hidden")) {
-      return;
-    }
-
-    // Compute the right key (Cmd / Ctrl) depending on the OS
-    enterKeyNoticeEl.querySelector(
-      "#ruleview-kbd-enter-notice-ctrl-cmd"
-    ).textContent = Services.appinfo.OS === "Darwin" ? "Cmd" : "Ctrl";
-    enterKeyNoticeEl.removeAttribute("hidden");
-
-    enterKeyNoticeEl
-      .querySelector("#ruleview-kbd-enter-notice-dismiss-button")
-      .addEventListener(
-        "click",
-        () => {
-          // Hide the notice
-          enterKeyNoticeEl.setAttribute("hidden", "");
-          // And set the pref to false so we don't show the notice on next startup.
-          Services.prefs.setBoolPref(
-            SHOW_RULES_VIEW_ENTER_KEY_NOTICE_PREF,
-            false
-          );
-        },
-        { once: true, signal: this._abortController.signal }
-      );
-  },
-
   /**
    * Disables add rule button when needed
    */
@@ -760,10 +729,22 @@ CssRuleView.prototype = {
     this.emit("draggable-preference-updated");
   },
 
+  _handleInplaceEditorFocusNextOnEnterPrefChange() {
+    this.inplaceEditorFocusNextOnEnter = Services.prefs.getBoolPref(
+      PREF_INPLACE_EDITOR_FOCUS_NEXT_ON_ENTER,
+      false
+    );
+    this._handlePrefChange(PREF_INPLACE_EDITOR_FOCUS_NEXT_ON_ENTER);
+  },
+
   _handlePrefChange(pref) {
     // Reselect the currently selected element
-    const refreshOnPrefs = [PREF_UA_STYLES, PREF_DEFAULT_COLOR_UNIT];
-    if (refreshOnPrefs.indexOf(pref) > -1) {
+    const refreshOnPrefs = [
+      PREF_UA_STYLES,
+      PREF_DEFAULT_COLOR_UNIT,
+      PREF_INPLACE_EDITOR_FOCUS_NEXT_ON_ENTER,
+    ];
+    if (this._viewedElement && refreshOnPrefs.includes(pref)) {
       this.selectElement(this._viewedElement, true);
     }
   },
@@ -881,6 +862,10 @@ CssRuleView.prototype = {
       this._handleDefaultColorUnitPrefChange
     );
     this._prefObserver.off(PREF_DRAGGABLE, this._handleDraggablePrefChange);
+    this._prefObserver.off(
+      PREF_INPLACE_EDITOR_FOCUS_NEXT_ON_ENTER,
+      this._handleInplaceEditorFocusNextOnEnterPrefChange
+    );
     this._prefObserver.destroy();
 
     this._outputParser = null;

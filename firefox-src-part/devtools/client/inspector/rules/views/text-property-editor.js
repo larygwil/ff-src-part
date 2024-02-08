@@ -41,12 +41,6 @@ loader.lazyRequireGetter(
   "resource://devtools/shared/inspector/css-logic.js",
   true
 );
-loader.lazyRequireGetter(
-  this,
-  "KeyCodes",
-  "resource://devtools/client/shared/keycodes.js",
-  true
-);
 loader.lazyGetter(this, "PROPERTY_NAME_INPUT_LABEL", function () {
   return l10n("rule.propertyName.label");
 });
@@ -335,8 +329,9 @@ TextPropertyEditor.prototype = {
         focusEditableFieldContainerSelector: ".ruleview-rule",
         // We don't want Enter to trigger the next editable field, just to validate
         // what the user entered, close the editor, and focus the span so the user can
-        // navigate with the keyboard as expected.
-        stopOnReturn: true,
+        // navigate with the keyboard as expected, unless the user has
+        // devtools.inspector.rule-view.focusNextOnEnter set to true
+        stopOnReturn: this.ruleView.inplaceEditorFocusNextOnEnter !== true,
         inputAriaLabel: PROPERTY_NAME_INPUT_LABEL,
       });
 
@@ -437,8 +432,9 @@ TextPropertyEditor.prototype = {
         focusEditableFieldContainerSelector: ".ruleview-rule",
         // We don't want Enter to trigger the next editable field, just to validate
         // what the user entered, close the editor, and focus the span so the user can
-        // navigate with the keyboard as expected.
-        stopOnReturn: true,
+        // navigate with the keyboard as expected, unless the user has
+        // devtools.inspector.rule-view.focusNextOnEnter set to true
+        stopOnReturn: this.ruleView.inplaceEditorFocusNextOnEnter !== true,
         // Label the value input with the name span so screenreader users know what this
         // applies to.
         inputAriaLabelledBy: this.nameSpan.id,
@@ -1151,10 +1147,6 @@ TextPropertyEditor.prototype = {
    *        The event keyCode that trigger the editor to close
    */
   _onNameDone(value, commit, direction, key) {
-    if (value && commit && !direction && key === KeyCodes.DOM_VK_RETURN) {
-      this.ruleView.maybeShowEnterKeyNotice();
-    }
-
     const isNameUnchanged =
       (!commit && !this.ruleEditor.isEditing) || this.committed.name === value;
     if (this.prop.value && isNameUnchanged) {
@@ -1242,10 +1234,6 @@ TextPropertyEditor.prototype = {
    *        The event keyCode that trigger the editor to close
    */
   _onValueDone(value = "", commit, direction, key) {
-    if (value && commit && !direction && key === KeyCodes.DOM_VK_RETURN) {
-      this.ruleView.maybeShowEnterKeyNotice();
-    }
-
     const parsedProperties = this._getValueAndExtraProperties(value);
     const val = parseSingleValue(
       this.cssProperties.isKnown,

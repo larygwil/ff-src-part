@@ -45,6 +45,23 @@ XPCOMUtils.defineLazyPreferenceGetter(
   "browser.shopping.experience2023.ads.exposure",
   false
 );
+XPCOMUtils.defineLazyPreferenceGetter(
+  lazy,
+  "autoOpenEnabled",
+  "browser.shopping.experience2023.autoOpen.enabled",
+  true
+);
+XPCOMUtils.defineLazyPreferenceGetter(
+  lazy,
+  "autoOpenEnabledByUser",
+  "browser.shopping.experience2023.autoOpen.userEnabled",
+  true,
+  function autoOpenEnabledByUserChanged() {
+    for (let actor of gAllActors) {
+      actor.autoOpenEnabledByUserChanged();
+    }
+  }
+);
 
 export class ShoppingSidebarChild extends RemotePageChild {
   constructor() {
@@ -74,19 +91,29 @@ export class ShoppingSidebarChild extends RemotePageChild {
         let uri = url ? Services.io.newURI(url) : null;
         // If we're going from null to null, bail out:
         if (!this.#productURI && !uri) {
-          return;
+          return null;
         }
 
         // If we haven't reloaded, check if the URIs represent the same product
         // as sites might change the URI after they have loaded (Bug 1852099).
         if (!isReload && this.isSameProduct(uri, this.#productURI)) {
-          return;
+          return null;
         }
 
         this.#productURI = uri;
         this.updateContent({ haveUpdatedURI: true });
         break;
+      case "ShoppingSidebar:ShowKeepClosedMessage":
+        this.sendToContent("ShowKeepClosedMessage");
+        break;
+      case "ShoppingSidebar:HideKeepClosedMessage":
+        this.sendToContent("HideKeepClosedMessage");
+        break;
+      case "ShoppingSidebar:IsKeepClosedMessageShowing":
+        return !!this.document.querySelector("shopping-container")
+          ?.wrappedJSObject.showingKeepClosedMessage;
     }
+    return null;
   }
 
   isSameProduct(newURI, currentURI) {
@@ -138,6 +165,9 @@ export class ShoppingSidebarChild extends RemotePageChild {
         ShoppingProduct.sendAttributionEvent("impression", aid);
         Glean.shopping.surfaceAdsImpression.record();
         break;
+      case "DisableShopping":
+        this.sendAsyncMessage("DisableShopping");
+        break;
     }
   }
 
@@ -173,6 +203,14 @@ export class ShoppingSidebarChild extends RemotePageChild {
     return this.adsEnabled && this.adsEnabledByUser;
   }
 
+  get autoOpenEnabled() {
+    return lazy.autoOpenEnabled;
+  }
+
+  get autoOpenEnabledByUser() {
+    return lazy.autoOpenEnabledByUser;
+  }
+
   optedInStateChanged() {
     // Force re-fetching things if needed by clearing the last product URI:
     this.#productURI = null;
@@ -186,6 +224,12 @@ export class ShoppingSidebarChild extends RemotePageChild {
     });
 
     this.requestRecommendations(this.#productURI);
+  }
+
+  autoOpenEnabledByUserChanged() {
+    this.sendToContent("autoOpenEnabledByUserChanged", {
+      autoOpenEnabledByUser: this.autoOpenEnabledByUser,
+    });
   }
 
   getProductURI() {
@@ -239,6 +283,8 @@ export class ShoppingSidebarChild extends RemotePageChild {
       this.sendToContent("Update", {
         adsEnabled: this.adsEnabled,
         adsEnabledByUser: this.adsEnabledByUser,
+        autoOpenEnabled: this.autoOpenEnabled,
+        autoOpenEnabledByUser: this.autoOpenEnabledByUser,
         showOnboarding: !this.canFetchAndShowData,
         data: null,
         recommendationData: null,
@@ -340,6 +386,8 @@ export class ShoppingSidebarChild extends RemotePageChild {
       this.sendToContent("Update", {
         adsEnabled: this.adsEnabled,
         adsEnabledByUser: this.adsEnabledByUser,
+        autoOpenEnabled: this.autoOpenEnabled,
+        autoOpenEnabledByUser: this.autoOpenEnabledByUser,
         showOnboarding: false,
         data,
         productUrl: this.#productURI.spec,

@@ -785,10 +785,16 @@ pref("browser.shopping.experience2023.survey.pdpVisits", 0);
 // Enables the auto-open feature for the shopping sidebar,
 // including new callouts and settings UI changes
 // (this is just the feature flag).
-pref("browser.shopping.experience2023.autoOpen.enabled", true);
+pref("browser.shopping.experience2023.autoOpen.enabled", false);
 
 // Opens the shopping sidebar automatically when viewing a PDP.
 pref("browser.shopping.experience2023.autoOpen.userEnabled", true);
+
+// Number of times the sidebar has been closed in a session
+pref("browser.shopping.experience2023.sidebarClosedCount", 0);
+
+// When conditions are met, shows a prompt on the shopping sidebar asking users if they want to disable auto-open behavior
+pref("browser.shopping.experience2023.showKeepSidebarClosedMessage", true);
 
 // Enables the display of the Mozilla VPN banner in private browsing windows
 pref("browser.privatebrowsing.vpnpromourl", "https://vpn.mozilla.org/?utm_source=firefox-browser&utm_medium=firefox-%CHANNEL%-browser&utm_campaign=private-browsing-vpn-link");
@@ -2557,8 +2563,9 @@ pref("devtools.gridinspector.maxHighlighters", 3);
 // Whether or not simplified highlighters should be used when
 // prefers-reduced-motion is enabled.
 pref("devtools.inspector.simple-highlighters-reduced-motion", false);
-// Display notice about Enter key behavior in Rules view.
-pref("devtools.inspector.showRulesViewEnterKeyNotice", true);
+// Wheter or not Enter on inplace editor in the Rules view moves focus and activates
+// next inplace editor.
+pref("devtools.inspector.rule-view.focusNextOnEnter", true);
 
 // Whether or not the box model panel is opened in the layout view
 pref("devtools.layout.boxmodel.opened", true);
@@ -2965,6 +2972,8 @@ pref("ui.new-webcompat-reporter.send-more-info-link", false);
 
 # 0 = disabled, 1 = reason optional, 2 = reason required.
 pref("ui.new-webcompat-reporter.reason-dropdown", 0);
+
+pref("ui.new-webcompat-reporter.reason-dropdown.randomized", true);
 
 // Reset Private Browsing Session feature
 #if defined(NIGHTLY_BUILD)

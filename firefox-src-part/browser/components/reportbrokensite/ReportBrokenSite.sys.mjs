@@ -8,18 +8,23 @@ const DEFAULT_NEW_REPORT_ENDPOINT = "https://webcompat.com/issues/new";
 
 import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs";
 
+const lazy = {};
+
+ChromeUtils.defineESModuleGetters(lazy, {
+  ClientEnvironment: "resource://normandy/lib/ClientEnvironment.sys.mjs",
+});
+
 const gDescriptionCheckRE = /\S/;
 
 class ViewState {
   #doc;
   #mainView;
   #reportSentView;
+  #reasonOptions;
+  #randomizeReasons = false;
 
   currentTabURI;
   currentTabWebcompatDetailsPromise;
-  isURLValid = false;
-  isDescriptionValid = false;
-  #isReasonValid = false;
 
   constructor(doc) {
     this.#doc = doc;
@@ -32,6 +37,11 @@ class ViewState {
       "report-broken-site-popup-reportSentView"
     );
     ViewState.#cache.set(doc, this);
+
+    this.#reasonOptions = Array.from(
+      // Skip the first option ("choose reason"), since it always stays at the top
+      this.reasonInput.querySelectorAll(`menuitem:not(:first-of-type)`)
+    );
   }
 
   static #cache = new WeakMap();
@@ -63,7 +73,6 @@ class ViewState {
     const { currentURI } = this.#doc.ownerGlobal.gBrowser.selectedBrowser;
     this.currentTabURI = currentURI;
     this.urlInput.value = currentURI.spec;
-    this.isURLValid = true;
   }
 
   get descriptionInput() {
@@ -106,6 +115,46 @@ class ViewState {
     );
   }
 
+  #randomizeReasonsOrdering() {
+    // As with QuickActionsLoaderDefault, we use the Normandy
+    // randomizationId as our PRNG seed to ensure that the same
+    // user should always get the same sequence.
+    const seed = [...lazy.ClientEnvironment.randomizationId]
+      .map(x => x.charCodeAt(0))
+      .reduce((sum, a) => sum + a, 0);
+
+    const items = [...this.#reasonOptions];
+    this.#shuffleArray(items, seed);
+    items[0].parentNode.append(...items);
+  }
+
+  #shuffleArray(array, seed) {
+    // We use SplitMix as it is reputed to have a strong distribution of values.
+    const prng = this.#getSplitMix32PRNG(seed);
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(prng() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+  }
+
+  // SplitMix32 is a splittable pseudorandom number generator (PRNG).
+  // License: MIT (https://github.com/attilabuti/SimplexNoise)
+  #getSplitMix32PRNG(a) {
+    return () => {
+      a |= 0;
+      a = (a + 0x9e3779b9) | 0;
+      var t = a ^ (a >>> 16);
+      t = Math.imul(t, 0x21f0aaad);
+      t = t ^ (t >>> 15);
+      t = Math.imul(t, 0x735a2d97);
+      return ((t = t ^ (t >>> 15)) >>> 0) / 4294967296;
+    };
+  }
+
+  #restoreReasonsOrdering() {
+    this.#reasonOptions[0].parentNode.append(...this.#reasonOptions);
+  }
+
   static CHOOSE_A_REASON_OPT_ID = "report-broken-site-popup-reason-choose";
 
   get chooseAReasonOption() {
@@ -118,55 +167,69 @@ class ViewState {
     this.resetURLToCurrentTab();
 
     this.description = "";
-    this.isDescriptionValid = false;
 
     this.reason = "choose";
-    this.#isReasonValid = false;
-    this.toggleReasonValidationMessage(false);
+    this.showOrHideReasonValidationMessage(false);
+  }
+
+  ensureReasonOrderingMatchesPref() {
+    const randomizeReasons =
+      this.#doc.ownerGlobal.ReportBrokenSite.randomizeReasons;
+    if (randomizeReasons != this.#randomizeReasons) {
+      if (randomizeReasons) {
+        this.#randomizeReasonsOrdering();
+      } else {
+        this.#restoreReasonsOrdering();
+      }
+      this.#randomizeReasons = randomizeReasons;
+    }
+  }
+
+  get isURLValid() {
+    return this.urlInput.checkValidity();
   }
 
   get isReasonValid() {
-    return this.#isReasonValid;
+    const { reasonEnabled, reasonIsOptional } =
+      this.#doc.ownerGlobal.ReportBrokenSite;
+    return (
+      !reasonEnabled ||
+      reasonIsOptional ||
+      this.reasonInput.selectedItem.id !== ViewState.CHOOSE_A_REASON_OPT_ID
+    );
   }
 
-  set isReasonValid(isValid) {
-    this.#isReasonValid = isValid;
-    this.toggleReasonValidationMessage(!isValid);
-  }
-
-  toggleReasonValidationMessage(show) {
+  showOrHideReasonValidationMessage(showOrHide) {
+    // If showOrHide === true, show the message. If === false, hide it.
+    // Otherwise, show or hide based on whether the input is presently valid.
+    showOrHide = showOrHide ?? !this.isReasonValid;
     const validation = this.reasonInputValidationHelper;
-    validation.setCustomValidity(show ? "required" : "");
+    validation.setCustomValidity(showOrHide ? "required" : "");
     validation.reportValidity();
   }
 
-  get isReasonOkay() {
-    const { reasonEnabled, reasonIsOptional } =
-      this.#doc.ownerGlobal.ReportBrokenSite;
-    return !reasonEnabled || reasonIsOptional || this.isReasonValid;
-  }
-
-  get isDescriptionOkay() {
+  get isDescriptionValid() {
     const { descriptionIsOptional } = this.#doc.ownerGlobal.ReportBrokenSite;
-    return descriptionIsOptional || this.isDescriptionValid;
+    return (
+      descriptionIsOptional ||
+      gDescriptionCheckRE.test(this.descriptionInput.value)
+    );
   }
 
   checkAndShowInputValidity() {
     // This function focuses on the first invalid input (if any), updates the validity of
     // the helper input for the reason drop-down (so CSS :invalid state is updated),
     // and returns true if the form has an invalid input (false otherwise).
-    const { isURLValid, isReasonOkay, isDescriptionOkay } = this;
-    const validation = this.reasonInputValidationHelper;
-    validation.setCustomValidity(isReasonOkay ? "" : "missing");
-    validation.reportValidity();
+    this.showOrHideReasonValidationMessage();
+    const { isURLValid, isReasonValid, isDescriptionValid } = this;
     if (!isURLValid) {
       this.urlInput.focus();
-    } else if (!isReasonOkay) {
+    } else if (!isReasonValid) {
       this.reasonInput.openMenu(true);
-    } else if (!isDescriptionOkay) {
+    } else if (!isDescriptionValid) {
       this.descriptionInput.focus();
     }
-    return !(isURLValid && isReasonOkay && isDescriptionOkay);
+    return !(isURLValid && isReasonValid && isDescriptionValid);
   }
 
   get sendMoreInfoLink() {
@@ -248,6 +311,8 @@ export var ReportBrokenSite = new (class ReportBrokenSite {
     1: "optional",
     2: "required",
   };
+  static REASON_RANDOMIZED_PREF =
+    "ui.new-webcompat-reporter.reason-dropdown.randomized";
   static SEND_MORE_INFO_PREF = "ui.new-webcompat-reporter.send-more-info-link";
   static NEW_REPORT_ENDPOINT_PREF =
     "ui.new-webcompat-reporter.new-report-endpoint";
@@ -263,6 +328,7 @@ export var ReportBrokenSite = new (class ReportBrokenSite {
 
   #reasonEnabled = false;
   #reasonIsOptional = true;
+  #randomizeReasons = false;
   #descriptionIsOptional = true;
   #sendMoreInfoEnabled = true;
 
@@ -274,6 +340,10 @@ export var ReportBrokenSite = new (class ReportBrokenSite {
     return this.#reasonIsOptional;
   }
 
+  get randomizeReasons() {
+    return this.#randomizeReasons;
+  }
+
   get descriptionIsOptional() {
     return this.#descriptionIsOptional;
   }
@@ -282,6 +352,7 @@ export var ReportBrokenSite = new (class ReportBrokenSite {
     for (const [name, [pref, dflt]] of Object.entries({
       dataReportingPref: [ReportBrokenSite.DATAREPORTING_PREF, false],
       reasonPref: [ReportBrokenSite.REASON_PREF, 0],
+      reasonRandomizedPref: [ReportBrokenSite.REASON_RANDOMIZED_PREF, false],
       sendMoreInfoPref: [ReportBrokenSite.SEND_MORE_INFO_PREF, false],
       newReportEndpointPref: [
         ReportBrokenSite.NEW_REPORT_ENDPOINT_PREF,
@@ -443,6 +514,8 @@ export var ReportBrokenSite = new (class ReportBrokenSite {
 
     this.#sendMoreInfoEnabled = this.sendMoreInfoPref;
     this.#newReportEndpoint = this.newReportEndpointPref;
+
+    this.#randomizeReasons = this.reasonRandomizedPref;
   }
 
   #initMainView(state) {
@@ -471,27 +544,9 @@ export var ReportBrokenSite = new (class ReportBrokenSite {
       state.reset();
     });
 
-    state.urlInput.addEventListener("input", ({ target }) => {
-      const newUrlValid = target.value && target.checkValidity();
-      if (state.isURLValid != newUrlValid) {
-        state.isURLValid = newUrlValid;
-      }
-    });
-
-    state.descriptionInput.addEventListener("input", ({ target }) => {
-      const newDescValid = gDescriptionCheckRE.test(target.value);
-      if (state.isDescriptionValid != newDescValid) {
-        state.isDescriptionValid = newDescValid;
-      }
-    });
-
     const reasonDropdown = state.reasonInput;
-    reasonDropdown.addEventListener("command", ({ target }) => {
-      const choiceId = target.closest("menulist").selectedItem.id;
-      const newValidity = choiceId !== ViewState.CHOOSE_A_REASON_OPT_ID;
-      if (state.isReasonValid != newValidity) {
-        state.isReasonValid = newValidity;
-      }
+    reasonDropdown.addEventListener("command", () => {
+      state.showOrHideReasonValidationMessage();
     });
 
     const menupopup = reasonDropdown.querySelector("menupopup");
@@ -534,6 +589,8 @@ export var ReportBrokenSite = new (class ReportBrokenSite {
     sendMoreInfoLink.hidden = !this.#sendMoreInfoEnabled;
 
     state.reasonInput.hidden = !this.#reasonEnabled;
+
+    state.ensureReasonOrderingMatchesPref();
 
     state.reasonLabelRequired.hidden =
       !this.#reasonEnabled || this.#reasonIsOptional;
