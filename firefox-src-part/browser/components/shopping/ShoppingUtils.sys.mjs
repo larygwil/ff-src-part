@@ -86,6 +86,7 @@ export const ShoppingUtils = {
 
     this.setOnUpdate(undefined, undefined, this.optedIn);
     this.recordUserAdsPreference();
+    this.recordUserAutoOpenPreference();
 
     if (this._isAutoOpenEligible()) {
       Services.prefs.setBoolPref(ACTIVE_PREF, true);
@@ -157,11 +158,8 @@ export const ShoppingUtils = {
 
   // For users in either the nimbus control or treatment groups, increment a
   // counter when they visit supported product pages.
-  maybeRecordExposure(aLocationURI, aFlags) {
-    if (
-      (this.nimbusEnabled || this.nimbusControl) &&
-      ShoppingUtils.isProductPageNavigation(aLocationURI, aFlags)
-    ) {
+  recordExposure() {
+    if (this.nimbusEnabled || this.nimbusControl) {
       Glean.shopping.productPageVisits.add(1);
     }
   },
@@ -173,6 +171,12 @@ export const ShoppingUtils = {
 
   recordUserAdsPreference() {
     Glean.shoppingSettings.disabledAds.set(!ShoppingUtils.adsUserEnabled);
+  },
+
+  recordUserAutoOpenPreference() {
+    Glean.shoppingSettings.autoOpenUserDisabled.set(
+      !ShoppingUtils.autoOpenUserEnabled
+    );
   },
 
   /**
@@ -248,12 +252,19 @@ export const ShoppingUtils = {
   },
 
   onLocationChange(aLocationURI, aFlags) {
-    this.maybeRecordExposure(aLocationURI, aFlags);
+    let isProductPageNavigation = this.isProductPageNavigation(
+      aLocationURI,
+      aFlags
+    );
+
+    if (isProductPageNavigation) {
+      this.recordExposure(aLocationURI, aFlags);
+    }
 
     if (
       this._isAutoOpenEligible() &&
       this.resetActiveOnNextProductPage &&
-      this.isProductPageNavigation(aLocationURI, aFlags)
+      isProductPageNavigation
     ) {
       this.resetActiveOnNextProductPage = false;
       Services.prefs.setBoolPref(ACTIVE_PREF, true);
@@ -295,5 +306,6 @@ XPCOMUtils.defineLazyPreferenceGetter(
   ShoppingUtils,
   "autoOpenUserEnabled",
   AUTO_OPEN_USER_ENABLED_PREF,
-  false
+  false,
+  ShoppingUtils.recordUserAutoOpenPreference
 );

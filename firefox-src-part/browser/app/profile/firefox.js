@@ -832,6 +832,10 @@ pref("permissions.desktop-notification.notNow.enabled", false);
 
 pref("permissions.fullscreen.allowed", false);
 
+// Force external link opens into the default user context ID instead of guessing
+// the most appropriate one based on the URL (https://bugzilla.mozilla.org/show_bug.cgi?id=1874599#c8)
+pref("browser.link.force_default_user_context_id_for_external_opens", false);
+
 // handle links targeting new windows
 // 1=current window/tab, 2=new window, 3=new tab in most recent window
 pref("browser.link.open_newwindow", 3);
@@ -2958,11 +2962,7 @@ pref("cookiebanners.ui.desktop.cfrVariant", 0);
   pref("dom.security.credentialmanagement.identity.enabled", true);
 #endif
 
-#if defined(NIGHTLY_BUILD)
 pref("ui.new-webcompat-reporter.enabled", true);
-#else
-pref("ui.new-webcompat-reporter.enabled", false);
-#endif
 
 #if defined(EARLY_BETA_OR_EARLIER)
 pref("ui.new-webcompat-reporter.send-more-info-link", true);
@@ -2971,7 +2971,7 @@ pref("ui.new-webcompat-reporter.send-more-info-link", false);
 #endif
 
 # 0 = disabled, 1 = reason optional, 2 = reason required.
-pref("ui.new-webcompat-reporter.reason-dropdown", 0);
+pref("ui.new-webcompat-reporter.reason-dropdown", 2);
 
 pref("ui.new-webcompat-reporter.reason-dropdown.randomized", true);
 
