@@ -45,17 +45,10 @@
   --border-radius-small: 4px;
   --border-radius-medium: 8px;
   --border-width: 1px;
-  --border-interactive-color: unset;
 
   /** Box **/
   --box-background-color: light-dark(var(--color-white), var(--color-gray-80));
   --box-shadow-10: 0 1px 4px var(--color-black-a10);
-
-  /** Color **/
-  --color-accent-primary: unset;
-  --color-accent-primary-hover: unset;
-  --color-accent-primary-active: unset;
-  --color-canvas: unset;
 
   /** Font weight **/
   --font-weight-default: normal;
@@ -70,13 +63,15 @@
 
   /** Input **/
   /*** Button ***/
-  --button-background-color: unset;
-  --button-background-color-hover: unset;
-  --button-background-color-active: unset;
   --button-border-radius: var(--border-radius-small);
   --button-font-weight: var(--font-weight-bold);
   --button-line-height: var(--line-height-small);
   --button-min-height: var(--size-item-large);
+
+  /*** Checkbox ***/
+  --checkbox-margin-inline: var(--space-small);
+  /* TODO Bug 1876537: Make this em-based, probably? */
+  --checkbox-size: var(--size-item-small);
 
   /*** Text ***/
   --input-text-line-height: var(--button-line-height);
@@ -96,8 +91,11 @@
   --size-item-medium: 28px;
   --size-item-large: 32px;
 
-  /** Spacing **/
-  --spacing-small: 0.5rem;
+  /** Space **/
+  --space-xxsmall: calc(0.5 * var(--space-xsmall));
+  --space-xsmall: 0.267rem;
+  --space-small: calc(2 * var(--space-xsmall));
+  --space-xlarge: calc(8 * var(--space-xsmall));
 }
 
 @media not (prefers-contrast) {

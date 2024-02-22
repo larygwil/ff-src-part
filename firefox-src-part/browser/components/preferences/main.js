@@ -969,6 +969,8 @@ var gMainPane = {
 
     setEventListener("zoomText", "command", function () {
       win.ZoomManager.toggleZoom();
+      document.getElementById("text-zoom-override-warning").hidden =
+        !document.getElementById("zoomText").checked;
     });
 
     let zoomValues = win.ZoomManager.zoomValues.map(a => {
@@ -991,7 +993,8 @@ var gMainPane = {
 
     let checkbox = document.getElementById("zoomText");
     checkbox.checked = !win.ZoomManager.useFullZoom;
-
+    document.getElementById("text-zoom-override-warning").hidden =
+      !checkbox.checked;
     document.getElementById("zoomBox").hidden = false;
   },
 
@@ -1909,9 +1912,15 @@ var gMainPane = {
   },
 
   showTranslationsSettings() {
-    gSubDialog.open(
-      "chrome://browser/content/preferences/dialogs/translations.xhtml"
-    );
+    if (
+      Services.prefs.getBoolPref("browser.translations.newSettingsUI.enable")
+    ) {
+      gotoPref("translations");
+    } else {
+      gSubDialog.open(
+        "chrome://browser/content/preferences/dialogs/translations.xhtml"
+      );
+    }
   },
 
   /**

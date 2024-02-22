@@ -1,7 +1,6 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-@import 'chrome://global/skin/design-system/tokens-brand.css';
 /* stylelint-disable max-nesting-depth */
 #feature-callout {
   --fc-background: var(--fc-background-light, #fff);
@@ -419,6 +418,9 @@ div#feature-callout.hidden {
 }
 #feature-callout .screen[pos=callout] .action-buttons[alignment=start] {
   justify-content: start;
+}
+#feature-callout .screen[pos=callout] .action-buttons[alignment=space-between] {
+  justify-content: space-between;
 }
 #feature-callout .screen[pos=callout] .action-buttons .secondary-cta {
   font-size: inherit;
@@ -1257,9 +1259,35 @@ html {
   font-size: 13px;
   font-weight: 400;
 }
+.onboardingContainer .screen[pos=center].addons-picker .addon-container .install-button-wrapper {
+  display: flex;
+}
 .onboardingContainer .screen[pos=center].addons-picker .addon-container button {
   align-self: center;
-  margin-inline: auto 12px;
+  width: 124px;
+}
+.onboardingContainer .screen[pos=center].addons-picker .loader {
+  width: 1em;
+  height: 1em;
+  border: 3px solid var(--in-content-primary-button-text-color);
+  border-bottom-color: transparent;
+  border-radius: 50%;
+  box-sizing: border-box;
+  animation: rotation 1s linear infinite;
+  justify-self: center;
+}
+@keyframes rotation {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+.onboardingContainer .screen[pos=center].addons-picker .loaderContainer {
+  display: flex;
+  padding: 1.5px 37.5px;
+  margin: auto;
 }
 .onboardingContainer .screen:not([pos=split]) .secondary-cta .secondary {
   background: none;
@@ -2061,7 +2089,7 @@ html {
 }
 .onboardingContainer .dismiss-button {
   position: absolute;
-  z-index: 1;
+  z-index: 2;
   top: 0;
   left: auto;
   right: 0;

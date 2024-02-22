@@ -142,8 +142,6 @@ pref("browser.sessionstore.max_tabs_undo", 10);
 pref("browser.sessionstore.privacy_level", 0);
 pref("browser.sessionstore.resume_from_crash", true);
 
-pref("browser.tabs.remote.autostart", true);
-
 // Bug 1809922 to enable translations
 #ifdef NIGHTLY_BUILD
   pref("browser.translations.enable", true);
@@ -395,6 +393,8 @@ pref("pdfjs.handleOctetStream", true);
 
 // Disable tracking protection in PBM for GeckoView (bug 1436887)
 pref("privacy.trackingprotection.pbmode.enabled", false);
+
+pref("privacy.fingerprintingProtection.pbmode", true);
 
 // Relay integration is not supported on mobile
 pref("signon.firefoxRelay.feature", "not available");

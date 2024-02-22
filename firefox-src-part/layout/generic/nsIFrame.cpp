@@ -207,11 +207,6 @@ struct nsContentAndOffset {
   int32_t mOffset = 0;
 };
 
-// Some Misc #defines
-#define SELECTION_DEBUG 0
-#define FORCE_SELECTION_UPDATE 1
-#define CALC_DEBUG 0
-
 #include "nsILineIterator.h"
 #include "prenv.h"
 
@@ -760,9 +755,12 @@ void nsIFrame::HandlePrimaryFrameStyleChange(ComputedStyle* aOldStyle) {
   const nsStyleDisplay* disp = StyleDisplay();
   const nsStyleDisplay* oldDisp =
       aOldStyle ? aOldStyle->StyleDisplay() : nullptr;
-  if (!oldDisp || oldDisp->mContainerType != disp->mContainerType) {
+
+  const bool wasQueryContainer = oldDisp && oldDisp->IsQueryContainer();
+  const bool isQueryContainer = disp->IsQueryContainer();
+  if (wasQueryContainer != isQueryContainer) {
     auto* pc = PresContext();
-    if (disp->mContainerType != StyleContainerType::Normal) {
+    if (isQueryContainer) {
       pc->RegisterContainerQueryFrame(this);
     } else {
       pc->UnregisterContainerQueryFrame(this);
@@ -815,7 +813,7 @@ void nsIFrame::Destroy(DestroyContext& aContext) {
   nsPresContext* pc = PresContext();
   mozilla::PresShell* ps = pc->GetPresShell();
   if (IsPrimaryFrame()) {
-    if (disp->mContainerType != StyleContainerType::Normal) {
+    if (disp->IsQueryContainer()) {
       pc->UnregisterContainerQueryFrame(this);
     }
     if (disp->ContentVisibility(*this) == StyleContentVisibility::Auto) {
@@ -4737,7 +4735,9 @@ nsresult nsIFrame::MoveCaretToEventPoint(nsPresContext* aPresContext,
     return NS_ERROR_FAILURE;
   }
 
-  if (aMouseEvent->mButton == MouseButton::eSecondary &&
+  const bool isSecondaryButton =
+      aMouseEvent->mButton == MouseButton::eSecondary;
+  if (isSecondaryButton &&
       !MovingCaretToEventPointAllowedIfSecondaryButtonEvent(
           *frameselection, *aMouseEvent, *offsets.content,
           // When we collapse selection in nsFrameSelection::TakeFocus,
@@ -4835,7 +4835,14 @@ nsresult nsIFrame::MoveCaretToEventPoint(nsPresContext* aPresContext,
   const nsFrameSelection::FocusMode focusMode = [&]() {
     // If "Shift" and "Ctrl" are both pressed, "Shift" is given precedence. This
     // mimics the old behaviour.
-    if (aMouseEvent->IsShift()) {
+    const bool isShift =
+        aMouseEvent->IsShift() &&
+        // If Shift + secondary button press shoud open context menu without a
+        // contextmenu event, user wants to open context menu like as a
+        // secondary button press without Shift key.
+        !(isSecondaryButton &&
+          StaticPrefs::dom_event_contextmenu_shift_suppresses_event());
+    if (isShift) {
       // If clicked in a link when focused content is editable, we should
       // collapse selection in the link for compatibility with Blink.
       if (isEditor) {
@@ -4890,35 +4897,56 @@ bool nsIFrame::MovingCaretToEventPointAllowedIfSecondaryButtonEvent(
     return false;
   }
 
-  Selection* selection = aFrameSelection.GetSelection(SelectionType::eNormal);
-  if (selection && !selection->IsCollapsed()) {
+  const bool contentIsEditable = aContentAtEventPoint.IsEditable();
+  const TextControlElement* const contentAsTextControl =
+      TextControlElement::FromNodeOrNull(
+          aContentAtEventPoint.IsTextControlElement()
+              ? &aContentAtEventPoint
+              : aContentAtEventPoint.GetClosestNativeAnonymousSubtreeRoot());
+  if (Selection* selection =
+          aFrameSelection.GetSelection(SelectionType::eNormal)) {
+    const bool selectionIsCollapsed = selection->IsCollapsed();
     // If right click in a selection range, we should not collapse selection.
-    if (nsContentUtils::IsPointInSelection(
+    if (!selectionIsCollapsed &&
+        nsContentUtils::IsPointInSelection(
             *selection, aContentAtEventPoint,
             static_cast<uint32_t>(aOffsetAtEventPoint))) {
       return false;
     }
-
-    if (StaticPrefs::
-            ui_mouse_right_click_collapse_selection_stop_if_non_collapsed_selection()) {
+    const bool wantToPreventMoveCaret =
+        StaticPrefs::
+            ui_mouse_right_click_move_caret_stop_if_in_focused_editable_node() &&
+        selectionIsCollapsed && (contentIsEditable || contentAsTextControl);
+    const bool wantToPreventCollapseSelection =
+        StaticPrefs::
+            ui_mouse_right_click_collapse_selection_stop_if_non_collapsed_selection() &&
+        !selectionIsCollapsed;
+    if (wantToPreventMoveCaret || wantToPreventCollapseSelection) {
       // If currently selection is limited in an editing host, we should not
-      // collapse selection if the clicked point is in the ancestor limiter.
-      // Otherwise, this mouse click moves focus from the editing host to
-      // different one or blur the editing host.  In this case, we need to
-      // update selection because keeping current selection in the editing
-      // host looks like it's not blurred.
+      // collapse selection nor move caret if the clicked point is in the
+      // ancestor limiter.  Otherwise, this mouse click moves focus from the
+      // editing host to different one or blur the editing host.  In this case,
+      // we need to update selection because keeping current selection in the
+      // editing host looks like it's not blurred.
       // FIXME: If the active editing host is the document element, editor
       // does not set ancestor limiter properly.  Fix it in the editor side.
       if (nsIContent* ancestorLimiter = selection->GetAncestorLimiter()) {
         MOZ_ASSERT(ancestorLimiter->IsEditable());
         return !aContentAtEventPoint.IsInclusiveDescendantOf(ancestorLimiter);
       }
-      // If currently selection is not limited in an editing host, we should
-      // collapse selection only when this click moves focus to an editing
-      // host because we need to update selection in this case.
-      if (!aContentAtEventPoint.IsEditable()) {
-        return false;
-      }
+    }
+    // If selection is editable and `stop_if_in_focused_editable_node` pref is
+    // set to true, user does not want to move caret to right click place if
+    // clicked in the focused text control element.
+    if (wantToPreventMoveCaret && contentAsTextControl &&
+        contentAsTextControl == nsFocusManager::GetFocusedElementStatic()) {
+      return false;
+    }
+    // If currently selection is not limited in an editing host, we should
+    // collapse selection only when this click moves focus to an editing
+    // host because we need to update selection in this case.
+    if (wantToPreventCollapseSelection && !contentIsEditable) {
+      return false;
     }
   }
 
@@ -4926,13 +4954,11 @@ bool nsIFrame::MovingCaretToEventPointAllowedIfSecondaryButtonEvent(
              ui_mouse_right_click_collapse_selection_stop_if_non_editable_node() ||
          // The user does not want to collapse selection into non-editable
          // content by a right button click.
-         aContentAtEventPoint.IsEditable() ||
+         contentIsEditable ||
          // Treat clicking in a text control as always clicked on editable
          // content because we want a hack only for clicking in normal text
          // nodes which is outside any editing hosts.
-         aContentAtEventPoint.IsTextControlElement() ||
-         TextControlElement::FromNodeOrNull(
-             aContentAtEventPoint.GetClosestNativeAnonymousSubtreeRoot());
+         contentAsTextControl;
 }
 
 nsresult nsIFrame::SelectByTypeAtPoint(nsPresContext* aPresContext,
@@ -5873,7 +5899,7 @@ StyleTouchAction nsIFrame::UsedTouchAction() const {
   return disp.mTouchAction;
 }
 
-Maybe<nsIFrame::Cursor> nsIFrame::GetCursor(const nsPoint&) {
+nsIFrame::Cursor nsIFrame::GetCursor(const nsPoint&) {
   StyleCursorKind kind = StyleUI()->Cursor().keyword;
   if (kind == StyleCursorKind::Auto) {
     // If this is editable, I-beam cursor is better for most elements.
@@ -5886,7 +5912,7 @@ Maybe<nsIFrame::Cursor> nsIFrame::GetCursor(const nsPoint&) {
     kind = StyleCursorKind::VerticalText;
   }
 
-  return Some(Cursor{kind, AllowCustomCursorImage::Yes});
+  return Cursor{kind, AllowCustomCursorImage::Yes};
 }
 
 // Resize and incremental reflow
@@ -7107,6 +7133,17 @@ bool nsIFrame::UpdateIsRelevantContent(
       aRelevancyToUpdate.contains(ContentRelevancyReason::Selected)) {
     setRelevancyValue(ContentRelevancyReason::Selected,
                       HasSelectionInSubtree());
+  }
+
+  // If the proximity to the viewport has not been determined yet,
+  // and neither the element nor its contents are focused or selected,
+  // we should wait for the determination of the proximity. Otherwise,
+  // there might be a redundant contentvisibilityautostatechange event.
+  // See https://github.com/w3c/csswg-drafts/issues/9803
+  bool isProximityToViewportDetermined =
+      oldRelevancy ? true : element->GetVisibleForContentVisibility().isSome();
+  if (!isProximityToViewportDetermined && newRelevancy.isEmpty()) {
+    return false;
   }
 
   bool overallRelevancyChanged =
@@ -9109,8 +9146,8 @@ nsresult nsIFrame::PeekOffsetForWord(PeekOffsetStruct* aPos, int32_t aOffset) {
       // significant.
       if (next.mJumpedLine && wordSelectEatSpace &&
           current.mFrame->HasSignificantTerminalNewline() &&
-          current.mFrame->StyleText()->mWhiteSpace !=
-              StyleWhiteSpace::PreLine) {
+          current.mFrame->StyleText()->mWhiteSpaceCollapse !=
+              StyleWhiteSpaceCollapse::PreserveBreaks) {
         current.mOffset -= 1;
       }
       break;
@@ -10170,19 +10207,21 @@ bool nsIFrame::FinishAndStoreOverflow(OverflowAreas& aOverflowAreas,
   // This is now called FinishAndStoreOverflow() instead of
   // StoreOverflow() because frame-generic ways of adding overflow
   // can happen here, e.g. CSS2 outline and native theme.
-  // If the overflow area width or height is nscoord_MAX, then a
-  // saturating union may have encounted an overflow, so the overflow may not
-  // contain the frame border-box. Don't warn in that case.
+  // If the overflow area width or height is nscoord_MAX, then a saturating
+  // union may have encountered an overflow, so the overflow may not contain the
+  // frame border-box. Don't warn in that case.
   // Don't warn for SVG either, since SVG doesn't need the overflow area
   // to contain the frame bounds.
+#ifdef DEBUG
   for (const auto otype : AllOverflowTypes()) {
-    DebugOnly<nsRect*> r = &aOverflowAreas.Overflow(otype);
+    const nsRect& r = aOverflowAreas.Overflow(otype);
     NS_ASSERTION(aNewSize.width == 0 || aNewSize.height == 0 ||
-                     r->width == nscoord_MAX || r->height == nscoord_MAX ||
+                     r.width == nscoord_MAX || r.height == nscoord_MAX ||
                      HasAnyStateBits(NS_FRAME_SVG_LAYOUT) ||
-                     r->Contains(nsRect(nsPoint(0, 0), aNewSize)),
+                     r.Contains(nsRect(nsPoint(), aNewSize)),
                  "Computed overflow area must contain frame bounds");
   }
+#endif
 
   // Overflow area must always include the frame's top-left and bottom-right,
   // even if the frame rect is empty (so we can scroll to those positions).

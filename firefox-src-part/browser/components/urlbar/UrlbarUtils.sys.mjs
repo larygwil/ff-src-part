@@ -21,6 +21,7 @@ ChromeUtils.defineESModuleGetters(lazy, {
   UrlbarPrefs: "resource:///modules/UrlbarPrefs.sys.mjs",
   UrlbarProviderInterventions:
     "resource:///modules/UrlbarProviderInterventions.sys.mjs",
+  UrlbarProviderOpenTabs: "resource:///modules/UrlbarProviderOpenTabs.sys.mjs",
   UrlbarProvidersManager: "resource:///modules/UrlbarProvidersManager.sys.mjs",
   UrlbarProviderSearchTips:
     "resource:///modules/UrlbarProviderSearchTips.sys.mjs",
@@ -92,7 +93,7 @@ export var UrlbarUtils = {
     REMOTE_TAB: 6,
     // An actionable message to help the user with their query.
     TIP: 7,
-    // A type of result created at runtime, for example by an extension.
+    // A type of result which layout is defined at runtime.
     DYNAMIC: 8,
 
     // When you add a new type, also add its schema to
@@ -633,20 +634,24 @@ export var UrlbarUtils = {
   /**
    * Get the number of rows a result should span in the autocomplete dropdown.
    *
-   * @param {UrlbarResult} result The result being created.
+   * @param {UrlbarResult} result The result.
+   * @param {bool} includeExposureResultHidden If false and
+   *   `result.exposureResultHidden` is true, zero will be returned since the
+   *   result should be hidden and not take up any rows at all. Otherwise the
+   *   result's true span is returned.
    * @returns {number}
    *          The number of rows the result should span in the autocomplete
    *          dropdown.
    */
-  getSpanForResult(result) {
-    if (result.resultSpan) {
-      return result.resultSpan;
-    }
-
+  getSpanForResult(result, { includeExposureResultHidden = false } = {}) {
     // We know this result will be hidden in the final view so assign it
     // a span of zero.
-    if (result.exposureResultHidden) {
+    if (result.exposureResultHidden && !includeExposureResultHidden) {
       return 0;
+    }
+
+    if (result.resultSpan) {
+      return result.resultSpan;
     }
 
     switch (result.type) {
@@ -1420,6 +1425,8 @@ export var UrlbarUtils = {
       return selType === "oneoff" ? "search_shortcut_button" : "input_field";
     }
 
+    // While product doesn't use experimental addons anymore, tests may still do
+    // for testing purposes.
     if (
       result.providerType === UrlbarUtils.PROVIDER_TYPE.EXTENSION &&
       result.providerName != "Omnibox"
@@ -1555,6 +1562,11 @@ export var UrlbarUtils = {
   },
 
   _getQuickSuggestTelemetryType(result) {
+    if (result.payload.telemetryType == "weather") {
+      // Return "weather" without the usual source prefix for consistency with
+      // the weather result returned by UrlbarProviderWeather.
+      return "weather";
+    }
     let source = result.payload.source;
     if (source == "remote-settings") {
       source = "rs";
@@ -1572,6 +1584,45 @@ export var UrlbarUtils = {
    */
   tupleString(...tokens) {
     return tokens.filter(t => t).join("|");
+  },
+
+  /**
+   * Creates camelCase versions of snake_case keys in the given object and
+   * recursively all nested objects. All objects are modified in place and the
+   * original snake_case keys are preserved.
+   *
+   * @param {object} obj
+   *   The object to modify.
+   * @param {boolean} overwrite
+   *   Controls what happens when a camelCase key is already defined for a
+   *   snake_case key (excluding keys that don't have underscores). If true the
+   *   existing key will be overwritten. If false an error will be thrown.
+   * @returns {object} The passed-in modified-in-place object.
+   */
+  copySnakeKeysToCamel(obj, overwrite = true) {
+    for (let [key, value] of Object.entries(obj)) {
+      // Trim off leading underscores since they'll interfere with the replace.
+      // We'll tack them back on after.
+      let match = key.match(/^_+/);
+      if (match) {
+        key = key.substring(match[0].length);
+      }
+      let camelKey = key.replace(/_([^_])/g, (m, p1) => p1.toUpperCase());
+      if (match) {
+        camelKey = match[0] + camelKey;
+      }
+      if (!overwrite && camelKey != key && obj.hasOwnProperty(camelKey)) {
+        throw new Error(
+          `Can't copy snake_case key '${key}' to camelCase key ` +
+            `'${camelKey}' because '${camelKey}' is already defined`
+        );
+      }
+      obj[camelKey] = value;
+      if (value && typeof value == "object") {
+        this.copySnakeKeysToCamel(value);
+      }
+    }
+    return obj;
   },
 };
 
@@ -2123,8 +2174,10 @@ export class UrlbarQueryContext {
     this.deferUserSelectionProviders = new Set();
     this.trimmedSearchString = this.searchString.trim();
     this.userContextId =
-      options.userContextId ||
-      Ci.nsIScriptSecurityManager.DEFAULT_USER_CONTEXT_ID;
+      lazy.UrlbarProviderOpenTabs.getUserContextIdForOpenPagesTable(
+        options.userContextId,
+        this.isPrivate
+      ) || Ci.nsIScriptSecurityManager.DEFAULT_USER_CONTEXT_ID;
   }
 
   /**
@@ -2163,10 +2216,7 @@ export class UrlbarQueryContext {
       }
 
       try {
-        let info = Services.uriFixup.getFixupURIInfo(
-          this.trimmedSearchString,
-          flags
-        );
+        let info = Services.uriFixup.getFixupURIInfo(this.searchString, flags);
 
         this._fixupInfo = {
           href: info.fixedURI.spec,

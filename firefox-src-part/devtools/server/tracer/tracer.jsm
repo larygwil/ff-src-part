@@ -24,7 +24,24 @@ const EXPORTED_SYMBOLS = [
   "stopTracing",
   "addTracingListener",
   "removeTracingListener",
+  "NEXT_INTERACTION_MESSAGE",
 ];
+
+const NEXT_INTERACTION_MESSAGE =
+  "Waiting for next user interaction before tracing (next mousedown or keydown event)";
+
+const FRAME_EXIT_REASONS = {
+  // The function has been early terminated by the Debugger API
+  TERMINATED: "terminated",
+  // The function simply ends by returning a value
+  RETURN: "return",
+  // The function yields a new value
+  YIELD: "yield",
+  // The function await on a promise
+  AWAIT: "await",
+  // The function throws an exception
+  THROW: "throw",
+};
 
 const listeners = new Set();
 
@@ -102,6 +119,9 @@ const customLazy = {
  * @param {Boolean} options.traceOnNextInteraction
  *        Optional setting to enable when the tracing should only start when the
  *        use starts interacting with the page. i.e. on next keydown or mousedown.
+ * @param {Boolean} options.traceFunctionReturn
+ *        Optional setting to enable when the tracing should notify about frame exit.
+ *        i.e. when a function call returns or throws.
  * @param {Number} options.maxDepth
  *        Optional setting to ignore frames when depth is greater than the passed number.
  * @param {Number} options.maxRecords
@@ -121,8 +141,12 @@ class JavaScriptTracer {
     // of all other DevTools operations. i.e. we can pause while tracing without any interference.
     this.dbg = this.makeDebugger();
 
-    this.depth = 0;
     this.prefix = options.prefix ? `${options.prefix}: ` : "";
+
+    // List of all async frame which are poped per Spidermonkey API
+    // but are actually waiting for async operation.
+    // We should later enter them again when the async task they are being waiting for is completed.
+    this.pendingAwaitFrames = new Set();
 
     this.loggingMethod = options.loggingMethod;
     if (!this.loggingMethod) {
@@ -139,9 +163,13 @@ class JavaScriptTracer {
 
     this.traceDOMEvents = !!options.traceDOMEvents;
     this.traceValues = !!options.traceValues;
+    this.traceFunctionReturn = !!options.traceFunctionReturn;
     this.maxDepth = options.maxDepth;
     this.maxRecords = options.maxRecords;
     this.records = 0;
+
+    // An increment used to identify function calls and their returned/exit frames
+    this.frameId = 0;
 
     // This feature isn't supported on Workers as they aren't involving user events
     if (options.traceOnNextInteraction && typeof isWorker !== "boolean") {
@@ -163,20 +191,43 @@ class JavaScriptTracer {
         this.tracedGlobal.docShell.chromeEventHandler || this.tracedGlobal;
       eventHandler.addEventListener("mousedown", listener, eventOptions);
       eventHandler.addEventListener("keydown", listener, eventOptions);
+
+      // Significate to the user that the tracer is registered, but not tracing just yet.
+      let shouldLogToStdout = listeners.size == 0;
+      for (const l of listeners) {
+        if (typeof l.onTracingPending == "function") {
+          shouldLogToStdout |= l.onTracingPending();
+        }
+      }
+      if (shouldLogToStdout) {
+        this.loggingMethod(this.prefix + NEXT_INTERACTION_MESSAGE + "\n");
+      }
     } else {
       this.#startTracing();
     }
-
-    // In any case, we consider the tracing as started
-    this.notifyToggle(true);
   }
 
+  // Is actively tracing?
+  // We typically start tracing from the constructor, unless the "trace on next user interaction" feature is used.
+  isTracing = false;
+
+  /**
+   * Actually really start watching for executions.
+   *
+   * This may be delayed when traceOnNextInteraction options is used.
+   * Otherwise we start tracing as soon as the class instantiates.
+   */
   #startTracing() {
+    this.isTracing = true;
+
     this.dbg.onEnterFrame = this.onEnterFrame;
 
     if (this.traceDOMEvents) {
       this.startTracingDOMEvents();
     }
+
+    // In any case, we consider the tracing as started
+    this.notifyToggle(true);
   }
 
   startTracingDOMEvents() {
@@ -242,7 +293,8 @@ class JavaScriptTracer {
    *        Optional string to justify why the tracer stopped.
    */
   stopTracing(reason = "") {
-    if (!this.isTracing()) {
+    // Note that this may be called before `#startTracing()`, but still want to completely shut it down.
+    if (!this.dbg) {
       return;
     }
 
@@ -250,8 +302,10 @@ class JavaScriptTracer {
     this.dbg.removeAllDebuggees();
     this.dbg.onNewGlobalObject = undefined;
     this.dbg = null;
+
     this.depth = 0;
-    this.options = null;
+
+    // Cancel the traceOnNextInteraction event listeners.
     if (this.abortController) {
       this.abortController.abort();
       this.abortController = null;
@@ -262,12 +316,9 @@ class JavaScriptTracer {
     }
 
     this.tracedGlobal = null;
+    this.isTracing = false;
 
     this.notifyToggle(false, reason);
-  }
-
-  isTracing() {
-    return !!this.dbg;
   }
 
   /**
@@ -355,13 +406,24 @@ class JavaScriptTracer {
       return;
     }
     try {
+      // Because of async frame which are popped and entered again on completion of the awaited async task,
+      // we have to compute the depth from the frame. (and can't use a simple increment on enter/decrement on pop).
+      const depth = getFrameDepth(frame);
+
       // Ignore the frame if we reached the depth limit (if one is provided)
-      if (this.maxDepth && this.depth >= this.maxDepth) {
+      if (this.maxDepth && depth >= this.maxDepth) {
+        return;
+      }
+
+      // When we encounter a frame which was previously popped because of pending on an async task,
+      // ignore it and only log the following ones.
+      if (this.pendingAwaitFrames.has(frame)) {
+        this.pendingAwaitFrames.delete(frame);
         return;
       }
 
       // Auto-stop the tracer if we reached the number of max recorded top level frames
-      if (this.depth === 0 && this.maxRecords) {
+      if (depth === 0 && this.maxRecords) {
         if (this.records >= this.maxRecords) {
           this.stopTracing("max-records");
           return;
@@ -370,12 +432,13 @@ class JavaScriptTracer {
       }
 
       // Consider depth > 100 as an infinite recursive loop and stop the tracer.
-      if (this.depth == 100) {
+      if (depth == 100) {
         this.notifyInfiniteLoop();
         this.stopTracing("infinite-loop");
         return;
       }
 
+      const frameId = this.frameId++;
       let shouldLogToStdout = true;
 
       // If there is at least one DevTools debugging this process,
@@ -387,8 +450,9 @@ class JavaScriptTracer {
           // If any listener return true, also log to stdout
           if (typeof listener.onTracingFrame == "function") {
             shouldLogToStdout |= listener.onTracingFrame({
+              frameId,
               frame,
-              depth: this.depth,
+              depth,
               formatedDisplayName,
               prefix: this.prefix,
               currentDOMEvent: this.currentDOMEvent,
@@ -400,12 +464,61 @@ class JavaScriptTracer {
       // DevTools may delegate the work to log to stdout,
       // but if DevTools are closed, stdout is the only way to log the traces.
       if (shouldLogToStdout) {
-        this.logFrameToStdout(frame);
+        this.logFrameEnteredToStdout(frame, depth);
       }
 
-      this.depth++;
-      frame.onPop = () => {
-        this.depth--;
+      frame.onPop = completion => {
+        // Special case async frames. We are exiting the current frame because of waiting for an async task.
+        // (this is typically a `await foo()` from an async function)
+        // This frame should later be "entered" again.
+        if (completion?.await) {
+          this.pendingAwaitFrames.add(frame);
+          return;
+        }
+
+        if (!this.traceFunctionReturn) {
+          return;
+        }
+
+        let why = "";
+        let rv = undefined;
+        if (!completion) {
+          why = FRAME_EXIT_REASONS.TERMINATED;
+        } else if ("return" in completion) {
+          why = FRAME_EXIT_REASONS.RETURN;
+          rv = completion.return;
+        } else if ("yield" in completion) {
+          why = FRAME_EXIT_REASONS.YIELD;
+          rv = completion.yield;
+        } else if ("await" in completion) {
+          why = FRAME_EXIT_REASONS.AWAIT;
+        } else {
+          why = FRAME_EXIT_REASONS.THROW;
+          rv = completion.throw;
+        }
+
+        shouldLogToStdout = true;
+        if (listeners.size > 0) {
+          shouldLogToStdout = false;
+          const formatedDisplayName = formatDisplayName(frame);
+          for (const listener of listeners) {
+            // If any listener return true, also log to stdout
+            if (typeof listener.onTracingFrameExit == "function") {
+              shouldLogToStdout |= listener.onTracingFrameExit({
+                frameId,
+                frame,
+                depth,
+                formatedDisplayName,
+                prefix: this.prefix,
+                why,
+                rv,
+              });
+            }
+          }
+        }
+        if (shouldLogToStdout) {
+          this.logFrameExitedToStdout(frame, depth, why, rv);
+        }
       };
     } catch (e) {
       console.error("Exception while tracing javascript", e);
@@ -416,30 +529,21 @@ class JavaScriptTracer {
    * Display to stdout one given frame execution, which represents a function call.
    *
    * @param {Debugger.Frame} frame
+   * @param {Number} depth
    */
-  logFrameToStdout(frame) {
-    const { script } = frame;
-    const { lineNumber, columnNumber } = script.getOffsetMetadata(frame.offset);
-    const padding = "—".repeat(this.depth + 1);
+  logFrameEnteredToStdout(frame, depth) {
+    const padding = "—".repeat(depth + 1);
 
     // If we are tracing DOM events and we are in middle of an event,
     // and are logging the topmost frame,
     // then log a preliminary dedicated line to mention that event type.
-    if (this.currentDOMEvent && this.depth == 0) {
+    if (this.currentDOMEvent && depth == 0) {
       this.loggingMethod(this.prefix + padding + this.currentDOMEvent + "\n");
     }
 
-    // Use a special URL, including line and column numbers which Firefox
-    // interprets as to be opened in the already opened DevTool's debugger
-    const href = `${script.source.url}:${lineNumber}:${columnNumber}`;
-
-    // Use special characters in order to print working hyperlinks right from the terminal
-    // See https://gist.github.com/egmontkob/eb114294efbcd5adb1944c9f3cb5feda
-    const urlLink = `\x1B]8;;${href}\x1B\\${href}\x1B]8;;\x1B\\`;
-
-    let message = `${padding}[${
-      frame.implementation
-    }]—> ${urlLink} - ${formatDisplayName(frame)}`;
+    let message = `${padding}[${frame.implementation}]—> ${getTerminalHyperLink(
+      frame
+    )} - ${formatDisplayName(frame)}`;
 
     // Log arguments, but only when this feature is enabled as it introduces
     // some significant performance and visual overhead.
@@ -466,6 +570,40 @@ class JavaScriptTracer {
         }
       }
       message += ")";
+    }
+
+    this.loggingMethod(this.prefix + message + "\n");
+  }
+
+  /**
+   * Display to stdout the exit of a given frame execution, which represents a function return.
+   *
+   * @param {Debugger.Frame} frame
+   * @param {String} why
+   * @param {Number} depth
+   */
+  logFrameExitedToStdout(frame, depth, why, rv) {
+    const padding = "—".repeat(depth + 1);
+
+    let message = `${padding}[${frame.implementation}]<— ${getTerminalHyperLink(
+      frame
+    )} - ${formatDisplayName(frame)} ${why}`;
+
+    // Log returned values, but only when this feature is enabled as it introduces
+    // some significant performance and visual overhead.
+    if (this.traceValues) {
+      message += " ";
+      // Debugger.Frame.arguments contains either a Debugger.Object or primitive object
+      if (rv?.unsafeDereference) {
+        // Special case classes as they can't be easily differentiated in pure JavaScript
+        if (rv.isClassConstructor) {
+          message += "class " + rv.name;
+        } else {
+          message += objectToString(rv.unsafeDereference());
+        }
+      } else {
+        message += primitiveToString(rv);
+      }
     }
 
     this.loggingMethod(this.prefix + message + "\n");
@@ -597,7 +735,7 @@ function addTracingListener(listener) {
   listeners.add(listener);
 
   if (
-    activeTracer?.isTracing() &&
+    activeTracer?.isTracing &&
     typeof listener.onTracingToggled == "function"
   ) {
     listener.onTracingToggled(true);
@@ -609,6 +747,44 @@ function addTracingListener(listener) {
  */
 function removeTracingListener(listener) {
   listeners.delete(listener);
+}
+
+function getFrameDepth(frame) {
+  if (typeof frame.depth !== "number") {
+    let depth = 0;
+    let f = frame;
+    while ((f = f.older)) {
+      depth++;
+    }
+    frame.depth = depth;
+  }
+
+  return frame.depth;
+}
+
+/**
+ * Generate a magic string that will be rendered in smart terminals as a URL
+ * for the given Frame object. This URL is special as it includes a line and column.
+ * This URL can be clicked and Firefox will automatically open the source matching
+ * the frame's URL in the currently opened Debugger.
+ * Firefox will interpret differently the URLs ending with `/:?\d*:\d+/`.
+ *
+ * @param {Debugger.Frame} frame
+ *        The frame being traced.
+ * @return {String}
+ *        The URL's magic string.
+ */
+function getTerminalHyperLink(frame) {
+  const { script } = frame;
+  const { lineNumber, columnNumber } = script.getOffsetMetadata(frame.offset);
+
+  // Use a special URL, including line and column numbers which Firefox
+  // interprets as to be opened in the already opened DevTool's debugger
+  const href = `${script.source.url}:${lineNumber}:${columnNumber}`;
+
+  // Use special characters in order to print working hyperlinks right from the terminal
+  // See https://gist.github.com/egmontkob/eb114294efbcd5adb1944c9f3cb5feda
+  return `\x1B]8;;${href}\x1B\\${href}\x1B]8;;\x1B\\`;
 }
 
 // This JSM may be execute as CommonJS when loaded in the worker thread

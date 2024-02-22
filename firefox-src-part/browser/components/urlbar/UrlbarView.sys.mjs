@@ -13,6 +13,7 @@ ChromeUtils.defineESModuleGetters(lazy, {
     "resource://gre/modules/ContextualIdentityService.sys.mjs",
   L10nCache: "resource:///modules/UrlbarUtils.sys.mjs",
   ObjectUtils: "resource://gre/modules/ObjectUtils.sys.mjs",
+  UrlbarProviderOpenTabs: "resource:///modules/UrlbarProviderOpenTabs.sys.mjs",
   UrlbarPrefs: "resource:///modules/UrlbarPrefs.sys.mjs",
   UrlbarProviderQuickSuggest:
     "resource:///modules/UrlbarProviderQuickSuggest.sys.mjs",
@@ -1203,12 +1204,6 @@ export class UrlbarView {
       // suggestedIndex result that couldn't replace a current result.
       if (!seenMisplacedResult) {
         let result = results[resultIndex];
-        // skip this result if it is supposed to be hidden from the view.
-        if (result.exposureResultHidden) {
-          this.#addExposure(result);
-          resultIndex++;
-          continue;
-        }
         seenSearchSuggestion =
           seenSearchSuggestion ||
           (!row.result.heuristic && this.#resultIsSearchSuggestion(row.result));
@@ -1216,11 +1211,18 @@ export class UrlbarView {
           this.#rowCanUpdateToResult(rowIndex, result, seenSearchSuggestion)
         ) {
           // We can replace the row's current result with the new one.
-          this.#updateRow(row, result);
+          if (result.exposureResultHidden) {
+            this.#addExposure(result);
+          } else {
+            this.#updateRow(row, result);
+          }
           resultIndex++;
           continue;
         }
-        if (result.hasSuggestedIndex || row.result.hasSuggestedIndex) {
+        if (
+          (result.hasSuggestedIndex || row.result.hasSuggestedIndex) &&
+          !result.exposureResultHidden
+        ) {
           seenMisplacedResult = true;
         }
       }
@@ -1242,14 +1244,11 @@ export class UrlbarView {
     // Add remaining results, if we have fewer rows than results.
     for (; resultIndex < results.length; ++resultIndex) {
       let result = results[resultIndex];
-      // skip this result if it is supposed to be hidden from the view.
-      if (result.exposureResultHidden) {
-        this.#addExposure(result);
-        continue;
-      }
-      let row = this.#createRow();
-      this.#updateRow(row, result);
-      if (!seenMisplacedResult && result.hasSuggestedIndex) {
+      if (
+        !seenMisplacedResult &&
+        result.hasSuggestedIndex &&
+        !result.exposureResultHidden
+      ) {
         if (result.isSuggestedIndexRelativeToGroup) {
           // We can't know at this point what the right index of a group-
           // relative suggestedIndex result will be. To avoid all all possible
@@ -1274,14 +1273,23 @@ export class UrlbarView {
           }
         }
       }
-      let newVisibleSpanCount =
-        visibleSpanCount + lazy.UrlbarUtils.getSpanForResult(result);
-      if (
-        newVisibleSpanCount <= this.#queryContext.maxResults &&
-        !seenMisplacedResult
-      ) {
-        // The new row can be visible.
-        visibleSpanCount = newVisibleSpanCount;
+      let newSpanCount =
+        visibleSpanCount +
+        lazy.UrlbarUtils.getSpanForResult(result, {
+          includeExposureResultHidden: true,
+        });
+      let canBeVisible =
+        newSpanCount <= this.#queryContext.maxResults && !seenMisplacedResult;
+      if (result.exposureResultHidden) {
+        if (canBeVisible) {
+          this.#addExposure(result);
+        }
+        continue;
+      }
+      let row = this.#createRow();
+      this.#updateRow(row, result);
+      if (canBeVisible) {
+        visibleSpanCount = newSpanCount;
       } else {
         // The new row must be hidden at first because the view is already
         // showing maxResults spans, or we encountered a new suggestedIndex
@@ -1371,10 +1379,6 @@ export class UrlbarView {
     action.className = "urlbarView-action";
     noWrap.appendChild(action);
     item._elements.set("action", action);
-
-    let userContextBox = this.#createElement("span");
-    noWrap.appendChild(userContextBox);
-    item._elements.set("user-context", userContextBox);
 
     let url = this.#createElement("span");
     url.className = "urlbarView-url";
@@ -1711,13 +1715,6 @@ export class UrlbarView {
     let favicon = item._elements.get("favicon");
     favicon.src = this.#iconForResult(result);
 
-    let userContextBox = item._elements.get("user-context");
-    if (result.type == lazy.UrlbarUtils.RESULT_TYPE.TAB_SWITCH) {
-      this.#setResultUserContextBox(result, userContextBox);
-    } else if (userContextBox) {
-      this.#removeElementL10n(userContextBox);
-    }
-
     let title = item._elements.get("title");
     this.#setResultTitle(result, title);
 
@@ -1759,9 +1756,7 @@ export class UrlbarView {
     switch (result.type) {
       case lazy.UrlbarUtils.RESULT_TYPE.TAB_SWITCH:
         actionSetter = () => {
-          this.#setElementL10n(action, {
-            id: "urlbar-result-action-switch-tab",
-          });
+          this.#setSwitchTabActionChiclet(result, action);
         };
         setURL = true;
         break;
@@ -2230,6 +2225,8 @@ export class UrlbarView {
           return { id: "urlbar-group-mdn" };
         case "pocket":
           return { id: "urlbar-group-pocket" };
+        case "yelp":
+          return { id: "urlbar-group-local" };
       }
     }
 
@@ -2626,58 +2623,89 @@ export class UrlbarView {
   }
 
   /**
-   * Sets `result`'s userContext in `userContextNode`'s DOM.
+   * Sets the content of the 'Switch To Tab' chiclet.
    *
    * @param {UrlbarResult} result
    *   The result for which the userContext is being set.
-   * @param {Element} userContextNode
-   *   The DOM node for the result's userContext.
+   * @param {Element} actionNode
+   *   The DOM node for the result's action.
    */
-  #setResultUserContextBox(result, userContextNode) {
-    // clear the element
-    while (userContextNode.firstChild) {
-      userContextNode.firstChild.remove();
-    }
+  #setSwitchTabActionChiclet(result, actionNode) {
     if (
       lazy.UrlbarPrefs.get("switchTabs.searchAllContainers") &&
       result.type == lazy.UrlbarUtils.RESULT_TYPE.TAB_SWITCH &&
-      result.payload.userContextId
+      lazy.UrlbarProviderOpenTabs.isContainerUserContextId(
+        result.payload.userContextId
+      )
     ) {
-      let userContextBox = this.#createElement("span");
-      userContextBox.classList.add("urlbarView-userContext-indicator");
+      let label = lazy.ContextualIdentityService.getUserContextLabel(
+        result.payload.userContextId
+      ).toLowerCase();
+      // To avoid flicker don't update the label unless necessary.
+      if (
+        actionNode.classList.contains("urlbarView-userContext") &&
+        label &&
+        actionNode.querySelector("span").innerText == label
+      ) {
+        return;
+      }
+      actionNode.innerHTML = "";
       let identity = lazy.ContextualIdentityService.getPublicIdentityFromId(
         result.payload.userContextId
       );
-      let label = lazy.ContextualIdentityService.getUserContextLabel(
-        result.payload.userContextId
-      );
       if (identity) {
-        userContextNode.classList.add("urlbarView-action");
-        let userContextLabel = this.#createElement("label");
-        userContextLabel.classList.add("urlbarView-userContext-label");
-        userContextBox.appendChild(userContextLabel);
-
-        let userContextIcon = this.#createElement("img");
-        userContextIcon.classList.add("urlbarView-userContext-icons");
-        userContextBox.appendChild(userContextIcon);
-
-        if (identity.icon) {
-          userContextIcon.classList.add("identity-icon-" + identity.icon);
-          userContextIcon.src =
-            "resource://usercontext-content/" + identity.icon + ".svg";
-        }
+        actionNode.classList.add("urlbarView-userContext");
         if (identity.color) {
-          userContextBox.classList.add("identity-color-" + identity.color);
+          actionNode.className = actionNode.className.replace(
+            /identity-color-\w*/g,
+            ""
+          );
+          actionNode.classList.add("identity-color-" + identity.color);
         }
+
+        let textModeLabel = this.#createElement("div");
+        textModeLabel.classList.add("urlbarView-userContext-textMode");
+
         if (label) {
-          userContextLabel.setAttribute("value", label);
-          userContextLabel.innerText = label;
+          this.#setElementL10n(textModeLabel, {
+            id: "urlbar-result-action-switch-tab-with-container",
+            args: {
+              container: label.toLowerCase(),
+            },
+          });
+          actionNode.appendChild(textModeLabel);
+
+          let iconModeLabel = this.#createElement("div");
+          iconModeLabel.classList.add("urlbarView-userContext-iconMode");
+          actionNode.appendChild(iconModeLabel);
+          if (identity.icon) {
+            let userContextIcon = this.#createElement("img");
+            userContextIcon.classList.add("urlbarView-userContext-icon");
+
+            userContextIcon.classList.add("identity-icon-" + identity.icon);
+            userContextIcon.setAttribute("alt", label);
+            userContextIcon.src =
+              "resource://usercontext-content/" + identity.icon + ".svg";
+            this.#setElementL10n(iconModeLabel, {
+              id: "urlbar-result-action-switch-tab",
+            });
+            iconModeLabel.appendChild(userContextIcon);
+          }
+          actionNode.setAttribute("tooltiptext", label);
         }
-        userContextBox.setAttribute("tooltiptext", label);
-        userContextNode.appendChild(userContextBox);
       }
     } else {
-      userContextNode.classList.remove("urlbarView-action");
+      actionNode.classList.remove("urlbarView-userContext");
+      // identity needs to be removed as well..
+      actionNode
+        .querySelectorAll(
+          ".urlbarView-userContext-textMode, .urlbarView-userContext-iconMode"
+        )
+        .forEach(node => node.remove());
+
+      this.#setElementL10n(actionNode, {
+        id: "urlbar-result-action-switch-tab",
+      });
     }
   }
 
@@ -2852,11 +2880,19 @@ export class UrlbarView {
     if (lazy.UrlbarPrefs.get("groupLabels.enabled")) {
       idArgs.push({ id: "urlbar-group-firefox-suggest" });
       idArgs.push({ id: "urlbar-group-best-match" });
-      if (
-        lazy.UrlbarPrefs.get("quickSuggestEnabled") &&
-        lazy.UrlbarPrefs.get("addonsFeatureGate")
-      ) {
-        idArgs.push({ id: "urlbar-group-addon" });
+      if (lazy.UrlbarPrefs.get("quickSuggestEnabled")) {
+        if (lazy.UrlbarPrefs.get("addonsFeatureGate")) {
+          idArgs.push({ id: "urlbar-group-addon" });
+        }
+        if (lazy.UrlbarPrefs.get("mdn.featureGate")) {
+          idArgs.push({ id: "urlbar-group-mdn" });
+        }
+        if (lazy.UrlbarPrefs.get("pocketFeatureGate")) {
+          idArgs.push({ id: "urlbar-group-pocket" });
+        }
+        if (lazy.UrlbarPrefs.get("yelpFeatureGate")) {
+          idArgs.push({ id: "urlbar-group-local" });
+        }
       }
     }
 

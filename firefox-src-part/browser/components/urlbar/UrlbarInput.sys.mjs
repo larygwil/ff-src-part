@@ -1094,7 +1094,10 @@ export class UrlbarInput {
           Services.io.newURI(url),
           true,
           loadOpts,
-          lazy.UrlbarPrefs.get("switchTabs.searchAllContainers")
+          lazy.UrlbarPrefs.get("switchTabs.searchAllContainers") &&
+            lazy.UrlbarProviderOpenTabs.isNonPrivateUserContextId(
+              result.payload.userContextId
+            )
             ? result.payload.userContextId
             : null
         );
@@ -2504,7 +2507,8 @@ export class UrlbarInput {
 
       // If the copied text is that autofilled value, return the url including
       // the protocol from its suggestion.
-      let result = this.view.getResultAtIndex(0);
+      let result = this._resultForCurrentValue;
+
       if (result?.autofill?.value == selectedVal) {
         return result.payload.url;
       }

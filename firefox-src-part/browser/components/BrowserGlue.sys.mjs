@@ -7,12 +7,12 @@ import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs";
 
 const lazy = {};
 
-// Ignore unused lazy property for PluginManager.
-// eslint-disable-next-line mozilla/valid-lazy
 ChromeUtils.defineESModuleGetters(lazy, {
   AboutNewTab: "resource:///modules/AboutNewTab.sys.mjs",
-  ASRouterNewTabHook:
-    "resource://activity-stream/lib/ASRouterNewTabHook.sys.mjs",
+  ASRouter: "resource:///modules/asrouter/ASRouter.sys.mjs",
+  ASRouterDefaultConfig:
+    "resource:///modules/asrouter/ASRouterDefaultConfig.sys.mjs",
+  ASRouterNewTabHook: "resource:///modules/asrouter/ASRouterNewTabHook.sys.mjs",
   ActorManagerParent: "resource://gre/modules/ActorManagerParent.sys.mjs",
   AddonManager: "resource://gre/modules/AddonManager.sys.mjs",
   AppMenuNotifications: "resource://gre/modules/AppMenuNotifications.sys.mjs",
@@ -47,6 +47,8 @@ ChromeUtils.defineESModuleGetters(lazy, {
   NewTabUtils: "resource://gre/modules/NewTabUtils.sys.mjs",
   NimbusFeatures: "resource://nimbus/ExperimentAPI.sys.mjs",
   Normandy: "resource://normandy/Normandy.sys.mjs",
+  OnboardingMessageProvider:
+    "resource:///modules/asrouter/OnboardingMessageProvider.sys.mjs",
   OsEnvironment: "resource://gre/modules/OsEnvironment.sys.mjs",
   PageActions: "resource:///modules/PageActions.sys.mjs",
   PageDataService: "resource:///modules/pagedata/PageDataService.sys.mjs",
@@ -57,6 +59,8 @@ ChromeUtils.defineESModuleGetters(lazy, {
   PlacesDBUtils: "resource://gre/modules/PlacesDBUtils.sys.mjs",
   PlacesUIUtils: "resource:///modules/PlacesUIUtils.sys.mjs",
   PlacesUtils: "resource://gre/modules/PlacesUtils.sys.mjs",
+  // PluginManager is used by listeners object below.
+  // eslint-disable-next-line mozilla/valid-lazy
   PluginManager: "resource:///actors/PluginParent.sys.mjs",
   PrivateBrowsingUtils: "resource://gre/modules/PrivateBrowsingUtils.sys.mjs",
   ProcessHangMonitor: "resource:///modules/ProcessHangMonitor.sys.mjs",
@@ -94,14 +98,6 @@ ChromeUtils.defineESModuleGetters(lazy, {
   WindowsGPOParser: "resource://gre/modules/policies/WindowsGPOParser.sys.mjs",
   clearTimeout: "resource://gre/modules/Timer.sys.mjs",
   setTimeout: "resource://gre/modules/Timer.sys.mjs",
-});
-
-XPCOMUtils.defineLazyModuleGetters(lazy, {
-  ASRouterDefaultConfig:
-    "resource://activity-stream/lib/ASRouterDefaultConfig.jsm",
-  ASRouter: "resource://activity-stream/lib/ASRouter.jsm",
-  OnboardingMessageProvider:
-    "resource://activity-stream/lib/OnboardingMessageProvider.jsm",
 });
 
 if (AppConstants.MOZ_UPDATER) {
@@ -711,6 +707,17 @@ let JSWINDOWACTORS = {
         "Screenshots:ShowPanel": { wantUntrusted: true },
       },
     },
+    enablePreference: "screenshots.browser.component.enabled",
+  },
+
+  ScreenshotsHelper: {
+    parent: {
+      esModuleURI: "resource:///modules/ScreenshotsUtils.sys.mjs",
+    },
+    child: {
+      esModuleURI: "resource:///modules/ScreenshotsHelperChild.sys.mjs",
+    },
+    allFrames: true,
     enablePreference: "screenshots.browser.component.enabled",
   },
 
@@ -3885,8 +3892,8 @@ BrowserGlue.prototype = {
         );
 
         if (wasAddonActive) {
-          const { ProfilerMenuButton } = ChromeUtils.import(
-            "resource://devtools/client/performance-new/popup/menu-button.jsm.js"
+          const { ProfilerMenuButton } = ChromeUtils.importESModule(
+            "resource://devtools/client/performance-new/popup/menu-button.sys.mjs"
           );
           if (!ProfilerMenuButton.isInNavbar()) {
             // The profiler menu button is not enabled. Turn it on now.

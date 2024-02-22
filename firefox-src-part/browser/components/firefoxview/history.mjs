@@ -411,11 +411,11 @@ class HistoryInView extends ViewPage {
         if (historyItem.items.length) {
           let dateArg = JSON.stringify({ date: historyItem.items[0].time });
           cardsTemplate.push(html`<card-container>
-            <h2
+            <h3
               slot="header"
               data-l10n-id=${historyItem.l10nId}
               data-l10n-args=${dateArg}
-            ></h2>
+            ></h3>
             <fxview-tab-list
               slot="main"
               class="with-context-menu"
@@ -549,10 +549,7 @@ class HistoryInView extends ViewPage {
       />
       <dialog id="migrationWizardDialog"></dialog>
       <div class="sticky-container bottom-fade">
-        <h2
-          class="page-header heading-large"
-          data-l10n-id="firefoxview-history-header"
-        ></h2>
+        <h2 class="page-header" data-l10n-id="firefoxview-history-header"></h2>
         <div class="history-sort-options">
           ${when(
             isSearchEnabled(),
@@ -642,6 +639,9 @@ class HistoryInView extends ViewPage {
 
   async onSearchQuery(e) {
     this.searchQuery = e.detail.query;
+    this.cumulativeSearches = this.searchQuery
+      ? this.cumulativeSearches + 1
+      : 0;
     this.#updateSearchResults();
   }
 
@@ -651,11 +651,6 @@ class HistoryInView extends ViewPage {
       // onChangeSortOption() will update history data once it has been fetched
       // from the API.
       this.createHistoryMaps();
-    }
-    if (changedProperties.has("searchQuery")) {
-      this.cumulativeSearches = this.searchQuery
-        ? this.cumulativeSearches + 1
-        : 0;
     }
   }
 }

@@ -300,6 +300,7 @@ async function exportExtension(aAddon, aPermissions, aSourceURI) {
     homepageURL,
     icons,
     id,
+    incognito,
     isActive,
     isBuiltin,
     isCorrectlySigned,
@@ -378,6 +379,7 @@ async function exportExtension(aAddon, aPermissions, aSourceURI) {
       fullDescription,
       homepageURL,
       icons,
+      incognito,
       isRecommended,
       name,
       openOptionsPageInTab,
@@ -424,8 +426,15 @@ class ExtensionInstallListener {
         try {
           this.install.cancel();
           cancelled = true;
-        } catch (_) {
+        } catch (ex) {
           // install may have already failed or been cancelled
+          debug`Unable to cancel the install installId ${installId}, Error: ${ex}`;
+          // When we attempt to cancel an install but the cancellation fails for
+          // some reasons (e.g., because it is too late), we need to revert this
+          // boolean property to allow another cancellation to be possible.
+          // Otherwise, events like `onDownloadCancelled` won't resolve and that
+          // will cause problems in the embedder.
+          this.cancelling = false;
         }
         aCallback.onSuccess({ cancelled });
         break;

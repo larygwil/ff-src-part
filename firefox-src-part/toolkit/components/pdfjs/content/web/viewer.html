@@ -121,6 +121,12 @@ See https://github.com/adobe-type-tools/cmap-resources
             <div id="editorHighlightColorPicker" class="colorPicker">
               <span id="highlightColorPickerLabel" class="editorParamsLabel" data-l10n-id="pdfjs-editor-highlight-colorpicker-label">Highlight color</span>
             </div>
+            <div id="editorHighlightThickness">
+              <label for="editorFreeHighlightThickness" class="editorParamsLabel" data-l10n-id="pdfjs-editor-free-highlight-thickness-input">Thickness</label>
+              <div class="thicknessPicker">
+                <input type="range" id="editorFreeHighlightThickness" class="editorParamsSlider" data-l10n-id="pdfjs-editor-free-highlight-thickness-title" value="12" min="8" max="24" step="1" tabindex="101">
+              </div>
+            </div>
           </div>
         </div>
 
@@ -287,7 +293,7 @@ See https://github.com/adobe-type-tools/cmap-resources
                   <button id="editorInk" class="toolbarButton" disabled="disabled" title="Draw" role="radio" aria-checked="false" aria-controls="editorInkParamsToolbar" tabindex="33" data-l10n-id="pdfjs-editor-ink-button">
                     <span data-l10n-id="pdfjs-editor-ink-button-label">Draw</span>
                   </button>
-                  <button id="editorStamp" class="toolbarButton" disabled="disabled" title="Add or edit images" role="radio" aria-checked="false" aria-controls="editorStampParamsToolbar" tabindex="34" data-l10n-id="pdfjs-editor-stamp-button">
+                  <button id="editorStamp" class="toolbarButton hidden" disabled="disabled" title="Add or edit images" role="radio" aria-checked="false" aria-controls="editorStampParamsToolbar" tabindex="34" data-l10n-id="pdfjs-editor-stamp-button">
                     <span data-l10n-id="pdfjs-editor-stamp-button-label">Add or edit images</span>
                   </button>
                 </div>
@@ -475,6 +481,5 @@ See https://github.com/adobe-type-tools/cmap-resources
 
     </div> <!-- outerContainer -->
     <div id="printContainer"></div>
-
   </body>
 </html>

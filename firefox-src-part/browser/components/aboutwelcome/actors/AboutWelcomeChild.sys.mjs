@@ -7,13 +7,10 @@ import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs";
 const lazy = {};
 
 ChromeUtils.defineESModuleGetters(lazy, {
+  AboutWelcomeDefaults:
+    "resource:///modules/aboutwelcome/AboutWelcomeDefaults.sys.mjs",
   ExperimentAPI: "resource://nimbus/ExperimentAPI.sys.mjs",
   NimbusFeatures: "resource://nimbus/ExperimentAPI.sys.mjs",
-});
-
-XPCOMUtils.defineLazyModuleGetters(lazy, {
-  AboutWelcomeDefaults:
-    "resource:///modules/aboutwelcome/AboutWelcomeDefaults.jsm",
 });
 
 ChromeUtils.defineLazyGetter(lazy, "log", () => {
@@ -94,6 +91,10 @@ export class AboutWelcomeChild extends JSWindowActorChild {
 
     Cu.exportFunction(this.AWFinish.bind(this), window, {
       defineAs: "AWFinish",
+    });
+
+    Cu.exportFunction(this.AWEnsureAddonInstalled.bind(this), window, {
+      defineAs: "AWEnsureAddonInstalled",
     });
 
     Cu.exportFunction(this.AWEnsureLangPackInstalled.bind(this), window, {
@@ -265,6 +266,12 @@ export class AboutWelcomeChild extends JSWindowActorChild {
         type: "FOCUS_URLBAR",
       });
     }
+  }
+
+  AWEnsureAddonInstalled(addonId) {
+    return this.wrapPromise(
+      this.sendQuery("AWPage:ENSURE_ADDON_INSTALLED", addonId)
+    );
   }
 
   AWEnsureLangPackInstalled(negotiated, screenContent) {

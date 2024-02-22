@@ -145,9 +145,6 @@ const COMMON_PREFERENCES = new Map([
   // Do not redirect user when a milstone upgrade of Firefox is detected
   ["browser.startup.homepage_override.mstone", "ignore"],
 
-  // Do not close the window when the last tab gets closed
-  ["browser.tabs.closeWindowWithLastTab", false],
-
   // Don't unload tabs when available memory is running low
   ["browser.tabs.unloadOnLowMemory", false],
 
@@ -359,10 +356,11 @@ export const RecommendedPreferences = {
 
   /**
    * Apply the provided map of preferences.
-   * They will be automatically reset on application shutdown.
    *
-   * @param {Map} preferences
-   *     Map of preference key to preference value.
+   * Note, that they will be automatically reset on application shutdown.
+   *
+   * @param {Map<string, object>=} preferences
+   *     Map of preference name to preference value.
    */
   applyPreferences(preferences) {
     if (!lazy.useRecommendedPrefs) {
@@ -374,8 +372,14 @@ export const RecommendedPreferences = {
     // Only apply common recommended preferences on first call to
     // applyPreferences.
     if (!this.isInitialized) {
-      // Merge common preferences and provided preferences in a single map.
-      preferences = new Map([...COMMON_PREFERENCES, ...preferences]);
+      // Merge common preferences and optionally provided preferences in a
+      // single map. Hereby the extra preferences have higher priority.
+      if (preferences) {
+        preferences = new Map([...COMMON_PREFERENCES, ...preferences]);
+      } else {
+        preferences = COMMON_PREFERENCES;
+      }
+
       Services.obs.addObserver(this, "quit-application");
       this.isInitialized = true;
     }

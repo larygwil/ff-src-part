@@ -498,7 +498,7 @@ pref("browser.urlbar.quicksuggest.enabled", false);
 
 // Whether Firefox Suggest will use the new Rust backend instead of the original
 // JS backend.
-pref("browser.urlbar.quicksuggest.rustEnabled", false);
+pref("browser.urlbar.quicksuggest.rustEnabled", true);
 
 // Whether to show the QuickSuggest onboarding dialog.
 pref("browser.urlbar.quicksuggest.shouldShowOnboardingDialog", true);
@@ -556,7 +556,11 @@ pref("browser.urlbar.switchTabs.adoptIntoActiveWindow", false);
 
 // Controls whether searching for open tabs returns tabs from any container
 // or only from the current container.
+#ifdef NIGHTLY_BUILD
+pref("browser.urlbar.switchTabs.searchAllContainers", true);
+#else
 pref("browser.urlbar.switchTabs.searchAllContainers", false);
+#endif
 
 // Whether addresses and search results typed into the address bar
 // should be opened in new tabs by default.
@@ -640,6 +644,9 @@ pref("browser.urlbar.suggest.addons", true);
 // If `browser.urlbar.mdn.featureGate` is true, this controls whether
 // mdn suggestions are turned on.
 pref("browser.urlbar.suggest.mdn", true);
+
+// Feature gate pref for Yelp suggestions in the urlbar.
+pref("browser.urlbar.yelp.featureGate", false);
 
 // If `browser.urlbar.yelp.featureGate` is true, this controls whether
 // Yelp suggestions are turned on.
@@ -737,6 +744,10 @@ pref("browser.search.serpEventTelemetry.enabled", true);
 
 // Enables search SERP telemetry page categorization.
 pref("browser.search.serpEventTelemetryCategorization.enabled", false);
+
+// Search Bar removal from the toolbar for users who haven’t used it in 120
+// days
+pref("browser.search.widget.removeAfterDaysUnused", 120);
 
 // Enable new experimental shopping features. This is solely intended as a
 // rollout/"emergency stop" button - it will go away once the feature has
@@ -1069,7 +1080,13 @@ pref("privacy.history.custom",              false);
 // 6 - Last 24 hours
 pref("privacy.sanitize.timeSpan", 1);
 
+#if defined(NIGHTLY_BUILD)
+pref("privacy.sanitize.useOldClearHistoryDialog", false);
+#else
 pref("privacy.sanitize.useOldClearHistoryDialog", true);
+#endif
+
+pref("privacy.sanitize.sanitizeOnShutdown.hasMigratedToNewPrefs", false);
 
 pref("privacy.panicButton.enabled",         true);
 
@@ -1188,12 +1205,6 @@ pref("accessibility.typeaheadfind", false);
 pref("accessibility.typeaheadfind.timeout", 5000);
 pref("accessibility.typeaheadfind.linksonly", false);
 pref("accessibility.typeaheadfind.flashBar", 1);
-
-#if defined(_ARM64_) && defined(XP_WIN)
-  pref("plugin.default.state", 0);
-#else
-  pref("plugin.default.state", 1);
-#endif
 
 // Toggling Search bar on and off in about:preferences
 pref("browser.preferences.search", true);
@@ -1396,7 +1407,11 @@ pref("browser.bookmarks.editDialog.maxRecentFolders", 7);
   // On windows these levels are:
   // See - security/sandbox/win/src/sandboxbroker/sandboxBroker.cpp
   // SetSecurityLevelForContentProcess() for what the different settings mean.
-  pref("security.sandbox.content.level", 6);
+  #if defined(NIGHTLY_BUILD)
+    pref("security.sandbox.content.level", 7);
+  #else
+    pref("security.sandbox.content.level", 6);
+  #endif
 
   // Pref controlling if messages relevant to sandbox violations are logged.
   pref("security.sandbox.logging.enabled", false);
@@ -1471,15 +1486,8 @@ pref("browser.bookmarks.editDialog.maxRecentFolders", 7);
   pref("browser.taskbar.previews.enable", false);
   pref("browser.taskbar.previews.max", 20);
   pref("browser.taskbar.previews.cachetime", 5);
-  pref("browser.taskbar.lists.legacyBackend", true);
 
-  // We'll only enable the new off-main-thread jumplist backend on Nightly for
-  // now while we test it.
-#ifdef NIGHTLY_BUILD
   pref("browser.taskbar.lists.legacyBackend", false);
-#else
-  pref("browser.taskbar.lists.legacyBackend", true);
-#endif
 
   pref("browser.taskbar.lists.enabled", true);
   pref("browser.taskbar.lists.frequent.enabled", true);
@@ -1742,6 +1750,8 @@ pref("browser.newtabpage.activity-stream.discoverystream.spocTopsitesAdTypes", "
 pref("browser.newtabpage.activity-stream.discoverystream.spocTopsitesZoneIds", "");
 pref("browser.newtabpage.activity-stream.discoverystream.spocTopsitesPlacement.enabled", true);
 pref("browser.newtabpage.activity-stream.discoverystream.spocSiteId", "");
+pref("browser.newtabpage.activity-stream.discoverystream.ctaButtonSponsors", "");
+pref("browser.newtabpage.activity-stream.discoverystream.ctaButtonVariant", "");
 
 pref("browser.newtabpage.activity-stream.discoverystream.sendToPocket.enabled", true);
 
@@ -2193,6 +2203,12 @@ pref("privacy.webrtc.sharedTabWarning", false);
 // before navigating to the actual meeting room page. Doesn't survive tab close.
 pref("privacy.webrtc.deviceGracePeriodTimeoutMs", 3600000);
 
+// Bug 1857254 - MacOS 14 displays two (microphone/camera/screen share) icons in the menu bar
+// This pref can be used to hide the firefox camera icon on macos 14 and above to avoid
+// duplicating the macos camera icon. We show the icon by default, users can choose to flip
+// the pref to hide the icons
+pref("privacy.webrtc.showIndicatorsOnMacos14AndAbove", true);
+
 // Enable Fingerprinting Protection in private windows..
 pref("privacy.fingerprintingProtection.pbmode", true);
 
@@ -2201,9 +2217,6 @@ pref("privacy.fingerprintingProtection.pbmode", true);
 // leaks.
 pref("privacy.exposeContentTitleInWindow", true);
 pref("privacy.exposeContentTitleInWindow.pbm", true);
-
-// Start the browser in e10s mode
-pref("browser.tabs.remote.autostart", true);
 
 // Run media transport in a separate process?
 pref("media.peerconnection.mtransport_process", true);

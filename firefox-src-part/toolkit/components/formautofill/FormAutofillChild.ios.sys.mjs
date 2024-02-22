@@ -33,20 +33,21 @@ export class FormAutofillChild {
 
   _doIdentifyAutofillFields(element) {
     this.fieldDetailsManager.updateActiveInput(element);
-    const validDetails =
-      this.fieldDetailsManager.identifyAutofillFields(element);
+    this.fieldDetailsManager.identifyAutofillFields(element);
 
     const activeFieldName =
       this.fieldDetailsManager.activeFieldDetail?.fieldName;
 
+    const activeFieldDetails =
+      this.fieldDetailsManager.activeSection?.fieldDetails;
+
     // Only ping swift if current field is either a cc or address field
-    if (!validDetails?.find(field => field.element === element)) {
+    if (!activeFieldDetails?.find(field => field.element === element)) {
       return;
     }
 
     const fieldNamesWithValues =
-      this.transformToFieldNamesWithValues(validDetails);
-
+      this.transformToFieldNamesWithValues(activeFieldDetails);
     if (FormAutofillUtils.isAddressField(activeFieldName)) {
       this.callbacks.address.autofill(fieldNamesWithValues);
     } else if (FormAutofillUtils.isCreditCardField(activeFieldName)) {
@@ -77,9 +78,14 @@ export class FormAutofillChild {
   }
 
   onSubmit(evt) {
+    if (!this.fieldDetailsManager.activeHandler) {
+      return;
+    }
+
     this.fieldDetailsManager.activeHandler.onFormSubmitted();
     const records = this.fieldDetailsManager.activeHandler.createRecords();
-    if (records.creditCard) {
+
+    if (records.creditCard.length) {
       // Normalize record format so we always get a consistent
       // credit card record format: {cc-number, cc-name, cc-exp-month, cc-exp-year}
       const creditCardRecords = records.creditCard.map(entry => {

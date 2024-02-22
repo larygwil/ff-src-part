@@ -74,12 +74,6 @@ const observer = {
  * Handles content's interactions for the frame.
  */
 export class FormAutofillChild extends JSWindowActorChild {
-  /**
-   * Cached weg progress associated with
-   * the highest accessible docShell for a window
-   */
-  #webProgress = null;
-
   constructor() {
     super();
 
@@ -160,8 +154,7 @@ export class FormAutofillChild extends JSWindowActorChild {
           );
         }
         if (lazy.FormAutofill.captureOnPageNavigation) {
-          const window = this.document.defaultView;
-          this.registerProgressListener(window);
+          this.registerProgressListener();
         }
       }
 
@@ -175,55 +168,99 @@ export class FormAutofillChild extends JSWindowActorChild {
   }
 
   /**
+   * Gets the highest accessible docShell
+   *
+   * @returns {DocShell} highest accessible docShell
+   */
+  getHighestDocShell() {
+    const window = this.document.defaultView;
+
+    let docShell;
+    for (
+      let browsingContext = BrowsingContext.getFromWindow(window);
+      browsingContext?.docShell;
+      browsingContext = browsingContext.parent
+    ) {
+      docShell = browsingContext.docShell;
+    }
+
+    return docShell
+      .QueryInterface(Ci.nsIInterfaceRequestor)
+      .getInterface(Ci.nsIWebProgress);
+  }
+
+  /**
+   * After being notified of a page navigation, we check whether
+   * the navigated window is the active window or one of its parents
+   * (active window = FormAutofillContent.activeHandler.window)
+   *
+   * @returns {boolean} whether the navigation affects the active window
+   */
+  isActiveWindowNavigation() {
+    const activeWindow = lazy.FormAutofillContent.activeHandler.window;
+    const navigatedWindow = this.document.defaultView;
+    const navigatedBrowsingContext =
+      BrowsingContext.getFromWindow(navigatedWindow);
+
+    for (
+      let browsingContext = BrowsingContext.getFromWindow(activeWindow);
+      browsingContext?.docShell;
+      browsingContext = browsingContext.parent
+    ) {
+      if (navigatedBrowsingContext === browsingContext) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
    * Infer a form submission after document is navigated
    */
   onPageNavigation() {
     const activeElement =
       lazy.FormAutofillContent.activeFieldDetail?.elementWeakRef.deref();
+
+    if (!this.isActiveWindowNavigation()) {
+      return;
+    }
+
     const formSubmissionReason =
       lazy.FormAutofillUtils.FORM_SUBMISSION_REASON.PAGE_NAVIGATION;
 
     // We only capture the form of the active field right now,
     // this means that we might miss some fields (see bug 1871356)
     lazy.FormAutofillContent.formSubmitted(activeElement, formSubmissionReason);
+  }
 
-    // acted on page navigation, remove progress listener
-    this.#webProgress.removeProgressListener(observer);
-    this.#webProgress = null;
+  /**
+   * After a form submission we unregister the
+   * nsIWebProgressListener from the top level doc shell
+   */
+  unregisterProgressListener() {
+    const docShell = this.getHighestDocShell();
+    try {
+      docShell.removeProgressListener(observer);
+    } catch (ex) {
+      // Ignore NS_ERROR_FAILURE if the progress listener was not registered
+    }
   }
 
   /**
    * After a focusin event and after we identified formautofill fields,
-   * we set up an nsIWebProgressListener that notifies of a request state
-   * change or window location change associated with the current progress
-   *
-   * @param {Window} window
+   * we set up a nsIWebProgressListener that notifies of a request state
+   * change or window location change in the top level doc shell
    */
-  registerProgressListener(window) {
-    if (!this.#webProgress) {
-      let docShell;
-      // Get the highest accessible docShell
-      for (
-        let browsingContext = BrowsingContext.getFromWindow(window);
-        browsingContext?.docShell;
-        browsingContext = browsingContext.parent
-      ) {
-        docShell = browsingContext.docShell;
-      }
+  registerProgressListener() {
+    const docShell = this.getHighestDocShell();
 
-      this.#webProgress = docShell
-        .QueryInterface(Ci.nsIInterfaceRequestor)
-        .getInterface(Ci.nsIWebProgress);
-
-      const flags =
-        Ci.nsIWebProgress.NOTIFY_STATE_DOCUMENT |
-        Ci.nsIWebProgress.NOTIFY_LOCATION;
-      try {
-        this.#webProgress.addProgressListener(observer, flags);
-      } catch (ex) {
-        // Ignore NS_ERROR_FAILURE if the progress listener was already added
-        // We don't reset this.#webProgress since it would throw again
-      }
+    const flags =
+      Ci.nsIWebProgress.NOTIFY_STATE_DOCUMENT |
+      Ci.nsIWebProgress.NOTIFY_LOCATION;
+    try {
+      docShell.addProgressListener(observer, flags);
+    } catch (ex) {
+      // Ignore NS_ERROR_FAILURE if the progress listener was already added
     }
   }
 

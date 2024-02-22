@@ -685,6 +685,17 @@ class nsINode : public mozilla::dom::EventTarget {
   mozilla::Maybe<uint32_t> ComputeIndexOf(const nsINode* aPossibleChild) const;
 
   /**
+   * Get the index of a child within this content's flat tree children.
+   *
+   * @param aPossibleChild the child to get the index of.
+   * @return the index of the child, or Nothing if not a child. Be aware that
+   *         anonymous children (e.g. a <div> child of an <input> element) will
+   *         result in Nothing.
+   */
+  mozilla::Maybe<uint32_t> ComputeFlatTreeIndexOf(
+      const nsINode* aPossibleChild) const;
+
+  /**
    * Get the index of this within parent node (ComputeIndexInParentNode) or
    * parent content (nsIContent) node (ComputeIndexInParentContent).
    *
@@ -1553,6 +1564,24 @@ class nsINode : public mozilla::dom::EventTarget {
     return IsRootOfNativeAnonymousSubtree();
   }
 
+  /** Whether this is the container of a ::before pseudo-element. */
+  bool IsGeneratedContentContainerForBefore() const {
+    return IsRootOfNativeAnonymousSubtree() &&
+           mNodeInfo->NameAtom() == nsGkAtoms::mozgeneratedcontentbefore;
+  }
+
+  /** Whether this is the container of an ::after pseudo-element. */
+  bool IsGeneratedContentContainerForAfter() const {
+    return IsRootOfNativeAnonymousSubtree() &&
+           mNodeInfo->NameAtom() == nsGkAtoms::mozgeneratedcontentafter;
+  }
+
+  /** Whether this is the container of a ::marker pseudo-element. */
+  bool IsGeneratedContentContainerForMarker() const {
+    return IsRootOfNativeAnonymousSubtree() &&
+           mNodeInfo->NameAtom() == nsGkAtoms::mozgeneratedcontentmarker;
+  }
+
   /**
    * Returns true if |this| node is the closest common inclusive ancestor
    * (https://dom.spec.whatwg.org/#concept-tree-inclusive-ancestor) of the
@@ -1785,7 +1814,7 @@ class nsINode : public mozilla::dom::EventTarget {
    * aRoot, including aRoot itself, will be returned.  Returns
    * null if there are no more nsIContents to traverse.
    */
-  nsIContent* GetPreviousContent(const nsINode* aRoot = nullptr) const {
+  nsIContent* GetPrevNode(const nsINode* aRoot = nullptr) const {
 #ifdef DEBUG
     if (aRoot) {
       // TODO: perhaps nsINode::IsInclusiveDescendantOf could be used instead.

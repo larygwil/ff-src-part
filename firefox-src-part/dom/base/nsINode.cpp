@@ -359,7 +359,9 @@ bool nsINode::IsSelected(const uint32_t aStartOffset,
       // Looks like that IsInSelection() assert fails sometimes...
       if (range->IsInAnySelection()) {
         for (const WeakPtr<Selection>& selection : range->GetSelections()) {
-          ancestorSelections.Insert(selection);
+          if (selection) {
+            ancestorSelections.Insert(selection);
+          }
         }
       }
     }
@@ -1883,6 +1885,45 @@ Maybe<uint32_t> nsINode::ComputeIndexInParentContent() const {
   return parent->ComputeIndexOf(this);
 }
 
+static Maybe<uint32_t> DoComputeFlatTreeIndexOf(FlattenedChildIterator& aIter,
+                                                const nsINode* aPossibleChild) {
+  if (aPossibleChild->GetFlattenedTreeParentNode() != aIter.Parent()) {
+    return Nothing();
+  }
+
+  uint32_t index = 0u;
+  for (nsIContent* child = aIter.GetNextChild(); child;
+       child = aIter.GetNextChild()) {
+    if (child == aPossibleChild) {
+      return Some(index);
+    }
+
+    ++index;
+  }
+
+  return Nothing();
+}
+
+Maybe<uint32_t> nsINode::ComputeFlatTreeIndexOf(
+    const nsINode* aPossibleChild) const {
+  if (!aPossibleChild) {
+    return Nothing();
+  }
+
+  if (!IsContent()) {
+    return ComputeIndexOf(aPossibleChild);
+  }
+
+  FlattenedChildIterator iter(AsContent());
+  if (!iter.ShadowDOMInvolved()) {
+    auto index = ComputeIndexOf(aPossibleChild);
+    MOZ_ASSERT(DoComputeFlatTreeIndexOf(iter, aPossibleChild) == index);
+    return index;
+  }
+
+  return DoComputeFlatTreeIndexOf(iter, aPossibleChild);
+}
+
 static already_AddRefed<nsINode> GetNodeFromNodeOrString(
     const OwningNodeOrString& aNode, Document* aDocument) {
   if (aNode.IsNode()) {
@@ -3124,8 +3165,8 @@ inline static Element* FindMatchingElementWithId(
 
 Element* nsINode::QuerySelector(const nsACString& aSelector,
                                 ErrorResult& aResult) {
-  AUTO_PROFILER_LABEL_DYNAMIC_NSCSTRING("nsINode::QuerySelector",
-                                        LAYOUT_SelectorQuery, aSelector);
+  AUTO_PROFILER_LABEL_DYNAMIC_NSCSTRING_RELEVANT_FOR_JS(
+      "querySelector", LAYOUT_SelectorQuery, aSelector);
 
   const StyleSelectorList* list = ParseSelectorList(aSelector, aResult);
   if (!list) {
@@ -3138,8 +3179,8 @@ Element* nsINode::QuerySelector(const nsACString& aSelector,
 
 already_AddRefed<nsINodeList> nsINode::QuerySelectorAll(
     const nsACString& aSelector, ErrorResult& aResult) {
-  AUTO_PROFILER_LABEL_DYNAMIC_NSCSTRING("nsINode::QuerySelectorAll",
-                                        LAYOUT_SelectorQuery, aSelector);
+  AUTO_PROFILER_LABEL_DYNAMIC_NSCSTRING_RELEVANT_FOR_JS(
+      "querySelectorAll", LAYOUT_SelectorQuery, aSelector);
 
   RefPtr<nsSimpleContentList> contentList = new nsSimpleContentList(this);
   const StyleSelectorList* list = ParseSelectorList(aSelector, aResult);
@@ -3489,22 +3530,14 @@ already_AddRefed<nsINode> nsINode::CloneAndAdopt(
       if (auto* mediaElem = HTMLMediaElement::FromNodeOrNull(content)) {
         mediaElem->NotifyOwnerDocumentActivityChanged();
       }
-      nsCOMPtr<nsIObjectLoadingContent> objectLoadingContent(
-          do_QueryInterface(aNode));
-      if (objectLoadingContent) {
-        nsObjectLoadingContent* olc =
-            static_cast<nsObjectLoadingContent*>(objectLoadingContent.get());
-        olc->NotifyOwnerDocumentActivityChanged();
-      } else {
-        // HTMLImageElement::FromNode is insufficient since we need this for
-        // <svg:image> as well.
-        nsCOMPtr<nsIImageLoadingContent> imageLoadingContent(
-            do_QueryInterface(aNode));
-        if (imageLoadingContent) {
-          auto ilc =
-              static_cast<nsImageLoadingContent*>(imageLoadingContent.get());
-          ilc->NotifyOwnerDocumentActivityChanged();
-        }
+      // HTMLImageElement::FromNode is insufficient since we need this for
+      // <svg:image> as well.
+      nsCOMPtr<nsIImageLoadingContent> imageLoadingContent =
+          do_QueryInterface(aNode);
+      if (imageLoadingContent) {
+        auto* ilc =
+            static_cast<nsImageLoadingContent*>(imageLoadingContent.get());
+        ilc->NotifyOwnerDocumentActivityChanged();
       }
     }
 

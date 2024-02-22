@@ -658,6 +658,7 @@ var dataProviders = {
         cleartypeParameters: "clearTypeParameters",
         TargetFrameRate: "targetFrameRate",
         windowProtocol: null,
+        fontVisibilityDeterminationStr: "supportFontDetermination",
       };
 
       for (let prop in gfxInfoProps) {

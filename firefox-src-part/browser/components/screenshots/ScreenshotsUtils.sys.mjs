@@ -109,6 +109,19 @@ export class ScreenshotsComponentParent extends JSWindowActorParent {
   }
 }
 
+export class ScreenshotsHelperParent extends JSWindowActorParent {
+  receiveMessage(message) {
+    switch (message.name) {
+      case "ScreenshotsHelper:GetElementRectFromPoint":
+        let cxt = BrowsingContext.get(message.data.bcId);
+        return cxt.currentWindowGlobal
+          .getActor("ScreenshotsHelper")
+          .sendQuery("ScreenshotsHelper:GetElementRectFromPoint", message.data);
+    }
+    return null;
+  }
+}
+
 export const UIPhases = {
   CLOSED: 0, // nothing showing
   INITIAL: 1, // panel and overlay showing
@@ -617,7 +630,8 @@ export var ScreenshotsUtils = {
       !anchor.isConnected ||
       !window.isElementVisible(anchor.parentNode)
     ) {
-      anchor = browser.ownerDocument.getElementById("navigator-toolbox");
+      // Use the hamburger button if the screenshots button isn't available
+      anchor = browser.ownerDocument.getElementById("PanelUI-menu-button");
     }
     return anchor;
   },
@@ -732,7 +746,7 @@ export var ScreenshotsUtils = {
 
     Services.prefs.setStringPref(
       SCREENSHOTS_LAST_SCREENSHOT_METHOD_PREF,
-      "fullpage"
+      lastUsedMethod
     );
     this.methodsUsed[lastUsedMethod] += 1;
     this.recordTelemetryEvent("selected", type, {});
@@ -770,6 +784,13 @@ export var ScreenshotsUtils = {
    * @returns The canvas
    */
   async createCanvas(region, browser) {
+    region.left = Math.round(region.left);
+    region.right = Math.round(region.right);
+    region.top = Math.round(region.top);
+    region.bottom = Math.round(region.bottom);
+    region.width = Math.round(region.right - region.left);
+    region.height = Math.round(region.bottom - region.top);
+
     this.cropScreenshotRectIfNeeded(region);
 
     let { devicePixelRatio } = region;

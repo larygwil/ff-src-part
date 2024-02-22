@@ -824,8 +824,6 @@ pref("dom.storage.snapshot_gradual_prefill", 4096);
 pref("dom.storage.snapshot_reusing", true);
 pref("dom.storage.client_validation", true);
 
-pref("dom.send_after_paint_to_content", false);
-
 // Enable time picker UI. By default, disabled.
 pref("dom.forms.datetime.timepicker", false);
 
@@ -943,7 +941,11 @@ pref("javascript.options.mem.gc_compacting", true);
 
 // JSGC_PARALLEL_MARKING_ENABLED
 // This only applies to the main runtime and does not affect workers.
+#ifndef ANDROID
+pref("javascript.options.mem.gc_parallel_marking", true);
+#else
 pref("javascript.options.mem.gc_parallel_marking", false);
+#endif
 
 // JSGC_PARALLEL_MARKING_THRESHOLD_MB
 // Minimum heap size at which to use parallel marking, if enabled.
@@ -1957,13 +1959,6 @@ pref("mousewheel.with_shift.delta_multiplier_x", 100);
 pref("mousewheel.with_shift.delta_multiplier_y", 100);
 pref("mousewheel.with_shift.delta_multiplier_z", 100);
 
-// pref for which side vertical scrollbars should be on
-// 0 = end-side in UI direction
-// 1 = end-side in document/content direction
-// 2 = right
-// 3 = left
-pref("layout.scrollbar.side", 0);
-
 // enable single finger gesture input (win7+ tablets)
 pref("gestures.enable_single_finger_input", true);
 
@@ -1974,9 +1969,6 @@ pref("dom.global_stop_script", true);
 
 // Support the input event queue on the main thread of content process
 pref("input_event_queue.supported", true);
-
-// The default value for nsIPluginTag.enabledState (STATE_ENABLED = 2)
-pref("plugin.default.state", 2);
 
 // Enable multi by default.
 #if !defined(MOZ_ASAN) && !defined(MOZ_TSAN)
@@ -2014,9 +2006,6 @@ pref("dom.ipc.keepProcessesAlive.privilegedabout", 1);
 
 // Disable support for SVG
 pref("svg.disabled", false);
-
-// Disable e10s for Gecko by default. This is overridden in firefox.js.
-pref("browser.tabs.remote.autostart", false);
 
 // This pref will cause assertions when a remoteType triggers a process switch
 // to a new remoteType it should not be able to trigger.
@@ -3197,11 +3186,7 @@ pref("alerts.showFavicons", false);
 // DOM full-screen API.
 #ifdef XP_MACOSX
   // Whether to use macOS native full screen for Fullscreen API
-  #ifdef NIGHTLY_BUILD
-    pref("full-screen-api.macos-native-full-screen", true);
-  #else
-    pref("full-screen-api.macos-native-full-screen", false);
-  #endif
+  pref("full-screen-api.macos-native-full-screen", true);
 #endif
 // transition duration of fade-to-black and fade-from-black, unit: ms
 #ifndef MOZ_WIDGET_GTK
@@ -3951,9 +3936,19 @@ pref("security.external_protocol_requires_permission", true);
 pref("extensions.formautofill.available", "detect");
 pref("extensions.formautofill.addresses.supported", "detect");
 pref("extensions.formautofill.addresses.enabled", true);
-pref("extensions.formautofill.addresses.capture.enabled", false);
-// This preference should be removed entirely once address capture v2 developing is finished
-pref("extensions.formautofill.addresses.capture.v2.enabled", false);
+#if defined(NIGHTLY_BUILD)
+  pref("extensions.formautofill.addresses.capture.enabled", true);
+#else
+  pref("extensions.formautofill.addresses.capture.enabled", false);
+#endif
+#if defined(ANDROID)
+  // On android we have custom logic to control this. Ideally we should use nimbus there as well.
+  // https://github.com/mozilla-mobile/firefox-android/blob/d566743ea0f041ce27c1204da903de380f96b46e/fenix/app/src/main/java/org/mozilla/fenix/utils/Settings.kt#L1502-L1510
+  pref("extensions.formautofill.addresses.experiments.enabled", true);
+#else
+  // Whether address autofill is enabled or not ( this is set via Nimbus )
+  pref("extensions.formautofill.addresses.experiments.enabled", false);
+#endif
 // Defies the required address form fields to trigger the display of the address capture doorhanger
 pref("extensions.formautofill.addresses.capture.requiredFields", "street-address,postal-code,address-level1,address-level2");
 pref("extensions.formautofill.addresses.ignoreAutocompleteOff", true);
@@ -3981,9 +3976,9 @@ pref("extensions.formautofill.creditCards.heuristics.fathom.testConfidence", "0"
 
 pref("extensions.formautofill.loglevel", "Warn");
 
-// Temporary prefs that we will be removed when enabling capture on form removal and on page navigation in Fx123.
-pref("extensions.formautofill.heuristics.captureOnFormRemoval", false);
-pref("extensions.formautofill.heuristics.captureOnPageNavigation", false);
+// Temporary prefs that we will be removed if the telemetry data (added in Fx123) does not show any problems with the new heuristics.
+pref("extensions.formautofill.heuristics.captureOnFormRemoval", true);
+pref("extensions.formautofill.heuristics.captureOnPageNavigation", true);
 // The interactivityCheckMode pref is only temporary.
 // It will be removed when we decide to only support the `focusability` mode
 pref("extensions.formautofill.heuristics.interactivityCheckMode", "focusability");

@@ -4,7 +4,7 @@
 
 import React, { useEffect, useState } from "react";
 import { Localized } from "./MSLocalized";
-import { AboutWelcomeUtils } from "../lib/aboutwelcome-utils";
+import { AboutWelcomeUtils } from "../lib/aboutwelcome-utils.mjs";
 import { MobileDownloads } from "./MobileDownloads";
 import { MultiSelect } from "./MultiSelect";
 import { Themes } from "./Themes";
@@ -147,7 +147,11 @@ export const ProtonScreenActionButtons = props => {
         </div>
       ) : null}
       {content.secondary_button ? (
-        <SecondaryCTA content={content} handleAction={props.handleAction} />
+        <SecondaryCTA
+          content={content}
+          handleAction={props.handleAction}
+          activeMultiSelect={activeMultiSelect}
+        />
       ) : null}
     </div>
   );
@@ -300,7 +304,6 @@ export class ProtonScreen extends React.PureComponent {
             content={content}
             activeMultiSelect={this.props.activeMultiSelect}
             setActiveMultiSelect={this.props.setActiveMultiSelect}
-            handleAction={this.props.handleAction}
           />
         ) : null}
         {content.tiles && content.tiles.type === "migration-wizard" ? (
@@ -522,6 +525,7 @@ export class ProtonScreen extends React.PureComponent {
             />
           ) : null}
           {includeNoodles ? this.renderNoodles() : null}
+          {content.dismiss_button ? this.renderDismissButton() : null}
           <div
             className={`main-content ${hideStepsIndicator ? "no-steps" : ""}`}
             style={{
@@ -602,7 +606,6 @@ export class ProtonScreen extends React.PureComponent {
               ? this.renderStepsIndicator()
               : null}
           </div>
-          {content.dismiss_button ? this.renderDismissButton() : null}
         </div>
         <Localized text={content.info_text}>
           <span className="info-text" />

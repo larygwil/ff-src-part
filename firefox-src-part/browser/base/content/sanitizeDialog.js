@@ -84,16 +84,10 @@ var gSanitizePromptDialog = {
 
     let arg = window.arguments?.[0] || {};
 
-    // The updateUsageData variable allows callers of the dialog to indicate
-    // whether site usage data should be refreshed on init.
-    let updateUsageData = true;
-    if (!lazy.USE_OLD_DIALOG && arg.updateUsageData != undefined) {
-      updateUsageData = arg.updateUsageData || arg.inBrowserWindow;
-    }
-
     // These variables decide which context the dialog has been opened in
     this._inClearOnShutdownNewDialog = false;
     this._inClearSiteDataNewDialog = false;
+    this._inBrowserWindow = !!arg.inBrowserWindow;
     if (arg.mode && !lazy.USE_OLD_DIALOG) {
       this._inClearOnShutdownNewDialog = arg.mode == "clearOnShutdown";
       this._inClearSiteDataNewDialog = arg.mode == "clearSiteData";
@@ -122,8 +116,20 @@ var gSanitizePromptDialog = {
       }
     }
 
-    this.dataSizesFinishedUpdatingPromise =
-      this.getAndUpdateDataSizes(updateUsageData);
+    if (!lazy.USE_OLD_DIALOG) {
+      // Begin collecting how long it takes to load from here
+      let timerId = Glean.privacySanitize.loadTime.start();
+
+      this.dataSizesFinishedUpdatingPromise = this.getAndUpdateDataSizes()
+        .then(() => {
+          // We're done loading, stop telemetry here
+          Glean.privacySanitize.loadTime.stopAndAccumulate(timerId);
+        })
+        .catch(() => {
+          // We're done loading, stop telemetry here
+          Glean.privacySanitize.loadTime.cancel(timerId);
+        });
+    }
 
     let OKButton = this._dialog.getButton("accept");
     let clearOnShutdownGroupbox = document.getElementById(
@@ -139,6 +145,10 @@ var gSanitizePromptDialog = {
       this._dialog.setAttribute("inClearOnShutdown", "true");
       // remove the clear private data groupbox element
       clearPrivateDataGroupbox.remove();
+
+      // If this is the first time the user is opening the new clear on shutdown
+      // dialog, migrate their prefs
+      Sanitizer.maybeMigrateSanitizeOnShutdownPrefs();
     } else if (!lazy.USE_OLD_DIALOG) {
       okButtonl10nID = "sanitize-button-ok2";
       // remove the clear on shutdown groupbox element
@@ -150,28 +160,37 @@ var gSanitizePromptDialog = {
     // from (history, site data). Categories are not remembered
     // from the last time the dialog was used.
     if (!lazy.USE_OLD_DIALOG && !this._inClearOnShutdownNewDialog) {
-      let checkboxes = document.querySelectorAll(
-        "#clearPrivateDataGroupbox .clearingItemCheckbox"
-      );
       let defaults = this.defaultCheckedByContext.clearHistory;
       if (this._inClearSiteDataNewDialog) {
         defaults = this.defaultCheckedByContext.clearSiteData;
       }
 
-      for (let checkbox of checkboxes) {
+      this._allCheckboxes = document.querySelectorAll(
+        "#clearPrivateDataGroupbox .clearingItemCheckbox"
+      );
+      this._allCheckboxes.forEach(checkbox => {
         let pref = checkbox.id;
         let value = false;
         if (defaults.includes(pref)) {
           value = true;
           checkbox.checked = value;
         }
-      }
+
+        // Add event listeners to the checkboxes to ensure that the clear button is
+        // disabled if no checkboxes are checked
+        checkbox.addEventListener("command", _ =>
+          this.updateAcceptButtonState()
+        );
+      });
     }
 
     document.addEventListener("dialogaccept", e => {
       if (this._inClearOnShutdownNewDialog) {
         this.updatePrefs();
       } else {
+        if (!lazy.USE_OLD_DIALOG) {
+          this.reportTelemetry("clear");
+        }
         this.sanitize(e);
       }
     });
@@ -181,7 +200,7 @@ var gSanitizePromptDialog = {
     // we want to show the warning box for all cases except clear on shutdown
     if (
       this.selectedTimespan === Sanitizer.TIMESPAN_EVERYTHING &&
-      !arg.inClearOnShutdown
+      !this._inClearOnShutdownNewDialog
     ) {
       this.prepareWarning();
       this.warningBox.hidden = false;
@@ -201,6 +220,18 @@ var gSanitizePromptDialog = {
     }
 
     await this.dataSizesFinishedUpdatingPromise;
+
+    if (!lazy.USE_OLD_DIALOG) {
+      this.reportTelemetry("open");
+    }
+  },
+
+  updateAcceptButtonState() {
+    // Check if none of the checkboxes are checked
+    let noneChecked = Array.from(this._allCheckboxes).every(cb => !cb.checked);
+    let acceptButton = this._dialog.getButton("accept");
+
+    acceptButton.disabled = noneChecked;
   },
 
   selectByTimespan() {
@@ -278,7 +309,16 @@ var gSanitizePromptDialog = {
       let itemsToClear = this.getItemsToClear();
       Sanitizer.sanitize(itemsToClear, options)
         .catch(console.error)
-        .then(() => window.close())
+        .then(() => {
+          // we don't need to update data sizes in settings when the dialog is opened
+          // in the browser context
+          if (!this._inBrowserWindow) {
+            // call update sites to ensure the data sizes displayed
+            // in settings is updated.
+            lazy.SiteDataManager.updateSites();
+          }
+          window.close();
+        })
         .catch(console.error);
       event.preventDefault();
     } catch (er) {
@@ -343,15 +383,18 @@ var gSanitizePromptDialog = {
   /**
    * Gets the latest usage data and then updates the UI
    *
-   * @param {boolean} doUpdateSites - if we need to trigger an
-   *        updateSites() to get the latest usage data
    * @returns {Promise} resolves when updating the UI is complete
    */
-  async getAndUpdateDataSizes(doUpdateSites) {
+  async getAndUpdateDataSizes() {
     if (lazy.USE_OLD_DIALOG) {
       return;
     }
-    if (doUpdateSites) {
+
+    // We have to update sites before displaying data sizes
+    // when the dialog is opened in the browser context, since users
+    // can open the dialog in this context without opening about:preferences.
+    // When a user opens about:preferences, updateSites is called on load.
+    if (this._inBrowserWindow) {
       await lazy.SiteDataManager.updateSites();
     }
     // Current timespans used in the dialog box
@@ -498,6 +541,41 @@ var gSanitizePromptDialog = {
       }
     }
     return items;
+  },
+
+  reportTelemetry(event) {
+    let contextOpenedIn;
+    if (this._inClearSiteDataNewDialog) {
+      contextOpenedIn = "clearSiteData";
+    } else if (this._inBrowserWindow) {
+      contextOpenedIn = "browser";
+    } else {
+      contextOpenedIn = "clearHistory";
+    }
+
+    // Report time span and clearing options after sanitize is clicked
+    if (event == "clear") {
+      Glean.privacySanitize.clearingTimeSpanSelected.record({
+        time_span: this.selectedTimespan.toString(),
+      });
+
+      let selectedOptions = this.getItemsToClear();
+      Glean.privacySanitize.clear.record({
+        context: contextOpenedIn,
+        history_form_data_downloads: selectedOptions.includes(
+          "historyFormDataAndDownloads"
+        ),
+        cookies_and_storage: selectedOptions.includes("cookiesAndStorage"),
+        cache: selectedOptions.includes("cache"),
+        site_settings: selectedOptions.includes("siteSettings"),
+      });
+    }
+    // if the dialog was just opened, just report which context it was opened in
+    else {
+      Glean.privacySanitize.dialogOpen.record({
+        context: contextOpenedIn,
+      });
+    }
   },
 };
 

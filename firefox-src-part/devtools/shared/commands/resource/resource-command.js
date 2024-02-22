@@ -830,6 +830,9 @@ class ResourceCommand {
     for (const resource of resources) {
       const { resourceType, resourceId } = resource;
       this._cache.delete(cacheKey(resourceType, resourceId));
+      if (!resource.targetFront) {
+        resource.targetFront = targetFront;
+      }
       this._queueResourceEvent("destroyed", resourceType, resource);
     }
     this._throttledNotifyWatchers();
@@ -1198,6 +1201,7 @@ ResourceCommand.TYPES = ResourceCommand.prototype.TYPES = {
   CONSOLE_MESSAGE: "console-message",
   CSS_CHANGE: "css-change",
   CSS_MESSAGE: "css-message",
+  CSS_REGISTERED_PROPERTIES: "css-registered-properties",
   ERROR_MESSAGE: "error-message",
   PLATFORM_MESSAGE: "platform-message",
   DOCUMENT_EVENT: "document-event",

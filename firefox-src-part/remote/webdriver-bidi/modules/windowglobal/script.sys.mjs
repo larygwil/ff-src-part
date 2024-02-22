@@ -243,7 +243,7 @@ class ScriptModule extends WindowGlobalBiDiModule {
       } = script;
       const realm = this.messageHandler.getRealm({ sandboxName: sandbox });
       const deserializedArguments = commandArguments.map(arg =>
-        this.deserialize(realm, arg, {
+        this.deserialize(arg, realm, {
           emitScriptMessage: this.#emitScriptMessage,
         })
       );
@@ -352,7 +352,7 @@ class ScriptModule extends WindowGlobalBiDiModule {
     const deserializedArguments =
       commandArguments !== null
         ? commandArguments.map(arg =>
-            this.deserialize(realm, arg, {
+            this.deserialize(arg, realm, {
               emitScriptMessage: this.#emitScriptMessage,
             })
           )
@@ -360,7 +360,7 @@ class ScriptModule extends WindowGlobalBiDiModule {
 
     const deserializedThis =
       thisParameter !== null
-        ? this.deserialize(realm, thisParameter, {
+        ? this.deserialize(thisParameter, realm, {
             emitScriptMessage: this.#emitScriptMessage,
           })
         : null;
@@ -475,8 +475,7 @@ class ScriptModule extends WindowGlobalBiDiModule {
    */
 
   _applySessionData(params) {
-    // We only care about updates coming on context creation.
-    if (params.category === "preload-script" && params.initial) {
+    if (params.category === "preload-script") {
       this.#preloadScripts = new Set();
       for (const item of params.sessionData) {
         if (this.messageHandler.matchesContext(item.contextDescriptor)) {

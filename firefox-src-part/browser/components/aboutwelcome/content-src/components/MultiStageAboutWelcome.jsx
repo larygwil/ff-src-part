@@ -4,14 +4,11 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { Localized } from "./MSLocalized";
-import { AboutWelcomeUtils } from "../lib/aboutwelcome-utils";
+import { AboutWelcomeUtils } from "../lib/aboutwelcome-utils.mjs";
 import { MultiStageProtonScreen } from "./MultiStageProtonScreen";
 import { useLanguageSwitcher } from "./LanguageSwitcher";
 import { SubmenuButton } from "./SubmenuButton";
-import {
-  BASE_PARAMS,
-  addUtmParams,
-} from "../../../newtab/content-src/asrouter/templates/FirstRun/addUtmParams";
+import { BASE_PARAMS, addUtmParams } from "../lib/addUtmParams.mjs";
 
 // Amount of milliseconds for all transitions to complete (including delays).
 const TRANSITION_OUT_TIME = 1000;
@@ -283,6 +280,13 @@ export const SecondaryCTA = props => {
   if (isSplitButton) {
     className += " split-button-container";
   }
+  const isDisabled = React.useCallback(
+    disabledValue =>
+      disabledValue === "hasActiveMultiSelect"
+        ? !(props.activeMultiSelect?.length > 0)
+        : disabledValue,
+    [props.activeMultiSelect?.length]
+  );
 
   if (isTextLink) {
     buttonStyling += " text-link";
@@ -303,6 +307,7 @@ export const SecondaryCTA = props => {
         <button
           className={buttonStyling}
           value={targetElement}
+          disabled={isDisabled(props.content.secondary_button?.disabled)}
           onClick={props.handleAction}
         />
       </Localized>

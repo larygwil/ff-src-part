@@ -121,6 +121,16 @@ export var Policies = {
     },
   },
 
+  AllowFileSelectionDialogs: {
+    onBeforeUIStartup(manager, param) {
+      if (!param) {
+        setAndLockPref("widget.disable_file_pickers", true);
+        setAndLockPref("browser.download.useDownloadDir", true);
+        manager.disallowFeature("filepickers");
+      }
+    },
+  },
+
   AppAutoUpdate: {
     onBeforeUIStartup(manager, param) {
       // Logic feels a bit reversed here, but it's correct. If AppAutoUpdate is
@@ -949,6 +959,10 @@ export var Policies = {
     onBeforeAddons(manager, param) {
       if ("Enabled" in param) {
         let mode = param.Enabled ? 2 : 5;
+        // Fallback only matters if DOH is enabled.
+        if (param.Fallback === false) {
+          mode = 3;
+        }
         PoliciesUtils.setDefaultPref("network.trr.mode", mode, param.Locked);
       }
       if ("ProviderURL" in param) {

@@ -17,7 +17,6 @@ ChromeUtils.defineESModuleGetters(lazy, {
   error: "chrome://remote/content/shared/webdriver/Errors.sys.mjs",
   EventPromise: "chrome://remote/content/shared/Sync.sys.mjs",
   getTimeoutMultiplier: "chrome://remote/content/shared/AppInfo.sys.mjs",
-  Log: "chrome://remote/content/shared/Log.sys.mjs",
   modal: "chrome://remote/content/shared/Prompt.sys.mjs",
   registerNavigationId:
     "chrome://remote/content/shared/NavigationManager.sys.mjs",
@@ -33,16 +32,14 @@ ChromeUtils.defineESModuleGetters(lazy, {
   setDefaultAndAssertSerializationOptions:
     "chrome://remote/content/webdriver-bidi/RemoteValue.sys.mjs",
   TabManager: "chrome://remote/content/shared/TabManager.sys.mjs",
+  UserContextManager:
+    "chrome://remote/content/shared/UserContextManager.sys.mjs",
   waitForInitialNavigationCompleted:
     "chrome://remote/content/shared/Navigate.sys.mjs",
   WindowGlobalMessageHandler:
     "chrome://remote/content/shared/messagehandler/WindowGlobalMessageHandler.sys.mjs",
   windowManager: "chrome://remote/content/shared/WindowManager.sys.mjs",
 });
-
-ChromeUtils.defineLazyGetter(lazy, "logger", () =>
-  lazy.Log.get(lazy.Log.TYPES.WEBDRIVER_BIDI)
-);
 
 // Maximal window dimension allowed when emulating a viewport.
 const MAX_WINDOW_SIZE = 10000000;
@@ -415,11 +412,10 @@ class BrowsingContextModule extends Module {
     }
 
     if (lazy.TabManager.getTabCount() === 1) {
-      // The behavior when closing the last tab is currently unspecified.
-      // Warn the consumer about potential issues
-      lazy.logger.warn(
-        `Closing the last open tab (Browsing Context id ${contextId}), expect inconsistent behavior across platforms`
-      );
+      // The behavior when closing the very last tab is currently unspecified.
+      // As such behave like Marionette and don't allow closing it.
+      // See: https://github.com/w3c/webdriver-bidi/issues/187
+      return;
     }
 
     const tab = lazy.TabManager.getTabForBrowsingContext(context);
@@ -440,6 +436,9 @@ class BrowsingContextModule extends Module {
    *     If options.type is "window", the reference context is ignored.
    * @param {CreateType} options.type
    *     Type of browsing context to create.
+   * @param {string=} options.userContext
+   *     The id of the user context which should own the browsing context.
+   *     Defaults to the default user context.
    *
    * @throws {InvalidArgumentError}
    *     If the browsing context is not a top-level one.
@@ -451,6 +450,7 @@ class BrowsingContextModule extends Module {
       background = false,
       referenceContext: referenceContextId = null,
       type: typeHint,
+      userContext: userContextId = null,
     } = options;
 
     if (![CreateType.tab, CreateType.window].includes(typeHint)) {
@@ -465,6 +465,58 @@ class BrowsingContextModule extends Module {
       background,
       lazy.pprint`Expected "background" to be a boolean, got ${background}`
     );
+
+    let referenceContext = null;
+    if (referenceContextId !== null) {
+      lazy.assert.string(
+        referenceContextId,
+        lazy.pprint`Expected "referenceContext" to be a string, got ${referenceContextId}`
+      );
+
+      referenceContext =
+        lazy.TabManager.getBrowsingContextById(referenceContextId);
+      if (!referenceContext) {
+        throw new lazy.error.NoSuchFrameError(
+          `Browsing Context with id ${referenceContextId} not found`
+        );
+      }
+
+      if (referenceContext.parent) {
+        throw new lazy.error.InvalidArgumentError(
+          `referenceContext with id ${referenceContextId} is not a top-level browsing context`
+        );
+      }
+    }
+
+    let userContext = lazy.UserContextManager.defaultUserContextId;
+    if (referenceContext !== null) {
+      userContext =
+        lazy.UserContextManager.getIdByBrowsingContext(referenceContext);
+    }
+
+    if (userContextId !== null) {
+      lazy.assert.string(
+        userContextId,
+        lazy.pprint`Expected "userContext" to be a string, got ${userContextId}`
+      );
+
+      if (!lazy.UserContextManager.hasUserContextId(userContextId)) {
+        throw new lazy.error.NoSuchUserContextError(
+          `User Context with id ${userContextId} was not found`
+        );
+      }
+
+      userContext = userContextId;
+
+      if (
+        lazy.AppInfo.isAndroid &&
+        userContext != lazy.UserContextManager.defaultUserContextId
+      ) {
+        throw new lazy.error.UnsupportedOperationError(
+          `browsingContext.create with non-default "userContext" not supported for ${lazy.AppInfo.name}`
+        );
+      }
+    }
 
     let browser;
 
@@ -483,6 +535,7 @@ class BrowsingContextModule extends Module {
       case "window":
         const newWindow = await lazy.windowManager.openBrowserWindow({
           focus: !background,
+          userContextId: userContext,
         });
         browser = lazy.TabManager.getTabBrowser(newWindow).selectedBrowser;
         break;
@@ -495,34 +548,15 @@ class BrowsingContextModule extends Module {
         }
 
         let referenceTab;
-        if (referenceContextId !== null) {
-          lazy.assert.string(
-            referenceContextId,
-            lazy.pprint`Expected "referenceContext" to be a string, got ${referenceContextId}`
-          );
-
-          const referenceBrowsingContext =
-            lazy.TabManager.getBrowsingContextById(referenceContextId);
-          if (!referenceBrowsingContext) {
-            throw new lazy.error.NoSuchFrameError(
-              `Browsing Context with id ${referenceContextId} not found`
-            );
-          }
-
-          if (referenceBrowsingContext.parent) {
-            throw new lazy.error.InvalidArgumentError(
-              `referenceContext with id ${referenceContextId} is not a top-level browsing context`
-            );
-          }
-
-          referenceTab = lazy.TabManager.getTabForBrowsingContext(
-            referenceBrowsingContext
-          );
+        if (referenceContext !== null) {
+          referenceTab =
+            lazy.TabManager.getTabForBrowsingContext(referenceContext);
         }
 
         const tab = await lazy.TabManager.addTab({
           focus: !background,
           referenceTab,
+          userContextId: userContext,
         });
         browser = lazy.TabManager.getBrowserForTab(tab);
     }
@@ -564,6 +598,8 @@ class BrowsingContextModule extends Module {
    *     of the to be processed browsing context tree.
    * @property {string} url
    *     The current documents location.
+   * @property {string} userContext
+   *     The id of the user context owning this browsing context.
    * @property {Array<BrowsingContextInfo>=} children
    *     List of child browsing contexts. Only set if maxDepth hasn't been
    *     reached yet.
@@ -1573,10 +1609,12 @@ class BrowsingContextModule extends Module {
       );
     }
 
+    const userContext = lazy.UserContextManager.getIdByBrowsingContext(context);
     const contextInfo = {
+      children,
       context: lazy.TabManager.getIdForBrowsingContext(context),
       url: context.currentURI.spec,
-      children,
+      userContext,
     };
 
     if (isRoot) {
@@ -1801,6 +1839,18 @@ class BrowsingContextModule extends Module {
     }
   };
 
+  #stopListeningToContextEvent(event) {
+    this.#subscribedEvents.delete(event);
+
+    const hasContextEvent =
+      this.#subscribedEvents.has("browsingContext.contextCreated") ||
+      this.#subscribedEvents.has("browsingContext.contextDestroyed");
+
+    if (!hasContextEvent) {
+      this.#contextListener.stopListening();
+    }
+  }
+
   #stopListeningToNavigationEvent(event) {
     this.#subscribedEvents.delete(event);
 
@@ -1852,14 +1902,12 @@ class BrowsingContextModule extends Module {
     switch (event) {
       case "browsingContext.contextCreated":
       case "browsingContext.contextDestroyed": {
-        this.#contextListener.stopListening();
-        this.#subscribedEvents.delete(event);
+        this.#stopListeningToContextEvent(event);
         break;
       }
       case "browsingContext.fragmentNavigated":
       case "browsingContext.navigationStarted": {
-        this.#stopListeningToNavigationEvent();
-        this.#subscribedEvents.delete(event);
+        this.#stopListeningToNavigationEvent(event);
         break;
       }
       case "browsingContext.userPromptClosed":

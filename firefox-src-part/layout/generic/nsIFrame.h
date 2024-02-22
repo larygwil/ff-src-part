@@ -375,6 +375,15 @@ struct IntrinsicSize {
     return width && height ? Some(nsSize(*width, *height)) : Nothing();
   }
 
+  void Zoom(const StyleZoom& aZoom) {
+    if (width) {
+      *width = aZoom.ZoomCoord(*width);
+    }
+    if (height) {
+      *height = aZoom.ZoomCoord(*height);
+    }
+  }
+
   bool operator==(const IntrinsicSize& rhs) const {
     return width == rhs.width && height == rhs.height;
   }
@@ -1345,14 +1354,16 @@ class nsIFrame : public nsQueryFrame {
   NS_DECLARE_FRAME_PROPERTY_DELETABLE(PageValuesProperty, PageValues)
 
   const nsAtom* GetStartPageValue() const {
-    if (const PageValues* const values = GetProperty(PageValuesProperty())) {
+    if (const PageValues* const values =
+            FirstInFlow()->GetProperty(PageValuesProperty())) {
       return values->mStartPageValue;
     }
     return nullptr;
   }
 
   const nsAtom* GetEndPageValue() const {
-    if (const PageValues* const values = GetProperty(PageValuesProperty())) {
+    if (const PageValues* const values =
+            FirstInFlow()->GetProperty(PageValuesProperty())) {
       return values->mEndPageValue;
     }
     return nullptr;
@@ -2327,7 +2338,7 @@ class nsIFrame : public nsQueryFrame {
   /**
    * Get the cursor for a given frame.
    */
-  virtual Maybe<Cursor> GetCursor(const nsPoint&);
+  virtual Cursor GetCursor(const nsPoint&);
 
   /**
    * Get a point (in the frame's coordinate space) given an offset into
@@ -4082,6 +4093,16 @@ class nsIFrame : public nsQueryFrame {
 
   mozilla::ContainSizeAxes GetContainSizeAxes() const {
     return StyleDisplay()->GetContainSizeAxes(*this);
+  }
+
+  // Common steps to all replaced elements given an unconstrained intrinsic
+  // size.
+  mozilla::IntrinsicSize FinishIntrinsicSize(
+      const mozilla::ContainSizeAxes& aAxes,
+      const mozilla::IntrinsicSize& aUncontainedSize) const {
+    auto result = aAxes.ContainIntrinsicSize(aUncontainedSize, *this);
+    result.Zoom(Style()->EffectiveZoom());
+    return result;
   }
 
   Maybe<nscoord> ContainIntrinsicBSize(nscoord aNoneValue = 0) const {

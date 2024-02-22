@@ -69,7 +69,7 @@ const SQL_ADAPTIVE_QUERY = `/* do not warn (bug 487789) */
    JOIN moz_places h ON h.id = i.place_id
    LEFT JOIN moz_openpages_temp t
           ON t.url = h.url
-         AND t.userContextId = :userContextId
+          AND (t.userContextId = :userContextId OR (t.userContextId <> -1 AND :userContextId IS NULL))
    WHERE AUTOCOMPLETE_MATCH(NULL, h.url,
                             IFNULL(btitle, h.title), tags,
                             h.visit_count, h.typed, bookmarked,
@@ -188,6 +188,8 @@ class ProviderInputHistory extends UrlbarProvider {
         );
       });
 
+      let isBlockable = resultSource == UrlbarUtils.RESULT_SOURCE.HISTORY;
+
       let result = new lazy.UrlbarResult(
         UrlbarUtils.RESULT_TYPE.URL,
         resultSource,
@@ -196,19 +198,14 @@ class ProviderInputHistory extends UrlbarProvider {
           title: [resultTitle, UrlbarUtils.HIGHLIGHT.TYPED],
           tags: [resultTags, UrlbarUtils.HIGHLIGHT.TYPED],
           icon: UrlbarUtils.getIconForUrl(url),
-          isBlockable:
-            resultSource == UrlbarUtils.RESULT_SOURCE.HISTORY
-              ? true
-              : undefined,
-          blockL10n:
-            resultSource == UrlbarUtils.RESULT_SOURCE.HISTORY
-              ? { id: "urlbar-result-menu-remove-from-history" }
-              : undefined,
-          helpUrl:
-            resultSource == UrlbarUtils.RESULT_SOURCE.HISTORY
-              ? Services.urlFormatter.formatURLPref("app.support.baseURL") +
-                "awesome-bar-result-menu"
-              : undefined,
+          isBlockable,
+          blockL10n: isBlockable
+            ? { id: "urlbar-result-menu-remove-from-history" }
+            : undefined,
+          helpUrl: isBlockable
+            ? Services.urlFormatter.formatURLPref("app.support.baseURL") +
+              "awesome-bar-result-menu"
+            : undefined,
         })
       );
 
@@ -255,11 +252,12 @@ class ProviderInputHistory extends UrlbarProvider {
         search_string: queryContext.searchString.toLowerCase(),
         matchBehavior: Ci.mozIPlacesAutoComplete.MATCH_ANYWHERE,
         searchBehavior: lazy.UrlbarPrefs.get("defaultBehavior"),
-        userContextId:
-          lazy.UrlbarProviderOpenTabs.getUserContextIdForOpenPagesTable(
-            queryContext.userContextId,
-            queryContext.isPrivate
-          ),
+        userContextId: lazy.UrlbarPrefs.get("switchTabs.searchAllContainers")
+          ? lazy.UrlbarProviderOpenTabs.getUserContextIdForOpenPagesTable(
+              null,
+              queryContext.isPrivate
+            )
+          : queryContext.userContextId,
         maxResults: queryContext.maxResults,
       },
     ];
