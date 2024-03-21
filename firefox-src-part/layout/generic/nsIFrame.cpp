@@ -2117,8 +2117,8 @@ nsIFrame::CaretBlockAxisMetrics nsIFrame::GetCaretBlockAxisMetrics(
   return CaretBlockAxisMetrics{.mOffset = baseline - ascent, .mExtent = height};
 }
 
-const nsAtom* nsIFrame::ComputePageValue() const {
-  const nsAtom* value = nsGkAtoms::_empty;
+const nsAtom* nsIFrame::ComputePageValue(const nsAtom* aAutoValue) const {
+  const nsAtom* value = aAutoValue ? aAutoValue : nsGkAtoms::_empty;
   const nsIFrame* frame = this;
   // Find what CSS page name value this frame's subtree has, if any.
   // Starting with this frame, check if a page name other than auto is present,
@@ -2484,7 +2484,7 @@ bool nsIFrame::CanBeDynamicReflowRoot() const {
 
   // If we participate in a container's block reflow context, or margins
   // can collapse through us, we can't be a dynamic reflow root.
-  if (IsBlockFrameOrSubclass() && !HasAnyStateBits(NS_BLOCK_BFC_STATE_BITS)) {
+  if (IsBlockFrameOrSubclass() && !HasAnyStateBits(NS_BLOCK_BFC)) {
     return false;
   }
 
@@ -3409,6 +3409,9 @@ void nsIFrame::BuildDisplayListForStackingContext(
     ApplyClipProp(transformedCssClip);
   }
 
+  uint32_t numActiveScrollframesEncounteredBefore =
+      aBuilder->GetNumActiveScrollframesEncountered();
+
   nsDisplayListCollection set(aBuilder);
   Maybe<nsRect> clipForMask;
   {
@@ -3692,17 +3695,22 @@ void nsIFrame::BuildDisplayListForStackingContext(
     if (transformItem) {
       resultList.AppendToTop(transformItem);
       createdContainer = true;
-    }
 
-    if (hasPerspective) {
-      transformItem->MarkWithAssociatedPerspective();
-
-      if (clipCapturedBy == ContainerItemType::Perspective) {
-        clipState.Restore();
+      if (numActiveScrollframesEncounteredBefore !=
+          aBuilder->GetNumActiveScrollframesEncountered()) {
+        transformItem->SetContainsASRs(true);
       }
-      resultList.AppendNewToTop<nsDisplayPerspective>(aBuilder, this,
-                                                      &resultList);
-      createdContainer = true;
+
+      if (hasPerspective) {
+        transformItem->MarkWithAssociatedPerspective();
+
+        if (clipCapturedBy == ContainerItemType::Perspective) {
+          clipState.Restore();
+        }
+        resultList.AppendNewToTop<nsDisplayPerspective>(aBuilder, this,
+                                                        &resultList);
+        createdContainer = true;
+      }
     }
   }
 
@@ -5413,7 +5421,15 @@ static FrameTarget GetSelectionClosestFrame(nsIFrame* aFrame,
                                             const nsPoint& aPoint,
                                             uint32_t aFlags);
 
-static bool SelfIsSelectable(nsIFrame* aFrame, uint32_t aFlags) {
+static bool SelfIsSelectable(nsIFrame* aFrame, nsIFrame* aParentFrame,
+                             uint32_t aFlags) {
+  // We should not move selection into a native anonymous subtree when handling
+  // selection outside it.
+  if ((aFlags & nsIFrame::IGNORE_NATIVE_ANONYMOUS_SUBTREE) &&
+      aParentFrame->GetClosestNativeAnonymousSubtreeRoot() !=
+          aFrame->GetClosestNativeAnonymousSubtreeRoot()) {
+    return false;
+  }
   if ((aFlags & nsIFrame::SKIP_HIDDEN) &&
       !aFrame->StyleVisibility()->IsVisible()) {
     return false;
@@ -5476,21 +5492,28 @@ static FrameTarget DrillDownToSelectionFrame(nsIFrame* aFrame, bool aEndFrame,
     nsIFrame* result = nullptr;
     nsIFrame* frame = aFrame->PrincipalChildList().FirstChild();
     if (!aEndFrame) {
-      while (frame && (!SelfIsSelectable(frame, aFlags) || frame->IsEmpty()))
+      while (frame &&
+             (!SelfIsSelectable(frame, aFrame, aFlags) || frame->IsEmpty())) {
         frame = frame->GetNextSibling();
-      if (frame) result = frame;
+      }
+      if (frame) {
+        result = frame;
+      }
     } else {
       // Because the frame tree is singly linked, to find the last frame,
       // we have to iterate through all the frames
       // XXX I have a feeling this could be slow for long blocks, although
       //     I can't find any slowdowns
       while (frame) {
-        if (!frame->IsEmpty() && SelfIsSelectable(frame, aFlags))
+        if (!frame->IsEmpty() && SelfIsSelectable(frame, aFrame, aFlags)) {
           result = frame;
+        }
         frame = frame->GetNextSibling();
       }
     }
-    if (result) return DrillDownToSelectionFrame(result, aEndFrame, aFlags);
+    if (result) {
+      return DrillDownToSelectionFrame(result, aEndFrame, aFlags);
+    }
   }
   // If the current frame has no targetable children, target the current frame
   return FrameTarget{aFrame, true, aEndFrame};
@@ -5502,8 +5525,9 @@ static FrameTarget GetSelectionClosestFrameForLine(
     nsBlockFrame* aParent, nsBlockFrame::LineIterator aLine,
     const nsPoint& aPoint, uint32_t aFlags) {
   // Account for end of lines (any iterator from the block is valid)
-  if (aLine == aParent->LinesEnd())
+  if (aLine == aParent->LinesEnd()) {
     return DrillDownToSelectionFrame(aParent, true, aFlags);
+  }
   nsIFrame* frame = aLine->mFirstChild;
   nsIFrame* closestFromIStart = nullptr;
   nsIFrame* closestFromIEnd = nullptr;
@@ -5519,7 +5543,7 @@ static FrameTarget GetSelectionClosestFrameForLine(
     // the previous thing had a different editableness than us, since then we
     // may end up not being able to select after it if the br is the last thing
     // on the line.
-    if (!SelfIsSelectable(frame, aFlags) || frame->IsEmpty() ||
+    if (!SelfIsSelectable(frame, aParent, aFlags) || frame->IsEmpty() ||
         (canSkipBr && frame->IsBrFrame() &&
          lastFrameWasEditable == frame->GetContent()->IsEditable())) {
       continue;
@@ -5699,7 +5723,7 @@ static FrameTarget GetSelectionClosestFrame(nsIFrame* aFrame,
     // Go through all the child frames to find the closest one
     nsIFrame::FrameWithDistance closest = {nullptr, nscoord_MAX, nscoord_MAX};
     for (; kid; kid = kid->GetNextSibling()) {
-      if (!SelfIsSelectable(kid, aFlags) || kid->IsEmpty()) {
+      if (!SelfIsSelectable(kid, aFrame, aFlags) || kid->IsEmpty()) {
         continue;
       }
 
@@ -9368,7 +9392,8 @@ nsresult nsIFrame::PeekOffsetForLineEdge(PeekOffsetStruct* aPos) {
       }
     }
   }
-  FrameTarget targetFrame = DrillDownToSelectionFrame(baseFrame, endOfLine, 0);
+  FrameTarget targetFrame = DrillDownToSelectionFrame(
+      baseFrame, endOfLine, nsIFrame::IGNORE_NATIVE_ANONYMOUS_SUBTREE);
   SetPeekResultFromFrame(*aPos, targetFrame.frame, endOfLine ? -1 : 0,
                          OffsetIsAtLineEdge::Yes);
   if (endOfLine && targetFrame.frame->HasSignificantTerminalNewline()) {
@@ -11538,11 +11563,44 @@ nsIFrame::PhysicalAxes nsIFrame::ShouldApplyOverflowClipping(
     return PhysicalAxes::None;
   }
 
-  // If we're paginated and a block, and have NS_BLOCK_CLIP_PAGINATED_OVERFLOW
-  // set, then we want to clip our overflow.
-  bool clip = HasAnyStateBits(NS_BLOCK_CLIP_PAGINATED_OVERFLOW) &&
-              PresContext()->IsPaginated() && IsBlockFrame();
-  return clip ? PhysicalAxes::Both : PhysicalAxes::None;
+  return IsSuppressedScrollableBlockForPrint() ? PhysicalAxes::Both
+                                               : PhysicalAxes::None;
+}
+
+bool nsIFrame::IsSuppressedScrollableBlockForPrint() const {
+  // This condition needs to match the suppressScrollFrame logic in the frame
+  // constructor.
+  if (!PresContext()->IsPaginated() || !IsBlockFrame() ||
+      !StyleDisplay()->IsScrollableOverflow() ||
+      !StyleDisplay()->IsBlockOutsideStyle() ||
+      mContent->IsInNativeAnonymousSubtree()) {
+    return false;
+  }
+  if (auto* element = Element::FromNode(mContent);
+      element && PresContext()->ElementWouldPropagateScrollStyles(*element)) {
+    return false;
+  }
+  return true;
+}
+
+bool nsIFrame::HasUnreflowedContainerQueryAncestor() const {
+  // If this frame has done the first reflow, its ancestors are guaranteed to
+  // have as well.
+  if (!HasAnyStateBits(NS_FRAME_FIRST_REFLOW) ||
+      !PresContext()->HasContainerQueryFrames()) {
+    return false;
+  }
+  for (nsIFrame* cur = GetInFlowParent(); cur; cur = cur->GetInFlowParent()) {
+    if (!cur->HasAnyStateBits(NS_FRAME_FIRST_REFLOW)) {
+      // Done first reflow from this ancestor up, including query containers.
+      return false;
+    }
+    if (cur->StyleDisplay()->IsQueryContainer()) {
+      return true;
+    }
+  }
+  // No query container from this frame up to root.
+  return false;
 }
 
 #ifdef DEBUG

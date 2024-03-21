@@ -278,7 +278,10 @@ var gMainPane = {
         let uri = win.gBrowser.currentURI.spec;
 
         if (
-          (uri == "about:preferences" || uri == "about:preferences#general") &&
+          (uri == "about:preferences" ||
+            uri == "about:preferences#general" ||
+            uri == "about:settings" ||
+            uri == "about:settings#general") &&
           document.visibilityState == "visible"
         ) {
           this.updateSetDefaultBrowser();
@@ -879,7 +882,7 @@ var gMainPane = {
     this.readBrowserContainersCheckbox();
   },
 
-  async onGetStarted(aEvent) {
+  async onGetStarted() {
     if (!AppConstants.MOZ_DEV_EDITION) {
       return;
     }
@@ -1980,7 +1983,7 @@ var gMainPane = {
     }
   },
 
-  async checkBrowserContainers(event) {
+  async checkBrowserContainers() {
     let checkbox = document.getElementById("browserContainersCheckbox");
     if (checkbox.checked) {
       Services.prefs.setBoolPref("privacy.userContext.enabled", true);
@@ -2135,7 +2138,7 @@ var gMainPane = {
     })().catch(console.error);
   },
 
-  onMigrationButtonCommand(command) {
+  onMigrationButtonCommand() {
     // Even though we're going to be showing the migration wizard here in
     // about:preferences, we'll delegate the call to
     // `MigrationUtils.showMigrationWizard`, as this will allow us to
@@ -2288,7 +2291,7 @@ var gMainPane = {
     }
   },
 
-  updatePerformanceSettingsBox({ duringChangeEvent }) {
+  updatePerformanceSettingsBox() {
     let defaultPerformancePref = Preferences.get(
       "browser.preferences.defaultPerformanceSettings.enabled"
     );
@@ -3333,7 +3336,7 @@ var gMainPane = {
 
       // Prompt the user to pick an app.  If they pick one, and it's a valid
       // selection, then add it to the list of possible handlers.
-      fp.init(window, winTitle, Ci.nsIFilePicker.modeOpen);
+      fp.init(window.browsingContext, winTitle, Ci.nsIFilePicker.modeOpen);
       fp.appendFilters(Ci.nsIFilePicker.filterApps);
       fp.open(fpCallback);
     }
@@ -3451,7 +3454,7 @@ var gMainPane = {
     let defDownloads = await this._indexToFolder(1);
     let fp = Cc["@mozilla.org/filepicker;1"].createInstance(Ci.nsIFilePicker);
 
-    fp.init(window, title, Ci.nsIFilePicker.modeGetFolder);
+    fp.init(window.browsingContext, title, Ci.nsIFilePicker.modeGetFolder);
     fp.appendFilters(Ci.nsIFilePicker.filterAll);
     // First try to open what's currently configured
     if (currentDirPref && currentDirPref.exists()) {
@@ -4189,7 +4192,7 @@ const AppearanceChooser = {
     if (e.type == "click") {
       switch (e.target.id) {
         // Forward the click to the "colors" button.
-        case "web-appearance-manage-colors-link":
+        case "web-appearance-manage-colors-button":
           document.getElementById("colors").click();
           e.preventDefault();
           break;
@@ -4206,7 +4209,7 @@ const AppearanceChooser = {
     this._update();
   },
 
-  observe(subject, topic, data) {
+  observe() {
     this._update();
   },
 

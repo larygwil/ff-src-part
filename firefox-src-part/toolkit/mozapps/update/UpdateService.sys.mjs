@@ -193,7 +193,7 @@ const WRITE_ERROR_DIR_ACCESS_DENIED = 68;
 const WRITE_ERROR_DELETE_BACKUP = 69;
 const WRITE_ERROR_EXTRACT = 70;
 
-// Error codes 80 through 99 are reserved for UpdateService.jsm and are not
+// Error codes 80 through 99 are reserved for UpdateService.sys.mjs and are not
 // defined in common/updatererrors.h
 const ERR_UPDATER_CRASHED = 89;
 const ERR_OLDER_VERSION_OR_SAME_BUILD = 90;
@@ -440,7 +440,7 @@ let gOtherInstancePollPromise;
  *
  * @return true if at least one other instance is running, false if not
  */
-function isOtherInstanceRunning(callback) {
+function isOtherInstanceRunning() {
   const checkEnabled = Services.prefs.getBoolPref(
     PREF_APP_UPDATE_CHECK_ONLY_INSTANCE_ENABLED,
     true
@@ -497,7 +497,7 @@ function waitForOtherInstances() {
   let iterations = 0;
   const maxIterations = Math.ceil(timeout / interval);
 
-  gOtherInstancePollPromise = new Promise(function (resolve, reject) {
+  gOtherInstancePollPromise = new Promise(function (resolve) {
     let poll = function () {
       iterations++;
       if (!isOtherInstanceRunning()) {
@@ -1907,7 +1907,7 @@ function pingStateAndStatusCodes(aUpdate, aStartup, aStatus) {
         stateCode = 13;
         break;
       // Note: Do not use stateCode 14 here. It is defined in
-      // UpdateTelemetry.jsm
+      // UpdateTelemetry.sys.mjs
       default:
         stateCode = 1;
     }
@@ -3352,10 +3352,10 @@ UpdateService.prototype = {
 
   /**
    * Notified when a timer fires
-   * @param   timer
+   * @param   _timer
    *          The timer that fired
    */
-  notify: function AUS_notify(timer) {
+  notify: function AUS_notify(_timer) {
     this._checkForBackgroundUpdates(true);
   },
 
@@ -3399,7 +3399,7 @@ UpdateService.prototype = {
       // See Bug 1599590.
       // Note that we exit unconditionally here if we are only doing manual
       // update checks, because manual update checking uses a completely
-      // different code path (AppUpdater.jsm creates its own nsIUpdateChecker),
+      // different code path (AppUpdater.sys.mjs creates its own nsIUpdateChecker),
       // bypassing this function completely.
       AUSTLMY.pingCheckCode(this._pingSuffix, AUSTLMY.CHK_DISABLED_BY_POLICY);
       return false;
@@ -4907,7 +4907,7 @@ UpdateManager.prototype = {
   /**
    * See nsIUpdateService.idl
    */
-  doInstallCleanup: async function UM_doInstallCleanup(isUninstall) {
+  doInstallCleanup: async function UM_doInstallCleanup() {
     LOG("UpdateManager:doInstallCleanup - cleaning up");
     let completionPromises = [];
 
@@ -4949,7 +4949,7 @@ UpdateManager.prototype = {
   /**
    * See nsIUpdateService.idl
    */
-  doUninstallCleanup: async function UM_doUninstallCleanup(isUninstall) {
+  doUninstallCleanup: async function UM_doUninstallCleanup() {
     LOG("UpdateManager:doUninstallCleanup - cleaning up.");
     let completionPromises = [];
 
@@ -5272,13 +5272,13 @@ export class CheckerService {
         return;
       }
 
-      let onLoad = event => {
+      let onLoad = _event => {
         request.removeEventListener("load", onLoad);
         LOG("CheckerService:#updateCheck - request got 'load' event");
         resolve(UPDATE_CHECK_LOAD_SUCCESS);
       };
       request.addEventListener("load", onLoad);
-      let onError = event => {
+      let onError = _event => {
         request.removeEventListener("error", onLoad);
         LOG("CheckerService:#updateCheck - request got 'error' event");
         resolve(UPDATE_CHECK_LOAD_ERROR);
@@ -5702,11 +5702,9 @@ Downloader.prototype = {
    * set of update patches.
    * @param   update
    *          A nsIUpdate object to select a patch from
-   * @param   updateDir
-   *          A nsIFile representing the update directory
    * @return  A nsIUpdatePatch object to download
    */
-  _selectPatch: function Downloader__selectPatch(update, updateDir) {
+  _selectPatch: function Downloader__selectPatch(update) {
     // Given an update to download, we will always try to download the patch
     // for a partial update over the patch for a full update.
 
@@ -5934,7 +5932,7 @@ Downloader.prototype = {
 
     // This function may return null, which indicates that there are no patches
     // to download.
-    this._patch = this._selectPatch(update, updateDir);
+    this._patch = this._selectPatch(update);
     if (!this._patch) {
       LOG("Downloader:downloadUpdate - no patch to download");
       AUSTLMY.pingDownloadCode(undefined, AUSTLMY.DWNLD_ERR_NO_UPDATE_PATCH);

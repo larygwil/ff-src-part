@@ -10,107 +10,96 @@ var ASRouterAdminRenderUtils;
 /******/ 	var __webpack_modules__ = ([
 /* 0 */,
 /* 1 */
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "ASRouterUtils": () => (/* binding */ ASRouterUtils)
+/* harmony export */   ASRouterUtils: () => (/* binding */ ASRouterUtils)
 /* harmony export */ });
-/* harmony import */ var modules_ActorConstants_sys_mjs__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(2);
-/* harmony import */ var common_Actions_sys_mjs__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(3);
+/* harmony import */ var _modules_ActorConstants_sys_mjs__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(2);
+/* harmony import */ var _newtab_common_Actions_sys_mjs__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(3);
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+// eslint-disable-next-line mozilla/reject-import-system-module-from-non-system
+
+// eslint-disable-next-line mozilla/reject-import-system-module-from-non-system
 
 
 const ASRouterUtils = {
   addListener(listener) {
-    if (__webpack_require__.g.ASRouterAddParentListener) {
-      __webpack_require__.g.ASRouterAddParentListener(listener);
+    if (globalThis.ASRouterAddParentListener) {
+      globalThis.ASRouterAddParentListener(listener);
     }
   },
   removeListener(listener) {
-    if (__webpack_require__.g.ASRouterRemoveParentListener) {
-      __webpack_require__.g.ASRouterRemoveParentListener(listener);
+    if (globalThis.ASRouterRemoveParentListener) {
+      globalThis.ASRouterRemoveParentListener(listener);
     }
   },
   sendMessage(action) {
-    if (__webpack_require__.g.ASRouterMessage) {
-      return __webpack_require__.g.ASRouterMessage(action);
+    if (globalThis.ASRouterMessage) {
+      return globalThis.ASRouterMessage(action);
     }
     throw new Error(`Unexpected call:\n${JSON.stringify(action, null, 3)}`);
   },
   blockById(id, options) {
     return ASRouterUtils.sendMessage({
-      type: modules_ActorConstants_sys_mjs__WEBPACK_IMPORTED_MODULE_0__.MESSAGE_TYPE_HASH.BLOCK_MESSAGE_BY_ID,
-      data: {
-        id,
-        ...options
-      }
+      type: _modules_ActorConstants_sys_mjs__WEBPACK_IMPORTED_MODULE_0__.MESSAGE_TYPE_HASH.BLOCK_MESSAGE_BY_ID,
+      data: { id, ...options },
     });
   },
   modifyMessageJson(content) {
     return ASRouterUtils.sendMessage({
-      type: modules_ActorConstants_sys_mjs__WEBPACK_IMPORTED_MODULE_0__.MESSAGE_TYPE_HASH.MODIFY_MESSAGE_JSON,
-      data: {
-        content
-      }
+      type: _modules_ActorConstants_sys_mjs__WEBPACK_IMPORTED_MODULE_0__.MESSAGE_TYPE_HASH.MODIFY_MESSAGE_JSON,
+      data: { content },
     });
   },
   executeAction(button_action) {
     return ASRouterUtils.sendMessage({
-      type: modules_ActorConstants_sys_mjs__WEBPACK_IMPORTED_MODULE_0__.MESSAGE_TYPE_HASH.USER_ACTION,
-      data: button_action
+      type: _modules_ActorConstants_sys_mjs__WEBPACK_IMPORTED_MODULE_0__.MESSAGE_TYPE_HASH.USER_ACTION,
+      data: button_action,
     });
   },
   unblockById(id) {
     return ASRouterUtils.sendMessage({
-      type: modules_ActorConstants_sys_mjs__WEBPACK_IMPORTED_MODULE_0__.MESSAGE_TYPE_HASH.UNBLOCK_MESSAGE_BY_ID,
-      data: {
-        id
-      }
+      type: _modules_ActorConstants_sys_mjs__WEBPACK_IMPORTED_MODULE_0__.MESSAGE_TYPE_HASH.UNBLOCK_MESSAGE_BY_ID,
+      data: { id },
     });
   },
   blockBundle(bundle) {
     return ASRouterUtils.sendMessage({
-      type: modules_ActorConstants_sys_mjs__WEBPACK_IMPORTED_MODULE_0__.MESSAGE_TYPE_HASH.BLOCK_BUNDLE,
-      data: {
-        bundle
-      }
+      type: _modules_ActorConstants_sys_mjs__WEBPACK_IMPORTED_MODULE_0__.MESSAGE_TYPE_HASH.BLOCK_BUNDLE,
+      data: { bundle },
     });
   },
   unblockBundle(bundle) {
     return ASRouterUtils.sendMessage({
-      type: modules_ActorConstants_sys_mjs__WEBPACK_IMPORTED_MODULE_0__.MESSAGE_TYPE_HASH.UNBLOCK_BUNDLE,
-      data: {
-        bundle
-      }
+      type: _modules_ActorConstants_sys_mjs__WEBPACK_IMPORTED_MODULE_0__.MESSAGE_TYPE_HASH.UNBLOCK_BUNDLE,
+      data: { bundle },
     });
   },
   overrideMessage(id) {
     return ASRouterUtils.sendMessage({
-      type: modules_ActorConstants_sys_mjs__WEBPACK_IMPORTED_MODULE_0__.MESSAGE_TYPE_HASH.OVERRIDE_MESSAGE,
-      data: {
-        id
-      }
+      type: _modules_ActorConstants_sys_mjs__WEBPACK_IMPORTED_MODULE_0__.MESSAGE_TYPE_HASH.OVERRIDE_MESSAGE,
+      data: { id },
     });
   },
   editState(key, value) {
     return ASRouterUtils.sendMessage({
-      type: modules_ActorConstants_sys_mjs__WEBPACK_IMPORTED_MODULE_0__.MESSAGE_TYPE_HASH.EDIT_STATE,
-      data: {
-        [key]: value
-      }
+      type: _modules_ActorConstants_sys_mjs__WEBPACK_IMPORTED_MODULE_0__.MESSAGE_TYPE_HASH.EDIT_STATE,
+      data: { [key]: value },
     });
   },
   sendTelemetry(ping) {
-    return ASRouterUtils.sendMessage(common_Actions_sys_mjs__WEBPACK_IMPORTED_MODULE_1__.actionCreators.ASRouterUserEvent(ping));
+    return ASRouterUtils.sendMessage(_newtab_common_Actions_sys_mjs__WEBPACK_IMPORTED_MODULE_1__.actionCreators.ASRouterUserEvent(ping));
   },
   getPreviewEndpoint() {
     return null;
-  }
+  },
 };
+
 
 /***/ }),
 /* 2 */
@@ -118,8 +107,8 @@ const ASRouterUtils = {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "MESSAGE_TYPE_LIST": () => (/* binding */ MESSAGE_TYPE_LIST),
-/* harmony export */   "MESSAGE_TYPE_HASH": () => (/* binding */ MESSAGE_TYPE_HASH)
+/* harmony export */   MESSAGE_TYPE_HASH: () => (/* binding */ MESSAGE_TYPE_HASH),
+/* harmony export */   MESSAGE_TYPE_LIST: () => (/* binding */ MESSAGE_TYPE_LIST)
 /* harmony export */ });
 /* vim: set ts=2 sw=2 sts=2 et tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
@@ -178,15 +167,15 @@ const MESSAGE_TYPE_HASH = MESSAGE_TYPE_LIST.reduce((hash, value) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "MAIN_MESSAGE_TYPE": () => (/* binding */ MAIN_MESSAGE_TYPE),
-/* harmony export */   "CONTENT_MESSAGE_TYPE": () => (/* binding */ CONTENT_MESSAGE_TYPE),
-/* harmony export */   "PRELOAD_MESSAGE_TYPE": () => (/* binding */ PRELOAD_MESSAGE_TYPE),
-/* harmony export */   "UI_CODE": () => (/* binding */ UI_CODE),
-/* harmony export */   "BACKGROUND_PROCESS": () => (/* binding */ BACKGROUND_PROCESS),
-/* harmony export */   "globalImportContext": () => (/* binding */ globalImportContext),
-/* harmony export */   "actionTypes": () => (/* binding */ actionTypes),
-/* harmony export */   "actionCreators": () => (/* binding */ actionCreators),
-/* harmony export */   "actionUtils": () => (/* binding */ actionUtils)
+/* harmony export */   BACKGROUND_PROCESS: () => (/* binding */ BACKGROUND_PROCESS),
+/* harmony export */   CONTENT_MESSAGE_TYPE: () => (/* binding */ CONTENT_MESSAGE_TYPE),
+/* harmony export */   MAIN_MESSAGE_TYPE: () => (/* binding */ MAIN_MESSAGE_TYPE),
+/* harmony export */   PRELOAD_MESSAGE_TYPE: () => (/* binding */ PRELOAD_MESSAGE_TYPE),
+/* harmony export */   UI_CODE: () => (/* binding */ UI_CODE),
+/* harmony export */   actionCreators: () => (/* binding */ actionCreators),
+/* harmony export */   actionTypes: () => (/* binding */ actionTypes),
+/* harmony export */   actionUtils: () => (/* binding */ actionUtils),
+/* harmony export */   globalImportContext: () => (/* binding */ globalImportContext)
 /* harmony export */ });
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -665,7 +654,7 @@ module.exports = ReactDOM;
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "SimpleHashRouter": () => (/* binding */ SimpleHashRouter)
+/* harmony export */   SimpleHashRouter: () => (/* binding */ SimpleHashRouter)
 /* harmony export */ });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(4);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
@@ -710,7 +699,7 @@ class SimpleHashRouter extends (react__WEBPACK_IMPORTED_MODULE_0___default().Pur
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "CopyButton": () => (/* binding */ CopyButton)
+/* harmony export */   CopyButton: () => (/* binding */ CopyButton)
 /* harmony export */ });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(4);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
@@ -742,7 +731,7 @@ const CopyButton = ({
   }, [inputSelector, transformer]);
   return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("button", _extends({
     className: className,
-    onClick: e => onClick()
+    onClick: () => onClick()
   }, props), copied && copiedLabel || label);
 };
 
@@ -752,7 +741,7 @@ const CopyButton = ({
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "ImpressionsSection": () => (/* binding */ ImpressionsSection)
+/* harmony export */   ImpressionsSection: () => (/* binding */ ImpressionsSection)
 /* harmony export */ });
 /* harmony import */ var _asrouter_utils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(1);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(4);
@@ -967,12 +956,12 @@ var __webpack_exports__ = {};
 (() => {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "ToggleStoryButton": () => (/* binding */ ToggleStoryButton),
-/* harmony export */   "ToggleMessageJSON": () => (/* binding */ ToggleMessageJSON),
-/* harmony export */   "TogglePrefCheckbox": () => (/* binding */ TogglePrefCheckbox),
-/* harmony export */   "ASRouterAdminInner": () => (/* binding */ ASRouterAdminInner),
-/* harmony export */   "ASRouterAdmin": () => (/* binding */ ASRouterAdmin),
-/* harmony export */   "renderASRouterAdmin": () => (/* binding */ renderASRouterAdmin)
+/* harmony export */   ASRouterAdmin: () => (/* binding */ ASRouterAdmin),
+/* harmony export */   ASRouterAdminInner: () => (/* binding */ ASRouterAdminInner),
+/* harmony export */   ToggleMessageJSON: () => (/* binding */ ToggleMessageJSON),
+/* harmony export */   TogglePrefCheckbox: () => (/* binding */ TogglePrefCheckbox),
+/* harmony export */   ToggleStoryButton: () => (/* binding */ ToggleStoryButton),
+/* harmony export */   renderASRouterAdmin: () => (/* binding */ renderASRouterAdmin)
 /* harmony export */ });
 /* harmony import */ var _asrouter_utils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(1);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(4);
@@ -1205,7 +1194,7 @@ class ASRouterAdminInner extends (react__WEBPACK_IMPORTED_MODULE_1___default().P
       type: "RESET_PROVIDER_PREF"
     });
   }
-  resetGroups(id, value) {
+  resetGroups() {
     _asrouter_utils__WEBPACK_IMPORTED_MODULE_0__.ASRouterUtils.sendMessage({
       type: "RESET_GROUPS_STATE"
     }).then(this.setStateFromParent);
@@ -1342,7 +1331,7 @@ class ASRouterAdminInner extends (react__WEBPACK_IMPORTED_MODULE_1___default().P
   }
 
   // Simulate a copy event that sets to clipboard all targeting paramters and values
-  onCopyTargetingParams(event) {
+  onCopyTargetingParams() {
     const stringTargetingParameters = {
       ...this.state.stringTargetingParameters
     };
@@ -1430,13 +1419,13 @@ class ASRouterAdminInner extends (react__WEBPACK_IMPORTED_MODULE_1___default().P
     // eslint-disable-next-line no-nested-ternary
     isBlocked ? null : isModified ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement("button", {
       className: "button restore",
-      onClick: e => this.resetJSON(msg)
+      onClick: () => this.resetJSON(msg)
     }, "Reset") : /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement("button", {
       className: "button show",
       onClick: this.handleOverride(msg.id)
     }, "Show"), isBlocked ? null : /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement("button", {
       className: "button modify",
-      onClick: e => this.modifyJson(msg)
+      onClick: () => this.modifyJson(msg)
     }, "Modify"), aboutMessagePreviewSupported ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_CopyButton__WEBPACK_IMPORTED_MODULE_4__.CopyButton, {
       transformer: text => `about:messagepreview?json=${encodeURIComponent(btoa(text))}`,
       label: "Share",
@@ -1452,7 +1441,7 @@ class ASRouterAdminInner extends (react__WEBPACK_IMPORTED_MODULE_1___default().P
       name: msg.id,
       className: "general-textarea",
       disabled: isBlocked,
-      onChange: e => this.handleChange(msg.id)
+      onChange: () => this.handleChange(msg.id)
     }, JSON.stringify(msg, null, 2))))));
   }
   selectPBMessage(msgId) {
@@ -1511,7 +1500,7 @@ class ASRouterAdminInner extends (react__WEBPACK_IMPORTED_MODULE_1___default().P
       onClick: isBlocked ? this.handleUnblock(msg) : this.handleBlock(msg)
     }, isBlocked ? "Unblock" : "Block"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement("button", {
       className: "ASRouterButton slim button",
-      onClick: e => this.resetPBJSON(msg)
+      onClick: () => this.resetPBJSON(msg)
     }, "Reset JSON")), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement("td", {
       className: `message-summary`
     }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement("pre", {
@@ -1542,7 +1531,7 @@ class ASRouterAdminInner extends (react__WEBPACK_IMPORTED_MODULE_1___default().P
     const messagesToShow = this.state.messageFilter === "all" ? this.state.messages : this.state.messages.filter(message => message.provider === this.state.messageFilter && message.template !== "pb_newtab");
     return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement("div", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement("button", {
       className: "ASRouterButton slim",
-      onClick: e => this.toggleAllMessages(messagesToShow)
+      onClick: () => this.toggleAllMessages(messagesToShow)
     }, "Collapse/Expand All"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement("p", {
       className: "helpLink"
     }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement("span", {
@@ -1726,7 +1715,7 @@ class ASRouterAdminInner extends (react__WEBPACK_IMPORTED_MODULE_1___default().P
       };
     });
   }
-  setAttribution(e) {
+  setAttribution() {
     _asrouter_utils__WEBPACK_IMPORTED_MODULE_0__.ASRouterUtils.sendMessage({
       type: "FORCE_ATTRIBUTION",
       data: this.state.attributionParameters
@@ -1844,7 +1833,7 @@ class ASRouterAdminInner extends (react__WEBPACK_IMPORTED_MODULE_1___default().P
       }
     }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement("h2", null, "Messages"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement("button", {
       className: "ASRouterButton slim button",
-      onClick: e => this.toggleAllMessages(messagesToShow)
+      onClick: () => this.toggleAllMessages(messagesToShow)
     }, "Collapse/Expand All"), this.renderPBMessages()));
   }
   getSection() {
@@ -1868,7 +1857,7 @@ class ASRouterAdminInner extends (react__WEBPACK_IMPORTED_MODULE_1___default().P
           enabled,
           frequency,
           userPreferences = []
-        }, index) => /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(Row, {
+        }) => /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(Row, {
           key: id
         }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement("td", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(TogglePrefCheckbox, {
           checked: enabled,
@@ -1921,7 +1910,7 @@ class ASRouterAdminInner extends (react__WEBPACK_IMPORTED_MODULE_1___default().P
       className: "icon icon-small-spacer icon-info"
     }), " ", /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement("span", null, "Need help using these tools? Check out our", " ", /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement("a", {
       target: "blank",
-      href: "https://firefox-source-docs.mozilla.org/browser/components/newtab/content-src/asrouter/docs/debugging-docs.html"
+      href: "https://firefox-source-docs.mozilla.org/browser/components/asrouter/docs/debugging-docs.html"
     }, "documentation"))), this.getSection()));
   }
 }

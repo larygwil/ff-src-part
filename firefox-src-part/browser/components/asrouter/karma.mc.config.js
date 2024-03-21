@@ -75,43 +75,30 @@ module.exports = function (config) {
           statements: 80,
           lines: 80,
           functions: 80,
-          branches: 66,
+          branches: 80,
           overrides: {
-            "content-src/asrouter-utils.js": {
-              statements: 66,
-              lines: 66,
-              functions: 76,
-              branches: 33,
-            },
-            "content-src/components/ASRouterAdmin/*.jsx": {
+            "content-src/components/ASRouterAdmin/SimpleHashRouter.jsx": {
               statements: 0,
-              lines: 0,
               functions: 0,
+              lines: 0,
+            },
+            "content-src/components/ASRouterAdmin/CopyButton.jsx": {
+              statements: 7.14,
+              lines: 7.69,
               branches: 0,
+              functions: 0,
             },
-            "content-src/components/ModalOverlay/ModalOverlay.jsx": {
-              statements: 92,
-              lines: 92,
-              functions: 100,
-              branches: 66,
+            "content-src/components/ASRouterAdmin/ImpressionsSection.jsx": {
+              statements: 7.14,
+              lines: 7.5,
+              branches: 0,
+              functions: 0,
             },
-            "modules/ASRouter.sys.mjs": {
-              statements: 75,
-              lines: 75,
-              functions: 64,
-              branches: 66,
-            },
-            "modules/ASRouterParentProcessMessageHandler.sys.mjs": {
-              statements: 98,
-              lines: 98,
-              functions: 100,
-              branches: 88,
-            },
-            "modules/ToolbarPanelHub.sys.mjs": {
-              statements: 88,
-              lines: 88,
-              functions: 94,
-              branches: 84,
+            "content-src/components/ASRouterAdmin/ASRouterAdmin.jsx": {
+              statements: 39.19,
+              lines: 39.19,
+              branches: 47.15,
+              functions: 32.08,
             },
           },
         },
@@ -122,24 +109,14 @@ module.exports = function (config) {
     webpack: {
       mode: "none",
       devtool: "inline-source-map",
-      // This loader allows us to override required files in tests
-      resolveLoader: {
-        alias: {
-          inject: path.join(__dirname, "../newtab/loaders/inject-loader"),
-        },
-      },
       // This resolve config allows us to import with paths relative to the root directory
       resolve: {
-        extensions: [".js", ".jsx"],
+        extensions: [".mjs", ".js", ".jsx"],
         modules: [
           PATHS.moduleResolveDirectory,
           "node_modules",
           PATHS.newtabResolveDirectory,
         ],
-        fallback: {
-          stream: require.resolve("stream-browserify"),
-          buffer: require.resolve("buffer"),
-        },
         alias: {
           newtab: path.join(__dirname, "../newtab"),
         },
@@ -191,7 +168,7 @@ module.exports = function (config) {
           },
           {
             enforce: "post",
-            test: /\.js[mx]?$/,
+            test: /\.js[x]?$/,
             loader: "@jsdevtools/coverage-istanbul-loader",
             options: { esModules: true },
             include: [path.resolve("content-src"), path.resolve("modules")],

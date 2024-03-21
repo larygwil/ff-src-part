@@ -50,7 +50,7 @@ function moduleEnvVarPresent() {
  *   as markers.
  *
  * [1]: The keys of the `presets` object defined in
- * https://searchfox.org/mozilla-central/source/devtools/client/performance-new/shared/background.jsm.js
+ * https://searchfox.org/mozilla-central/source/devtools/client/performance-new/shared/background.sys.mjs
  */
 
 const gOsSpecificLoggingPresets = (() => {
@@ -74,7 +74,7 @@ const gOsSpecificLoggingPresets = (() => {
 const gLoggingPresets = {
   networking: {
     modules:
-      "timestamp,sync,nsHttp:5,cache2:5,nsSocketTransport:5,nsHostResolver:5",
+      "timestamp,sync,nsHttp:5,cache2:5,nsSocketTransport:5,nsHostResolver:5,EarlyHint:5",
     l10nIds: {
       label: "about-logging-preset-networking-label",
       description: "about-logging-preset-networking-description",
@@ -228,7 +228,6 @@ function populatePresets() {
       $("#log-modules").value = gLoggingPresets[dropdown.value].modules;
     }
     setPresetAndDescription(dropdown.value);
-    setLogModules();
     Services.prefs.setCharPref("logging.config.preset", dropdown.value);
   };
 
@@ -376,7 +375,6 @@ function parseURL() {
     $("#set-log-modules-button").disabled = true;
     $("#logging-preset-dropdown").disabled = true;
     someElementsDisabled = true;
-    setLogModules();
     updateLogModules();
   }
   if (outputTypeOverriden) {

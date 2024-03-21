@@ -108,9 +108,6 @@ module.exports = {
     "global-strict": 0,
     // Only useful in a node environment.
     "handle-callback-err": 0,
-    // Don't enforce the maximum depth that blocks can be nested. The complexity
-    // rule is a better rule to check this.
-    "max-depth": 0,
     // Maximum depth callbacks can be nested.
     "max-nested-callbacks": [2, 4],
     // Don't limit the number of parameters that can be used in a function.
@@ -133,10 +130,6 @@ module.exports = {
     "no-catch-shadow": 2,
     // Disallow assignment in conditional expressions.
     "no-cond-assign": 2,
-    // Allow using the console API.
-    "no-console": 0,
-    // Allow using constant expressions in conditions like while (true)
-    "no-constant-condition": 0,
     // Allow use of the continue statement.
     "no-continue": 0,
     // Disallow control characters in regular expressions.
@@ -267,10 +260,6 @@ module.exports = {
     "no-var": 0,
     // Allow using TODO/FIXME comments.
     "no-warning-comments": 0,
-    // Dont require method and property shorthand syntax for object literals.
-    // We use this in the code a lot, but not consistently, and this seems more
-    // like something to check at code review time.
-    "object-shorthand": 0,
     // Allow more than one variable declaration per function.
     "one-var": 0,
     // Require use of the second argument for parseInt().

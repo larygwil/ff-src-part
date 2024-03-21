@@ -38,6 +38,14 @@ Preferences.addAll([
   { id: "privacy.cpd.siteSettings", type: "bool" },
   { id: "privacy.sanitize.timeSpan", type: "int" },
   { id: "privacy.clearOnShutdown.history", type: "bool" },
+  { id: "privacy.clearHistory.historyFormDataAndDownloads", type: "bool" },
+  { id: "privacy.clearHistory.cookiesAndStorage", type: "bool" },
+  { id: "privacy.clearHistory.cache", type: "bool" },
+  { id: "privacy.clearHistory.siteSettings", type: "bool" },
+  { id: "privacy.clearSiteData.historyFormDataAndDownloads", type: "bool" },
+  { id: "privacy.clearSiteData.cookiesAndStorage", type: "bool" },
+  { id: "privacy.clearSiteData.cache", type: "bool" },
+  { id: "privacy.clearSiteData.siteSettings", type: "bool" },
   {
     id: "privacy.clearOnShutdown_v2.historyFormDataAndDownloads",
     type: "bool",
@@ -76,12 +84,6 @@ var gSanitizePromptDialog = {
     this.siteDataSizes = {};
     this.cacheSize = [];
 
-    if (!lazy.USE_OLD_DIALOG) {
-      this._cookiesAndSiteDataCheckbox =
-        document.getElementById("cookiesAndStorage");
-      this._cacheCheckbox = document.getElementById("cache");
-    }
-
     let arg = window.arguments?.[0] || {};
 
     // These variables decide which context the dialog has been opened in
@@ -92,17 +94,6 @@ var gSanitizePromptDialog = {
       this._inClearOnShutdownNewDialog = arg.mode == "clearOnShutdown";
       this._inClearSiteDataNewDialog = arg.mode == "clearSiteData";
     }
-
-    // Clear site data has it's own default checked boxes, all other entry points
-    // follow the clear history default prefs
-    this.defaultCheckedByContext = {
-      clearHistory: [
-        "historyFormDataAndDownloads",
-        "cookiesAndStorage",
-        "cache",
-      ],
-      clearSiteData: ["cookiesAndStorage", "cache"],
-    };
 
     if (arg.inBrowserWindow) {
       this._dialog.setAttribute("inbrowserwindow", "true");
@@ -119,7 +110,7 @@ var gSanitizePromptDialog = {
     if (!lazy.USE_OLD_DIALOG) {
       // Begin collecting how long it takes to load from here
       let timerId = Glean.privacySanitize.loadTime.start();
-
+      this._dataSizesUpdated = false;
       this.dataSizesFinishedUpdatingPromise = this.getAndUpdateDataSizes()
         .then(() => {
           // We're done loading, stop telemetry here
@@ -138,50 +129,42 @@ var gSanitizePromptDialog = {
     let clearPrivateDataGroupbox = document.getElementById(
       "clearPrivateDataGroupbox"
     );
+    let clearSiteDataGroupbox = document.getElementById(
+      "clearSiteDataGroupbox"
+    );
 
     let okButtonl10nID = "sanitize-button-ok";
     if (this._inClearOnShutdownNewDialog) {
       okButtonl10nID = "sanitize-button-ok-on-shutdown";
       this._dialog.setAttribute("inClearOnShutdown", "true");
-      // remove the clear private data groupbox element
-      clearPrivateDataGroupbox.remove();
 
+      // remove the other groupbox elements that aren't related to the context
+      // the dialog is opened in
+      clearPrivateDataGroupbox.remove();
+      clearSiteDataGroupbox.remove();
       // If this is the first time the user is opening the new clear on shutdown
       // dialog, migrate their prefs
-      Sanitizer.maybeMigrateSanitizeOnShutdownPrefs();
+      Sanitizer.maybeMigratePrefs("clearOnShutdown");
     } else if (!lazy.USE_OLD_DIALOG) {
       okButtonl10nID = "sanitize-button-ok2";
-      // remove the clear on shutdown groupbox element
       clearOnShutdownGroupbox.remove();
+      if (this._inClearSiteDataNewDialog) {
+        clearPrivateDataGroupbox.remove();
+        // we do not need to migrate prefs for clear site data,
+        // since we decided to keep the default options for
+        // privacy.clearSiteData.* to stay consistent with old behaviour
+        // of the clear site data dialog box
+      } else {
+        clearSiteDataGroupbox.remove();
+        Sanitizer.maybeMigratePrefs("cpd");
+      }
     }
     document.l10n.setAttributes(OKButton, okButtonl10nID);
 
-    // update initial checkbox values based on the context the dialog is opened
-    // from (history, site data). Categories are not remembered
-    // from the last time the dialog was used.
-    if (!lazy.USE_OLD_DIALOG && !this._inClearOnShutdownNewDialog) {
-      let defaults = this.defaultCheckedByContext.clearHistory;
-      if (this._inClearSiteDataNewDialog) {
-        defaults = this.defaultCheckedByContext.clearSiteData;
-      }
-
-      this._allCheckboxes = document.querySelectorAll(
-        "#clearPrivateDataGroupbox .clearingItemCheckbox"
-      );
-      this._allCheckboxes.forEach(checkbox => {
-        let pref = checkbox.id;
-        let value = false;
-        if (defaults.includes(pref)) {
-          value = true;
-          checkbox.checked = value;
-        }
-
-        // Add event listeners to the checkboxes to ensure that the clear button is
-        // disabled if no checkboxes are checked
-        checkbox.addEventListener("command", _ =>
-          this.updateAcceptButtonState()
-        );
-      });
+    if (!lazy.USE_OLD_DIALOG) {
+      this._cookiesAndSiteDataCheckbox =
+        document.getElementById("cookiesAndStorage");
+      this._cacheCheckbox = document.getElementById("cache");
     }
 
     document.addEventListener("dialogaccept", e => {
@@ -191,9 +174,12 @@ var gSanitizePromptDialog = {
         if (!lazy.USE_OLD_DIALOG) {
           this.reportTelemetry("clear");
         }
+
         this.sanitize(e);
       }
     });
+
+    this._allCheckboxes = document.querySelectorAll("checkbox[preference]");
 
     this.registerSyncFromPrefListeners();
 
@@ -222,8 +208,6 @@ var gSanitizePromptDialog = {
     if (!lazy.USE_OLD_DIALOG) {
       this.reportTelemetry("open");
     }
-
-    await this.dataSizesFinishedUpdatingPromise;
   },
 
   updateAcceptButtonState() {
@@ -306,6 +290,7 @@ var gSanitizePromptDialog = {
         ignoreTimespan: !range,
         range,
       };
+
       let itemsToClear = this.getItemsToClear();
       Sanitizer.sanitize(itemsToClear, options)
         .catch(console.error)
@@ -347,14 +332,9 @@ var gSanitizePromptDialog = {
    * Return the boolean prefs that correspond to the checkboxes on the dialog.
    */
   _getItemPrefs() {
-    return Preferences.getAll().filter(pref => {
-      // The timespan pref isn't a bool, so don't return it
-      if (pref.id == "privacy.sanitize.timeSpan") {
-        return false;
-      }
-      // In the old dialog, cpd.downloads isn't controlled by a checkbox
-      return !(lazy.USE_OLD_DIALOG && pref.id == "privacy.cpd.downloads");
-    });
+    return Array.from(this._allCheckboxes).map(checkbox =>
+      checkbox.getAttribute("preference")
+    );
   },
 
   /**
@@ -367,7 +347,7 @@ var gSanitizePromptDialog = {
     // and (in the old dialog) privacy.cpd.downloads which is not controlled
     // directly by a checkbox).
     var found = this._getItemPrefs().some(
-      pref => !!pref.value && !pref.disabled
+      pref => Preferences.get(pref).value === true
     );
 
     try {
@@ -417,6 +397,8 @@ var gSanitizePromptDialog = {
       );
     }
     this.cacheSize = lazy.DownloadUtils.convertByteUnits(cacheSize);
+
+    this._dataSizesUpdated = true;
     this.updateDataSizesInUI();
   },
 
@@ -441,7 +423,7 @@ var gSanitizePromptDialog = {
     // elements.
     var prefs = this._getItemPrefs();
     for (let i = 0; i < prefs.length; ++i) {
-      var p = prefs[i];
+      var p = Preferences.get(prefs[i]);
       Services.prefs.setBoolPref(p.id, p.value);
     }
   },
@@ -492,6 +474,10 @@ var gSanitizePromptDialog = {
    * Updates data sizes displayed based on new selected timespan
    */
   updateDataSizesInUI() {
+    if (!this._dataSizesUpdated) {
+      return;
+    }
+
     const TIMESPAN_SELECTION_MAP = {
       0: "TIMESPAN_EVERYTHING",
       1: "TIMESPAN_HOUR",
@@ -531,11 +517,7 @@ var gSanitizePromptDialog = {
     }
 
     let items = [];
-    let clearPrivateDataGroupbox = document.getElementById(
-      "clearPrivateDataGroupbox"
-    );
-
-    for (let cb of clearPrivateDataGroupbox.querySelectorAll("checkbox")) {
+    for (let cb of this._allCheckboxes) {
       if (cb.checked) {
         items.push(cb.id);
       }

@@ -16,6 +16,7 @@
 #include "js/JSON.h"           // JS_ParseJSON
 #include "mozAutoDocUpdate.h"
 #include "mozilla/AsyncEventDispatcher.h"
+#include "mozilla/ClearOnShutdown.h"
 #include "mozilla/CORSMode.h"
 #include "mozilla/EventDispatcher.h"
 #include "mozilla/EventListenerManager.h"
@@ -304,7 +305,7 @@ class IsItemInRangeComparator {
   // @param aStartOffset has to be less or equal to aEndOffset.
   IsItemInRangeComparator(const nsINode& aNode, const uint32_t aStartOffset,
                           const uint32_t aEndOffset,
-                          nsContentUtils::ComparePointsCache* aCache)
+                          nsContentUtils::NodeIndexCache* aCache)
       : mNode(aNode),
         mStartOffset(aStartOffset),
         mEndOffset(aEndOffset),
@@ -332,7 +333,7 @@ class IsItemInRangeComparator {
   const nsINode& mNode;
   const uint32_t mStartOffset;
   const uint32_t mEndOffset;
-  nsContentUtils::ComparePointsCache* mCache;
+  nsContentUtils::NodeIndexCache* mCache;
 };
 
 bool nsINode::IsSelected(const uint32_t aStartOffset,
@@ -367,7 +368,7 @@ bool nsINode::IsSelected(const uint32_t aStartOffset,
     }
   }
 
-  nsContentUtils::ComparePointsCache cache;
+  nsContentUtils::NodeIndexCache cache;
   IsItemInRangeComparator comparator{*this, aStartOffset, aEndOffset, &cache};
   for (Selection* selection : ancestorSelections) {
     // Binary search the sorted ranges in this selection.
@@ -1808,6 +1809,10 @@ Maybe<uint32_t> nsINode::ComputeIndexOf(const nsINode* aPossibleChild) const {
 
   if (aPossibleChild->GetParentNode() != this) {
     return Nothing();
+  }
+
+  if (aPossibleChild == GetFirstChild()) {
+    return Some(0);
   }
 
   if (aPossibleChild == GetLastChild()) {
@@ -3672,15 +3677,13 @@ already_AddRefed<nsINode> nsINode::CloneAndAdopt(
       }
       newShadowRoot->SetIsDeclarative(originalShadowRoot->IsDeclarative());
 
-      if (aDeep) {
-        for (nsIContent* origChild = originalShadowRoot->GetFirstChild();
-             origChild; origChild = origChild->GetNextSibling()) {
-          nsCOMPtr<nsINode> child =
-              CloneAndAdopt(origChild, aClone, aDeep, nodeInfoManager,
-                            aReparentScope, newShadowRoot, aError);
-          if (NS_WARN_IF(aError.Failed())) {
-            return nullptr;
-          }
+      for (nsIContent* origChild = originalShadowRoot->GetFirstChild();
+           origChild; origChild = origChild->GetNextSibling()) {
+        nsCOMPtr<nsINode> child =
+            CloneAndAdopt(origChild, aClone, true, nodeInfoManager,
+                          aReparentScope, newShadowRoot, aError);
+        if (NS_WARN_IF(aError.Failed())) {
+          return nullptr;
         }
       }
     }

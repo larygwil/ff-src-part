@@ -386,9 +386,11 @@ function transformTraceResource(traceResource) {
     args,
     sourceId,
 
-    returnedValue,
     relatedTraceId,
     why,
+
+    mutationType,
+    mutationElement,
   } = traceResource;
 
   const frame = {
@@ -408,14 +410,19 @@ function transformTraceResource(traceResource) {
     parameters: args
       ? args.map(p => (p ? getAdHocFrontOrPrimitiveGrip(p, targetFront) : p))
       : null,
-    returnedValue: why
-      ? getAdHocFrontOrPrimitiveGrip(returnedValue, targetFront)
-      : null,
+    returnedValue:
+      why && "returnedValue" in traceResource
+        ? getAdHocFrontOrPrimitiveGrip(traceResource.returnedValue, targetFront)
+        : undefined,
     relatedTraceId,
     why,
     messageText: null,
     timeStamp,
     prefix,
+    mutationType,
+    mutationElement: mutationElement
+      ? getAdHocFrontOrPrimitiveGrip(mutationElement, targetFront)
+      : null,
     // Allow the identical frames to be coallesced into a unique message
     // with a repeatition counter so that we keep the output short in case of loops.
     allowRepeating: true,
@@ -558,7 +565,9 @@ function areMessagesSimilar(message1, message2) {
     message1.isPromiseRejection !== message2.isPromiseRejection ||
     message1.userProvidedStyles?.length !==
       message2.userProvidedStyles?.length ||
-    `${message1.userProvidedStyles}` !== `${message2.userProvidedStyles}`
+    `${message1.userProvidedStyles}` !== `${message2.userProvidedStyles}` ||
+    message1.mutationType !== message2.mutationType ||
+    message1.mutationElement != message2.mutationElement
   ) {
     return false;
   }

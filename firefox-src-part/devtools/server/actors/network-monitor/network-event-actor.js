@@ -18,10 +18,14 @@ const {
 
 const lazy = {};
 
-ChromeUtils.defineESModuleGetters(lazy, {
-  NetworkUtils:
-    "resource://devtools/shared/network-observer/NetworkUtils.sys.mjs",
-});
+ChromeUtils.defineESModuleGetters(
+  lazy,
+  {
+    NetworkUtils:
+      "resource://devtools/shared/network-observer/NetworkUtils.sys.mjs",
+  },
+  { global: "contextual" }
+);
 
 const CONTENT_TYPE_REGEXP = /^content-type/i;
 
@@ -559,13 +563,8 @@ class NetworkEventActor extends Actor {
    * @param object content
    *        The response content.
    * @param object
-   *        - boolean discardedResponseBody
-   *          Tells if the response content was recorded or not.
    */
-  addResponseContent(
-    content,
-    { discardResponseBody, blockedReason, blockingExtension }
-  ) {
+  addResponseContent(content, { blockedReason, blockingExtension }) {
     // Ignore calls when this actor is already destroyed
     if (this.isDestroyed()) {
       return;

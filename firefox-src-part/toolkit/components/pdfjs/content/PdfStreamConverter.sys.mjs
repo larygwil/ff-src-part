@@ -330,9 +330,8 @@ class ChromeActions {
   }
 
   reportTelemetry(data) {
-    const probeInfo = JSON.parse(data);
     const actor = getActor(this.domWindow);
-    actor?.sendAsyncMessage("PDFJS:Parent:reportTelemetry", probeInfo);
+    actor?.sendAsyncMessage("PDFJS:Parent:reportTelemetry", data);
   }
 
   updateFindControlState(data) {
@@ -434,6 +433,7 @@ class ChromeActions {
         hasSomethingToUndo: false,
         hasSomethingToRedo: false,
         hasSelectedEditor: false,
+        hasSelectedText: false,
       };
     }
     const { editorStates } = doc;

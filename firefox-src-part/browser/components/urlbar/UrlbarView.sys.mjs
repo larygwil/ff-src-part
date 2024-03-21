@@ -463,15 +463,18 @@ export class UrlbarView {
     this.#setRowSelectable(row, false);
 
     // Replace the row with a dismissal acknowledgment tip.
-    let tip = new lazy.UrlbarResult(
-      lazy.UrlbarUtils.RESULT_TYPE.TIP,
-      lazy.UrlbarUtils.RESULT_SOURCE.OTHER_LOCAL,
-      {
-        type: "dismissalAcknowledgment",
-        titleL10n,
-        buttons: [{ l10n: { id: "urlbar-search-tips-confirm-short" } }],
-        icon: "chrome://branding/content/icon32.png",
-      }
+    let tip = Object.assign(
+      new lazy.UrlbarResult(
+        lazy.UrlbarUtils.RESULT_TYPE.TIP,
+        lazy.UrlbarUtils.RESULT_SOURCE.OTHER_LOCAL,
+        {
+          type: "dismissalAcknowledgment",
+          titleL10n,
+          buttons: [{ l10n: { id: "urlbar-search-tips-confirm-short" } }],
+          icon: "chrome://branding/content/icon32.png",
+        }
+      ),
+      { rowLabel: this.#rowLabel(row) }
     );
     this.#updateRow(row, tip);
     this.#updateIndices();
@@ -693,7 +696,7 @@ export class UrlbarView {
     this.#cacheL10nStrings();
   }
 
-  onQueryCancelled(queryContext) {
+  onQueryCancelled() {
     this.#queryWasCancelled = true;
     this.#cancelRemoveStaleRowsTimer();
   }
@@ -1130,6 +1133,8 @@ export class UrlbarView {
    */
   #rowCanUpdateToResult(rowIndex, result, seenSearchSuggestion) {
     // The heuristic result must always be current, thus it's always compatible.
+    // Note that the `updateResults` code, when updating the selection, relies
+    // on the fact the heuristic is the first selectable row.
     if (result.heuristic) {
       return true;
     }
@@ -1323,10 +1328,17 @@ export class UrlbarView {
     // on the row itself so that screen readers ignore it.
     item.setAttribute("role", "presentation");
 
+    // These are used to cleanup result specific entities when row contents are
+    // cleared to reuse the row for a different result.
+    item._sharedAttributes = new Set(
+      [...item.attributes].map(v => v.name).concat(["stale", "id"])
+    );
+    item._sharedClassList = new Set(item.classList);
+
     return item;
   }
 
-  #createRowContent(item, result) {
+  #createRowContent(item) {
     // The url is the only element that can wrap, thus all the other elements
     // are child of noWrap.
     let noWrap = this.#createElement("span");
@@ -1505,7 +1517,7 @@ export class UrlbarView {
     return classes;
   }
 
-  #createRowContentForRichSuggestion(item, result) {
+  #createRowContentForRichSuggestion(item) {
     item._content.toggleAttribute("selectable", true);
 
     let favicon = this.#createElement("img");
@@ -1615,7 +1627,7 @@ export class UrlbarView {
   // eslint-disable-next-line complexity
   #updateRow(item, result) {
     let oldResult = item.result;
-    let oldResultType = item.result && item.result.type;
+    let oldResultType = item.result?.type;
     let provider = lazy.UrlbarProvidersManager.getProvider(result.providerName);
     item.result = result;
     item.removeAttribute("stale");
@@ -1638,6 +1650,18 @@ export class UrlbarView {
         oldResult.payload.buttons,
         result.payload.buttons
       ) ||
+      // Reusing a non-heuristic as a heuristic is risky as it may have DOM
+      // nodes/attributes/classes that are normally not present in a heuristic
+      // result. This may happen for example when switching from a zero-prefix
+      // search not having a heuristic to a search string one.
+      result.heuristic != oldResult.heuristic ||
+      // Container switch-tab results have a more complex DOM content that is
+      // only updated correctly by another switch-tab result.
+      (oldResultType == lazy.UrlbarUtils.RESULT_TYPE.TAB_SWITCH &&
+        lazy.UrlbarProviderOpenTabs.isContainerUserContextId(
+          oldResult.payload.userContextId
+        ) &&
+        result.type != oldResultType) ||
       result.testForceNewContent;
 
     if (needsNewContent) {
@@ -1649,8 +1673,18 @@ export class UrlbarView {
       item._content = this.#createElement("span");
       item._content.className = "urlbarView-row-inner";
       item.appendChild(item._content);
-      item.removeAttribute("tip-type");
-      item.removeAttribute("dynamicType");
+      // Clear previously set attributes and classes that may refer to a
+      // different result type.
+      for (const attribute of item.attributes) {
+        if (!item._sharedAttributes.has(attribute.name)) {
+          item.removeAttribute(attribute.name);
+        }
+      }
+      for (const className of item.classList) {
+        if (!item._sharedClassList.has(className)) {
+          item.classList.remove(className);
+        }
+      }
       if (item.result.type == lazy.UrlbarUtils.RESULT_TYPE.DYNAMIC) {
         this.#createRowContentForDynamicType(item, result);
       } else if (result.isRichSuggestion) {
@@ -1875,7 +1909,6 @@ export class UrlbarView {
     item.toggleAttribute("has-url", setURL);
     let url = item._elements.get("url");
     if (setURL) {
-      item.setAttribute("has-url", "true");
       let displayedUrl = result.payload.displayUrl;
       let urlHighlights = result.payloadHighlights.displayUrl || [];
       if (lazy.UrlbarUtils.isTextDirectionRTL(displayedUrl, this.window)) {
@@ -2198,6 +2231,10 @@ export class UrlbarView {
   #rowLabel(row, currentLabel) {
     if (!lazy.UrlbarPrefs.get("groupLabels.enabled")) {
       return null;
+    }
+
+    if (row.result.rowLabel) {
+      return row.result.rowLabel;
     }
 
     let engineName =
@@ -2645,7 +2682,7 @@ export class UrlbarView {
       if (
         actionNode.classList.contains("urlbarView-userContext") &&
         label &&
-        actionNode.querySelector("span").innerText == label
+        actionNode.querySelector("span")?.innerText == label
       ) {
         return;
       }
@@ -2681,8 +2718,6 @@ export class UrlbarView {
           if (identity.icon) {
             let userContextIcon = this.#createElement("img");
             userContextIcon.classList.add("urlbarView-userContext-icon");
-
-            userContextIcon.classList.add("identity-icon-" + identity.icon);
             userContextIcon.setAttribute("alt", label);
             userContextIcon.src =
               "resource://usercontext-content/" + identity.icon + ".svg";
@@ -3131,6 +3166,7 @@ export class UrlbarView {
 
     let engine = this.oneOffSearchButtons.selectedButton?.engine;
     let source = this.oneOffSearchButtons.selectedButton?.source;
+    let icon = this.oneOffSearchButtons.selectedButton?.image;
 
     let localSearchMode;
     if (source) {
@@ -3254,7 +3290,15 @@ export class UrlbarView {
       }
 
       // Update result favicons.
-      let iconOverride = localSearchMode?.icon || engine?.getIconURL();
+      let iconOverride = localSearchMode?.icon;
+      // If the icon is the default one-off search placeholder, assume we
+      // don't have an icon for the engine.
+      if (
+        !iconOverride &&
+        icon != "chrome://browser/skin/search-engine-placeholder.png"
+      ) {
+        iconOverride = icon;
+      }
       if (!iconOverride && (localSearchMode || engine)) {
         // For one-offs without an icon, do not allow restyled URL results to
         // use their own icons.
@@ -3273,7 +3317,7 @@ export class UrlbarView {
     }
   }
 
-  on_blur(event) {
+  on_blur() {
     // If the view is open without the input being focused, it will not close
     // automatically when the window loses focus. We might be in this state
     // after a Search Tip is shown on an engine homepage.

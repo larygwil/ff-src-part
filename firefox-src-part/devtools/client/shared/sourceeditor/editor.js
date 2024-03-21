@@ -62,8 +62,6 @@ const { OS } = Services.appinfo;
 
 const CM_BUNDLE =
   "chrome://devtools/content/shared/sourceeditor/codemirror/codemirror.bundle.js";
-const CM6_BUNDLE =
-  "resource://devtools/client/shared/sourceeditor/codemirror6/codemirror6.bundle.js";
 
 const CM_IFRAME =
   "chrome://devtools/content/shared/sourceeditor/codemirror/cmiframe.html";
@@ -161,11 +159,13 @@ class Editor extends EventEmitter {
   config = null;
   Doc = null;
 
+  #CodeMirror6;
   #compartments;
   #lastDirty;
   #loadedKeyMaps;
   #ownerDoc;
   #prefObserver;
+  #win;
 
   constructor(config) {
     super();
@@ -422,6 +422,7 @@ class Editor extends EventEmitter {
     const win = el.ownerDocument.defaultView;
 
     Services.scriptloader.loadSubScript(CM_BUNDLE, win);
+    this.#win = win;
 
     if (this.config.cssProperties) {
       // Replace the propertyKeywords, colorKeywords and valueKeywords
@@ -594,8 +595,12 @@ class Editor extends EventEmitter {
   #setupCm6(el, doc) {
     this.#ownerDoc = doc || el.ownerDocument;
     const win = el.ownerDocument.defaultView;
+    this.#win = win;
 
-    Services.scriptloader.loadSubScript(CM6_BUNDLE, win);
+    this.#CodeMirror6 = this.#win.ChromeUtils.importESModule(
+      "resource://devtools/client/shared/sourceeditor/codemirror6/codemirror6.bundle.mjs",
+      { global: "current" }
+    );
 
     const {
       codemirror,
@@ -604,13 +609,16 @@ class Editor extends EventEmitter {
       codemirrorLanguage,
       codemirrorLangJavascript,
       lezerHighlight,
-    } = win.CodeMirror;
+    } = this.#CodeMirror6;
 
     const tabSizeCompartment = new Compartment();
     const indentCompartment = new Compartment();
+    const lineWrapCompartment = new Compartment();
+
     this.#compartments = {
       tabSizeCompartment,
       indentCompartment,
+      lineWrapCompartment,
     };
 
     const indentStr = (this.config.indentWithTabs ? "\t" : " ").repeat(
@@ -620,6 +628,9 @@ class Editor extends EventEmitter {
     const extensions = [
       indentCompartment.of(codemirrorLanguage.indentUnit.of(indentStr)),
       tabSizeCompartment.of(EditorState.tabSize.of(this.config.tabSize)),
+      lineWrapCompartment.of(
+        this.config.lineWrapping ? EditorView.lineWrapping : []
+      ),
       EditorState.readOnly.of(this.config.readOnly),
       codemirrorLanguage.codeFolding({
         placeholderText: "↔",
@@ -627,7 +638,7 @@ class Editor extends EventEmitter {
       codemirrorLanguage.foldGutter({
         class: "cm6-dt-foldgutter",
         markerDOM: open => {
-          const button = doc.createElement("button");
+          const button = this.#ownerDoc.createElement("button");
           button.classList.add("cm6-dt-foldgutter__toggle-button");
           button.setAttribute("aria-expanded", open);
           return button;
@@ -644,10 +655,6 @@ class Editor extends EventEmitter {
 
     if (this.config.lineNumbers) {
       extensions.push(lineNumbers());
-    }
-
-    if (this.config.lineWrapping) {
-      extensions.push(EditorView.lineWrapping);
     }
 
     const cm = new EditorView({
@@ -683,14 +690,6 @@ class Editor extends EventEmitter {
     }
     const win = this.container.contentWindow.wrappedJSObject;
     Services.scriptloader.loadSubScript(url, win);
-  }
-
-  /**
-   * Returns the container content window
-   * @returns {Window}
-   */
-  getContainerWindow() {
-    return this.container.contentWindow.wrappedJSObject;
   }
 
   /**
@@ -923,7 +922,7 @@ class Editor extends EventEmitter {
       const {
         codemirrorState: { EditorState },
         codemirrorLanguage,
-      } = this.getContainerWindow().CodeMirror;
+      } = this.#CodeMirror6;
 
       cm.dispatch({
         effects: this.#compartments.tabSizeCompartment.reconfigure(
@@ -1493,6 +1492,23 @@ class Editor extends EventEmitter {
     const cm = editors.get(this);
     cm.getWrapperElement().style.fontSize = parseInt(size, 10) + "px";
     cm.refresh();
+  }
+
+  setLineWrapping(value) {
+    const cm = editors.get(this);
+    if (this.config.cm6) {
+      const {
+        codemirrorView: { EditorView },
+      } = this.#CodeMirror6;
+      cm.dispatch({
+        effects: this.#compartments.lineWrapCompartment.reconfigure(
+          value ? EditorView.lineWrapping : []
+        ),
+      });
+    } else {
+      cm.setOption("lineWrapping", value);
+    }
+    this.config.lineWrapping = value;
   }
 
   /**

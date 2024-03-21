@@ -128,11 +128,15 @@ class ProviderQuickSuggest extends UrlbarProvider {
     // Trim only the start of the search string because a trailing space can
     // affect the suggestions.
     let trimmedSearchString = queryContext.searchString.trimStart();
-    if (!trimmedSearchString) {
+
+    // Per product requirements, at least two characters must be typed to
+    // trigger a Suggest suggestion. Suggestion keywords should always be at
+    // least two characters long, but we check here anyway to be safe. Note we
+    // called `trimStart()` above, so we only call `trimEnd()` here.
+    if (trimmedSearchString.trimEnd().length < 2) {
       return false;
     }
     this._trimmedSearchString = trimmedSearchString;
-
     return true;
   }
 
@@ -773,9 +777,6 @@ class ProviderQuickSuggest extends UrlbarProvider {
    * @param {UrlbarResult} options.result
    *   The quick suggest result related to the engagement, or null if no result
    *   was present.
-   * @param {string} options.resultSelType
-   *   If an element in the result's row was clicked, this should be its
-   *   `selType`. Otherwise it should be an empty string.
    * @param {boolean} options.resultClicked
    *   True if the main part of the result's row was clicked; false if a button
    *   like help or dismiss was clicked or if no part of the row was clicked.
@@ -786,7 +787,6 @@ class ProviderQuickSuggest extends UrlbarProvider {
   #recordNavSuggestionTelemetry({
     queryContext,
     result,
-    resultSelType,
     resultClicked,
     details,
   }) {
@@ -829,11 +829,8 @@ class ProviderQuickSuggest extends UrlbarProvider {
 
   /**
    * Cancels the current query.
-   *
-   * @param {UrlbarQueryContext} queryContext
-   *   The query context.
    */
-  cancelQuery(queryContext) {
+  cancelQuery() {
     // Cancel the Rust query.
     let backend = lazy.QuickSuggest.getFeature("SuggestBackendRust");
     if (backend?.isEnabled) {

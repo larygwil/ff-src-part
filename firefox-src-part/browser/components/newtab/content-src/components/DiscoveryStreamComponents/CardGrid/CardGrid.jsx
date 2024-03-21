@@ -31,11 +31,7 @@ export function DSSubHeader({ children }) {
   );
 }
 
-export function OnboardingExperience({
-  children,
-  dispatch,
-  windowObj = global,
-}) {
+export function OnboardingExperience({ dispatch, windowObj = global }) {
   const [dismissed, setDismissed] = useState(false);
   const [maxHeight, setMaxHeight] = useState(null);
   const heightElement = useRef(null);
@@ -330,6 +326,7 @@ export class _CardGrid extends React.PureComponent {
       onboardingExperience,
       ctaButtonSponsors,
       ctaButtonVariant,
+      spocMessageVariant,
       widgets,
       recentSavesEnabled,
       hideDescriptions,
@@ -378,6 +375,7 @@ export class _CardGrid extends React.PureComponent {
             saveToPocketCard={saveToPocketCard}
             ctaButtonSponsors={ctaButtonSponsors}
             ctaButtonVariant={ctaButtonVariant}
+            spocMessageVariant={spocMessageVariant}
             recommendation_id={rec.recommendation_id}
           />
         )

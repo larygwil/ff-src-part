@@ -6,7 +6,7 @@
 
 module.exports = {
   globals: {
-    // These are defined in the WebExtension script scopes by ExtensionCommon.jsm
+    // These are defined in the WebExtension script scopes by ExtensionCommon.sys.mjs
     Cc: true,
     Ci: true,
     Cr: true,
@@ -119,12 +119,6 @@ module.exports = {
 
     // Allow use of bitwise operators.
     "no-bitwise": "off",
-
-    // Disallow using the console API.
-    "no-console": "error",
-
-    // Allow using constant expressions in conditions like while (true)
-    "no-constant-condition": "off",
 
     // Allow use of the continue statement.
     "no-continue": "off",

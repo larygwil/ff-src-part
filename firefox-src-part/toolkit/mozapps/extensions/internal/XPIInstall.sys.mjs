@@ -99,6 +99,17 @@ const PREF_SELECTED_THEME = "extensions.activeThemeID";
 
 const TOOLKIT_ID = "toolkit@mozilla.org";
 
+ChromeUtils.defineLazyGetter(lazy, "MOZ_UNSIGNED_SCOPES", () => {
+  let result = 0;
+  if (AppConstants.MOZ_UNSIGNED_APP_SCOPE) {
+    result |= AddonManager.SCOPE_APPLICATION;
+  }
+  if (AppConstants.MOZ_UNSIGNED_SYSTEM_SCOPE) {
+    result |= AddonManager.SCOPE_SYSTEM;
+  }
+  return result;
+});
+
 /**
  * Returns a nsIFile instance for the given path, relative to the given
  * base file, if provided.
@@ -168,7 +179,7 @@ import { Log } from "resource://gre/modules/Log.sys.mjs";
 const LOGGER_ID = "addons.xpi";
 
 // Create a new logger for use by all objects in this Addons XPI Provider module
-// (Requires AddonManager.jsm)
+// (Requires AddonManager.sys.mjs)
 var logger = Log.repository.getLogger(LOGGER_ID);
 
 // Stores the ID of the theme which was selected during the last session,
@@ -316,13 +327,22 @@ XPIPackage = class XPIPackage extends Package {
   verifySignedStateForRoot(addonId, root) {
     return new Promise(resolve => {
       let callback = {
-        openSignedAppFileFinished(aRv, aZipReader, aCert) {
+        openSignedAppFileFinished(aRv, aZipReader, aSignatureInfos) {
+          // aSignatureInfos is an array of nsIAppSignatureInfo.
+          // In the future, this code can iterate through the array to
+          // determine if one of the verified signatures used a satisfactory
+          // algorithm and signing certificate.
+          // For now, any verified signature is acceptable.
+          let cert;
+          if (aRv == Cr.NS_OK && aSignatureInfos.length) {
+            cert = aSignatureInfos[0].signerCert;
+          }
           if (aZipReader) {
             aZipReader.close();
           }
           resolve({
-            signedState: getSignedStatus(aRv, aCert, addonId),
-            cert: aCert,
+            signedState: getSignedStatus(aRv, cert, addonId),
+            cert,
           });
         },
       };
@@ -872,10 +892,7 @@ function shouldVerifySignedState(aAddonType, aLocation) {
     return true;
   }
 
-  if (
-    aLocation.isBuiltin ||
-    aLocation.scope & AppConstants.MOZ_UNSIGNED_SCOPES
-  ) {
+  if (aLocation.isBuiltin || aLocation.scope & lazy.MOZ_UNSIGNED_SCOPES) {
     return false;
   }
 

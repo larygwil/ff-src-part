@@ -1423,10 +1423,23 @@ class SidebarFooter extends HTMLElement {
       labelL10nId: "addons-settings-button",
       onClick: e => {
         e.preventDefault();
-        windowRoot.ownerGlobal.switchToTabHavingURI("about:preferences", true, {
-          ignoreFragment: "whenComparing",
-          triggeringPrincipal: systemPrincipal,
-        });
+        let hasAboutSettings = windowRoot.ownerGlobal.switchToTabHavingURI(
+          "about:settings",
+          false,
+          {
+            ignoreFragment: "whenComparing",
+          }
+        );
+        if (!hasAboutSettings) {
+          windowRoot.ownerGlobal.switchToTabHavingURI(
+            "about:preferences",
+            true,
+            {
+              ignoreFragment: "whenComparing",
+              triggeringPrincipal: systemPrincipal,
+            }
+          );
+        }
       },
     });
 
@@ -1695,6 +1708,7 @@ class InlineOptionsBrowser extends HTMLElement {
     browser.setAttribute("disableglobalhistory", "true");
     browser.setAttribute("messagemanagergroup", "webext-browsers");
     browser.setAttribute("id", "addon-inline-options");
+    browser.setAttribute("class", "addon-inline-options");
     browser.setAttribute("transparent", "true");
     browser.setAttribute("forcemessagemanager", "true");
     browser.setAttribute("autocompletepopup", "PopupAutoComplete");
@@ -1731,10 +1745,7 @@ class InlineOptionsBrowser extends HTMLElement {
       readyPromise = promiseEvent("load", browser, true);
     }
 
-    let stack = document.createXULElement("stack");
-    stack.classList.add("inline-options-stack");
-    stack.appendChild(browser);
-    this.appendChild(stack);
+    this.appendChild(browser);
     this.browser = browser;
 
     // Force bindings to apply synchronously.

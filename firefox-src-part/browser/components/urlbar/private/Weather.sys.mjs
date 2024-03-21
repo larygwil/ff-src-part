@@ -33,8 +33,8 @@ const NOTIFICATIONS = {
 };
 
 const RESULT_MENU_COMMAND = {
-  HELP: "help",
   INACCURATE_LOCATION: "inaccurate_location",
+  MANAGE: "manage",
   NOT_INTERESTED: "not_interested",
   NOT_RELEVANT: "not_relevant",
   SHOW_LESS_FREQUENTLY: "show_less_frequently",
@@ -171,14 +171,14 @@ export class Weather extends BaseFeature {
     return ["Weather"];
   }
 
-  isRustSuggestionTypeEnabled(type) {
+  isRustSuggestionTypeEnabled() {
     // When weather keywords are defined in Nimbus, weather suggestions are
     // served by UrlbarProviderWeather. Return false here so the quick suggest
     // provider doesn't try to serve them too.
     return !lazy.UrlbarPrefs.get("weatherKeywords");
   }
 
-  getSuggestionTelemetryType(suggestion) {
+  getSuggestionTelemetryType() {
     return "weather";
   }
 
@@ -188,6 +188,16 @@ export class Weather extends BaseFeature {
    */
   get suggestion() {
     return this.#suggestion;
+  }
+
+  /**
+   * @returns {Promise}
+   *   If suggestion fetching is disabled, this will be null. Otherwise, if a
+   *   fetch is pending this will be resolved when it's done; if a fetch is not
+   *   pending then it was resolved when the previous fetch finished.
+   */
+  get fetchPromise() {
+    return this.#fetchPromise;
   }
 
   /**
@@ -291,20 +301,6 @@ export class Weather extends BaseFeature {
     }
   }
 
-  /**
-   * Returns a promise that resolves when all pending fetches finish, if there
-   * are pending fetches. If there aren't, the promise resolves when all pending
-   * fetches starting with the next fetch finish.
-   *
-   * @returns {Promise}
-   */
-  waitForFetches() {
-    if (!this.#waitForFetchesDeferred) {
-      this.#waitForFetchesDeferred = Promise.withResolvers();
-    }
-    return this.#waitForFetchesDeferred.promise;
-  }
-
   async onRemoteSettingsSync(rs) {
     this.logger.debug("Loading weather config from remote settings");
     let records = await rs.get({ filters: { type: "weather" } });
@@ -356,7 +352,6 @@ export class Weather extends BaseFeature {
         {
           url: suggestion.url,
           iconId: suggestion.current_conditions.icon_id,
-          helpUrl: lazy.QuickSuggest.HELP_URL,
           requestId: suggestion.request_id,
           dynamicType: WEATHER_DYNAMIC_TYPE,
           city: suggestion.city_name,
@@ -410,17 +405,19 @@ export class Weather extends BaseFeature {
       url: {
         textContent: result.payload.url,
       },
-      summaryText: {
-        l10n: {
-          id: "firefox-suggest-weather-summary-text",
-          args: {
-            currentConditions: result.payload.currentConditions,
-            forecast: result.payload.forecast,
+      summaryText: lazy.UrlbarPrefs.get("weatherSimpleUI")
+        ? { textContent: result.payload.currentConditions }
+        : {
+            l10n: {
+              id: "firefox-suggest-weather-summary-text",
+              args: {
+                currentConditions: result.payload.currentConditions,
+                forecast: result.payload.forecast,
+              },
+              cacheable: true,
+              excludeArgsFromCacheKey: true,
+            },
           },
-          cacheable: true,
-          excludeArgsFromCacheKey: true,
-        },
-      },
       highLow: {
         l10n: {
           id: "firefox-suggest-weather-high-low",
@@ -453,7 +450,7 @@ export class Weather extends BaseFeature {
     };
   }
 
-  getResultCommands(result) {
+  getResultCommands() {
     let commands = [
       {
         name: RESULT_MENU_COMMAND.INACCURATE_LOCATION,
@@ -494,9 +491,9 @@ export class Weather extends BaseFeature {
       },
       { name: "separator" },
       {
-        name: RESULT_MENU_COMMAND.HELP,
+        name: RESULT_MENU_COMMAND.MANAGE,
         l10n: {
-          id: "urlbar-result-menu-learn-more-about-firefox-suggest",
+          id: "urlbar-result-menu-manage-firefox-suggest",
         },
       }
     );
@@ -506,8 +503,8 @@ export class Weather extends BaseFeature {
 
   handleCommand(view, result, selType) {
     switch (selType) {
-      case RESULT_MENU_COMMAND.HELP:
-        // "help" is handled by UrlbarInput, no need to do anything here.
+      case RESULT_MENU_COMMAND.MANAGE:
+        // "manage" is handled by UrlbarInput, no need to do anything here.
         break;
       // selType == "dismiss" when the user presses the dismiss key shortcut.
       case "dismiss":
@@ -616,6 +613,21 @@ export class Weather extends BaseFeature {
   }
 
   async #fetch() {
+    // Keep a handle on the `MerinoClient` instance that exists at the start of
+    // this fetch. If fetching stops or this `Weather` instance is uninitialized
+    // during the fetch, `#merino` will be nulled, and the fetch should stop. We
+    // can compare `merino` to `#merino` to tell when this occurs.
+    let merino = this.#merino;
+    let fetchInstance = (this.#fetchInstance = {});
+
+    await this.#fetchPromise;
+    if (fetchInstance != this.#fetchInstance || merino != this.#merino) {
+      return;
+    }
+    await (this.#fetchPromise = this.#fetchHelper({ fetchInstance, merino }));
+  }
+
+  async #fetchHelper({ fetchInstance, merino }) {
     this.logger.info("Fetching suggestion");
 
     if (this.#vpnDetected) {
@@ -626,36 +638,19 @@ export class Weather extends BaseFeature {
       // new fetch.
       this.logger.info("VPN detected, not fetching");
       this.#suggestion = null;
-      if (!this.#pendingFetchCount) {
-        this.#waitForFetchesDeferred?.resolve();
-        this.#waitForFetchesDeferred = null;
-      }
       return;
     }
 
-    // This `Weather` instance may be uninitialized while awaiting the fetch or
-    // even uninitialized and re-initialized a number of times. Multiple fetches
-    // may also happen at once. Ignore the fetch below if `#merino` changes or
-    // another fetch happens in the meantime.
-    let merino = this.#merino;
-    let instance = (this.#fetchInstance = {});
-
     this.#restartFetchTimer();
     this.#lastFetchTimeMs = Date.now();
-    this.#pendingFetchCount++;
 
-    let suggestions;
-    try {
-      suggestions = await merino.fetch({
-        query: "",
-        providers: [MERINO_PROVIDER],
-        timeoutMs: this.#timeoutMs,
-        extraLatencyHistogram: HISTOGRAM_LATENCY,
-        extraResponseHistogram: HISTOGRAM_RESPONSE,
-      });
-    } finally {
-      this.#pendingFetchCount--;
-    }
+    let suggestions = await merino.fetch({
+      query: "",
+      providers: [MERINO_PROVIDER],
+      timeoutMs: this.#timeoutMs,
+      extraLatencyHistogram: HISTOGRAM_LATENCY,
+      extraResponseHistogram: HISTOGRAM_RESPONSE,
+    });
 
     // Reset the Merino client's session so different fetches use different
     // sessions. A single session is intended to represent a single user
@@ -665,28 +660,23 @@ export class Weather extends BaseFeature {
     // to keep it ticking in the meantime.
     merino.resetSession();
 
-    if (merino != this.#merino || instance != this.#fetchInstance) {
-      this.logger.info("Fetch finished but is out of date, ignoring");
-    } else {
-      let suggestion = suggestions?.[0];
-      if (!suggestion) {
-        // No suggestion was received. The network may be offline or there may
-        // be some other problem. Set the suggestion to null: Better to show
-        // nothing than outdated weather information. When the network comes
-        // back online, one or more network notifications will be sent,
-        // triggering a new fetch.
-        this.logger.info("No suggestion received");
-        this.#suggestion = null;
-      } else {
-        this.logger.info("Got suggestion");
-        this.logger.debug(JSON.stringify({ suggestion }));
-        this.#suggestion = { ...suggestion, source: "merino" };
-      }
+    if (fetchInstance != this.#fetchInstance || merino != this.#merino) {
+      this.logger.info("Fetch is out of date, discarding suggestion");
+      return;
     }
 
-    if (!this.#pendingFetchCount) {
-      this.#waitForFetchesDeferred?.resolve();
-      this.#waitForFetchesDeferred = null;
+    let suggestion = suggestions?.[0];
+    if (!suggestion) {
+      // No suggestion was received. The network may be offline or there may be
+      // some other problem. Set the suggestion to null: Better to show nothing
+      // than outdated weather information. When the network comes back online,
+      // one or more network notifications will be sent, triggering a new fetch.
+      this.logger.info("No suggestion received");
+      this.#suggestion = null;
+    } else {
+      this.logger.info("Got suggestion");
+      this.logger.debug(JSON.stringify({ suggestion }));
+      this.#suggestion = { ...suggestion, source: "merino" };
     }
   }
 
@@ -865,10 +855,6 @@ export class Weather extends BaseFeature {
     return this.#merino;
   }
 
-  get _test_pendingFetchCount() {
-    return this.#pendingFetchCount;
-  }
-
   async _test_fetch() {
     await this.#fetch();
   }
@@ -884,13 +870,12 @@ export class Weather extends BaseFeature {
   #fetchDelayAfterComingOnlineMs = FETCH_DELAY_AFTER_COMING_ONLINE_MS;
   #fetchInstance = null;
   #fetchIntervalMs = FETCH_INTERVAL_MS;
+  #fetchPromise = null;
   #fetchTimer = 0;
   #keywords = null;
   #lastFetchTimeMs = 0;
   #merino = null;
-  #pendingFetchCount = 0;
   #rsConfig = null;
   #suggestion = null;
   #timeoutMs = MERINO_TIMEOUT_MS;
-  #waitForFetchesDeferred = null;
 }

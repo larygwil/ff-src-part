@@ -41,8 +41,6 @@ let InternalFaviconLoader = {
    *   The options object containing:
    * @param {object} options.uri
    *   The URI of the favicon to cancel.
-   * @param {number} options.innerWindowID
-   *   The inner window ID of the window. Unused.
    * @param {number} options.timerID
    *   The timer ID of the timeout to be cancelled
    * @param {*} options.callback
@@ -50,7 +48,7 @@ let InternalFaviconLoader = {
    * @param {string} reason
    *   The reason for cancelling the request.
    */
-  _cancelRequest({ uri, innerWindowID, timerID, callback }, reason) {
+  _cancelRequest({ uri, timerID, callback }, reason) {
     // Break cycle
     let request = callback.request;
     delete callback.request;
@@ -1232,8 +1230,8 @@ export var PlacesUIUtils = {
    * Helpers for consumers of editBookmarkOverlay which don't have a node as their input.
    *
    * Given a bookmark object for either a url bookmark or a folder, returned by
-   * Bookmarks.fetch (see Bookmark.jsm), this creates a node-like object suitable for
-   * initialising the edit overlay with it.
+   * Bookmarks.fetch (see Bookmark.sys.mjs), this creates a node-like object
+   * suitable for initialising the edit overlay with it.
    *
    * @param {object} aFetchInfo
    *        a bookmark object returned by Bookmarks.fetch.

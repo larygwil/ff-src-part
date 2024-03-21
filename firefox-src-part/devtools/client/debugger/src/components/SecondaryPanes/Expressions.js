@@ -296,7 +296,7 @@ class Expressions extends Component {
           roots: [root],
           autoExpandDepth: 0,
           disableWrap: true,
-          openLink: openLink,
+          openLink,
           createElement: this.createElement,
           onDoubleClick: (items, { depth }) => {
             if (depth === 0) {
@@ -374,7 +374,7 @@ class Expressions extends Component {
       input({
         className: "input-expression",
         type: "text",
-        placeholder: L10N.getStr("expressions.placeholder"),
+        placeholder: L10N.getStr("expressions.placeholder2"),
         onChange: this.handleChange,
         onBlur: this.hideInput,
         onKeyDown: this.handleKeyDown,

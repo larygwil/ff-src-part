@@ -562,6 +562,8 @@ enum class LayoutFrameClassFlags : uint16_t {
   SupportsContainLayoutAndPaint = 1 << 13,
   // Whether this frame class supports the `aspect-ratio` property.
   SupportsAspectRatio = 1 << 14,
+  // Whether this frame class is always a BFC.
+  BlockFormattingContext = 1 << 15,
 };
 
 MOZ_MAKE_ENUM_CLASS_BITWISE_OPERATORS(LayoutFrameClassFlags)
@@ -1380,6 +1382,8 @@ class nsIFrame : public nsQueryFrame {
     return nullptr;
   }
 
+  bool HasUnreflowedContainerQueryAncestor() const;
+
  private:
   // The value that the CSS page-name "auto" keyword resolves to for children
   // of this frame.
@@ -1643,7 +1647,13 @@ class nsIFrame : public nsQueryFrame {
   // This is intended to be used either on the root frame to find the first
   // page's page-name, or on a newly created continuation to find what the new
   // page's page-name will be.
-  const nsAtom* ComputePageValue() const MOZ_NONNULL_RETURN;
+  //
+  // The auto page value can be set by the caller. This is useful when trying
+  // to compute a page value in the middle of a frame tree. In that case the
+  // auto value can be found from the AutoPageValue frame property of the
+  // parent frame. A null auto value is interpreted as the empty-string atom.
+  const nsAtom* ComputePageValue(const nsAtom* aAutoValue = nullptr) const
+      MOZ_NONNULL_RETURN;
 
   ///////////////////////////////////////////////////////////////////////////////
   // The public visibility API.
@@ -3027,6 +3037,9 @@ class nsIFrame : public nsQueryFrame {
   nsSize OverflowClipMargin(PhysicalAxes aClipAxes) const;
   // Returns the axes on which this frame should apply overflow clipping.
   PhysicalAxes ShouldApplyOverflowClipping(const nsStyleDisplay* aDisp) const;
+  // Returns whether this frame is a block that was supposed to be a
+  // scrollframe, but that was suppressed for print.
+  bool IsSuppressedScrollableBlockForPrint() const;
 
   /**
    * Helper method used by block reflow to identify runs of text so

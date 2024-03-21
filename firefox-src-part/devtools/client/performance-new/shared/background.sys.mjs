@@ -63,7 +63,7 @@ const PREF_PREFIX = "devtools.performance.recording.";
 // capabilities of the WebChannel. The front-end can handle old WebChannel
 // versions and has a full list of versions and capabilities here:
 // https://github.com/firefox-devtools/profiler/blob/main/src/app-logic/web-channel.js
-const CURRENT_WEBCHANNEL_VERSION = 2;
+const CURRENT_WEBCHANNEL_VERSION = 3;
 
 const lazyRequire = {};
 // eslint-disable-next-line mozilla/lazy-getter-object-name
@@ -761,7 +761,7 @@ async function getResponseForMessage(request, browser) {
 
       // Enable the profiler menu button.
       const { ProfilerMenuButton } = lazy.ProfilerMenuButton();
-      ProfilerMenuButton.addToNavbar(ownerDocument);
+      ProfilerMenuButton.addToNavbar();
 
       // Dispatch the change event manually, so that the shortcuts will also be
       // added.
@@ -812,6 +812,20 @@ async function getResponseForMessage(request, browser) {
       if (externalPowerUrl) {
         const response = await fetch(
           `${externalPowerUrl}?start=${startTime}&end=${endTime}`
+        );
+        return response.json();
+      }
+      return [];
+    }
+    case "GET_EXTERNAL_MARKERS": {
+      const { startTime, endTime } = request;
+      const externalMarkersUrl = Services.prefs.getCharPref(
+        "devtools.performance.recording.markers.external-url",
+        ""
+      );
+      if (externalMarkersUrl) {
+        const response = await fetch(
+          `${externalMarkersUrl}?start=${startTime}&end=${endTime}`
         );
         return response.json();
       }

@@ -8,9 +8,15 @@ const Debugger = require("Debugger");
 const DevToolsUtils = require("resource://devtools/shared/DevToolsUtils.js");
 
 const lazy = {};
-ChromeUtils.defineESModuleGetters(lazy, {
-  Reflect: "resource://gre/modules/reflect.sys.mjs",
-});
+if (!isWorker) {
+  ChromeUtils.defineESModuleGetters(
+    lazy,
+    {
+      Reflect: "resource://gre/modules/reflect.sys.mjs",
+    },
+    { global: "contextual" }
+  );
+}
 loader.lazyRequireGetter(
   this,
   ["isCommand"],
@@ -600,8 +606,12 @@ function nativeIsEagerlyEvaluateable(fn) {
       return true;
   }
 
+  // This needs to use isSameNativeWithJitInfo instead of isSameNative, given
+  // DOM methods share single native function with different JSJitInto,
+  // and isSameNative cannot distinguish between side-effect-free methods
+  // and others.
   const natives = gSideEffectFreeNatives.get(fn.name);
-  return natives && natives.some(n => fn.isSameNative(n));
+  return natives && natives.some(n => fn.isSameNativeWithJitInfo(n));
 }
 
 function updateConsoleInputEvaluation(dbg, webConsole) {
@@ -616,7 +626,7 @@ function updateConsoleInputEvaluation(dbg, webConsole) {
   }
 }
 
-function getEvalInput(string, bindings) {
+function getEvalInput(string) {
   const trimmedString = string.trim();
   // Add easter egg for console.mihai().
   if (

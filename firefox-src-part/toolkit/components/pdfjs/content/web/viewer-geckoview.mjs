@@ -606,6 +606,10 @@ const defaultOptions = {
     value: false,
     kind: OptionKind.VIEWER + OptionKind.PREFERENCE
   },
+  enableHighlightFloatingButton: {
+    value: false,
+    kind: OptionKind.VIEWER + OptionKind.PREFERENCE
+  },
   enableML: {
     value: false,
     kind: OptionKind.VIEWER + OptionKind.PREFERENCE
@@ -768,28 +772,20 @@ class AppOptions {
   constructor() {
     throw new Error("Cannot initialize AppOptions.");
   }
-  static get(name) {
-    const userOption = userOptions[name];
-    if (userOption !== undefined) {
-      return userOption;
-    }
-    const defaultOption = defaultOptions[name];
-    if (defaultOption !== undefined) {
-      return compatibilityParams[name] ?? defaultOption.value;
-    }
-    return undefined;
+  static getCompat(name) {
+    return compatibilityParams[name] ?? undefined;
   }
-  static getAll(kind = null) {
+  static get(name) {
+    return userOptions[name] ?? compatibilityParams[name] ?? defaultOptions[name]?.value ?? undefined;
+  }
+  static getAll(kind = null, defaultOnly = false) {
     const options = Object.create(null);
     for (const name in defaultOptions) {
       const defaultOption = defaultOptions[name];
-      if (kind) {
-        if (!(kind & defaultOption.kind)) {
-          continue;
-        }
+      if (kind && !(kind & defaultOption.kind)) {
+        continue;
       }
-      const userOption = userOptions[name];
-      options[name] = userOption !== undefined ? userOption : compatibilityParams[name] ?? defaultOption.value;
+      options[name] = defaultOnly ? defaultOption.value : userOptions[name] ?? compatibilityParams[name] ?? defaultOption.value;
     }
     return options;
   }
@@ -1112,30 +1108,7 @@ class PDFLinkService {
     if (pdfDocument !== this.pdfDocument) {
       return;
     }
-    let operator;
-    for (const elem of action.state) {
-      switch (elem) {
-        case "ON":
-        case "OFF":
-        case "Toggle":
-          operator = elem;
-          continue;
-      }
-      switch (operator) {
-        case "ON":
-          optionalContentConfig.setVisibility(elem, true);
-          break;
-        case "OFF":
-          optionalContentConfig.setVisibility(elem, false);
-          break;
-        case "Toggle":
-          const group = optionalContentConfig.getGroup(elem);
-          if (group) {
-            optionalContentConfig.setVisibility(elem, !group.visible);
-          }
-          break;
-      }
-    }
+    optionalContentConfig.setOCGState(action);
     this.pdfViewer.optionalContentConfigPromise = Promise.resolve(optionalContentConfig);
   }
   cachePageRef(pageNum, pageRef) {
@@ -1448,6 +1421,7 @@ class BasePreferences {
     defaultZoomValue: "",
     disablePageLabels: false,
     enableHighlightEditor: false,
+    enableHighlightFloatingButton: false,
     enableML: false,
     enablePermissions: false,
     enablePrintAutoRotate: true,
@@ -1805,8 +1779,7 @@ class Preferences extends BasePreferences {
           try {
             const hasUnchangedAnnotations = pdfDocument.annotationStorage.size === 0;
             const hasWillPrint = pdfViewer.enableScripting && !!(await pdfDocument.getJSActions())?.WillPrint;
-            const hasUnchangedOptionalContent = (await pdfViewer.optionalContentConfigPromise).hasInitialVisibility;
-            result = hasUnchangedAnnotations && !hasWillPrint && hasUnchangedOptionalContent;
+            result = hasUnchangedAnnotations && !hasWillPrint;
           } catch {
             console.warn("Unable to check if the document can be downloaded.");
           }
@@ -1908,7 +1881,7 @@ class ExternalServices extends BaseExternalServices {
     FirefoxCom.request("initPassiveLoading", null);
   }
   reportTelemetry(data) {
-    FirefoxCom.request("reportTelemetry", JSON.stringify(data));
+    FirefoxCom.request("reportTelemetry", data);
   }
   updateEditorStates(data) {
     FirefoxCom.request("updateEditorStates", data);
@@ -3671,14 +3644,15 @@ class FirefoxPrintService {
     pagesOverview,
     printContainer,
     printResolution,
-    optionalContentConfigPromise = null,
     printAnnotationStoragePromise = null
   }) {
     this.pdfDocument = pdfDocument;
     this.pagesOverview = pagesOverview;
     this.printContainer = printContainer;
     this._printResolution = printResolution || 150;
-    this._optionalContentConfigPromise = optionalContentConfigPromise || pdfDocument.getOptionalContentConfig();
+    this._optionalContentConfigPromise = pdfDocument.getOptionalContentConfig({
+      intent: "print"
+    });
     this._printAnnotationStoragePromise = printAnnotationStoragePromise || Promise.resolve();
   }
   layout() {
@@ -5083,7 +5057,6 @@ class TextLayerBuilder {
 
 
 
-const MAX_CANVAS_PIXELS = compatibilityParams.maxCanvasPixels || 16777216;
 const DEFAULT_LAYER_PROPERTIES = null;
 class PDFPageView {
   #annotationMode = AnnotationMode.ENABLE_FORMS;
@@ -5116,7 +5089,7 @@ class PDFPageView {
     this.#textLayerMode = options.textLayerMode ?? TextLayerMode.ENABLE;
     this.#annotationMode = options.annotationMode ?? AnnotationMode.ENABLE_FORMS;
     this.imageResourcesPath = options.imageResourcesPath || "";
-    this.maxCanvasPixels = options.maxCanvasPixels ?? MAX_CANVAS_PIXELS;
+    this.maxCanvasPixels = options.maxCanvasPixels ?? (AppOptions.getCompat("maxCanvasPixels") || 16777216);
     this.pageColors = options.pageColors || null;
     this.eventBus = options.eventBus;
     this.renderingQueue = options.renderingQueue;
@@ -5883,6 +5856,7 @@ class PDFViewer {
   #annotationMode = AnnotationMode.ENABLE_FORMS;
   #containerTopLeft = null;
   #copyCallbackBound = null;
+  #enableHighlightFloatingButton = false;
   #enablePermissions = false;
   #mlManager = null;
   #getAllTextInProgress = false;
@@ -5895,7 +5869,7 @@ class PDFViewer {
   #scaleTimeoutId = null;
   #textLayerMode = TextLayerMode.ENABLE;
   constructor(options) {
-    const viewerVersion = "4.1.249";
+    const viewerVersion = "4.1.287";
     if (version !== viewerVersion) {
       throw new Error(`The API version "${version}" does not match the Viewer version "${viewerVersion}".`);
     }
@@ -5915,6 +5889,7 @@ class PDFViewer {
     this.#annotationMode = options.annotationMode ?? AnnotationMode.ENABLE_FORMS;
     this.#annotationEditorMode = options.annotationEditorMode ?? AnnotationEditorType.NONE;
     this.#annotationEditorHighlightColors = options.annotationEditorHighlightColors || null;
+    this.#enableHighlightFloatingButton = options.enableHighlightFloatingButton === true;
     this.imageResourcesPath = options.imageResourcesPath || "";
     this.enablePrintAutoRotate = options.enablePrintAutoRotate || false;
     this.maxCanvasPixels = options.maxCanvasPixels;
@@ -6225,7 +6200,9 @@ class PDFViewer {
     }
     const pagesCount = pdfDocument.numPages;
     const firstPagePromise = pdfDocument.getPage(1);
-    const optionalContentConfigPromise = pdfDocument.getOptionalContentConfig();
+    const optionalContentConfigPromise = pdfDocument.getOptionalContentConfig({
+      intent: "display"
+    });
     const permissionsPromise = this.#enablePermissions ? pdfDocument.getPermissions() : Promise.resolve();
     if (pagesCount > PagesCountLimit.FORCE_SCROLL_MODE_PAGE) {
       console.warn("Forcing PAGE-scrolling for performance reasons, given the length of the document.");
@@ -6281,7 +6258,7 @@ class PDFViewer {
         if (pdfDocument.isPureXfa) {
           console.warn("Warning: XFA-editing is not implemented.");
         } else if (isValidAnnotationEditorMode(mode)) {
-          this.#annotationEditorUIManager = new AnnotationEditorUIManager(this.container, this.viewer, this.#altTextManager, this.eventBus, pdfDocument, this.pageColors, this.#annotationEditorHighlightColors, this.#mlManager);
+          this.#annotationEditorUIManager = new AnnotationEditorUIManager(this.container, this.viewer, this.#altTextManager, this.eventBus, pdfDocument, this.pageColors, this.#annotationEditorHighlightColors, this.#enableHighlightFloatingButton, this.#mlManager);
           this.eventBus.dispatch("annotationeditoruimanager", {
             source: this,
             uiManager: this.#annotationEditorUIManager
@@ -6942,7 +6919,9 @@ class PDFViewer {
     }
     if (!this._optionalContentConfigPromise) {
       console.error("optionalContentConfigPromise: Not initialized yet.");
-      return this.pdfDocument.getOptionalContentConfig();
+      return this.pdfDocument.getOptionalContentConfig({
+        intent: "display"
+      });
     }
     return this._optionalContentConfigPromise;
   }
@@ -7281,10 +7260,6 @@ class Toolbar {
       element: options.download,
       eventName: "download",
       nimbusName: "download-button"
-    }, {
-      element: options.openInApp,
-      eventName: "openinexternalapp",
-      nimbusName: "open-in-app-button"
     }];
     if (nimbusData) {
       this.#buttons = [];
@@ -7645,6 +7620,7 @@ const PDFViewerApplication = {
       annotationMode: AppOptions.get("annotationMode"),
       annotationEditorMode,
       annotationEditorHighlightColors: AppOptions.get("highlightEditorColors"),
+      enableHighlightFloatingButton: AppOptions.get("enableHighlightFloatingButton"),
       imageResourcesPath: AppOptions.get("imageResourcesPath"),
       enablePrintAutoRotate: AppOptions.get("enablePrintAutoRotate"),
       maxCanvasPixels: AppOptions.get("maxCanvasPixels"),
@@ -7785,39 +7761,6 @@ const PDFViewerApplication = {
       appConfig.toolbar?.viewFind?.classList.add("hidden");
     }
     this.initPassiveLoading(file);
-    const {
-      mainContainer
-    } = appConfig;
-    ({
-      scrollTop: this._lastScrollTop,
-      scrollLeft: this._lastScrollLeft
-    } = mainContainer);
-    const scroll = () => {
-      if (this._lastScrollTop === mainContainer.scrollTop && this._lastScrollLeft === mainContainer.scrollLeft) {
-        return;
-      }
-      mainContainer.removeEventListener("scroll", scroll, {
-        passive: true
-      });
-      this._isScrolling = true;
-      const scrollend = () => {
-        ({
-          scrollTop: this._lastScrollTop,
-          scrollLeft: this._lastScrollLeft
-        } = mainContainer);
-        this._isScrolling = false;
-        mainContainer.addEventListener("scroll", scroll, {
-          passive: true
-        });
-        mainContainer.removeEventListener("scrollend", scrollend);
-        mainContainer.removeEventListener("blur", scrollend);
-      };
-      mainContainer.addEventListener("scrollend", scrollend);
-      mainContainer.addEventListener("blur", scrollend);
-    };
-    mainContainer.addEventListener("scroll", scroll, {
-      passive: true
-    });
   },
   get externalServices() {
     return shadow(this, "externalServices", new ExternalServices());
@@ -8117,11 +8060,6 @@ const PDFViewerApplication = {
     } else {
       this.download(options);
     }
-  },
-  openInExternalApp() {
-    this.downloadOrSave({
-      openInExternalApp: true
-    });
   },
   _documentError(message, moreInfo = null) {
     this._unblockDocumentLoadEvent();
@@ -8537,7 +8475,6 @@ const PDFViewerApplication = {
       pagesOverview: this.pdfViewer.getPagesOverview(),
       printContainer: this.appConfig.printContainer,
       printResolution: AppOptions.get("printResolution"),
-      optionalContentConfigPromise: this.pdfViewer.optionalContentConfigPromise,
       printAnnotationStoragePromise: this._printAnnotationStoragePromise
     });
     this.forceRendering();
@@ -8606,7 +8543,6 @@ const PDFViewerApplication = {
     eventBus._on("switchannotationeditorparams", webViewerSwitchAnnotationEditorParams);
     eventBus._on("print", webViewerPrint);
     eventBus._on("download", webViewerDownload);
-    eventBus._on("openinexternalapp", webViewerOpenInExternalApp);
     eventBus._on("firstpage", webViewerFirstPage);
     eventBus._on("lastpage", webViewerLastPage);
     eventBus._on("nextpage", webViewerNextPage);
@@ -8638,7 +8574,10 @@ const PDFViewerApplication = {
   bindWindowEvents() {
     const {
       eventBus,
-      _boundEvents
+      _boundEvents,
+      appConfig: {
+        mainContainer
+      }
     } = this;
     function addWindowResolutionChange(evt = null) {
       if (evt) {
@@ -8698,12 +8637,79 @@ const PDFViewerApplication = {
     window.addEventListener("beforeprint", _boundEvents.windowBeforePrint);
     window.addEventListener("afterprint", _boundEvents.windowAfterPrint);
     window.addEventListener("updatefromsandbox", _boundEvents.windowUpdateFromSandbox);
+    ({
+      scrollTop: this._lastScrollTop,
+      scrollLeft: this._lastScrollLeft
+    } = mainContainer);
+    const scrollend = _boundEvents.mainContainerScrollend = () => {
+      ({
+        scrollTop: this._lastScrollTop,
+        scrollLeft: this._lastScrollLeft
+      } = mainContainer);
+      this._isScrolling = false;
+      mainContainer.addEventListener("scroll", scroll, {
+        passive: true
+      });
+      mainContainer.removeEventListener("scrollend", scrollend);
+      mainContainer.removeEventListener("blur", scrollend);
+    };
+    const scroll = _boundEvents.mainContainerScroll = () => {
+      if (this._lastScrollTop === mainContainer.scrollTop && this._lastScrollLeft === mainContainer.scrollLeft) {
+        return;
+      }
+      mainContainer.removeEventListener("scroll", scroll, {
+        passive: true
+      });
+      this._isScrolling = true;
+      mainContainer.addEventListener("scrollend", scrollend);
+      mainContainer.addEventListener("blur", scrollend);
+    };
+    mainContainer.addEventListener("scroll", scroll, {
+      passive: true
+    });
   },
   unbindEvents() {
     throw new Error("Not implemented: unbindEvents");
   },
   unbindWindowEvents() {
-    throw new Error("Not implemented: unbindWindowEvents");
+    const {
+      _boundEvents,
+      appConfig: {
+        mainContainer
+      }
+    } = this;
+    window.removeEventListener("visibilitychange", webViewerVisibilityChange);
+    window.removeEventListener("wheel", webViewerWheel, {
+      passive: false
+    });
+    window.removeEventListener("touchstart", webViewerTouchStart, {
+      passive: false
+    });
+    window.removeEventListener("touchmove", webViewerTouchMove, {
+      passive: false
+    });
+    window.removeEventListener("touchend", webViewerTouchEnd, {
+      passive: false
+    });
+    window.removeEventListener("click", webViewerClick);
+    window.removeEventListener("keydown", webViewerKeyDown);
+    window.removeEventListener("keyup", webViewerKeyUp);
+    window.removeEventListener("resize", _boundEvents.windowResize);
+    window.removeEventListener("hashchange", _boundEvents.windowHashChange);
+    window.removeEventListener("beforeprint", _boundEvents.windowBeforePrint);
+    window.removeEventListener("afterprint", _boundEvents.windowAfterPrint);
+    window.removeEventListener("updatefromsandbox", _boundEvents.windowUpdateFromSandbox);
+    mainContainer.removeEventListener("scroll", _boundEvents.mainContainerScroll);
+    mainContainer.removeEventListener("scrollend", _boundEvents.mainContainerScrollend);
+    mainContainer.removeEventListener("blur", _boundEvents.mainContainerScrollend);
+    _boundEvents.removeWindowResolutionChange?.();
+    _boundEvents.windowResize = null;
+    _boundEvents.windowHashChange = null;
+    _boundEvents.windowBeforePrint = null;
+    _boundEvents.windowAfterPrint = null;
+    _boundEvents.windowUpdateFromSandbox = null;
+    _boundEvents.mainContainerScroll = null;
+    _boundEvents.mainContainerScrollend = null;
   },
   _accumulateTicks(ticks, prop) {
     if (this[prop] > 0 && ticks < 0 || this[prop] < 0 && ticks > 0) {
@@ -8917,9 +8923,6 @@ function webViewerPrint() {
 }
 function webViewerDownload() {
   PDFViewerApplication.downloadOrSave();
-}
-function webViewerOpenInExternalApp() {
-  PDFViewerApplication.openInExternalApp();
 }
 function webViewerFirstPage() {
   PDFViewerApplication.page = 1;
@@ -9509,8 +9512,8 @@ function webViewerReportTelemetry({
 
 
 
-const pdfjsVersion = "4.1.249";
-const pdfjsBuild = "d07f37f44";
+const pdfjsVersion = "4.1.287";
+const pdfjsBuild = "30e69956d";
 const AppConstants = null;
 window.PDFViewerApplication = PDFViewerApplication;
 window.PDFViewerApplicationConstants = AppConstants;
@@ -9524,8 +9527,7 @@ function getViewerConfiguration() {
     toolbar: {
       mainContainer,
       container: document.getElementById("floatingToolbar"),
-      download: document.getElementById("download"),
-      openInApp: document.getElementById("openInApp")
+      download: document.getElementById("download")
     },
     passwordOverlay: {
       dialog: document.getElementById("passwordDialog"),

@@ -12,7 +12,6 @@ const lazy = {};
 ChromeUtils.defineESModuleGetters(lazy, {
   FormHistory: "resource://gre/modules/FormHistory.sys.mjs",
   KeywordUtils: "resource://gre/modules/KeywordUtils.sys.mjs",
-  Log: "resource://gre/modules/Log.sys.mjs",
   PlacesUIUtils: "resource:///modules/PlacesUIUtils.sys.mjs",
   PlacesUtils: "resource://gre/modules/PlacesUtils.sys.mjs",
   PrivateBrowsingUtils: "resource://gre/modules/PrivateBrowsingUtils.sys.mjs",
@@ -1030,8 +1029,9 @@ export var UrlbarUtils = {
       isPrivate: lazy.PrivateBrowsingUtils.isWindowPrivate(window),
       maxResults: 1,
       searchString,
-      userContextId:
-        window.gBrowser.selectedBrowser.getAttribute("usercontextid"),
+      userContextId: parseInt(
+        window.gBrowser.selectedBrowser.getAttribute("usercontextid") || 0
+      ),
       prohibitRemoteResults: true,
       providers: ["AliasEngines", "BookmarkKeywords", "HeuristicFallback"],
     };
@@ -1051,31 +1051,27 @@ export var UrlbarUtils = {
   },
 
   /**
-   * Creates a logger.
-   * Logging level can be controlled through browser.urlbar.loglevel.
+   * Creates a console logger.
+   * Logging level can be controlled through the `browser.urlbar.loglevel`
+   * preference.
    *
-   * @param {string} [prefix] Prefix to use for the logged messages, "::" will
-   *                 be appended automatically to the prefix.
-   * @returns {object} The logger.
+   * @param {object} [options] Options for the logger.
+   * @param {string} [options.prefix] Prefix to use for the logged messages.
+   * @returns {ConsoleInstance} The console logger.
    */
   getLogger({ prefix = "" } = {}) {
-    if (!this._logger) {
-      this._logger = lazy.Log.repository.getLogger("urlbar");
-      this._logger.manageLevelFromPref("browser.urlbar.loglevel");
-      this._logger.addAppender(
-        new lazy.Log.ConsoleAppender(new lazy.Log.BasicFormatter())
-      );
+    if (!this._loggers) {
+      this._loggers = new Map();
     }
-    if (prefix) {
-      // This is not an early return because it is necessary to invoke getLogger
-      // at least once before getLoggerWithMessagePrefix; it replaces a
-      // method of the original logger, rather than using an actual Proxy.
-      return lazy.Log.repository.getLoggerWithMessagePrefix(
-        "urlbar",
-        prefix + " :: "
-      );
+    let logger = this._loggers.get(prefix);
+    if (!logger) {
+      logger = console.createInstance({
+        prefix: `URLBar${prefix ? " - " + prefix : ""}`,
+        maxLogLevelPref: "browser.urlbar.loglevel",
+      });
+      this._loggers.set(prefix, logger);
     }
-    return this._logger;
+    return logger;
   },
 
   /**
@@ -1651,6 +1647,12 @@ UrlbarUtils.RESULT_PAYLOAD_SCHEMA = {
       icon: {
         type: "string",
       },
+      isPinned: {
+        type: "boolean",
+      },
+      isSponsored: {
+        type: "boolean",
+      },
       title: {
         type: "string",
       },
@@ -2151,11 +2153,11 @@ export class UrlbarQueryContext {
     for (let [prop, checkFn, defaultValue] of [
       ["currentPage", v => typeof v == "string" && !!v.length],
       ["formHistoryName", v => typeof v == "string" && !!v.length],
-      ["prohibitRemoteResults", v => true, false],
+      ["prohibitRemoteResults", () => true, false],
       ["providers", v => Array.isArray(v) && v.length],
       ["searchMode", v => v && typeof v == "object"],
       ["sources", v => Array.isArray(v) && v.length],
-      ["view", v => true],
+      ["view", () => true],
     ]) {
       if (prop in options) {
         if (!checkFn(options[prop])) {
@@ -2311,10 +2313,10 @@ export class UrlbarMuxer {
   /**
    * Sorts queryContext results in-place.
    *
-   * @param {UrlbarQueryContext} queryContext the context to sort results for.
+   * @param {UrlbarQueryContext} _queryContext the context to sort results for.
    * @abstract
    */
-  sort(queryContext) {
+  sort(_queryContext) {
     throw new Error("Trying to access the base class, must be overridden");
   }
 }
@@ -2374,11 +2376,11 @@ export class UrlbarProvider {
    * If this method returns false, the providers manager won't start a query
    * with this provider, to save on resources.
    *
-   * @param {UrlbarQueryContext} queryContext The query context object
+   * @param {UrlbarQueryContext} _queryContext The query context object
    * @returns {boolean} Whether this provider should be invoked for the search.
    * @abstract
    */
-  isActive(queryContext) {
+  isActive(_queryContext) {
     throw new Error("Trying to access the base class, must be overridden");
   }
 
@@ -2388,11 +2390,11 @@ export class UrlbarProvider {
    * larger values are higher priorities.  For a given query, `startQuery` is
    * called on only the active and highest-priority providers.
    *
-   * @param {UrlbarQueryContext} queryContext The query context object
+   * @param {UrlbarQueryContext} _queryContext The query context object
    * @returns {number} The provider's priority for the given query.
    * @abstract
    */
-  getPriority(queryContext) {
+  getPriority(_queryContext) {
     // By default, all providers share the lowest priority.
     return 0;
   }
@@ -2403,30 +2405,30 @@ export class UrlbarProvider {
    * Note: Extended classes should return a Promise resolved when the provider
    *       is done searching AND returning results.
    *
-   * @param {UrlbarQueryContext} queryContext The query context object
-   * @param {Function} addCallback Callback invoked by the provider to add a new
+   * @param {UrlbarQueryContext} _queryContext The query context object
+   * @param {Function} _addCallback Callback invoked by the provider to add a new
    *        result. A UrlbarResult should be passed to it.
    * @abstract
    */
-  startQuery(queryContext, addCallback) {
+  startQuery(_queryContext, _addCallback) {
     throw new Error("Trying to access the base class, must be overridden");
   }
 
   /**
    * Cancels a running query,
    *
-   * @param {UrlbarQueryContext} queryContext the query context object to cancel
+   * @param {UrlbarQueryContext} _queryContext the query context object to cancel
    *        query for.
    * @abstract
    */
-  cancelQuery(queryContext) {
+  cancelQuery(_queryContext) {
     // Override this with your clean-up on cancel code.
   }
 
   /**
    * Called when the user starts and ends an engagement with the urlbar.
    *
-   * @param {string} state
+   * @param {string} _state
    *   The state of the engagement, one of the following strings:
    *
    *   start
@@ -2440,11 +2442,11 @@ export class UrlbarProvider {
    *       urlbar has discarded the engagement for some reason, and the
    *       `onEngagement` implementation should ignore it.
    *
-   * @param {UrlbarQueryContext} queryContext
+   * @param {UrlbarQueryContext} _queryContext
    *   The engagement's query context.  This is *not* guaranteed to be defined
    *   when `state` is "start".  It will always be defined for "engagement" and
    *   "abandonment".
-   * @param {object} details
+   * @param {object} _details
    *   This object is non-empty only when `state` is "engagement" or
    *   "abandonment", and it describes the search string and engaged result.
    *
@@ -2469,27 +2471,27 @@ export class UrlbarProvider {
    *       The index of the picked result.
    *   {string} selType
    *       The type of the selected result.  See TelemetryEvent.record() in
-   *       UrlbarController.jsm.
+   *       UrlbarController.sys.mjs.
    *   {string} provider
    *       The name of the provider that produced the picked result.
    *
    *   For "abandonment", only `searchString` is defined.
-   * @param {UrlbarController} controller
+   * @param {UrlbarController} _controller
    *  The associated controller.
    */
-  onEngagement(state, queryContext, details, controller) {}
+  onEngagement(_state, _queryContext, _details, _controller) {}
 
   /**
    * Called before a result from the provider is selected. See `onSelection`
    * for details on what that means.
    *
-   * @param {UrlbarResult} result
+   * @param {UrlbarResult} _result
    *   The result that was selected.
-   * @param {Element} element
+   * @param {Element} _element
    *   The element in the result's view that was selected.
    * @abstract
    */
-  onBeforeSelection(result, element) {}
+  onBeforeSelection(_result, _element) {}
 
   /**
    * Called when a result from the provider is selected. "Selected" refers to
@@ -2498,13 +2500,13 @@ export class UrlbarProvider {
    * event of a click, onSelection is called just before onEngagement. Note that
    * this is called when heuristic results are pre-selected.
    *
-   * @param {UrlbarResult} result
+   * @param {UrlbarResult} _result
    *   The result that was selected.
-   * @param {Element} element
+   * @param {Element} _element
    *   The element in the result's view that was selected.
    * @abstract
    */
-  onSelection(result, element) {}
+  onSelection(_result, _element) {}
 
   /**
    * This is called only for dynamic result types, when the urlbar view updates
@@ -2543,9 +2545,9 @@ export class UrlbarProvider {
    * element's name is not specified, then it will not be updated and will
    * retain its current state.
    *
-   * @param {UrlbarResult} result
+   * @param {UrlbarResult} _result
    *   The result whose view will be updated.
-   * @param {Map} idsByName
+   * @param {Map} _idsByName
    *   A Map from an element's name, as defined by the provider; to its ID in
    *   the DOM, as defined by the browser. The browser manages element IDs for
    *   dynamic results to prevent collisions. However, a provider may need to
@@ -2572,7 +2574,7 @@ export class UrlbarProvider {
    *   {string} [textContent]
    *     A string that will be set as `element.textContent`.
    */
-  getViewUpdate(result, idsByName) {
+  getViewUpdate(_result, _idsByName) {
     return null;
   }
 
@@ -2582,7 +2584,7 @@ export class UrlbarProvider {
    * be handled by implementing `onEngagement()` with the possible exception of
    * commands automatically handled by the urlbar, like "help".
    *
-   * @param {UrlbarResult} result
+   * @param {UrlbarResult} _result
    *   The menu will be shown for this result.
    * @returns {Array}
    *   If the result doesn't have any commands, this should return null.
@@ -2601,7 +2603,7 @@ export class UrlbarProvider {
    *     If specified, a submenu will be created with the given child commands.
    *     Each object in the array must be a command object.
    */
-  getResultCommands(result) {
+  getResultCommands(_result) {
     return null;
   }
 
@@ -2922,10 +2924,8 @@ export class L10nCache {
    *   The subject of the notification.
    * @param {string} topic
    *   The topic of the notification.
-   * @param {string} data
-   *   The data attached to the notification.
    */
-  async observe(subject, topic, data) {
+  async observe(subject, topic) {
     switch (topic) {
       case "intl:app-locales-changed": {
         await this.l10n.ready;

@@ -25,6 +25,7 @@ const EXPORTED_SYMBOLS = [
   "addTracingListener",
   "removeTracingListener",
   "NEXT_INTERACTION_MESSAGE",
+  "DOM_MUTATIONS",
 ];
 
 const NEXT_INTERACTION_MESSAGE =
@@ -43,7 +44,22 @@ const FRAME_EXIT_REASONS = {
   THROW: "throw",
 };
 
+const DOM_MUTATIONS = {
+  // Track all DOM Node being added
+  ADD: "add",
+  // Track all attributes being modified
+  ATTRIBUTES: "attributes",
+  // Track all DOM Node being removed
+  REMOVE: "remove",
+};
+
 const listeners = new Set();
+
+// Detecting worker is different if this file is loaded via Common JS loader (isWorker global)
+// or as a JSM (constructor name)
+const isWorker =
+  globalThis.isWorker ||
+  globalThis.constructor.name == "WorkerDebuggerGlobalScope";
 
 // This module can be loaded from the worker thread, where we can't use ChromeUtils.
 // So implement custom lazy getters (without XPCOMUtils ESM) from here.
@@ -60,7 +76,7 @@ const customLazy = {
     // (ex: from tracer actor module),
     // this module no longer has WorkerDebuggerGlobalScope as global,
     // but has to use require() to pull Debugger.
-    if (typeof isWorker == "boolean") {
+    if (isWorker) {
       return require("Debugger");
     }
     const { addDebuggerToGlobal } = ChromeUtils.importESModule(
@@ -113,24 +129,43 @@ const customLazy = {
  * @param {Boolean} options.traceDOMEvents
  *        Optional setting to enable tracing all the DOM events being going through
  *        dom/events/EventListenerManager.cpp's `EventListenerManager`.
+ * @param {Array<string>} options.traceDOMMutations
+ *        Optional setting to enable tracing all the DOM mutations.
+ *        This array may contains three strings:
+ *          - "add": trace all new DOM Node being added,
+ *          - "attributes": trace all DOM attribute modifications,
+ *          - "delete": trace all DOM Node being removed.
  * @param {Boolean} options.traceValues
  *        Optional setting to enable tracing all function call values as well,
  *        as returned values (when we do log returned frames).
  * @param {Boolean} options.traceOnNextInteraction
  *        Optional setting to enable when the tracing should only start when the
  *        use starts interacting with the page. i.e. on next keydown or mousedown.
+ * @param {Boolean} options.traceSteps
+ *        Optional setting to enable tracing each frame within a function execution.
+ *        (i.e. not only function call and function returns [when traceFunctionReturn is true])
  * @param {Boolean} options.traceFunctionReturn
  *        Optional setting to enable when the tracing should notify about frame exit.
  *        i.e. when a function call returns or throws.
+ * @param {String} options.filterFrameSourceUrl
+ *        Optional setting to restrict all traces to only a given source URL.
+ *        This is a loose check, so any source whose URL includes the passed string will be traced.
  * @param {Number} options.maxDepth
  *        Optional setting to ignore frames when depth is greater than the passed number.
  * @param {Number} options.maxRecords
  *        Optional setting to stop the tracer after having recorded at least
  *        the passed number of top level frames.
+ * @param {Number} options.pauseOnStep
+ *        Optional setting to delay each frame execution for a given amount of time in ms.
  */
 class JavaScriptTracer {
   constructor(options) {
     this.onEnterFrame = this.onEnterFrame.bind(this);
+
+    // DevTools CommonJS Workers modules don't have access to AbortController
+    if (!isWorker) {
+      this.abortController = new AbortController();
+    }
 
     // By default, we would trace only JavaScript related to caller's global.
     // As there is no way to compute the caller's global default to the global of the
@@ -152,56 +187,48 @@ class JavaScriptTracer {
     if (!this.loggingMethod) {
       // On workers, `dump` can't be called with JavaScript on another object,
       // so bind it.
-      // Detecting worker is different if this file is loaded via Common JS loader (isWorker)
-      // or as a JSM (constructor name)
-      this.loggingMethod =
-        typeof isWorker == "boolean" ||
-        globalThis.constructor.name == "WorkerDebuggerGlobalScope"
-          ? dump.bind(null)
-          : dump;
+      this.loggingMethod = isWorker ? dump.bind(null) : dump;
     }
 
     this.traceDOMEvents = !!options.traceDOMEvents;
+
+    if (options.traceDOMMutations) {
+      if (!Array.isArray(options.traceDOMMutations)) {
+        throw new Error("'traceDOMMutations' attribute should be an array");
+      }
+      const acceptedValues = Object.values(DOM_MUTATIONS);
+      if (!options.traceDOMMutations.every(e => acceptedValues.includes(e))) {
+        throw new Error(
+          `'traceDOMMutations' only accept array of strings whose values can be: ${acceptedValues}`
+        );
+      }
+      this.traceDOMMutations = options.traceDOMMutations;
+    }
+    this.traceSteps = !!options.traceSteps;
     this.traceValues = !!options.traceValues;
     this.traceFunctionReturn = !!options.traceFunctionReturn;
     this.maxDepth = options.maxDepth;
     this.maxRecords = options.maxRecords;
     this.records = 0;
+    if ("pauseOnStep" in options) {
+      if (typeof options.pauseOnStep != "number") {
+        throw new Error("'pauseOnStep' attribute should be a number");
+      }
+      this.pauseOnStep = options.pauseOnStep;
+    }
+    if ("filterFrameSourceUrl" in options) {
+      if (typeof options.filterFrameSourceUrl != "string") {
+        throw new Error("'filterFrameSourceUrl' attribute should be a string");
+      }
+      this.filterFrameSourceUrl = options.filterFrameSourceUrl;
+    }
 
     // An increment used to identify function calls and their returned/exit frames
     this.frameId = 0;
 
     // This feature isn't supported on Workers as they aren't involving user events
-    if (options.traceOnNextInteraction && typeof isWorker !== "boolean") {
-      this.abortController = new AbortController();
-      const listener = () => {
-        this.abortController.abort();
-        // Avoid tracing if the users asked to stop tracing.
-        if (this.dbg) {
-          this.#startTracing();
-        }
-      };
-      const eventOptions = {
-        signal: this.abortController.signal,
-        capture: true,
-      };
-      // Register the event listener on the Chrome Event Handler in order to receive the event first.
-      // When used for the parent process target, `tracedGlobal` is browser.xhtml's window, which doesn't have a chromeEventHandler.
-      const eventHandler =
-        this.tracedGlobal.docShell.chromeEventHandler || this.tracedGlobal;
-      eventHandler.addEventListener("mousedown", listener, eventOptions);
-      eventHandler.addEventListener("keydown", listener, eventOptions);
-
-      // Significate to the user that the tracer is registered, but not tracing just yet.
-      let shouldLogToStdout = listeners.size == 0;
-      for (const l of listeners) {
-        if (typeof l.onTracingPending == "function") {
-          shouldLogToStdout |= l.onTracingPending();
-        }
-      }
-      if (shouldLogToStdout) {
-        this.loggingMethod(this.prefix + NEXT_INTERACTION_MESSAGE + "\n");
-      }
+    if (options.traceOnNextInteraction && !isWorker) {
+      this.#waitForNextInteraction();
     } else {
       this.#startTracing();
     }
@@ -210,6 +237,44 @@ class JavaScriptTracer {
   // Is actively tracing?
   // We typically start tracing from the constructor, unless the "trace on next user interaction" feature is used.
   isTracing = false;
+
+  /**
+   * In case `traceOnNextInteraction` option is used, delay the actual start of tracing until a first user interaction.
+   */
+  #waitForNextInteraction() {
+    // Use a dedicated Abort Controller as we are going to stop it as soon as we get the first user interaction,
+    // whereas other listeners would typically wait for tracer stop.
+    this.nextInteractionAbortController = new AbortController();
+
+    const listener = () => {
+      this.nextInteractionAbortController.abort();
+      // Avoid tracing if the users asked to stop tracing while we were waiting for the user interaction.
+      if (this.dbg) {
+        this.#startTracing();
+      }
+    };
+    const eventOptions = {
+      signal: this.nextInteractionAbortController.signal,
+      capture: true,
+    };
+    // Register the event listener on the Chrome Event Handler in order to receive the event first.
+    // When used for the parent process target, `tracedGlobal` is browser.xhtml's window, which doesn't have a chromeEventHandler.
+    const eventHandler =
+      this.tracedGlobal.docShell.chromeEventHandler || this.tracedGlobal;
+    eventHandler.addEventListener("mousedown", listener, eventOptions);
+    eventHandler.addEventListener("keydown", listener, eventOptions);
+
+    // Significate to the user that the tracer is registered, but not tracing just yet.
+    let shouldLogToStdout = listeners.size == 0;
+    for (const l of listeners) {
+      if (typeof l.onTracingPending == "function") {
+        shouldLogToStdout |= l.onTracingPending();
+      }
+    }
+    if (shouldLogToStdout) {
+      this.loggingMethod(this.prefix + NEXT_INTERACTION_MESSAGE + "\n");
+    }
+  }
 
   /**
    * Actually really start watching for executions.
@@ -224,6 +289,10 @@ class JavaScriptTracer {
 
     if (this.traceDOMEvents) {
       this.startTracingDOMEvents();
+    }
+    // This feature isn't supported on Workers as they aren't interacting with the DOM Tree
+    if (this.traceDOMMutations?.length > 0 && !isWorker) {
+      this.startTracingDOMMutations();
     }
 
     // In any case, we consider the tracing as started
@@ -247,6 +316,97 @@ class JavaScriptTracer {
     }
     this.currentDOMEvent = null;
   }
+
+  startTracingDOMMutations() {
+    this.tracedGlobal.document.devToolsWatchingDOMMutations = true;
+
+    const eventOptions = {
+      signal: this.abortController.signal,
+      capture: true,
+    };
+    if (this.traceDOMMutations.includes(DOM_MUTATIONS.ADD)) {
+      this.tracedGlobal.docShell.chromeEventHandler.addEventListener(
+        "devtoolschildinserted",
+        this.#onDOMMutation,
+        eventOptions
+      );
+    }
+    if (this.traceDOMMutations.includes(DOM_MUTATIONS.ATTRIBUTES)) {
+      this.tracedGlobal.docShell.chromeEventHandler.addEventListener(
+        "devtoolsattrmodified",
+        this.#onDOMMutation,
+        eventOptions
+      );
+    }
+    if (this.traceDOMMutations.includes(DOM_MUTATIONS.REMOVE)) {
+      this.tracedGlobal.docShell.chromeEventHandler.addEventListener(
+        "devtoolschildremoved",
+        this.#onDOMMutation,
+        eventOptions
+      );
+    }
+  }
+
+  stopTracingDOMMutations() {
+    this.tracedGlobal.document.devToolsWatchingDOMMutations = false;
+    // Note that the event listeners are all going to be unregistered via the AbortController.
+  }
+
+  /**
+   * Called for any DOM Mutation done in the traced document.
+   *
+   * @param {DOM Event} event
+   */
+  #onDOMMutation = event => {
+    // Ignore elements inserted by DevTools, like the inspector's highlighters
+    if (event.target.isNativeAnonymous) {
+      return;
+    }
+
+    let type = "";
+    switch (event.type) {
+      case "devtoolschildinserted":
+        type = DOM_MUTATIONS.ADD;
+        break;
+      case "devtoolsattrmodified":
+        type = DOM_MUTATIONS.ATTRIBUTES;
+        break;
+      case "devtoolschildremoved":
+        type = DOM_MUTATIONS.REMOVE;
+        break;
+      default:
+        throw new Error("Unexpected DOM Mutation event type: " + event.type);
+    }
+
+    let shouldLogToStdout = true;
+    if (listeners.size > 0) {
+      shouldLogToStdout = false;
+      for (const listener of listeners) {
+        // If any listener return true, also log to stdout
+        if (typeof listener.onTracingDOMMutation == "function") {
+          shouldLogToStdout |= listener.onTracingDOMMutation({
+            depth: this.depth,
+            prefix: this.prefix,
+
+            type,
+            element: event.target,
+            caller: Components.stack.caller,
+          });
+        }
+      }
+    }
+
+    if (shouldLogToStdout) {
+      const padding = "—".repeat(this.depth + 1);
+      this.loggingMethod(
+        this.prefix +
+          padding +
+          `[DOM Mutation | ${type}] ` +
+          objectToString(event.target) +
+          "\n"
+      );
+    }
+  };
 
   /**
    * Called by DebuggerNotificationObserver interface when a DOM event start being notified
@@ -277,7 +437,7 @@ class JavaScriptTracer {
             .makeDebuggeeValue(notification.event)
             .getProperty("type").return;
         }
-        this.currentDOMEvent = `DOM(${type})`;
+        this.currentDOMEvent = `DOM | ${type}`;
       } else {
         this.currentDOMEvent = notification.type;
       }
@@ -306,13 +466,21 @@ class JavaScriptTracer {
     this.depth = 0;
 
     // Cancel the traceOnNextInteraction event listeners.
-    if (this.abortController) {
-      this.abortController.abort();
-      this.abortController = null;
+    if (this.nextInteractionAbortController) {
+      this.nextInteractionAbortController.abort();
+      this.nextInteractionAbortController = null;
     }
 
     if (this.traceDOMEvents) {
       this.stopTracingDOMEvents();
+    }
+    if (this.traceDOMMutations?.length > 0 && !isWorker) {
+      this.stopTracingDOMMutations();
+    }
+
+    // Unregister all event listeners
+    if (this.abortController) {
+      this.abortController.abort();
     }
 
     this.tracedGlobal = null;
@@ -406,9 +574,20 @@ class JavaScriptTracer {
       return;
     }
     try {
+      // If an optional filter is passed, ignore frames which aren't matching the filter string
+      if (
+        this.filterFrameSourceUrl &&
+        !frame.script.source.url?.includes(this.filterFrameSourceUrl)
+      ) {
+        return;
+      }
+
       // Because of async frame which are popped and entered again on completion of the awaited async task,
       // we have to compute the depth from the frame. (and can't use a simple increment on enter/decrement on pop).
       const depth = getFrameDepth(frame);
+
+      // Save the current depth for the DOM Mutation handler
+      this.depth = depth;
 
       // Ignore the frame if we reached the depth limit (if one is provided)
       if (this.maxDepth && depth >= this.maxDepth) {
@@ -467,6 +646,39 @@ class JavaScriptTracer {
         this.logFrameEnteredToStdout(frame, depth);
       }
 
+      if (this.traceSteps) {
+        frame.onStep = () => {
+          // Spidermonkey steps on many intermediate positions which don't make sense to the user.
+          // `isStepStart` is close to each statement start, which is meaningful to the user.
+          const { isStepStart } = frame.script.getOffsetMetadata(frame.offset);
+          if (!isStepStart) {
+            return;
+          }
+
+          shouldLogToStdout = true;
+          if (listeners.size > 0) {
+            shouldLogToStdout = false;
+            for (const listener of listeners) {
+              // If any listener return true, also log to stdout
+              if (typeof listener.onTracingFrameStep == "function") {
+                shouldLogToStdout |= listener.onTracingFrameStep({
+                  frame,
+                  depth,
+                  prefix: this.prefix,
+                });
+              }
+            }
+          }
+          if (shouldLogToStdout) {
+            this.logFrameStepToStdout(frame, depth);
+          }
+          // Optionaly pause the frame execution by letting the other event loop to run in between.
+          if (typeof this.pauseOnStep == "number") {
+            syncPause(this.pauseOnStep);
+          }
+        };
+      }
+
       frame.onPop = completion => {
         // Special case async frames. We are exiting the current frame because of waiting for an async task.
         // (this is typically a `await foo()` from an async function)
@@ -520,6 +732,11 @@ class JavaScriptTracer {
           this.logFrameExitedToStdout(frame, depth, why, rv);
         }
       };
+
+      // Optionaly pause the frame execution by letting the other event loop to run in between.
+      if (typeof this.pauseOnStep == "number") {
+        syncPause(this.pauseOnStep);
+      }
     } catch (e) {
       console.error("Exception while tracing javascript", e);
     }
@@ -571,6 +788,20 @@ class JavaScriptTracer {
       }
       message += ")";
     }
+
+    this.loggingMethod(this.prefix + message + "\n");
+  }
+
+  /**
+   * Display to stdout one given frame execution, which represents a step within a function execution.
+   *
+   * @param {Debugger.Frame} frame
+   * @param {Number} depth
+   */
+  logFrameStepToStdout(frame, depth) {
+    const padding = "—".repeat(depth + 1);
+
+    const message = `${padding}— ${getTerminalHyperLink(frame)}`;
 
     this.loggingMethod(this.prefix + message + "\n");
   }
@@ -785,6 +1016,27 @@ function getTerminalHyperLink(frame) {
   // Use special characters in order to print working hyperlinks right from the terminal
   // See https://gist.github.com/egmontkob/eb114294efbcd5adb1944c9f3cb5feda
   return `\x1B]8;;${href}\x1B\\${href}\x1B]8;;\x1B\\`;
+}
+
+/**
+ * Helper function to synchronously pause the current frame execution
+ * for a given duration in ms.
+ *
+ * @param {Number} duration
+ */
+function syncPause(duration) {
+  let freeze = true;
+  const timer = Cc["@mozilla.org/timer;1"].createInstance(Ci.nsITimer);
+  timer.initWithCallback(
+    () => {
+      freeze = false;
+    },
+    duration,
+    Ci.nsITimer.TYPE_ONE_SHOT
+  );
+  Services.tm.spinEventLoopUntil("debugger-slow-motion", function () {
+    return !freeze;
+  });
 }
 
 // This JSM may be execute as CommonJS when loaded in the worker thread

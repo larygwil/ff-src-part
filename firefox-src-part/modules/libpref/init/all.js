@@ -335,6 +335,12 @@ pref("media.videocontrols.keyboard-tab-to-all-controls", true);
   pref("media.peerconnection.ice.proxy_only", false);
   pref("media.peerconnection.ice.proxy_only_if_pbmode", false);
   pref("media.peerconnection.turn.disable", false);
+  pref("media.peerconnection.treat_warnings_as_errors", false);
+  #ifdef NIGHTLY_BUILD
+    pref("media.peerconnection.description.legacy.enabled", false);
+  #else
+    pref("media.peerconnection.description.legacy.enabled", true);
+  #endif
 
   // 770 = DTLS 1.0, 771 = DTLS 1.2, 772 = DTLS 1.3
 pref("media.peerconnection.dtls.version.min", 771);
@@ -621,6 +627,19 @@ pref("toolkit.telemetry.dap_helper", "https://dap.services.mozilla.com");
 pref("toolkit.telemetry.dap_helper_owner", "Mozilla");
 pref("toolkit.telemetry.dap.logLevel", "Warn");
 
+// pref for mozilla to induce a new ping from users. This value should only ever be increased
+// and doing so will induce a new data ping from all users, so be careful. Mozilla may edit
+// this pref via our remote update/experimentation system
+pref("toolkit.telemetry.user_characteristics_ping.current_version", 0);
+// pref containing the value for the user of the last version of the ping we sent
+// if a user wants to disable this type of ping explicitly, set this to -1
+// firefox/mozilla will not modify this value if a negative number is present.
+pref("toolkit.telemetry.user_characteristics_ping.last_version_sent", 0);
+// A unique identifier for the user characteristics ping. This is not the same as
+// the telemetry client id (which is not sent in this ping), it is cleared when a
+// user opts-out of telemetry, it is set upon first telemetry submission
+pref("toolkit.telemetry.user_characteristics_ping.uuid", "");
+
 // AsyncShutdown delay before crashing in case of shutdown freeze
 // ASan, TSan and code coverage builds can be considerably slower. Extend the
 // grace period for both the asyncshutdown and the terminator.
@@ -717,6 +736,7 @@ pref("devtools.performance.recording.threads.remote", "[\"GeckoMain\",\"Composit
 // build artifacts of local builds.
 pref("devtools.performance.recording.objdirs", "[]");
 pref("devtools.performance.recording.power.external-url", "");
+pref("devtools.performance.recording.markers.external-url", "");
 // The popup will display some introductory text the first time it is displayed.
 pref("devtools.performance.popup.intro-displayed", false);
 
@@ -1010,6 +1030,14 @@ pref("javascript.options.mem.gc_helper_thread_ratio", 50);
 // JSGC_MAX_HELPER_THREADS
 pref("javascript.options.mem.gc_max_helper_threads", 8);
 
+// Eager nursery collection parameters:
+// JSGC_NURSERY_EAGER_COLLECTION_THRESHOLD_KB
+pref("javascript.options.mem.nursery_eager_collection_threshold_kb", 256);
+// JSGC_NURSERY_EAGER_COLLECTION_THRESHOLD_PERCENT
+pref("javascript.options.mem.nursery_eager_collection_threshold_percent", 25);
+// JSGC_NURSERY_EAGER_COLLECTION_TIMEOUT_MS
+pref("javascript.options.mem.nursery_eager_collection_timeout_ms", 5000);
+
 pref("javascript.options.shared_memory", true);
 
 pref("javascript.options.throw_on_debuggee_would_run", false);
@@ -1066,8 +1094,8 @@ pref("network.protocol-handler.external.disk", false);
 pref("network.protocol-handler.external.disks", false);
 pref("network.protocol-handler.external.afp", false);
 pref("network.protocol-handler.external.moz-icon", false);
-pref("network.protocol-handler.external.firefox", false);
-pref("network.protocol-handler.external.firefox-private", false);
+pref("network.protocol-handler.external.firefox-bridge", false);
+pref("network.protocol-handler.external.firefox-private-bridge", false);
 
 // Don't allow  external protocol handlers for common typos
 pref("network.protocol-handler.external.ttp", false);  // http
@@ -3625,6 +3653,11 @@ pref("browser.translations.simulateUnsupportedEngine", false);
 pref("browser.translations.chaos.errors", false);
 pref("browser.translations.chaos.timeoutMS", 0);
 
+// Enable the experimental machine learning inference engine.
+pref("browser.ml.enable", false);
+// Set to "All" to see all logs, which are useful for debugging.
+pref("browser.ml.logLevel", "Error");
+
 // When a user cancels this number of authentication dialogs coming from
 // a single web page in a row, all following authentication dialogs will
 // be blocked (automatically canceled) for that page. The counter resets
@@ -3936,11 +3969,7 @@ pref("security.external_protocol_requires_permission", true);
 pref("extensions.formautofill.available", "detect");
 pref("extensions.formautofill.addresses.supported", "detect");
 pref("extensions.formautofill.addresses.enabled", true);
-#if defined(NIGHTLY_BUILD)
-  pref("extensions.formautofill.addresses.capture.enabled", true);
-#else
-  pref("extensions.formautofill.addresses.capture.enabled", false);
-#endif
+pref("extensions.formautofill.addresses.capture.enabled", true);
 #if defined(ANDROID)
   // On android we have custom logic to control this. Ideally we should use nimbus there as well.
   // https://github.com/mozilla-mobile/firefox-android/blob/d566743ea0f041ce27c1204da903de380f96b46e/fenix/app/src/main/java/org/mozilla/fenix/utils/Settings.kt#L1502-L1510
@@ -3987,7 +4016,7 @@ pref("toolkit.osKeyStore.loglevel", "Warn");
 
 pref("extensions.formautofill.supportRTL", false);
 
-// Controls the log level for CookieBannerListService.jsm.
+// Controls the log level for CookieBannerListService.sys.mjs.
 pref("cookiebanners.listService.logLevel", "Error");
 
 // Controls the log level for Cookie Banner Auto Clicking.

@@ -75,19 +75,19 @@ module.exports = function (config) {
           statements: 80,
           lines: 80,
           functions: 80,
-          branches: 66,
+          branches: 80,
           overrides: {
-            "modules/*.sys.mjs": {
-              statements: 0,
-              lines: 0,
-              functions: 0,
-              branches: 0,
+            "modules/AboutWelcomeDefaults.sys.mjs": {
+              statements: 48.15,
+              lines: 48.75,
+              functions: 61.54,
+              branches: 37.04,
             },
             "content-src/lib/aboutwelcome-utils.mjs": {
-              statements: 50,
-              lines: 50,
-              functions: 50,
-              branches: 0,
+              statements: 73.68,
+              lines: 73.68,
+              functions: 71.43,
+              branches: 66.67,
             },
             "content-src/components/LanguageSwitcher.jsx": {
               // This file is covered by the mochitest: browser_aboutwelcome_multistage_languageSwitcher.js
@@ -124,9 +124,11 @@ module.exports = function (config) {
               statements: 77.42,
               lines: 77.42,
               functions: 75,
+              branches: 73.08,
             },
             "content-src/components/CTAParagraph.jsx": {
               functions: 50,
+              branches: 75,
             },
             "content-src/components/HeroImage.jsx": {
               branches: 62.5,
@@ -139,6 +141,7 @@ module.exports = function (config) {
               statements: 76.09,
               lines: 75,
               functions: 76.92,
+              branches: 74.07,
             },
             "content-src/components/MobileDownloads.jsx": {
               branches: 56.25,
@@ -152,6 +155,12 @@ module.exports = function (config) {
               functions: 73.17,
               branches: 61.74,
             },
+            "content-src/components/AdditionalCTA.jsx": {
+              branches: 75,
+            },
+            "content-src/components/MultiStageProtonScreen.jsx": {
+              branches: 79.07,
+            },
           },
         },
       },
@@ -161,12 +170,6 @@ module.exports = function (config) {
     webpack: {
       mode: "none",
       devtool: "inline-source-map",
-      // This loader allows us to override required files in tests
-      resolveLoader: {
-        alias: {
-          inject: path.join(__dirname, "../newtab/loaders/inject-loader"),
-        },
-      },
       // This resolve config allows us to import with paths relative to the root directory
       resolve: {
         extensions: [".js", ".jsx"],
@@ -175,10 +178,6 @@ module.exports = function (config) {
           "node_modules",
           PATHS.newtabResolveDirectory,
         ],
-        fallback: {
-          stream: require.resolve("stream-browserify"),
-          buffer: require.resolve("buffer"),
-        },
         alias: {
           newtab: path.join(__dirname, "../newtab"),
           asrouter: path.join(__dirname, "../asrouter"),

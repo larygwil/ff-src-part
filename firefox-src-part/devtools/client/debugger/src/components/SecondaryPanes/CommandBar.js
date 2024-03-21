@@ -231,7 +231,7 @@ class CommandBar extends Component {
             formatKey("trace"),
             this.props.logMethod
           ),
-      onClick: event => {
+      onClick: () => {
         this.props.toggleTracing();
       },
       onContextMenu: event => {
@@ -362,7 +362,7 @@ class CommandBar extends Component {
       MenuButton,
       {
         menuId: "debugger-settings-menu-button",
-        toolboxDoc: toolboxDoc,
+        toolboxDoc,
         className:
           "devtools-button command-bar-button debugger-settings-menu-button",
         title: L10N.getStr("settings.button.label"),

@@ -12,7 +12,7 @@
 
 <head>
   <!-- @CSP: We should remove 'unsafe-inline' from style-src, see Bug 1579160 -->
-  <meta http-equiv="Content-Security-Policy" content="default-src chrome:; img-src chrome: moz-icon: https: data:; style-src chrome: data: 'unsafe-inline'; object-src 'none'" />
+  <meta http-equiv="Content-Security-Policy" content="default-src chrome:; img-src chrome: moz-icon: https: blob: data:; style-src chrome: data: 'unsafe-inline'; object-src 'none'" />
 
   <title data-l10n-id="settings-page-title"></title>
 
@@ -84,6 +84,7 @@
   <script src="chrome://browser/content/migration/migration-wizard.mjs" type="module"></script>
   <script type="module" src="chrome://global/content/elements/moz-toggle.mjs"/>
   <script type="module" src="chrome://global/content/elements/moz-message-bar.mjs" />
+  <script type="module" src="chrome://global/content/elements/moz-label.mjs"/>
 </head>
 
 <html:body xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"

@@ -11,7 +11,6 @@ var { XPCOMUtils } = ChromeUtils.importESModule(
 
 const TAB_PREVIEW_USE_THUMBNAILS_PREF =
   "browser.tabs.cardPreview.showThumbnails";
-const TAB_PREVIEW_DELAY_PREF = "browser.tabs.cardPreview.delayMs";
 
 /**
  * Detailed preview card that displays when hovering a tab
@@ -37,8 +36,7 @@ export default class TabPreview extends MozLitElement {
     XPCOMUtils.defineLazyPreferenceGetter(
       this,
       "_prefPreviewDelay",
-      TAB_PREVIEW_DELAY_PREF,
-      1000
+      "ui.tooltip.delay_ms"
     );
     XPCOMUtils.defineLazyPreferenceGetter(
       this,
@@ -62,8 +60,8 @@ export default class TabPreview extends MozLitElement {
     this.panel.setAttribute("noautofocus", true);
     this.panel.setAttribute("norolluponanchor", true);
     this.panel.setAttribute("consumeoutsideclicks", "never");
+    this.panel.setAttribute("rolluponmousewheel", "true");
     this.panel.setAttribute("level", "parent");
-    this.panel.setAttribute("type", "arrow");
     this.shadowRoot.append(this.panel);
     return this.panel;
   }
@@ -84,9 +82,9 @@ export default class TabPreview extends MozLitElement {
   getPrettyURI(uri) {
     try {
       const url = new URL(uri);
-      return `${url.hostname}${url.pathname}`.replace(/\/+$/, "");
+      return `${url.hostname}`.replace(/^w{3}\./, "");
     } catch {
-      return this.pageURI;
+      return uri;
     }
   }
 
@@ -94,10 +92,6 @@ export default class TabPreview extends MozLitElement {
     switch (e.type) {
       case "TabSelect": {
         this.requestUpdate();
-        break;
-      }
-      case "wheel": {
-        this.hidePreview();
         break;
       }
       case "popuphidden": {
@@ -113,29 +107,23 @@ export default class TabPreview extends MozLitElement {
       y: -2,
       isContextMenu: false,
     });
-    window.addEventListener("wheel", this, {
-      capture: true,
-      passive: true,
-    });
     window.addEventListener("TabSelect", this);
     this.panel.addEventListener("popuphidden", this);
   }
 
   hidePreview() {
     this.panel.hidePopup();
-    this.updateComplete.then(() => {
-      /**
-       * @event TabPreview#previewhidden
-       * @type {CustomEvent}
-       */
-      this.dispatchEvent(new CustomEvent("previewhidden"));
-    });
   }
 
   previewHidden() {
-    window.removeEventListener("wheel", this, { capture: true, passive: true });
     window.removeEventListener("TabSelect", this);
     this.panel.removeEventListener("popuphidden", this);
+
+    /**
+     * @event TabPreview#previewhidden
+     * @type {CustomEvent}
+     */
+    this.dispatchEvent(new CustomEvent("previewhidden"));
   }
 
   // compute values derived from tab element

@@ -317,9 +317,6 @@ const PREF_URLBAR_DEFAULTS = new Map([
   // If true, we show tail suggestions when available.
   ["richSuggestions.tail", true],
 
-  // Interval time until taking pause impression telemetry.
-  ["searchEngagementTelemetry.pauseImpressionIntervalMs", 1000],
-
   // Hidden pref. Disables checks that prevent search tips being shown, thus
   // showing them every time the newtab page or the default search engine
   // homepage is opened.
@@ -426,7 +423,7 @@ const PREF_URLBAR_DEFAULTS = new Map([
 
   // Controls whether searching for open tabs returns tabs from any container
   // or only from the current container.
-  ["switchTabs.searchAllContainers", false],
+  ["switchTabs.searchAllContainers", true],
 
   // The number of remaining times the user can interact with tab-to-search
   // onboarding results before we stop showing them.
@@ -528,6 +525,7 @@ const NIMBUS_DEFAULTS = {
   weatherKeywords: null,
   weatherKeywordsMinimumLength: 0,
   weatherKeywordsMinimumLengthCap: 0,
+  weatherSimpleUI: false,
 };
 
 // Maps preferences under browser.urlbar.suggest to behavior names, as defined
@@ -1271,7 +1269,7 @@ class Preferences {
     }
   }
 
-  _migrateFirefoxSuggestPrefsTo_2(scenario) {
+  _migrateFirefoxSuggestPrefsTo_2() {
     // In previous versions of the prefs for online, suggestions were disabled
     // by default; in version 2, they're enabled by default. For users who were
     // already in online and did not enable suggestions (because they did not

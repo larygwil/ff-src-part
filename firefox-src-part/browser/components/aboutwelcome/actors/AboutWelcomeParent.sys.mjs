@@ -85,6 +85,8 @@ class AboutWelcomeObserver {
 
   stop() {
     lazy.log.debug(`Terminate reason is ${this.terminateReason}`);
+    // Clear the entrypoint pref
+    Services.prefs.clearUserPref("browser.aboutwelcome.entrypoint");
     Services.obs.removeObserver(this, "quit-application");
     if (!this.win) {
       return;
@@ -132,7 +134,7 @@ export class AboutWelcomeParent extends JSWindowActorParent {
   }
 
   /**
-   * Handle messages from AboutWelcomeChild.jsm
+   * Handle messages from AboutWelcomeChild.sys.mjs
    *
    * @param {string} type
    * @param {any=} data
@@ -273,7 +275,7 @@ export class AboutWelcomeParent extends JSWindowActorParent {
 
 export class AboutWelcomeShoppingParent extends AboutWelcomeParent {
   /**
-   * Handle messages from AboutWelcomeChild.jsm
+   * Handle messages from AboutWelcomeChild.sys.mjs
    *
    * @param {string} type
    * @param {any=} data

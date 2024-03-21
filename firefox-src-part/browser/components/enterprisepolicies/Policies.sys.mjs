@@ -43,7 +43,7 @@ ChromeUtils.defineLazyGetter(lazy, "log", () => {
     "resource://gre/modules/Console.sys.mjs"
   );
   return new ConsoleAPI({
-    prefix: "Policies.jsm",
+    prefix: "Policies",
     // tip: set maxLogLevel to "debug" and use log.debug() to create detailed
     // messages during development. See LOG_LEVELS in Console.sys.mjs for details.
     maxLogLevel: "error",
@@ -233,12 +233,12 @@ export var Policies = {
 
       return true;
     },
-    // No additional implementation needed here. UpdateService.jsm will check
+    // No additional implementation needed here. UpdateService.sys.mjs will check
     // for this policy directly when determining the update URL.
   },
 
   AppUpdateURL: {
-    // No implementation needed here. UpdateService.jsm will check for this
+    // No implementation needed here. UpdateService.sys.mjs will check for this
     // policy directly when determining the update URL.
   },
 
@@ -310,6 +310,18 @@ export var Policies = {
           locked
         );
       }
+    },
+  },
+
+  AutofillAddressEnabled: {
+    onBeforeAddons(manager, param) {
+      setAndLockPref("extensions.formautofill.addresses.enabled", param);
+    },
+  },
+
+  AutofillCreditCardEnabled: {
+    onBeforeAddons(manager, param) {
+      setAndLockPref("extensions.formautofill.creditCards.enabled", param);
     },
   },
 
@@ -497,10 +509,57 @@ export var Policies = {
   },
 
   ContentAnalysis: {
-    onBeforeUIStartup(manager, param) {
+    onBeforeAddons(manager, param) {
+      if ("PipePathName" in param) {
+        setAndLockPref(
+          "browser.contentanalysis.pipe_path_name",
+          param.PipePathName
+        );
+      }
+      if ("AgentTimeout" in param) {
+        if (!Number.isInteger(param.AgentTimeout)) {
+          lazy.log.error(
+            `Non-integer value for AgentTimeout: ${param.AgentTimeout}`
+          );
+        } else {
+          setAndLockPref(
+            "browser.contentanalysis.agent_timeout",
+            param.AgentTimeout
+          );
+        }
+      }
+      if ("AllowUrlRegexList" in param) {
+        setAndLockPref(
+          "browser.contentanalysis.allow_url_regex_list",
+          param.AllowUrlRegexList
+        );
+      }
+      if ("DenyUrlRegexList" in param) {
+        setAndLockPref(
+          "browser.contentanalysis.deny_url_regex_list",
+          param.DenyUrlRegexList
+        );
+      }
+      let boolPrefs = [
+        ["IsPerUser", "is_per_user"],
+        ["ShowBlockedResult", "show_blocked_result"],
+        ["DefaultAllow", "default_allow"],
+      ];
+      for (let pref of boolPrefs) {
+        if (pref[0] in param) {
+          setAndLockPref(
+            `browser.contentanalysis.${pref[1]}`,
+            !!param[pref[0]]
+          );
+        }
+      }
       if ("Enabled" in param) {
         let enabled = !!param.Enabled;
         setAndLockPref("browser.contentanalysis.enabled", enabled);
+        let ca = Cc["@mozilla.org/contentanalysis;1"].getService(
+          Ci.nsIContentAnalysis
+        );
+        ca.isSetByEnterprisePolicy = true;
       }
     },
   },
@@ -1061,7 +1120,7 @@ export var Policies = {
   },
 
   ExemptDomainFileTypePairsFromFileTypeDownloadWarnings: {
-    // This policy is handled directly in EnterprisePoliciesParent.jsm
+    // This policy is handled directly in EnterprisePoliciesParent.sys.mjs
     // and requires no validation (It's done by the schema).
   },
 

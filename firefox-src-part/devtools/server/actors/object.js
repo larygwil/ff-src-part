@@ -63,11 +63,9 @@ if (!isWorker) {
     () =>
       ChromeUtils.importESModule(
         "resource://gre/modules/ContentDOMReference.sys.mjs",
-        {
-          // ContentDOMReference needs to be retrieved from the shared global
-          // since it is a shared singleton.
-          loadInDevToolsLoader: false,
-        }
+        // ContentDOMReference needs to be retrieved from the shared global
+        // since it is a shared singleton.
+        { global: "shared" }
       ).ContentDOMReference
   );
 }
@@ -171,7 +169,7 @@ class ObjectActor extends Actor {
     }
 
     // Only process custom formatters if the feature is enabled.
-    if (this.thread?._parent?.customFormatters) {
+    if (this.thread?.targetActor?.customFormatters) {
       const result = customFormatterHeader(this);
       if (result) {
         const { formatter, ...header } = result;

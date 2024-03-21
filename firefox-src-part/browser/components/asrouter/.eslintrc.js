@@ -15,7 +15,7 @@ module.exports = {
     {
       // TODO: Bug 1773467 - Move these to .mjs or figure out a generic way
       // to identify these as modules.
-      files: ["content-src/**/*.js", "tests/unit/**/*.js"],
+      files: ["tests/unit/**/*.js"],
       parserOptions: {
         sourceType: "module",
       },
@@ -94,15 +94,12 @@ module.exports = {
     "consistent-this": ["error", "use-bind"],
     eqeqeq: "error",
     "func-name-matching": "error",
-    "getter-return": "error",
     "guard-for-in": "error",
-    "max-depth": ["error", 4],
     "max-nested-callbacks": ["error", 4],
     "max-params": ["error", 6],
     "max-statements": ["error", 50],
     "new-cap": ["error", { newIsCap: true, capIsNew: false }],
     "no-alert": "error",
-    "no-console": ["error", { allow: ["error"] }],
     "no-div-regex": "error",
     "no-duplicate-imports": "error",
     "no-eq-null": "error",

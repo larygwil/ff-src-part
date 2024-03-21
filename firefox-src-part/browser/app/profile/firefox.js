@@ -57,7 +57,7 @@ pref("extensions.systemAddon.update.url", "https://aus5.mozilla.org/update/3/Sys
 pref("extensions.systemAddon.update.enabled", true);
 
 // Disable add-ons that are not installed by the user in all scopes by default.
-// See the SCOPE constants in AddonManager.jsm for values to use here.
+// See the SCOPE constants in AddonManager.sys.mjs for values to use here.
 pref("extensions.autoDisableScopes", 15);
 // Scopes to scan for changes at startup.
 pref("extensions.startupScanScopes", 0);
@@ -295,12 +295,6 @@ pref("browser.shell.checkDefaultPDF", true);
 // Will be set to `true` if the user indicates that they don't want to be asked
 // again about Firefox being their default PDF handler any more.
 pref("browser.shell.checkDefaultPDF.silencedByUser", false);
-// URL to navigate to when launching Firefox after accepting the Windows Default
-// Browser Agent "Set Firefox as default" call to action.
-pref("browser.shell.defaultBrowserAgent.thanksURL", "https://www.mozilla.org/%LOCALE%/firefox/set-as-default/thanks/");
-// Whether or not we want to run through the early startup idle task
-// which registers the firefox and firefox-private registry keys.
-pref("browser.shell.customProtocolsRegistered", false);
 #endif
 
 
@@ -439,12 +433,8 @@ pref("browser.search.param.search_rich_suggestions", "fen");
 // Feature gate pref for weather suggestions in the urlbar.
 pref("browser.urlbar.weather.featureGate", false);
 
-// Enable clipboard suggestions in Nightly.
-#ifdef NIGHTLY_BUILD
+// Enable clipboard suggestions feature, the pref should be removed once stable.
 pref("browser.urlbar.clipboard.featureGate", true);
-#else
-pref("browser.urlbar.clipboard.featureGate", false);
-#endif
 
 // When false, the weather suggestion will not be fetched when a VPN is
 // detected. When true, it will be fetched anyway.
@@ -556,11 +546,7 @@ pref("browser.urlbar.switchTabs.adoptIntoActiveWindow", false);
 
 // Controls whether searching for open tabs returns tabs from any container
 // or only from the current container.
-#ifdef NIGHTLY_BUILD
 pref("browser.urlbar.switchTabs.searchAllContainers", true);
-#else
-pref("browser.urlbar.switchTabs.searchAllContainers", false);
-#endif
 
 // Whether addresses and search results typed into the address bar
 // should be opened in new tabs by default.
@@ -731,6 +717,13 @@ pref("browser.download.clearHistoryOnDelete", 0);
 // (see browser.download.viewableInternally.enabledTypes)
 pref("browser.helperApps.showOpenOptionForPdfJS", true);
 pref("browser.helperApps.showOpenOptionForViewableInternally", true);
+
+// Whether search-config-v2 is enabled.
+#ifdef NIGHTLY_BUILD
+pref("browser.search.newSearchConfig.enabled", true);
+#else
+pref("browser.search.newSearchConfig.enabled", false);
+#endif
 
 // search engines URL
 pref("browser.search.searchEnginesURL",      "https://addons.mozilla.org/%LOCALE%/firefox/search-engines/");
@@ -949,7 +942,6 @@ pref("browser.tabs.tooltipsShowPidAndActiveness", false);
 #endif
 
 pref("browser.tabs.cardPreview.enabled", false);
-pref("browser.tabs.cardPreview.delayMs", 1000);
 pref("browser.tabs.cardPreview.showThumbnails", true);
 
 pref("browser.tabs.firefox-view", true);
@@ -1079,6 +1071,17 @@ pref("privacy.cpd.offlineApps",             false);
 pref("privacy.cpd.siteSettings",            false);
 pref("privacy.cpd.openWindows",             false);
 
+// clearHistory and clearSiteData pref branches are used to
+// remember user pref options based on the two different entry points
+pref("privacy.clearHistory.historyFormDataAndDownloads", true);
+pref("privacy.clearHistory.cookiesAndStorage", true);
+pref("privacy.clearHistory.cache", true);
+pref("privacy.clearHistory.siteSettings", false);
+pref("privacy.clearSiteData.historyFormDataAndDownloads", false);
+pref("privacy.clearSiteData.cookiesAndStorage", true);
+pref("privacy.clearSiteData.cache", true);
+pref("privacy.clearSiteData.siteSettings", false);
+
 pref("privacy.history.custom",              false);
 
 // What default should we use for the time span in the sanitizer:
@@ -1097,7 +1100,10 @@ pref("privacy.sanitize.useOldClearHistoryDialog", false);
 pref("privacy.sanitize.useOldClearHistoryDialog", true);
 #endif
 
-pref("privacy.sanitize.sanitizeOnShutdown.hasMigratedToNewPrefs", false);
+pref("privacy.sanitize.clearOnShutdown.hasMigratedToNewPrefs", false);
+// flag to track migration of clear history dialog prefs, where cpd stands for
+// clear private data
+pref("privacy.sanitize.cpd.hasMigratedToNewPrefs", false);
 
 pref("privacy.panicButton.enabled",         true);
 
@@ -1301,8 +1307,6 @@ pref("browser.sessionstore.upgradeBackup.maxUpgradeBackups", 3);
 pref("browser.sessionstore.debug", false);
 // Forget closed windows/tabs after two weeks
 pref("browser.sessionstore.cleanup.forget_closed_after", 1209600000);
-// Platform collects session storage data for session store
-pref("browser.sessionstore.collect_session_storage", true);
 
 // temporary pref that will be removed in a future release, see bug 1836952
 pref("browser.sessionstore.persist_closed_tabs_between_sessions", true);
@@ -1418,11 +1422,7 @@ pref("browser.bookmarks.editDialog.maxRecentFolders", 7);
   // On windows these levels are:
   // See - security/sandbox/win/src/sandboxbroker/sandboxBroker.cpp
   // SetSecurityLevelForContentProcess() for what the different settings mean.
-  #if defined(NIGHTLY_BUILD)
-    pref("security.sandbox.content.level", 7);
-  #else
-    pref("security.sandbox.content.level", 6);
-  #endif
+  pref("security.sandbox.content.level", 6);
 
   // Pref controlling if messages relevant to sandbox violations are logged.
   pref("security.sandbox.logging.enabled", false);
@@ -1763,6 +1763,7 @@ pref("browser.newtabpage.activity-stream.discoverystream.spocTopsitesPlacement.e
 pref("browser.newtabpage.activity-stream.discoverystream.spocSiteId", "");
 pref("browser.newtabpage.activity-stream.discoverystream.ctaButtonSponsors", "");
 pref("browser.newtabpage.activity-stream.discoverystream.ctaButtonVariant", "");
+pref("browser.newtabpage.activity-stream.discoverystream.spocMessageVariant", "");
 
 pref("browser.newtabpage.activity-stream.discoverystream.sendToPocket.enabled", true);
 
@@ -1853,6 +1854,8 @@ pref("pdfjs.previousHandler.alwaysAskBeforeHandling", false);
 
 // Try to convert PDFs sent as octet-stream
 pref("pdfjs.handleOctetStream", true);
+
+pref("sidebar.companion", false);
 
 // Is the sidebar positioned ahead of the content browser
 pref("sidebar.position_start", true);
@@ -2102,8 +2105,6 @@ pref("browser.contentblocking.features.strict", "tp,tpPrivate,cookieBehavior5,co
 // lists enabled.
 pref("browser.contentblocking.customBlockList.preferences.ui.enabled", false);
 
-pref("browser.contentblocking.reportBreakage.url", "https://tracking-protection-issues.herokuapp.com/new");
-
 // Enable Protections report's Lockwise card by default.
 pref("browser.contentblocking.report.lockwise.enabled", true);
 
@@ -2324,8 +2325,6 @@ pref("browser.migrate.interactions.passwords", false);
 
 pref("browser.migrate.preferences-entrypoint.enabled", true);
 
-pref("browser.device-migration.help-menu.hidden", false);
-
 pref("extensions.pocket.api", "api.getpocket.com");
 pref("extensions.pocket.bffApi", "firefox-api-proxy.cdn.mozilla.net");
 pref("extensions.pocket.bffRecentSaves", true);
@@ -2406,8 +2405,12 @@ pref("browser.suppress_first_window_animation", true);
 // Preference that allows individual users to disable Screenshots.
 pref("extensions.screenshots.disabled", false);
 
-// Preference that determines whether Screenshots is opened as a dedicated browser component
-pref("screenshots.browser.component.enabled", false);
+// Preference that determines whether Screenshots uses the dedicated browser component
+#ifdef NIGHTLY_BUILD
+  pref("screenshots.browser.component.enabled", true);
+#else
+  pref("screenshots.browser.component.enabled", false);
+#endif
 
 // Preference that determines what button to focus
 pref("screenshots.browser.component.last-saved-method", "download");
@@ -2491,8 +2494,6 @@ pref("browser.toolbars.bookmarks.showOtherBookmarks", true);
 
 // Felt Privacy pref to control simplified private browsing UI
 pref("browser.privatebrowsing.felt-privacy-v1", false);
-// Visiblity of the bookmarks toolbar in PBM (currently only applies if felt-privacy-v1 is true)
-pref("browser.toolbars.bookmarks.showInPrivateBrowsing", false);
 
 // Prefs to control the Firefox Account toolbar menu.
 // This pref will surface existing Firefox Account information
@@ -2503,7 +2504,7 @@ pref("identity.fxaccounts.toolbar.accessed", false);
 pref("identity.fxaccounts.toolbar.defaultVisible", true);
 
 // Prefs to control Firefox Account panels that shows call to actions
-// for other supported Mozilla products 
+// for other supported Mozilla products
 pref("identity.fxaccounts.toolbar.pxiToolbarEnabled", false);
 pref("identity.fxaccounts.toolbar.pxiToolbarEnabled.monitorEnabled", true);
 pref("identity.fxaccounts.toolbar.pxiToolbarEnabled.relayEnabled", true);
@@ -2922,6 +2923,13 @@ pref("svg.context-properties.content.allowed-domains", "profile.accounts.firefox
   pref("extensions.translations.disabled", true);
 #endif
 
+#if defined(XP_MACOSX) || defined(XP_WIN)
+pref("browser.firefoxbridge.enabled", false);
+pref("browser.firefoxbridge.extensionOrigins",
+    "chrome-extension://gkcbmfjnnjoambnfmihmnkneakghogca/"
+);
+#endif
+
 // Turn on interaction measurements
 pref("browser.places.interactions.enabled", true);
 
@@ -3016,9 +3024,16 @@ pref("ui.new-webcompat-reporter.reason-dropdown.randomized", true);
 pref("browser.privatebrowsing.resetPBM.showConfirmationDialog", true);
 
 // the preferences related to the Nimbus experiment, to activate and deactivate
-// the the entire rollout or deactivate only the OS prompt (see: bug 1864216)
+// the the entire rollout (see: bug 1864216 - two prompts, 1877500 - set two in one prompt)
 pref("browser.mailto.dualPrompt", false);
-pref("browser.mailto.dualPrompt.os", false);
 // When visiting a site which uses registerProtocolHandler: Ask the user to set Firefox as
 // default mailto handler.
 pref("browser.mailto.prompt.os", true);
+
+pref("browser.backup.enabled", false);
+
+// Pref to enable the new profiles
+pref("browser.profiles.enabled", false);
+
+pref("startup.homepage_override_url_nimbus", "");
+pref("startup.homepage_override_nimbus_maxVersion", "");
