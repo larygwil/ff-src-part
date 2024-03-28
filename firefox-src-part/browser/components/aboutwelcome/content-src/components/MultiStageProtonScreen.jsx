@@ -311,7 +311,10 @@ export class ProtonScreen extends React.PureComponent {
           />
         ) : null}
         {content.tiles && content.tiles.type === "migration-wizard" ? (
-          <EmbeddedMigrationWizard handleAction={this.props.handleAction} />
+          <EmbeddedMigrationWizard
+            handleAction={this.props.handleAction}
+            content={content}
+          />
         ) : null}
       </React.Fragment>
     );
@@ -500,6 +503,7 @@ export class ProtonScreen extends React.PureComponent {
       <main
         className={`screen ${this.props.id || ""}
           ${screenClassName} ${textColorClass}`}
+        reverse-split={content.reverse_split ? "" : null}
         role={ariaRole ?? "alertdialog"}
         layout={content.layout}
         pos={content.position || "center"}
@@ -541,6 +545,12 @@ export class ProtonScreen extends React.PureComponent {
                 content.width && content.position !== "split"
                   ? content.width
                   : null,
+              paddingBlock: content.split_content_padding_block
+                ? content.split_content_padding_block
+                : null,
+              paddingInline: content.split_content_padding_inline
+                ? content.split_content_padding_inline
+                : null,
             }}
           >
             {content.logo ? this.renderPicture(content.logo) : null}
