@@ -13,7 +13,21 @@ ChromeUtils.defineESModuleGetters(lazy, {
  * the FullPageTranslationsPanel and SelectTranslationsPanel classes.
  */
 export class TranslationsPanelShared {
+  /**
+   * @type {Map<string, string>}
+   */
   static #langListsInitState = new Map();
+
+  /**
+   * Clears cached data regarding the initialization state of the
+   * FullPageTranslationsPanel or the SelectTranslationsPanel.
+   *
+   * This is only needed for test runners to ensure that each test
+   * starts from a clean slate.
+   */
+  static clearCache() {
+    this.#langListsInitState = new Map();
+  }
 
   /**
    * Defines lazy getters for accessing elements in the document based on provided entries.
@@ -100,6 +114,15 @@ export class TranslationsPanelShared {
     );
 
     for (const popup of fromPopups) {
+      // For the moment, the FullPageTranslationsPanel includes its own
+      // menu item for "Choose another language" as the first item in the list
+      // with an empty-string for its value. The SelectTranslationsPanel has
+      // only languages in its list with BCP-47 tags for values. As such,
+      // this loop works for both panels, to remove all of the languages
+      // from the list, but ensuring that any empty-string items are retained.
+      while (popup.lastChild?.value) {
+        popup.lastChild.remove();
+      }
       for (const { langTag, displayName } of fromLanguages) {
         const fromMenuItem = document.createXULElement("menuitem");
         fromMenuItem.setAttribute("value", langTag);
@@ -109,6 +132,9 @@ export class TranslationsPanelShared {
     }
 
     for (const popup of toPopups) {
+      while (popup.lastChild?.value) {
+        popup.lastChild.remove();
+      }
       for (const { langTag, displayName } of toLanguages) {
         const toMenuItem = document.createXULElement("menuitem");
         toMenuItem.setAttribute("value", langTag);
