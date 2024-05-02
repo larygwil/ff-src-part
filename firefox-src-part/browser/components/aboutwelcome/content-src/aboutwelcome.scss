@@ -1139,6 +1139,38 @@ html {
 
         &[no-rdm] {
           width: 800px;
+
+          &[reverse-split] {
+            flex-direction: row-reverse;
+
+            .section-main {
+              .main-content {
+                border-radius: inherit;
+              }
+
+              margin: auto;
+              margin-inline-end: 0;
+              border-radius: 8px 0 0 8px;
+
+              &:dir(rtl) {
+                border-radius: 0 8px 8px 0;
+                margin: auto;
+                margin-inline-end: 0;
+              }
+            }
+
+            .section-secondary {
+              margin: auto;
+              margin-inline-start: 0;
+              border-radius: 0 8px 8px 0;
+
+              &:dir(rtl) {
+                border-radius: 8px 0 0 8px;
+                margin: auto;
+                margin-inline-start: 0;
+              }
+            }
+          }
         }
       }
 
@@ -1377,14 +1409,19 @@ html {
       justify-content: center;
       gap: 10px;
 
-      &:hover {
-        outline: unset;
+      &:hover, &:focus-within {
+        outline: none;
       }
 
       .theme {
         flex: unset;
         width: unset;
         transition: var(--transition);
+
+        &:has(.input:focus) {
+          outline: 2px solid var(--in-content-primary-button-background);
+          outline-offset: 2px;
+        }
 
         .icon {
           width: 116px;
@@ -1397,12 +1434,12 @@ html {
           }
 
           // dark theme wallpapers
-          &.dark-aurora {
-            background-image: url('chrome://activity-stream/content/data/content/assets/wallpapers/dark-aurora.avif');
+          &.dark-landscape {
+            background-image: url('chrome://activity-stream/content/data/content/assets/wallpapers/dark-landscape.avif');
           }
 
-          &.dark-city {
-            background-image: url('chrome://activity-stream/content/data/content/assets/wallpapers/dark-city.avif');
+          &.dark-beach {
+            background-image: url('chrome://activity-stream/content/data/content/assets/wallpapers/dark-beach.avif');
           }
 
           &.dark-color {
@@ -1438,8 +1475,8 @@ html {
             background-image: url('chrome://activity-stream/content/data/content/assets/wallpapers/light-mountain.avif');
           }
 
-          &.light-redpanda {
-            background-image: url('chrome://activity-stream/content/data/content/assets/wallpapers/light-redpanda.avif');
+          &.light-panda {
+            background-image: url('chrome://activity-stream/content/data/content/assets/wallpapers/light-panda.avif');
           }
 
           &.light-sky {
@@ -1501,11 +1538,15 @@ html {
           transform: scaleX(-1);
         }
 
-        &:focus,
+        &:focus-visible,
         &:active,
         &.selected {
           outline: 2px solid var(--in-content-primary-button-background);
           outline-offset: 2px;
+        }
+
+        &.selected {
+          outline-color: var(--color-accent-primary-active);
         }
 
         &.light {
