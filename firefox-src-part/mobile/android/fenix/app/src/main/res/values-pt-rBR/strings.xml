@@ -47,12 +47,20 @@
 
     <!-- Home - Recently saved bookmarks -->
     <!-- Title for the home screen section with recently saved bookmarks. -->
-    <string name="recently_saved_title">Salvo recentemente</string>
+    <string name="recently_saved_title" moz:removedIn="127" tools:ignore="UnusedResources">Salvo recentemente</string>
     <!-- Content description for the button which navigates the user to show all of their saved bookmarks. -->
-    <string name="recently_saved_show_all_content_description_2">Mostrar todos os favoritos salvos</string>
+    <string name="recently_saved_show_all_content_description_2" moz:removedIn="127" tools:ignore="UnusedResources">Mostrar todos os favoritos salvos</string>
 
     <!-- Text for the menu button to remove a recently saved bookmark from the user's home screen -->
-    <string name="recently_saved_menu_item_remove">Remover</string>
+    <string name="recently_saved_menu_item_remove" moz:removedIn="127" tools:ignore="UnusedResources">Remover</string>
+
+    <!-- Home - Bookmarks -->
+    <!-- Title for the home screen section with bookmarks. -->
+    <string name="home_bookmarks_title">Favoritos</string>
+    <!-- Content description for the button which navigates the user to show all of their bookmarks. -->
+    <string name="home_bookmarks_show_all_content_description">Mostrar todos os favoritos</string>
+    <!-- Text for the menu button to remove a recently saved bookmark from the user's home screen -->
+    <string name="home_bookmarks_menu_item_remove">Remover</string>
 
     <!-- About content. The first parameter is the name of the application. (For example: Fenix) -->
     <string name="about_content">O %1$s é produzido pela Mozilla.</string>
@@ -193,6 +201,10 @@
     <string name="browser_menu_add_ons" moz:removedIn="126" tools:ignore="UnusedResources">Extensões</string>
     <!-- Browser menu button that opens the extensions manager -->
     <string name="browser_menu_extensions">Extensões</string>
+    <!-- Browser menu button that opens the extensions manager -->
+    <string name="browser_menu_manage_extensions">Gerenciar extensões</string>
+    <!-- Browser menu button that opens AMO in a tab -->
+    <string name="browser_menu_discover_more_extensions">Descobrir mais extensões</string>
     <!-- Browser menu button that opens account settings -->
     <string name="browser_menu_account_settings">Informações da conta</string>
     <!-- Text displayed when there are no add-ons to be shown -->
@@ -211,6 +223,8 @@
     <string name="browser_menu_open_in_regular_tab">Abrir em aba normal</string>
     <!-- Browser menu toggle that adds a shortcut to the site on the device home screen. -->
     <string name="browser_menu_add_to_homescreen">Adicionar à tela do dispositivo</string>
+    <!-- Browser menu toggle that adds a shortcut to the site on the device home screen. -->
+    <string name="browser_menu_add_to_homescreen_2">Adicionar à tela do dispositivo…</string>
     <!-- Browser menu toggle that installs a Progressive Web App shortcut to the site on the device home screen. -->
     <string name="browser_menu_install_on_homescreen" moz:removedIn="126" tools:ignore="UnusedResources">Instalar</string>
     <!-- Content description (not visible, for screen readers etc.) for the Resync tabs button -->
@@ -222,10 +236,14 @@
     <!-- Browser menu button that opens the translations dialog, which has options to translate the current browser page. -->
     <string name="browser_menu_translations">Traduzir página</string>
     <!-- Browser menu button that saves the current tab to a collection -->
+    <string name="browser_menu_save_to_collection">Salvar em coleção…</string>
+    <!-- Browser menu button that saves the current tab to a collection -->
     <string name="browser_menu_save_to_collection_2">Salvar em coleção</string>
     <!-- Browser menu button that open a share menu to share the current site -->
     <string name="browser_menu_share">Compartilhar</string>
 
+    <!-- Browser menu button that open a share menu to share the current site -->
+    <string name="browser_menu_share_2">Compartilhar…</string>
     <!-- Browser menu button shown in custom tabs that opens the current tab in Fenix
         The first parameter is the name of the app defined in app_name (for example: Fenix) -->
     <string name="browser_menu_open_in_fenix">Abrir no %1$s</string>
@@ -278,6 +296,24 @@
     <!-- Browser menu label that navigates to the save sub-menu, which contains various save related menu items such as
          bookmarking a page, saving to collection, shortcut or as a PDF, and adding to home screen -->
     <string name="browser_menu_save">Salvar</string>
+
+    <!-- Browser menu label that bookmarks the currently visited page -->
+    <string name="browser_menu_bookmark_this_page">Adicionar aos favoritos</string>
+    <!-- Browser menu label that navigates to the edit bookmark screen for the current bookmarked page -->
+    <string name="browser_menu_edit_bookmark">Editar favorito</string>
+    <!-- Browser menu label that the saves the currently visited page as a PDF -->
+    <string name="browser_menu_save_as_pdf">Salvar como PDF…</string>
+    <!-- Browser menu label for turning ON reader view of the current visited page -->
+    <string name="browser_menu_turn_on_reader_view">Ativar modo de leitura</string>
+    <!-- Browser menu label for turning OFF reader view of the current visited page -->
+    <string name="browser_menu_turn_off_reader_view">Desativar modo de leitura</string>
+    <!-- Browser menu label for navigating to the translation feature, which provides language translation options the current visited page -->
+    <string name="browser_menu_translate_page">Traduzir página…</string>
+    <!-- Browser menu label that is displayed when the current page has been translated by the translation feature.
+         The first parameter is the name of the language that page was translated to (e.g. English). -->
+    <string name="browser_menu_translated_to">Traduzido para %1$s</string>
+    <!-- Browser menu label for the print feature -->
+    <string name="browser_menu_print">Imprimir…</string>
 
     <!-- Extensions management fragment -->
     <!-- Text displayed when there are no extensions to be shown -->
@@ -586,7 +622,9 @@
     <!-- Preference for language -->
     <string name="preferences_language">Idioma</string>
     <!-- Preference for translation -->
-    <string name="preferences_translation">Tradução</string>
+    <string name="preferences_translation" moz:removedIn="127" tools:ignore="UnusedResources">Tradução</string>
+    <!-- Preference for translations -->
+    <string name="preferences_translations">Tradução</string>
     <!-- Preference for data choices -->
     <string name="preferences_data_choices">Escolha de dados</string>
     <!-- Preference for data collection -->
@@ -691,7 +729,9 @@
     <!-- Header text for jumping back into the recent tab in customize the home screen -->
     <string name="customize_toggle_jump_back_in">Voltar direto para</string>
     <!-- Title for the customize home screen section with recently saved bookmarks. -->
-    <string name="customize_toggle_recent_bookmarks">Favoritos recentes</string>
+    <string name="customize_toggle_recent_bookmarks" moz:removedIn="127" tools:ignore="UnusedResources">Favoritos recentes</string>
+    <!-- Title for the customize home screen section with bookmarks. -->
+    <string name="customize_toggle_bookmarks">Favoritos</string>
     <!-- Title for the customize home screen section with recently visited. Recently visited is
     a section where users see a list of tabs that they have visited in the past few days -->
     <string name="customize_toggle_recently_visited">Visitado recentemente</string>
@@ -832,6 +872,14 @@
     <string name="fxa_tab_received_notification_name">Aba recebida</string>
     <!-- %s is the device name -->
     <string name="fxa_tab_received_from_notification_name">Aba de %s</string>
+
+    <!-- Close Synced Tabs -->
+    <!-- The title for a notification shown when the user closes tabs that are currently
+    open on this device from another device that's signed in to the same Mozilla account.
+    %1$s is a placeholder for the app name; %2$d is the number of tabs closed.  -->
+    <string name="fxa_tabs_closed_notification_title">Abas do %1$s fechadas: %2$d</string>
+    <!-- The body for a "closed synced tabs" notification. -->
+    <string name="fxa_tabs_closed_text">Ver abas fechadas recentemente</string>
 
     <!-- Advanced Preferences -->
     <!-- Preference for tracking protection exceptions -->
@@ -2528,6 +2576,8 @@
     <string name="translations_bottom_sheet_negative_button">Agora não</string>
     <!-- Button text on the translations dialog to restore the translated website back to the original untranslated version. -->
     <string name="translations_bottom_sheet_negative_button_restore">Mostrar original</string>
+    <!-- Accessibility announcement (not visible, for screen readers etc.) for the translations dialog after restore button was pressed that indicates the original untranslated page was loaded. -->
+    <string name="translations_bottom_sheet_restore_accessibility_announcement">Carregada a página original não traduzida</string>
     <!-- Button text on the translations dialog when a translation error appears, used to dismiss the dialog and return to the browser. -->
     <string name="translations_bottom_sheet_negative_button_error">Pronto</string>
     <!-- Button text on the translations dialog to begin a translation of the website. -->
@@ -2707,13 +2757,18 @@
     <!-- Content description (not visible, for screen readers etc.): Navigate back within the debug drawer. -->
     <string name="debug_drawer_back_button_content_description">Voltar à página anterior</string>
 
+    <!-- Content description (not visible, for screen readers etc.): Open debug drawer. -->
+    <string name="debug_drawer_fab_content_description">Abrir painel de depuração</string>
+
     <!-- Debug drawer tabs tools -->
     <!-- The title of the Tab Tools feature in the Debug Drawer. -->
     <string name="debug_drawer_tab_tools_title">Ferramentas de abas</string>
     <!-- The title of the tab count section in Tab Tools. -->
     <string name="debug_drawer_tab_tools_tab_count_title">Número de abas</string>
     <!-- The active tab count category in the tab count section in Tab Tools. -->
-    <string name="debug_drawer_tab_tools_tab_count_normal">Ativas</string>
+    <string name="debug_drawer_tab_tools_tab_count_normal" moz:removedIn="127" tools:ignore="UnusedResources">Ativas</string>
+    <!-- The active tab count category in the tab count section in Tab Tools. -->
+    <string name="debug_drawer_tab_tools_tab_count_active">Ativo</string>
     <!-- The inactive tab count category in the tab count section in Tab Tools. -->
     <string name="debug_drawer_tab_tools_tab_count_inactive">Inativas</string>
     <!-- The private tab count category in the tab count section in Tab Tools. -->

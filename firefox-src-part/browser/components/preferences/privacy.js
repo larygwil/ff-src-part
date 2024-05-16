@@ -25,6 +25,18 @@ const CONTENT_BLOCKING_PREFS = [
   "privacy.fingerprintingProtection.pbmode",
 ];
 
+/*
+ * Prefs that are unique to sanitizeOnShutdown and are not shared
+ * with the deleteOnClose mechanism like privacy.clearOnShutdown.cookies, -cache and -offlineApps
+ */
+const SANITIZE_ON_SHUTDOWN_PREFS_ONLY = [
+  "privacy.clearOnShutdown.history",
+  "privacy.clearOnShutdown.downloads",
+  "privacy.clearOnShutdown.sessions",
+  "privacy.clearOnShutdown.formdata",
+  "privacy.clearOnShutdown.siteSettings",
+];
+
 const PREF_OPT_OUT_STUDIES_ENABLED = "app.shield.optoutstudies.enabled";
 const PREF_NORMANDY_ENABLED = "app.normandy.enabled";
 
@@ -48,18 +60,15 @@ ChromeUtils.defineLazyGetter(this, "AlertsServiceDND", function () {
   }
 });
 
+ChromeUtils.defineLazyGetter(lazy, "AboutLoginsL10n", () => {
+  return new Localization(["branding/brand.ftl", "browser/aboutLogins.ftl"]);
+});
+
 XPCOMUtils.defineLazyServiceGetter(
   lazy,
   "gParentalControlsService",
   "@mozilla.org/parental-controls-service;1",
   "nsIParentalControlsService"
-);
-
-XPCOMUtils.defineLazyPreferenceGetter(
-  this,
-  "OS_AUTH_ENABLED",
-  "signon.management.page.os-auth.enabled",
-  true
 );
 
 XPCOMUtils.defineLazyPreferenceGetter(
@@ -79,34 +88,6 @@ XPCOMUtils.defineLazyPreferenceGetter(
 ChromeUtils.defineESModuleGetters(this, {
   DoHConfigController: "resource:///modules/DoHConfig.sys.mjs",
 });
-
-const SANITIZE_ON_SHUTDOWN_MAPPINGS = {
-  history: "privacy.clearOnShutdown.history",
-  downloads: "privacy.clearOnShutdown.downloads",
-  formdata: "privacy.clearOnShutdown.formdata",
-  sessions: "privacy.clearOnShutdown.sessions",
-  siteSettings: "privacy.clearOnShutdown.siteSettings",
-  cookies: "privacy.clearOnShutdown.cookies",
-  cache: "privacy.clearOnShutdown.cache",
-  offlineApps: "privacy.clearOnShutdown.offlineApps",
-};
-
-/*
- * Prefs that are unique to sanitizeOnShutdown and are not shared
- * with the deleteOnClose mechanism like privacy.clearOnShutdown.cookies, -cache and -offlineApps
- */
-const SANITIZE_ON_SHUTDOWN_PREFS_ONLY = [
-  "privacy.clearOnShutdown.history",
-  "privacy.clearOnShutdown.downloads",
-  "privacy.clearOnShutdown.sessions",
-  "privacy.clearOnShutdown.formdata",
-  "privacy.clearOnShutdown.siteSettings",
-];
-
-const SANITIZE_ON_SHUTDOWN_PREFS_ONLY_V2 = [
-  "privacy.clearOnShutdown_v2.historyFormDataAndDownloads",
-  "privacy.clearOnShutdown_v2.siteSettings",
-];
 
 Preferences.addAll([
   // Content blocking / Tracking Protection
@@ -171,20 +152,13 @@ Preferences.addAll([
   { id: "privacy.sanitize.sanitizeOnShutdown", type: "bool" },
   { id: "privacy.sanitize.timeSpan", type: "int" },
   { id: "privacy.clearOnShutdown.cookies", type: "bool" },
-  { id: "privacy.clearOnShutdown_v2.cookiesAndStorage", type: "bool" },
   { id: "privacy.clearOnShutdown.cache", type: "bool" },
-  { id: "privacy.clearOnShutdown_v2.cache", type: "bool" },
   { id: "privacy.clearOnShutdown.offlineApps", type: "bool" },
   { id: "privacy.clearOnShutdown.history", type: "bool" },
-  {
-    id: "privacy.clearOnShutdown_v2.historyFormDataAndDownloads",
-    type: "bool",
-  },
   { id: "privacy.clearOnShutdown.downloads", type: "bool" },
   { id: "privacy.clearOnShutdown.sessions", type: "bool" },
   { id: "privacy.clearOnShutdown.formdata", type: "bool" },
   { id: "privacy.clearOnShutdown.siteSettings", type: "bool" },
-  { id: "privacy.clearOnShutdown_v2.siteSettings", type: "bool" },
 
   // Do not track
   { id: "privacy.donottrackheader.enabled", type: "bool" },
@@ -1076,6 +1050,7 @@ var gPrivacyPane = {
     this._initPasswordGenerationUI();
     this._initRelayIntegrationUI();
     this._initMasterPasswordUI();
+    this._initOSAuthentication();
 
     this.initListenersForExtensionControllingPasswordManager();
 
@@ -2117,25 +2092,11 @@ var gPrivacyPane = {
    */
   initDeleteOnCloseBox() {
     let deleteOnCloseBox = document.getElementById("deleteOnClose");
-
-    // We have to branch between the old clear on shutdown prefs and new prefs after the clear history revamp (Bug 1853996)
-    // Once the old dialog is deprecated, we can remove these branches.
-    let isCookiesAndStorageClearingOnShutdown;
-    if (useOldClearHistoryDialog) {
-      isCookiesAndStorageClearingOnShutdown =
-        Preferences.get("privacy.sanitize.sanitizeOnShutdown").value &&
+    deleteOnCloseBox.checked =
+      (Preferences.get("privacy.sanitize.sanitizeOnShutdown").value &&
         Preferences.get("privacy.clearOnShutdown.cookies").value &&
         Preferences.get("privacy.clearOnShutdown.cache").value &&
-        Preferences.get("privacy.clearOnShutdown.offlineApps").value;
-    } else {
-      isCookiesAndStorageClearingOnShutdown =
-        Preferences.get("privacy.sanitize.sanitizeOnShutdown").value &&
-        Preferences.get("privacy.clearOnShutdown_v2.cookiesAndStorage").value &&
-        Preferences.get("privacy.clearOnShutdown_v2.cache").value;
-    }
-
-    deleteOnCloseBox.checked =
-      isCookiesAndStorageClearingOnShutdown ||
+        Preferences.get("privacy.clearOnShutdown.offlineApps").value) ||
       Preferences.get("browser.privatebrowsing.autostart").value;
   },
 
@@ -2148,17 +2109,12 @@ var gPrivacyPane = {
     let sanitizeOnShutdownPref = Preferences.get(
       "privacy.sanitize.sanitizeOnShutdown"
     );
-
     // ClearOnClose cleaning categories
-    let cookiePref = useOldClearHistoryDialog
-      ? Preferences.get("privacy.clearOnShutdown.cookies")
-      : Preferences.get("privacy.clearOnShutdown_v2.cookiesAndStorage");
-    let cachePref = useOldClearHistoryDialog
-      ? Preferences.get("privacy.clearOnShutdown.cache")
-      : Preferences.get("privacy.clearOnShutdown_v2.cache");
-    let offlineAppsPref = useOldClearHistoryDialog
-      ? Preferences.get("privacy.clearOnShutdown.offlineApps")
-      : Preferences.get("privacy.clearOnShutdown_v2.cookiesAndStorage");
+    let cookiePref = Preferences.get("privacy.clearOnShutdown.cookies");
+    let cachePref = Preferences.get("privacy.clearOnShutdown.cache");
+    let offlineAppsPref = Preferences.get(
+      "privacy.clearOnShutdown.offlineApps"
+    );
 
     // Sync the cleaning prefs with the deleteOnClose box
     deleteOnCloseBox.addEventListener("command", () => {
@@ -2198,32 +2154,18 @@ var gPrivacyPane = {
    */
   _onSanitizePrefChangeSyncClearOnClose() {
     let deleteOnCloseBox = document.getElementById("deleteOnClose");
-
-    // We have to branch between the old clear on shutdown prefs and new prefs after the clear history revamp (Bug 1853996)
-    // Once the old dialog is deprecated, we can remove these branches.
-    if (useOldClearHistoryDialog) {
-      deleteOnCloseBox.checked =
-        Preferences.get("privacy.sanitize.sanitizeOnShutdown").value &&
-        Preferences.get("privacy.clearOnShutdown.cookies").value &&
-        Preferences.get("privacy.clearOnShutdown.cache").value &&
-        Preferences.get("privacy.clearOnShutdown.offlineApps").value;
-    } else {
-      deleteOnCloseBox.checked =
-        Preferences.get("privacy.sanitize.sanitizeOnShutdown").value &&
-        Preferences.get("privacy.clearOnShutdown_v2.cookiesAndStorage").value &&
-        Preferences.get("privacy.clearOnShutdown_v2.cache").value;
-    }
+    deleteOnCloseBox.checked =
+      Preferences.get("privacy.clearOnShutdown.cookies").value &&
+      Preferences.get("privacy.clearOnShutdown.cache").value &&
+      Preferences.get("privacy.clearOnShutdown.offlineApps").value &&
+      Preferences.get("privacy.sanitize.sanitizeOnShutdown").value;
   },
 
   /*
    * Unsets cleaning prefs that do not belong to DeleteOnClose
    */
   _resetCleaningPrefs() {
-    let sanitizeOnShutdownPrefsArray = useOldClearHistoryDialog
-      ? SANITIZE_ON_SHUTDOWN_PREFS_ONLY
-      : SANITIZE_ON_SHUTDOWN_PREFS_ONLY_V2;
-
-    return sanitizeOnShutdownPrefsArray.forEach(
+    SANITIZE_ON_SHUTDOWN_PREFS_ONLY.forEach(
       pref => (Preferences.get(pref).value = false)
     );
   },
@@ -2232,11 +2174,7 @@ var gPrivacyPane = {
    Checks if the user set cleaning prefs that do not belong to DeleteOnClose
    */
   _isCustomCleaningPrefPresent() {
-    let sanitizeOnShutdownPrefsArray = useOldClearHistoryDialog
-      ? SANITIZE_ON_SHUTDOWN_PREFS_ONLY
-      : SANITIZE_ON_SHUTDOWN_PREFS_ONLY_V2;
-
-    return sanitizeOnShutdownPrefsArray.some(
+    return SANITIZE_ON_SHUTDOWN_PREFS_ONLY.some(
       pref => Preferences.get(pref).value
     );
   },
@@ -2923,8 +2861,7 @@ var gPrivacyPane = {
     // OS reauthenticate functionality is not available on Linux yet (bug 1527745)
     if (
       !LoginHelper.isPrimaryPasswordSet() &&
-      OS_AUTH_ENABLED &&
-      OSKeyStore.canReauth()
+      LoginHelper.getOSAuthEnabled(LoginHelper.OS_AUTH_FOR_PASSWORDS_PREF)
     ) {
       // Uses primary-password-os-auth-dialog-message-win and
       // primary-password-os-auth-dialog-message-macosx via concatenation:
@@ -3019,6 +2956,54 @@ var gPrivacyPane = {
     );
 
     this._updateRelayIntegrationUI();
+  },
+
+  async _toggleOSAuth() {
+    let osReauthCheckbox = document.getElementById("osReauthCheckbox");
+
+    const messageText = await lazy.AboutLoginsL10n.formatValue(
+      "about-logins-os-auth-dialog-message"
+    );
+    const captionText = await lazy.AboutLoginsL10n.formatValue(
+      "about-logins-os-auth-dialog-caption"
+    );
+    let win =
+      osReauthCheckbox.ownerGlobal.docShell.chromeEventHandler.ownerGlobal;
+
+    // Calling OSKeyStore.ensureLoggedIn() instead of LoginHelper.verifyOSAuth()
+    // since we want to authenticate user each time this stting is changed.
+    let isAuthorized = (
+      await OSKeyStore.ensureLoggedIn(messageText, captionText, win, false)
+    ).authenticated;
+    if (!isAuthorized) {
+      osReauthCheckbox.checked = !osReauthCheckbox.checked;
+      return;
+    }
+
+    // If osReauthCheckbox is checked enable osauth.
+    LoginHelper.setOSAuthEnabled(
+      LoginHelper.OS_AUTH_FOR_PASSWORDS_PREF,
+      osReauthCheckbox.checked
+    );
+  },
+
+  _initOSAuthentication() {
+    let osReauthCheckbox = document.getElementById("osReauthCheckbox");
+    if (!OSKeyStore.canReauth()) {
+      osReauthCheckbox.hidden = true;
+      return;
+    }
+
+    osReauthCheckbox.setAttribute(
+      "checked",
+      LoginHelper.getOSAuthEnabled(LoginHelper.OS_AUTH_FOR_PASSWORDS_PREF)
+    );
+
+    setEventListener(
+      "osReauthCheckbox",
+      "command",
+      gPrivacyPane._toggleOSAuth.bind(gPrivacyPane)
+    );
   },
 
   /**
@@ -3287,8 +3272,8 @@ var gPrivacyPane = {
   initDataCollection() {
     if (
       !AppConstants.MOZ_DATA_REPORTING &&
-      !NimbusFeatures.majorRelease2022.getVariable(
-        "feltPrivacyShowPreferencesSection"
+      !Services.prefs.getBoolPref(
+        "browser.privacySegmentation.preferences.show"
       )
     ) {
       // Nothing to control in the data collection section, remove it.
@@ -3315,16 +3300,19 @@ var gPrivacyPane = {
     // Section visibility
     let section = document.getElementById("privacySegmentationSection");
     let updatePrivacySegmentationSectionVisibilityState = () => {
-      section.hidden = !NimbusFeatures.majorRelease2022.getVariable(
-        "feltPrivacyShowPreferencesSection"
+      section.hidden = !Services.prefs.getBoolPref(
+        "browser.privacySegmentation.preferences.show"
       );
     };
 
-    NimbusFeatures.majorRelease2022.onUpdate(
+    Services.prefs.addObserver(
+      "browser.privacySegmentation.preferences.show",
       updatePrivacySegmentationSectionVisibilityState
     );
+
     window.addEventListener("unload", () => {
-      NimbusFeatures.majorRelease2022.offUpdate(
+      Services.prefs.removeObserver(
+        "browser.privacySegmentation.preferences.show",
         updatePrivacySegmentationSectionVisibilityState
       );
     });

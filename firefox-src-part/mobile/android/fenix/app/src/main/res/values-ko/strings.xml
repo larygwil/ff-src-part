@@ -52,12 +52,20 @@
 
     <!-- Home - Recently saved bookmarks -->
     <!-- Title for the home screen section with recently saved bookmarks. -->
-    <string name="recently_saved_title">최근에 저장됨</string>
+    <string name="recently_saved_title" moz:removedIn="127" tools:ignore="UnusedResources">최근에 저장됨</string>
     <!-- Content description for the button which navigates the user to show all of their saved bookmarks. -->
-    <string name="recently_saved_show_all_content_description_2">저장된 북마크 모두 표시</string>
+    <string name="recently_saved_show_all_content_description_2" moz:removedIn="127" tools:ignore="UnusedResources">저장된 북마크 모두 표시</string>
 
     <!-- Text for the menu button to remove a recently saved bookmark from the user's home screen -->
-    <string name="recently_saved_menu_item_remove">삭제</string>
+    <string name="recently_saved_menu_item_remove" moz:removedIn="127" tools:ignore="UnusedResources">삭제</string>
+
+    <!-- Home - Bookmarks -->
+    <!-- Title for the home screen section with bookmarks. -->
+    <string name="home_bookmarks_title">북마크</string>
+    <!-- Content description for the button which navigates the user to show all of their bookmarks. -->
+    <string name="home_bookmarks_show_all_content_description">모든 북마크 표시</string>
+    <!-- Text for the menu button to remove a recently saved bookmark from the user's home screen -->
+    <string name="home_bookmarks_menu_item_remove">제거</string>
 
     <!-- About content. The first parameter is the name of the application. (For example: Fenix) -->
     <string name="about_content">%1$s는 Mozilla에서 제작했습니다.</string>
@@ -197,6 +205,10 @@
     <string name="browser_menu_add_ons" moz:removedIn="126" tools:ignore="UnusedResources">부가 기능</string>
     <!-- Browser menu button that opens the extensions manager -->
     <string name="browser_menu_extensions">확장 기능</string>
+    <!-- Browser menu button that opens the extensions manager -->
+    <string name="browser_menu_manage_extensions">확장 기능 관리</string>
+    <!-- Browser menu button that opens AMO in a tab -->
+    <string name="browser_menu_discover_more_extensions">더 많은 확장  기능 살펴보기</string>
     <!-- Browser menu button that opens account settings -->
     <string name="browser_menu_account_settings">계정 정보</string>
     <!-- Text displayed when there are no add-ons to be shown -->
@@ -215,6 +227,8 @@
     <string name="browser_menu_open_in_regular_tab">일반 탭에서 열기</string>
     <!-- Browser menu toggle that adds a shortcut to the site on the device home screen. -->
     <string name="browser_menu_add_to_homescreen">홈 화면에 추가</string>
+    <!-- Browser menu toggle that adds a shortcut to the site on the device home screen. -->
+    <string name="browser_menu_add_to_homescreen_2">홈 화면에 추가…</string>
     <!-- Browser menu toggle that installs a Progressive Web App shortcut to the site on the device home screen. -->
     <string name="browser_menu_install_on_homescreen" moz:removedIn="126" tools:ignore="UnusedResources">설치</string>
     <!-- Content description (not visible, for screen readers etc.) for the Resync tabs button -->
@@ -226,9 +240,13 @@
     <!-- Browser menu button that opens the translations dialog, which has options to translate the current browser page. -->
     <string name="browser_menu_translations">페이지 번역</string>
     <!-- Browser menu button that saves the current tab to a collection -->
+    <string name="browser_menu_save_to_collection">모음집에 저장…</string>
+    <!-- Browser menu button that saves the current tab to a collection -->
     <string name="browser_menu_save_to_collection_2">모음집에 저장</string>
     <!-- Browser menu button that open a share menu to share the current site -->
     <string name="browser_menu_share">공유</string>
+    <!-- Browser menu button that open a share menu to share the current site -->
+    <string name="browser_menu_share_2">공유…</string>
     <!-- Browser menu button shown in custom tabs that opens the current tab in Fenix
         The first parameter is the name of the app defined in app_name (for example: Fenix) -->
     <string name="browser_menu_open_in_fenix">%1$s에서 열기</string>
@@ -282,6 +300,24 @@
     <!-- Browser menu label that navigates to the save sub-menu, which contains various save related menu items such as
          bookmarking a page, saving to collection, shortcut or as a PDF, and adding to home screen -->
     <string name="browser_menu_save">저장</string>
+
+    <!-- Browser menu label that bookmarks the currently visited page -->
+    <string name="browser_menu_bookmark_this_page">이 페이지 북마크</string>
+    <!-- Browser menu label that navigates to the edit bookmark screen for the current bookmarked page -->
+    <string name="browser_menu_edit_bookmark">북마크 편집</string>
+    <!-- Browser menu label that the saves the currently visited page as a PDF -->
+    <string name="browser_menu_save_as_pdf">PDF로 저장…</string>
+    <!-- Browser menu label for turning ON reader view of the current visited page -->
+    <string name="browser_menu_turn_on_reader_view">리더뷰 켜기</string>
+    <!-- Browser menu label for turning OFF reader view of the current visited page -->
+    <string name="browser_menu_turn_off_reader_view">리더뷰 끄기</string>
+    <!-- Browser menu label for navigating to the translation feature, which provides language translation options the current visited page -->
+    <string name="browser_menu_translate_page">페이지 번역…</string>
+    <!-- Browser menu label that is displayed when the current page has been translated by the translation feature.
+         The first parameter is the name of the language that page was translated to (e.g. English). -->
+    <string name="browser_menu_translated_to">%1$s 언어로 번역됨</string>
+    <!-- Browser menu label for the print feature -->
+    <string name="browser_menu_print">인쇄…</string>
 
     <!-- Extensions management fragment -->
     <!-- Text displayed when there are no extensions to be shown -->
@@ -592,7 +628,9 @@
     <!-- Preference for language -->
     <string name="preferences_language">언어</string>
     <!-- Preference for translation -->
-    <string name="preferences_translation">번역</string>
+    <string name="preferences_translation" moz:removedIn="127" tools:ignore="UnusedResources">번역</string>
+    <!-- Preference for translations -->
+    <string name="preferences_translations">번역</string>
     <!-- Preference for data choices -->
     <string name="preferences_data_choices">데이터 선택</string>
     <!-- Preference for data collection -->
@@ -699,7 +737,9 @@
     <!-- Header text for jumping back into the recent tab in customize the home screen -->
     <string name="customize_toggle_jump_back_in">최근 탭으로 이동</string>
     <!-- Title for the customize home screen section with recently saved bookmarks. -->
-    <string name="customize_toggle_recent_bookmarks">최근 북마크</string>
+    <string name="customize_toggle_recent_bookmarks" moz:removedIn="127" tools:ignore="UnusedResources">최근 북마크</string>
+    <!-- Title for the customize home screen section with bookmarks. -->
+    <string name="customize_toggle_bookmarks">북마크</string>
     <!-- Title for the customize home screen section with recently visited. Recently visited is
     a section where users see a list of tabs that they have visited in the past few days -->
     <string name="customize_toggle_recently_visited">최근에 방문함</string>
@@ -840,6 +880,14 @@
     <string name="fxa_tab_received_notification_name">전송 받은 탭</string>
     <!-- %s is the device name -->
     <string name="fxa_tab_received_from_notification_name">%s에서 온 탭</string>
+
+    <!-- Close Synced Tabs -->
+    <!-- The title for a notification shown when the user closes tabs that are currently
+    open on this device from another device that's signed in to the same Mozilla account.
+    %1$s is a placeholder for the app name; %2$d is the number of tabs closed.  -->
+    <string name="fxa_tabs_closed_notification_title">%1$s 탭 닫힘: %2$d개</string>
+    <!-- The body for a "closed synced tabs" notification. -->
+    <string name="fxa_tabs_closed_text">최근에 닫은 탭 보기</string>
 
     <!-- Advanced Preferences -->
     <!-- Preference for tracking protection exceptions -->
@@ -2567,6 +2615,8 @@
     <string name="translations_bottom_sheet_negative_button">나중에</string>
     <!-- Button text on the translations dialog to restore the translated website back to the original untranslated version. -->
     <string name="translations_bottom_sheet_negative_button_restore">원본 보기</string>
+    <!-- Accessibility announcement (not visible, for screen readers etc.) for the translations dialog after restore button was pressed that indicates the original untranslated page was loaded. -->
+    <string name="translations_bottom_sheet_restore_accessibility_announcement">번역되지 않은 원본 페이지가 로드됨</string>
     <!-- Button text on the translations dialog when a translation error appears, used to dismiss the dialog and return to the browser. -->
     <string name="translations_bottom_sheet_negative_button_error">완료</string>
     <!-- Button text on the translations dialog to begin a translation of the website. -->
@@ -2749,13 +2799,18 @@
     <!-- Content description (not visible, for screen readers etc.): Navigate back within the debug drawer. -->
     <string name="debug_drawer_back_button_content_description">뒤로</string>
 
+    <!-- Content description (not visible, for screen readers etc.): Open debug drawer. -->
+    <string name="debug_drawer_fab_content_description">디버그 서랍 열기</string>
+
     <!-- Debug drawer tabs tools -->
     <!-- The title of the Tab Tools feature in the Debug Drawer. -->
     <string name="debug_drawer_tab_tools_title">탭 도구</string>
     <!-- The title of the tab count section in Tab Tools. -->
     <string name="debug_drawer_tab_tools_tab_count_title">탭 수</string>
     <!-- The active tab count category in the tab count section in Tab Tools. -->
-    <string name="debug_drawer_tab_tools_tab_count_normal">활성</string>
+    <string name="debug_drawer_tab_tools_tab_count_normal" moz:removedIn="127" tools:ignore="UnusedResources">활성</string>
+    <!-- The active tab count category in the tab count section in Tab Tools. -->
+    <string name="debug_drawer_tab_tools_tab_count_active">활성</string>
     <!-- The inactive tab count category in the tab count section in Tab Tools. -->
     <string name="debug_drawer_tab_tools_tab_count_inactive">비활성</string>
     <!-- The private tab count category in the tab count section in Tab Tools. -->

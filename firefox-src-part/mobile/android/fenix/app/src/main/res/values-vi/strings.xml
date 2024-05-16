@@ -48,12 +48,20 @@
 
     <!-- Home - Recently saved bookmarks -->
     <!-- Title for the home screen section with recently saved bookmarks. -->
-    <string name="recently_saved_title">Đã lưu gần đây</string>
+    <string name="recently_saved_title" moz:removedIn="127" tools:ignore="UnusedResources">Đã lưu gần đây</string>
     <!-- Content description for the button which navigates the user to show all of their saved bookmarks. -->
-    <string name="recently_saved_show_all_content_description_2">Hiển thị tất cả các dấu trang đã lưu</string>
+    <string name="recently_saved_show_all_content_description_2" moz:removedIn="127" tools:ignore="UnusedResources">Hiển thị tất cả các dấu trang đã lưu</string>
 
     <!-- Text for the menu button to remove a recently saved bookmark from the user's home screen -->
-    <string name="recently_saved_menu_item_remove">Xóa</string>
+    <string name="recently_saved_menu_item_remove" moz:removedIn="127" tools:ignore="UnusedResources">Xóa</string>
+
+    <!-- Home - Bookmarks -->
+    <!-- Title for the home screen section with bookmarks. -->
+    <string name="home_bookmarks_title">Dấu trang</string>
+    <!-- Content description for the button which navigates the user to show all of their bookmarks. -->
+    <string name="home_bookmarks_show_all_content_description">Xem tất cả dấu trang</string>
+    <!-- Text for the menu button to remove a recently saved bookmark from the user's home screen -->
+    <string name="home_bookmarks_menu_item_remove">Xóa</string>
 
     <!-- About content. The first parameter is the name of the application. (For example: Fenix) -->
     <string name="about_content">%1$s - Một sản phẩm của Mozilla.</string>
@@ -191,6 +199,10 @@
     <string name="browser_menu_add_ons" moz:removedIn="126" tools:ignore="UnusedResources">Tiện ích</string>
     <!-- Browser menu button that opens the extensions manager -->
     <string name="browser_menu_extensions">Tiện ích</string>
+    <!-- Browser menu button that opens the extensions manager -->
+    <string name="browser_menu_manage_extensions">Quản lý tiện ích</string>
+    <!-- Browser menu button that opens AMO in a tab -->
+    <string name="browser_menu_discover_more_extensions">Khám phá tiện tích khác</string>
     <!-- Browser menu button that opens account settings -->
     <string name="browser_menu_account_settings">Thông tin tài khoản</string>
     <!-- Text displayed when there are no add-ons to be shown -->
@@ -209,6 +221,8 @@
     <string name="browser_menu_open_in_regular_tab">Mở trong thẻ thông thường</string>
     <!-- Browser menu toggle that adds a shortcut to the site on the device home screen. -->
     <string name="browser_menu_add_to_homescreen">Thêm vào màn hình chính</string>
+    <!-- Browser menu toggle that adds a shortcut to the site on the device home screen. -->
+    <string name="browser_menu_add_to_homescreen_2">Thêm vào màn hình chính…</string>
     <!-- Browser menu toggle that installs a Progressive Web App shortcut to the site on the device home screen. -->
     <string name="browser_menu_install_on_homescreen" moz:removedIn="126" tools:ignore="UnusedResources">Cài đặt</string>
     <!-- Content description (not visible, for screen readers etc.) for the Resync tabs button -->
@@ -220,9 +234,13 @@
     <!-- Browser menu button that opens the translations dialog, which has options to translate the current browser page. -->
     <string name="browser_menu_translations">Dịch trang</string>
     <!-- Browser menu button that saves the current tab to a collection -->
+    <string name="browser_menu_save_to_collection">Lưu vào bộ sưu tập…</string>
+    <!-- Browser menu button that saves the current tab to a collection -->
     <string name="browser_menu_save_to_collection_2">Lưu vào bộ sưu tập</string>
     <!-- Browser menu button that open a share menu to share the current site -->
     <string name="browser_menu_share">Chia sẻ</string>
+    <!-- Browser menu button that open a share menu to share the current site -->
+    <string name="browser_menu_share_2">Chia sẻ…</string>
     <!-- Browser menu button shown in custom tabs that opens the current tab in Fenix
         The first parameter is the name of the app defined in app_name (for example: Fenix) -->
     <string name="browser_menu_open_in_fenix">Mở bằng %1$s</string>
@@ -274,6 +292,24 @@
     <!-- Browser menu label that navigates to the save sub-menu, which contains various save related menu items such as
          bookmarking a page, saving to collection, shortcut or as a PDF, and adding to home screen -->
     <string name="browser_menu_save">Lưu</string>
+
+    <!-- Browser menu label that bookmarks the currently visited page -->
+    <string name="browser_menu_bookmark_this_page">Đánh dấu trang này</string>
+    <!-- Browser menu label that navigates to the edit bookmark screen for the current bookmarked page -->
+    <string name="browser_menu_edit_bookmark">Chỉnh sửa dấu trang</string>
+    <!-- Browser menu label that the saves the currently visited page as a PDF -->
+    <string name="browser_menu_save_as_pdf">Lưu dưới dạng PDF…</string>
+    <!-- Browser menu label for turning ON reader view of the current visited page -->
+    <string name="browser_menu_turn_on_reader_view">Bật chế độ đọc sách</string>
+    <!-- Browser menu label for turning OFF reader view of the current visited page -->
+    <string name="browser_menu_turn_off_reader_view">Tắt chế độ đọc sách</string>
+    <!-- Browser menu label for navigating to the translation feature, which provides language translation options the current visited page -->
+    <string name="browser_menu_translate_page">Dịch trang…</string>
+    <!-- Browser menu label that is displayed when the current page has been translated by the translation feature.
+         The first parameter is the name of the language that page was translated to (e.g. English). -->
+    <string name="browser_menu_translated_to">Đã dịch sang %1$s</string>
+    <!-- Browser menu label for the print feature -->
+    <string name="browser_menu_print">In…</string>
 
     <!-- Extensions management fragment -->
     <!-- Text displayed when there are no extensions to be shown -->
@@ -580,6 +616,10 @@
     <string name="preferences_account_sync_error">Kết nối lại để tiếp tục đồng bộ hóa</string>
     <!-- Preference for language -->
     <string name="preferences_language">Ngôn ngữ</string>
+    <!-- Preference for translation -->
+    <string name="preferences_translation" moz:removedIn="127" tools:ignore="UnusedResources">Dịch</string>
+    <!-- Preference for translations -->
+    <string name="preferences_translations">Dịch</string>
     <!-- Preference for data choices -->
     <string name="preferences_data_choices">Lựa chọn dữ liệu</string>
     <!-- Preference for data collection -->
@@ -684,7 +724,9 @@
     <!-- Header text for jumping back into the recent tab in customize the home screen -->
     <string name="customize_toggle_jump_back_in">Trang đã xem gần đây</string>
     <!-- Title for the customize home screen section with recently saved bookmarks. -->
-    <string name="customize_toggle_recent_bookmarks">Dấu trang gần đây</string>
+    <string name="customize_toggle_recent_bookmarks" moz:removedIn="127" tools:ignore="UnusedResources">Dấu trang gần đây</string>
+    <!-- Title for the customize home screen section with bookmarks. -->
+    <string name="customize_toggle_bookmarks">Dấu trang</string>
     <!-- Title for the customize home screen section with recently visited. Recently visited is
     a section where users see a list of tabs that they have visited in the past few days -->
     <string name="customize_toggle_recently_visited">Đã xem gần đây</string>
@@ -823,6 +865,14 @@
 
     <!-- %s is the device name -->
     <string name="fxa_tab_received_from_notification_name">Thẻ từ %s</string>
+
+    <!-- Close Synced Tabs -->
+    <!-- The title for a notification shown when the user closes tabs that are currently
+    open on this device from another device that's signed in to the same Mozilla account.
+    %1$s is a placeholder for the app name; %2$d is the number of tabs closed.  -->
+    <string name="fxa_tabs_closed_notification_title">%2$d thẻ %1$s đã đóng</string>
+    <!-- The body for a "closed synced tabs" notification. -->
+    <string name="fxa_tabs_closed_text">Xem thẻ đã đóng gần đây</string>
 
     <!-- Advanced Preferences -->
     <!-- Preference for tracking protection exceptions -->
@@ -2500,6 +2550,8 @@
     <string name="translations_bottom_sheet_negative_button">Không phải bây giờ</string>
     <!-- Button text on the translations dialog to restore the translated website back to the original untranslated version. -->
     <string name="translations_bottom_sheet_negative_button_restore">Hiển thị bản gốc</string>
+    <!-- Accessibility announcement (not visible, for screen readers etc.) for the translations dialog after restore button was pressed that indicates the original untranslated page was loaded. -->
+    <string name="translations_bottom_sheet_restore_accessibility_announcement">Trang nguyên bản chưa dịch đã được tải</string>
     <!-- Button text on the translations dialog when a translation error appears, used to dismiss the dialog and return to the browser. -->
     <string name="translations_bottom_sheet_negative_button_error">Xong</string>
     <!-- Button text on the translations dialog to begin a translation of the website. -->
@@ -2680,13 +2732,18 @@
     <!-- Content description (not visible, for screen readers etc.): Navigate back within the debug drawer. -->
     <string name="debug_drawer_back_button_content_description">Điều hướng quay lại</string>
 
+    <!-- Content description (not visible, for screen readers etc.): Open debug drawer. -->
+    <string name="debug_drawer_fab_content_description">Mở ngăn gỡ lỗi</string>
+
     <!-- Debug drawer tabs tools -->
     <!-- The title of the Tab Tools feature in the Debug Drawer. -->
     <string name="debug_drawer_tab_tools_title">Công cụ thẻ</string>
     <!-- The title of the tab count section in Tab Tools. -->
     <string name="debug_drawer_tab_tools_tab_count_title">Số lượng thẻ</string>
     <!-- The active tab count category in the tab count section in Tab Tools. -->
-    <string name="debug_drawer_tab_tools_tab_count_normal">Hoạt động</string>
+    <string name="debug_drawer_tab_tools_tab_count_normal" moz:removedIn="127" tools:ignore="UnusedResources">Hoạt động</string>
+    <!-- The active tab count category in the tab count section in Tab Tools. -->
+    <string name="debug_drawer_tab_tools_tab_count_active">Đang hoạt động</string>
     <!-- The inactive tab count category in the tab count section in Tab Tools. -->
     <string name="debug_drawer_tab_tools_tab_count_inactive">Không hoạt động</string>
     <!-- The private tab count category in the tab count section in Tab Tools. -->

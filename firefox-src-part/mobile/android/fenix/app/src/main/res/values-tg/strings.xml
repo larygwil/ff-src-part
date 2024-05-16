@@ -48,12 +48,20 @@
 
     <!-- Home - Recently saved bookmarks -->
     <!-- Title for the home screen section with recently saved bookmarks. -->
-    <string name="recently_saved_title">Иловашудаи охирин</string>
+    <string name="recently_saved_title" moz:removedIn="127" tools:ignore="UnusedResources">Иловашудаи охирин</string>
     <!-- Content description for the button which navigates the user to show all of their saved bookmarks. -->
-    <string name="recently_saved_show_all_content_description_2">Намоиш додани ҳамаи хатбаракҳои нигоҳдошташуда</string>
+    <string name="recently_saved_show_all_content_description_2" moz:removedIn="127" tools:ignore="UnusedResources">Намоиш додани ҳамаи хатбаракҳои нигоҳдошташуда</string>
 
     <!-- Text for the menu button to remove a recently saved bookmark from the user's home screen -->
-    <string name="recently_saved_menu_item_remove">Тоза кардан</string>
+    <string name="recently_saved_menu_item_remove" moz:removedIn="127" tools:ignore="UnusedResources">Тоза кардан</string>
+
+    <!-- Home - Bookmarks -->
+    <!-- Title for the home screen section with bookmarks. -->
+    <string name="home_bookmarks_title">Хатбаракҳо</string>
+    <!-- Content description for the button which navigates the user to show all of their bookmarks. -->
+    <string name="home_bookmarks_show_all_content_description">Намоиш додани ҳамаи хатбаракҳо</string>
+    <!-- Text for the menu button to remove a recently saved bookmark from the user's home screen -->
+    <string name="home_bookmarks_menu_item_remove">Тоза кардан</string>
 
     <!-- About content. The first parameter is the name of the application. (For example: Fenix) -->
     <string name="about_content">%1$s аз ҷониби Mozilla истеҳсол карда шудааст.</string>
@@ -194,6 +202,10 @@
     <string name="browser_menu_add_ons" moz:removedIn="126" tools:ignore="UnusedResources">Ҷузъҳои иловагӣ</string>
     <!-- Browser menu button that opens the extensions manager -->
     <string name="browser_menu_extensions">Васеъшавиҳо</string>
+    <!-- Browser menu button that opens the extensions manager -->
+    <string name="browser_menu_manage_extensions">Идоракунии васеъшавиҳо</string>
+    <!-- Browser menu button that opens AMO in a tab -->
+    <string name="browser_menu_discover_more_extensions">Кашф кардани васеъшавиҳои бештар</string>
     <!-- Browser menu button that opens account settings -->
     <string name="browser_menu_account_settings">Маълумот дар бораи ҳисоби корбар</string>
     <!-- Text displayed when there are no add-ons to be shown -->
@@ -213,18 +225,26 @@
     <string name="browser_menu_open_in_regular_tab">Кушодан дар варақаи одӣ</string>
     <!-- Browser menu toggle that adds a shortcut to the site on the device home screen. -->
     <string name="browser_menu_add_to_homescreen">Илова кардан ба экрани асосӣ</string>
+    <!-- Browser menu toggle that adds a shortcut to the site on the device home screen. -->
+    <string name="browser_menu_add_to_homescreen_2">Илова кардан ба экрани асосӣ…</string>
     <!-- Browser menu toggle that installs a Progressive Web App shortcut to the site on the device home screen. -->
     <string name="browser_menu_install_on_homescreen" moz:removedIn="126" tools:ignore="UnusedResources">Насб кардан</string>
     <!-- Content description (not visible, for screen readers etc.) for the Resync tabs button -->
     <string name="resync_button_content_description">Аз нав ҳамоҳанг кардан</string>
     <!-- Browser menu button that opens the find in page menu -->
     <string name="browser_menu_find_in_page">Ҷустуҷӯ дар саҳифа</string>
+    <!-- Browser menu button that opens the find in page menu -->
+    <string name="browser_menu_find_in_page_2">Ҷустуҷӯ дар саҳифа…</string>
     <!-- Browser menu button that opens the translations dialog, which has options to translate the current browser page. -->
     <string name="browser_menu_translations">Тарҷума кардани саҳифа</string>
+    <!-- Browser menu button that saves the current tab to a collection -->
+    <string name="browser_menu_save_to_collection">Нигоҳ доштан дар маҷмуа…</string>
     <!-- Browser menu button that saves the current tab to a collection -->
     <string name="browser_menu_save_to_collection_2">Нигоҳ доштан дар маҷмуа</string>
     <!-- Browser menu button that open a share menu to share the current site -->
     <string name="browser_menu_share">Мубодила кардан</string>
+    <!-- Browser menu button that open a share menu to share the current site -->
+    <string name="browser_menu_share_2">Мубодила…</string>
     <!-- Browser menu button shown in custom tabs that opens the current tab in Fenix
         The first parameter is the name of the app defined in app_name (for example: Fenix) -->
     <string name="browser_menu_open_in_fenix">Кушодан дар %1$s</string>
@@ -269,6 +289,33 @@
     <!-- Browser menu label that navigates to the SUMO page for the Firefox for Android release notes.
          The first parameter is the name of the app defined in app_name (for example: Fenix)-->
     <string name="browser_menu_new_in_firefox">Навигариҳои %1$s</string>
+
+    <!-- Browser menu label that toggles the request for the desktop site of the currently visited page -->
+    <string name="browser_menu_switch_to_desktop_site">Гузариш ба версияи мизи кории сомона</string>
+    <!-- Browser menu label that navigates to the page tools sub-menu -->
+    <string name="browser_menu_tools">Воситаҳо</string>
+    <!-- Browser menu label that navigates to the save sub-menu, which contains various save related menu items such as
+         bookmarking a page, saving to collection, shortcut or as a PDF, and adding to home screen -->
+    <string name="browser_menu_save">Нигоҳ доштан</string>
+
+    <!-- Browser menu label that bookmarks the currently visited page -->
+    <string name="browser_menu_bookmark_this_page">Гузоштани хатбарак барои ин саҳифа</string>
+    <!-- Browser menu label that navigates to the edit bookmark screen for the current bookmarked page -->
+    <string name="browser_menu_edit_bookmark">Таҳрир кардани хатбарак</string>
+    <!-- Browser menu label that the saves the currently visited page as a PDF -->
+    <string name="browser_menu_save_as_pdf">Нигоҳ доштан ҳамчун PDF…</string>
+    <!-- Browser menu label for turning ON reader view of the current visited page -->
+    <string name="browser_menu_turn_on_reader_view">Фаъол кардани намоиши хонанда</string>
+    <!-- Browser menu label for turning OFF reader view of the current visited page -->
+    <string name="browser_menu_turn_off_reader_view">Хомӯш кардани намоиши хонанда</string>
+    <!-- Browser menu label for navigating to the translation feature, which provides language translation options the current visited page -->
+    <string name="browser_menu_translate_page">Тарҷума кардани саҳифа…</string>
+
+    <!-- Browser menu label that is displayed when the current page has been translated by the translation feature.
+         The first parameter is the name of the language that page was translated to (e.g. English). -->
+    <string name="browser_menu_translated_to">Ба забони %1$s тарҷума шуд</string>
+    <!-- Browser menu label for the print feature -->
+    <string name="browser_menu_print">Чоп кардан ...</string>
 
     <!-- Extensions management fragment -->
     <!-- Text displayed when there are no extensions to be shown -->
@@ -377,6 +424,10 @@
     <string name="juno_onboarding_default_browser_title_nimbus_4" tools:ignore="UnusedResources">Тамошокунии бехатар бо интихобҳои бештар</string>
     <!-- Description for set firefox as default browser screen used by Nimbus experiments. -->
     <string name="juno_onboarding_default_browser_description_nimbus_3">Браузери мо, ки аз ҷониби ташкилоти ғайритиҷоратӣ дастгирӣ мешавад, маъракаҳоеро, ки шуморо дар атрофи Интернет пинҳонӣ пайгирӣ мекунанд, қатъ мекунад.</string>
+    <!-- Description for set firefox as default browser screen used by Nimbus experiments. -->
+    <string name="juno_onboarding_default_browser_description_nimbus_4" tools:ignore="UnusedResources">Зиёда аз 100 миллион одам тавассути интихоби браузере, ки аз ҷониби ташкилоти ғайритиҷоратӣ дастгирӣ мешавад, махфияти худро муҳофизат мекунанд.</string>
+    <!-- Description for set firefox as default browser screen used by Nimbus experiments. -->
+    <string name="juno_onboarding_default_browser_description_nimbus_5" tools:ignore="UnusedResources">Васоити пайгирии маълум? Онҳо ба таври худкор манъ карда мешаванд. Васеъшавиҳо? Ҳамаи 700 васеъшавиро озмоед. Файлҳои PDF? Барномаи дарунсохти хонандаи файлҳо онҳоро ба осонӣ идора мекунад.</string>
     <!-- Description for set firefox as default browser screen used by Nimbus experiments. -->
     <string name="juno_onboarding_default_browser_description_nimbus_2" moz:RemovedIn="124" tools:ignore="UnusedResources">Браузери мо, ки аз ҷониби ташкилоти ғайритиҷоратӣ дастгирӣ мешавад, маъракаҳоеро манъ мекунад, ки шуморо ба таври пинҳонӣ дар ҳудуди Интернет пайгирӣ мекунанд.\n\nМаълумоти бештар дар Огоҳномаи махфияти мо.</string>
     <!-- Text for the link to the privacy notice webpage for set as firefox default browser screen.
@@ -571,6 +622,10 @@
     <string name="preferences_account_sync_error">Барои барқарор кардани ҳамоҳангсозӣ аз нав пайваст шавед</string>
     <!-- Preference for language -->
     <string name="preferences_language">Забон</string>
+    <!-- Preference for translation -->
+    <string name="preferences_translation" moz:removedIn="127" tools:ignore="UnusedResources">Тарҷума</string>
+    <!-- Preference for translations -->
+    <string name="preferences_translations">Тарҷумаҳо</string>
     <!-- Preference for data choices -->
     <string name="preferences_data_choices">Интихоби маълумот</string>
     <!-- Preference for data collection -->
@@ -641,8 +696,15 @@
     <string name="addons_permissions_heading_required" tools:ignore="UnusedResources">Ҳатмӣ аст</string>
     <!-- The title of the optional permissions section from addon's permissions screen -->
     <string name="addons_permissions_heading_optional" tools:ignore="UnusedResources">Интихобӣ аст</string>
+    <!-- The title of the section with websites that have permissions granted from addon's permissions screen -->
+    <string name="addons_permissions_heading_read_and_change_website_data" tools:ignore="UnusedResources">Хониш ва тағйироти маълумоти сомона</string>
     <!-- The description of the icon that can delete one of the websites displayed  -->
     <string name="addons_permissions_icon_description_delete_website" tools:ignore="UnusedResources">Нест кардани сомона</string>
+
+    <!-- The title of the origin permission option allowing a user to enable the extension to run on all sites -->
+    <string name="addons_permissions_allow_for_all_sites" tools:ignore="UnusedResources">Иҷозат барои ҳамаи сомонаҳо</string>
+    <!-- The subtitle for the allow for all sites preference toggle -->
+    <string name="addons_permissions_allow_for_all_sites_subtitle" tools:ignore="UnusedResources">Агар шумо ба ин васеъшавӣ эътимод дошта бошед, шумо метавонед дар ҳар сомона ба он иҷозат диҳед.</string>
 
     <!-- Add-on Preferences -->
     <!-- Preference to customize the configured AMO (addons.mozilla.org) collection -->
@@ -667,7 +729,9 @@
     <!-- Header text for jumping back into the recent tab in customize the home screen -->
     <string name="customize_toggle_jump_back_in">Бозгашт ба</string>
     <!-- Title for the customize home screen section with recently saved bookmarks. -->
-    <string name="customize_toggle_recent_bookmarks">Хатбаракҳои охирин</string>
+    <string name="customize_toggle_recent_bookmarks" moz:removedIn="127" tools:ignore="UnusedResources">Хатбаракҳои охирин</string>
+    <!-- Title for the customize home screen section with bookmarks. -->
+    <string name="customize_toggle_bookmarks">Хатбаракҳо</string>
     <!-- Title for the customize home screen section with recently visited. Recently visited is
     a section where users see a list of tabs that they have visited in the past few days -->
     <string name="customize_toggle_recently_visited">Дидашудаи охирин</string>
@@ -727,15 +791,29 @@
     <!-- Button text of the Nimbus message for add-ons general availability. -->
     <string name="addon_ga_message_button" moz:removedIn="126" tools:ignore="UnusedResources">Ҷузъҳои иловагиро озмоед</string>
 
+    <!-- Button text of the Nimbus message for extensions general availability. -->
+    <string name="addon_ga_message_button_2" tools:ignore="UnusedResources">Васеъшавиҳоро озмоед</string>
+
     <!-- Extension process crash dialog to user -->
     <!-- Title of a dialog shown to the user when enough errors have occurred with addons and they need to be temporarily disabled -->
     <string name="addon_process_crash_dialog_title" moz:removedIn="126" tools:ignore="UnusedResources">Ҷузъҳои иловагӣ муваққатан ғайрифаъол шудаанд</string>
+    <!-- Title of the extension crash dialog shown to the user when enough errors have occurred with extensions and they need to be temporarily disabled -->
+    <string name="extension_process_crash_dialog_title">Васеъшавиҳо муваққатан ғайрифаъол шудаанд</string>
     <!-- The first parameter is the application name. This is a message shown to the user when too many errors have occurred with the addons process and they have been disabled. The user can decide if they would like to continue trying to start add-ons or if they'd rather continue without them. -->
     <string name="addon_process_crash_dialog_message" moz:removedIn="126" tools:ignore="UnusedResources">Фаъолияти як ё якчанд ҷузъи иловагӣ қатъ карда шуд, ва ба ҳамин сабаб низоми шумо ноустувор кор мекунад. «%1$s» кӯшиш карда, ҷузъ(ҳо)и иловагиро аз нав оғоз карда натавонист.\n\nҶузъҳои иловагӣ ҳангоми фаъол будани ҷаласаи ҷорӣ аз нав оғоз карда намешаванд.\n\nЭҳтимол аст, ки агар шумо ҷузъҳои иловагиро тоза ё ғайрифаъол созед, ин мушкилӣ метавонад ҳал карда шавад.</string>
+    <!-- This is a message shown to the user when too many errors have occurred with the extensions process and they have been disabled.
+    The user can decide if they would like to continue trying to start extensions or if they'd rather continue without them.
+    The first parameter is the application name. -->
+    <string name="extension_process_crash_dialog_message">Фаъолияти як ё якчанд васеъшавӣ қатъ карда шуд, ва ба ҳамин сабаб низоми шумо ноустувор кор мекунад. «%1$s» кӯшиш карда, васеъшави(ҳо)ро аз нав оғоз карда натавонист.\n\nВасеъшавиҳо ҳангоми фаъол будани ҷаласаи ҷорӣ аз нав оғоз карда намешаванд.\n\nЭҳтимол аст, ки агар шумо васеъшавиҳоро тоза ё ғайрифаъол созед, ин мушкилӣ метавонад ҳал карда шавад.</string>
     <!-- This will cause the add-ons to try restarting but the dialog will reappear if it is unsuccessful again -->
     <string name="addon_process_crash_dialog_retry_button_text" moz:removedIn="126" tools:ignore="UnusedResources">Кӯшиш кунед, ки ҷузъҳои иловагиро аз нав оғоз намоед</string>
+    <!-- Button text on the extension crash dialog to prompt the user to try restarting the extensions but the dialog will reappear if it is unsuccessful again -->
+    <string name="extension_process_crash_dialog_retry_button_text" tools:ignore="UnusedResources">Кӯшиш кунед, ки васеъшавиҳоро аз нав оғоз намоед</string>
     <!-- The user will continue with all add-ons disabled -->
     <string name="addon_process_crash_dialog_disable_addons_button_text" moz:removedIn="126" tools:ignore="UnusedResources">Идома додан бо ҷузъҳои иловагии ғайрифаъолшуда</string>
+
+    <!-- Button text on the extension crash dialog to prompt the user to continue with all extensions disabled. -->
+    <string name="extension_process_crash_dialog_disable_extensions_button_text">Идома додан бо васеъшавиҳои ғайрифаъолшуда</string>
 
     <!-- Account Preferences -->
     <!-- Preference for managing your account via accounts.firefox.com -->
@@ -795,6 +873,14 @@
     <string name="fxa_tab_received_notification_name">Варақаи қабулшуда</string>
     <!-- %s is the device name -->
     <string name="fxa_tab_received_from_notification_name">Варақа аз %s</string>
+
+    <!-- Close Synced Tabs -->
+    <!-- The title for a notification shown when the user closes tabs that are currently
+    open on this device from another device that's signed in to the same Mozilla account.
+    %1$s is a placeholder for the app name; %2$d is the number of tabs closed.  -->
+    <string name="fxa_tabs_closed_notification_title">%2$d варақаи пӯшидашудаи «%1$s»</string>
+    <!-- The body for a "closed synced tabs" notification. -->
+    <string name="fxa_tabs_closed_text">Дидани варақаҳои ба наздикӣ пӯшидашуда</string>
 
     <!-- Advanced Preferences -->
     <!-- Preference for tracking protection exceptions -->
@@ -1851,6 +1937,9 @@
     <!-- Content description (not visible, for screen readers etc.): Sort saved logins dropdown menu chevron icon -->
     <string name="saved_logins_menu_dropdown_chevron_icon_content_description" moz:RemovedIn="125" tools:ignore="UnusedResources">Мураттаб кардани менюи воридшавиҳо</string>
 
+    <!-- Content description (not visible, for screen readers etc.) -->
+    <string name="saved_logins_menu_dropdown_chevron_icon_content_description_2">Менюи мураттабсозии ниҳонвожаҳо</string>
+
     <!-- Autofill -->
     <!-- Preference and title for managing the autofill settings -->
     <string name="preferences_autofill">Пуркунии худкор</string>
@@ -1866,6 +1955,8 @@
     <string name="preferences_credit_cards_save_and_autofill_cards_2">Нигоҳ доштан ва пур кардани тарзҳои пардохт</string>
     <!-- Preference summary for saving and autofilling credit card data -->
     <string name="preferences_credit_cards_save_and_autofill_cards_summary" moz:RemovedIn="125" tools:ignore="UnusedResources">Маълумот рамзгузорӣ карда шуд</string>
+    <!-- Preference summary for saving and autofilling payment method data. Parameter will be replaced by app name. -->
+    <string name="preferences_credit_cards_save_and_autofill_cards_summary_2">«%s» ҳамаи тарзҳои пардохтеро, ки шумо нигоҳ медоред, рамзгузорӣ мекунад</string>
     <!-- Preference option for syncing credit cards across devices. This is displayed when the user is not signed into sync -->
     <string name="preferences_credit_cards_sync_cards_across_devices">Ҳамоҳанг кардани кортҳо байни дастгоҳҳо</string>
     <!-- Preference option for syncing credit cards across devices. This is displayed when the user is signed into sync -->
@@ -1889,6 +1980,9 @@
     <string name="preferences_addresses_save_and_autofill_addresses_2">Нигоҳ доштан ва пур кардани нишониҳо</string>
     <!-- Preference summary for saving and autofilling address data -->
     <string name="preferences_addresses_save_and_autofill_addresses_summary" moz:RemovedIn="125" tools:ignore="UnusedResources">Илова кардани маълумот монанди рақамҳо, нишониҳои почтаи электронӣ ва бурдарасонӣ</string>
+
+    <!-- Preference summary for saving and filling address data -->
+    <string name="preferences_addresses_save_and_autofill_addresses_summary_2">Рақамҳои телефон ва нишониҳои почтаи электрониро дар бар мегирад</string>
 
     <!-- Title of the "Add card" screen -->
     <string name="credit_cards_add_card">Илова кардани корт</string>
@@ -1938,8 +2032,12 @@
     <string name="credit_cards_biometric_prompt_message">Барои дидани кортҳои нигоҳдошташуда, қулфро кушоед</string>
     <!-- Title of warning dialog if users have no device authentication set up -->
     <string name="credit_cards_warning_dialog_title" moz:RemovedIn="125" tools:ignore="UnusedResources">Кортҳои кредитии худро муҳофизат кунед</string>
+    <!-- Title of warning dialog if users have no device authentication set up -->
+    <string name="credit_cards_warning_dialog_title_2">Тарзҳои пардохти нигоҳдоштаи худро муҳофизат намоед</string>
     <!-- Message of warning dialog if users have no device authentication set up -->
     <string name="credit_cards_warning_dialog_message" moz:RemovedIn="125" tools:ignore="UnusedResources">Барои муҳофизат кардани кортҳои кредитии нигоҳдошташудаи худ аз дастрасии озод, агар касе дигар аз дастгоҳи шумо истифода барад, шаклвораи қулфи экран, рамзи PIN ё ниҳонвожаеро барои дастгоҳи худ танзим намоед.</string>
+    <!-- Message of warning dialog if users have no device authentication set up -->
+    <string name="credit_cards_warning_dialog_message_3">Барои муҳофизат кардани тарзҳои пардохти нигоҳдошташудаи худ аз дастрасии озод, агар касе дигар аз дастгоҳи шумо истифода барад, шаклвораи қулфи экран, рамзи PIN ё ниҳонвожаеро барои дастгоҳи худ танзим намоед.</string>
     <!-- Positive button to send users to set up a pin of warning dialog if users have no device authentication set up -->
     <string name="credit_cards_warning_dialog_set_up_now">Ҳозир насб кунед</string>
     <!-- Negative button to ignore warning dialog if users have no device authentication set up -->
@@ -1949,6 +2047,8 @@
     <!-- Message displayed in biometric prompt for authentication, before allowing users to use their stored credit card information -->
     <string name="credit_cards_biometric_prompt_unlock_message" moz:RemovedIn="125" tools:ignore="UnusedResources">Барои истифодаи маълумоти кортҳои кредитии нигоҳдошташуда, қулфро кушоед</string>
 
+    <!-- Message displayed in biometric prompt for authentication, before allowing users to use their stored payment method information -->
+    <string name="credit_cards_biometric_prompt_unlock_message_2">Барои истифодаи тарзҳои пардохти нигоҳдоштаи худ, қулфро кушоед</string>
     <!-- Title of the "Add address" screen -->
     <string name="addresses_add_address">Илова кардани нишонӣ</string>
     <!-- Title of the "Edit address" screen -->
@@ -2099,10 +2199,16 @@
     <string name="login_options_menu_2">Инконоти ниҳонвожа</string>
     <!--  The editable text field for a login's web address. -->
     <string name="saved_login_hostname_description" moz:RemovedIn="125" tools:ignore="UnusedResources">Майдони матни таҳриршаванда барои нишонии сомонаи воридшавӣ.</string>
+    <!--  The editable text field for a website address. -->
+    <string name="saved_login_hostname_description_3">Майдони матни таҳриршаванда барои нишонии сомона.</string>
     <!--  The editable text field for a login's username. -->
     <string name="saved_login_username_description" moz:RemovedIn="125" tools:ignore="UnusedResources">Майдони матни таҳриршаванда барои номи корбарии воридшавӣ.</string>
+    <!--  The editable text field for a username. -->
+    <string name="saved_login_username_description_3">Майдони матни таҳриршаванда барои номи корбар.</string>
     <!--  The editable text field for a login's password. -->
     <string name="saved_login_password_description" moz:RemovedIn="125" tools:ignore="UnusedResources">Майдони матни таҳриршаванда барои ниҳонвожаи воридшавӣ.</string>
+    <!--  The editable text field for a login's password. -->
+    <string name="saved_login_password_description_2">Майдони матни таҳриршаванда барои ниҳонвожа.</string>
     <!--  The button description to save changes to an edited login. -->
     <string name="save_changes_to_login" moz:RemovedIn="125" tools:ignore="UnusedResources">Нигоҳ доштани тағйирот барои воридшавӣ</string>
     <!--  The button description to save changes to an edited password. -->
@@ -2376,6 +2482,10 @@
     <string name="review_quality_check_contextual_onboarding_learn_more">Бо истифода аз «%1$s» аз ҷониби «Mozilla», мо ба шумо барои истисно кардани тақризҳои ғаразнок ва ғайримуқаррарӣ кумак мекунем. Намунаи зеҳни сунъии (AI)-ии мо барои муҳофизат кардани раванди харидории шумо доим такмил дода мешавад. %2$s</string>
     <!-- Clickable text from the contextual onboarding card that links to review quality check support article. -->
     <string name="review_quality_check_contextual_onboarding_learn_more_link">Маълумоти бештар</string>
+    <!-- Caption text to be displayed in review quality check contextual onboarding card above the opt-in button. First parameter is Firefox app name, third parameter is the Fakespot product name. Second & fourth are for clickable texts defined in review_quality_check_contextual_onboarding_privacy_policy_3 and review_quality_check_contextual_onboarding_terms_use. -->
+    <string name="review_quality_check_contextual_onboarding_caption_3" moz:RemovedIn="124" tools:ignore="UnusedResources">Бо интихоби «Ҳа, озмоед», шумо бо «%2$s» аз ҷониби «%1$s» ва «%4$s» аз ҷониби «%3$s» розӣ мешавед.</string>
+    <!-- Caption text to be displayed in review quality check contextual onboarding card above the opt-in button. First parameter is Firefox app name, third parameter is the Fakespot product name. Second & fourth are for clickable texts defined in review_quality_check_contextual_onboarding_privacy_policy_3 and review_quality_check_contextual_onboarding_terms_use. -->
+    <string name="review_quality_check_contextual_onboarding_caption_4">Бо интихоби «Ҳа, озмоед», шумо бо «%2$s» аз ҷониби «%1$s» ва «%4$s» аз ҷониби «%3$s» розӣ мешавед.</string>
     <!-- Clickable text from the review quality check contextual onboarding card that links to Fakespot privacy notice. -->
     <string name="review_quality_check_contextual_onboarding_privacy_policy_3">огоҳномаи махфият</string>
     <!-- Clickable text from the review quality check contextual onboarding card that links to Fakespot terms of use. -->
@@ -2447,6 +2557,10 @@
     <!-- Title for the translation dialog that allows a user to translate the webpage. -->
     <string name="translations_bottom_sheet_title">Саҳифаи ҷориро тарҷума мекунед?</string>
 
+    <!-- Title for the translation dialog after a translation was completed successfully.
+    The first parameter is the name of the language that the page was translated from, for example, "French".
+    The second parameter is the name of the language that the page was translated to, for example, "English". -->
+    <string name="translations_bottom_sheet_title_translation_completed">Саҳифа аз забони %1$s ба забони %2$s тарҷума шуд</string>
     <!-- Title for the translation dialog that allows a user to translate the webpage when a user uses the translation feature the first time. The first parameter is the name of the application, for example, "Fenix". -->
     <string name="translations_bottom_sheet_title_first_time">Тарҷумаҳои хусусиро дар «%1$s» кӯшиш кунед</string>
     <!-- Additional information on the translation dialog that appears when a user uses the translation feature the first time. The first parameter is clickable text with a link, for example, "Learn more". -->
@@ -2457,10 +2571,14 @@
     <string name="translations_bottom_sheet_translate_from">Тарҷума аз забони</string>
     <!-- Label for the dropdown to select which language to translate to on the translations dialog. Usually the translate to language selected will be the user's preferred language. -->
     <string name="translations_bottom_sheet_translate_to">Тарҷума ба забони</string>
+    <!-- Label for the dropdown to select which language to translate from on the translations dialog when the page language is not supported. This selection is to allow the user to select another language, in case we automatically detected the page language incorrectly. -->
+    <string name="translations_bottom_sheet_translate_from_unsupported_language">Забони матни аслии дигарро кӯшиш кунед</string>
     <!-- Button text on the translations dialog to dismiss the dialog and return to the browser. -->
     <string name="translations_bottom_sheet_negative_button">Ҳоло не</string>
     <!-- Button text on the translations dialog to restore the translated website back to the original untranslated version. -->
     <string name="translations_bottom_sheet_negative_button_restore">Нишон додани матни аслӣ</string>
+    <!-- Accessibility announcement (not visible, for screen readers etc.) for the translations dialog after restore button was pressed that indicates the original untranslated page was loaded. -->
+    <string name="translations_bottom_sheet_restore_accessibility_announcement">Саҳифаи аслии тарҷуманашуда бор карда шуд</string>
     <!-- Button text on the translations dialog when a translation error appears, used to dismiss the dialog and return to the browser. -->
     <string name="translations_bottom_sheet_negative_button_error">Тайёр</string>
     <!-- Button text on the translations dialog to begin a translation of the website. -->
@@ -2488,10 +2606,19 @@
     <string name="translation_in_progress_snackbar">Дар ҳоли тарҷума…</string>
 
 
+    <!-- Title for the data saving mode warning dialog used in the translation request dialog.
+    This dialog will be presented when the user attempts to perform
+    a translation without the necessary language files downloaded first when Android's data saver mode is enabled and the user is not using WiFi.
+    The first parameter is the size in kilobytes or megabytes of the language file. -->
+    <string name="translations_download_language_file_dialog_title">Забонро дар реҷаи сарфаи маълумот боргирӣ мекунед (%1$s)?</string>
+
+
     <!-- Translations options dialog -->
     <!-- Title of the translation options dialog that allows a user to set their translation options for the site the user is currently on. -->
     <string name="translation_option_bottom_sheet_title" moz:removedIn="126" tools:ignore="UnusedResources">Имконоти тарҷума</string>
 
+    <!-- Title of the translation options dialog that allows a user to set their translation options for the site the user is currently on. -->
+    <string name="translation_option_bottom_sheet_title_heading">Имконоти тарҷума</string>
     <!-- Toggle switch label that allows a user to set the setting if they would like the browser to always offer or suggest translations when available. -->
     <string name="translation_option_bottom_sheet_always_translate">Тарҷума ҳамеша пешниҳод карда шавад</string>
     <!-- Toggle switch label that allows a user to set if they would like a given language to automatically translate or not. The first parameter is the language name, for example, "Spanish". -->
@@ -2508,6 +2635,9 @@
     <string name="translation_option_bottom_sheet_translation_settings">Танзимоти сомона</string>
     <!-- Button text for the button that will take the user to a website to learn more about how translations works in the given app. The first parameter is the name of the application, for example, "Fenix". -->
     <string name="translation_option_bottom_sheet_about_translations">Дар бораи тарҷумаҳо дар «%1$s»</string>
+
+    <!-- Content description (not visible, for screen readers etc.) for closing the translations bottom sheet. -->
+    <string name="translation_option_bottom_sheet_close_content_description">Пӯшидани саҳифаи тарҷума</string>
 
     <!-- Translation settings dialog -->
     <!-- Title of the translation settings dialog that allows a user to set their preferred translation settings. -->
@@ -2614,6 +2744,8 @@
     <string name="download_language_file_dialog_title">Ҳангоми истифодаи реҷаи сарфаи маълумот боргирӣ мекунед (%1$s)?</string>
     <!-- Additional information for the data saving mode warning dialog used by the translations feature. This text explains the reason a download is required for a translation. -->
     <string name="download_language_file_dialog_message_all_languages">Барои ба таври махфӣ нигоҳ доштани тарҷумаҳои шумо, мо забонҳоро қисман ба зерҳофизаи дастгоҳи шумо боргирӣ мекунем.</string>
+    <!-- Additional information for the data saving mode warning dialog used by the translations feature. This text explains the reason a download is required for a translation without mentioning the cache. -->
+    <string name="download_language_file_dialog_message_all_languages_no_cache">Барои ба таври махфӣ нигоҳ доштани тарҷумаҳои шумо, мо забонҳоро қисман боргирӣ мекунем.</string>
     <!-- Checkbox label text on the data saving mode warning dialog used by the translations feature. This checkbox allows users to ignore the data usage warnings. -->
     <string name="download_language_file_dialog_checkbox_text">Бояд танҳо дар реҷаи сарфаи маълумот боргирӣ карда шавад</string>
     <!-- Button text on the data saving mode warning dialog used by the translations feature to allow users to confirm they wish to continue and download the language file. -->
@@ -2629,13 +2761,18 @@
     <!-- Content description (not visible, for screen readers etc.): Navigate back within the debug drawer. -->
     <string name="debug_drawer_back_button_content_description">Ба қафо гузаштан</string>
 
+    <!-- Content description (not visible, for screen readers etc.): Open debug drawer. -->
+    <string name="debug_drawer_fab_content_description">Кушодани менюи таҳиякунандаи ислоҳи хатоҳо</string>
+
     <!-- Debug drawer tabs tools -->
     <!-- The title of the Tab Tools feature in the Debug Drawer. -->
     <string name="debug_drawer_tab_tools_title">Абзорҳои варақаҳо</string>
     <!-- The title of the tab count section in Tab Tools. -->
     <string name="debug_drawer_tab_tools_tab_count_title">Шумораи варақаҳо</string>
     <!-- The active tab count category in the tab count section in Tab Tools. -->
-    <string name="debug_drawer_tab_tools_tab_count_normal">Фаъол</string>
+    <string name="debug_drawer_tab_tools_tab_count_normal" moz:removedIn="127" tools:ignore="UnusedResources">Фаъол</string>
+    <!-- The active tab count category in the tab count section in Tab Tools. -->
+    <string name="debug_drawer_tab_tools_tab_count_active">Фаъол</string>
     <!-- The inactive tab count category in the tab count section in Tab Tools. -->
     <string name="debug_drawer_tab_tools_tab_count_inactive">Ғайрифаъол</string>
     <!-- The private tab count category in the tab count section in Tab Tools. -->
@@ -2657,6 +2794,8 @@
 
     <!-- The continue button label -->
     <string name="micro_survey_continue_button_label" tools:ignore="UnusedResources">Идома додан</string>
+    <!-- The survey header -->
+    <string name="micro_survey_survey_header">Ин саволномаро пур намоед</string>
     <!-- The privacy notice link -->
     <string name="micro_survey_privacy_notice">Огоҳномаи махфият</string>
     <!-- The submit button label text -->
@@ -2667,4 +2806,24 @@
     <!-- The survey completion confirmation text -->
     <string name="micro_survey_feedback_confirmation" tools:ignore="UnusedResources">Ташаккур барои изҳори назари шумо!</string>
 
-    </resources>
+    <!-- Option for likert scale -->
+    <string name="likert_scale_option_1" tools:ignore="UnusedResources">Хеле қаноатманд</string>
+    <!-- Option for likert scale -->
+    <string name="likert_scale_option_2" tools:ignore="UnusedResources">Қаноатманд</string>
+    <!-- Option for likert scale -->
+    <string name="likert_scale_option_3" tools:ignore="UnusedResources">Бетараф</string>
+    <!-- Option for likert scale -->
+    <string name="likert_scale_option_4" tools:ignore="UnusedResources">Дарғазаб</string>
+    <!-- Option for likert scale -->
+    <string name="likert_scale_option_5" tools:ignore="UnusedResources">Хеле дарғазаб</string>
+
+    <!-- Debug drawer logins -->
+    <!-- The title of the Logins feature in the Debug Drawer. -->
+    <string name="debug_drawer_logins_title">Воридшавиҳо</string>
+    <!-- The title of the logins section in the Logins feature, where the parameter will be the site domain  -->
+    <string name="debug_drawer_logins_current_domain_label">Домени ҷорӣ: %s</string>
+    <!-- The label for a button to add a new fake login for the current domain in the Logins feature. -->
+    <string name="debug_drawer_logins_add_login_button">Илова кардани воридшавии қалбакӣ барои ин домен</string>
+    <!-- Content description for delete button where parameter will be the username of the login -->
+    <string name="debug_drawer_logins_delete_login_button_content_description">Нест кардани воридшавӣ бо номи корбари «%s»</string>
+</resources>
