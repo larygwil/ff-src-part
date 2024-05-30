@@ -234,6 +234,10 @@ for (const type of [
   "UPDATE_SEARCH_SHORTCUTS",
   "UPDATE_SECTION_PREFS",
   "WALLPAPERS_SET",
+  "WALLPAPER_CLICK",
+  "WEATHER_IMPRESSION",
+  "WEATHER_LOAD_ERROR",
+  "WEATHER_OPEN_PROVIDER_URL",
   "WEATHER_UPDATE",
   "WEBEXT_CLICK",
   "WEBEXT_DISMISS",
@@ -1755,27 +1759,14 @@ const LinkMenuOptions = {
   OpenInPrivateWindow: (site, index, eventSource, isEnabled) =>
     isEnabled ? _OpenInPrivateWindow(site) : LinkMenuOptions.EmptyItem(),
   ChangeWeatherLocation: () => ({
-    // type: "empty",
     id: "newtab-weather-menu-change-location",
-    // icon: "search",
     action: actionCreators.OnlyToMain({
       type: actionTypes.CHANGE_WEATHER_LOCATION,
       data: { url: "https://mozilla.org" },
     }),
   }),
-  OpenWeatherDisplayMenu: () => ({
-    id: "newtab-weather-menu-weather-display",
-    // type: "empty",
-    // icon: "search",
-    action: actionCreators.OnlyToMain({
-      type: actionTypes.OPEN_WEATHER_DISPLAY_MENU,
-      data: { url: "https://mozilla.org" },
-    }),
-  }),
   ChangeWeatherDisplaySimple: () => ({
     id: "newtab-weather-menu-change-weather-display-simple",
-    // type: "empty",
-    // icon: "search",
     action: actionCreators.OnlyToMain({
       type: actionTypes.SET_PREF,
       data: {
@@ -1786,8 +1777,6 @@ const LinkMenuOptions = {
   }),
   ChangeWeatherDisplayDetailed: () => ({
     id: "newtab-weather-menu-change-weather-display-detailed",
-    // type: "empty",
-    // icon: "search",
     action: actionCreators.OnlyToMain({
       type: actionTypes.SET_PREF,
       data: {
@@ -1796,19 +1785,8 @@ const LinkMenuOptions = {
       },
     }),
   }),
-  OpenChangeTemperatureUnits: () => ({
-    id: "newtab-weather-menu-temperature-units",
-    // type: "empty",
-    // icon: "search",
-    action: actionCreators.OnlyToMain({
-      type: actionTypes.OPEN_CHANGE_TEMPERATURE_UNITS,
-      data: { url: "https://mozilla.org" },
-    }),
-  }),
   ChangeTempUnitFahrenheit: () => ({
     id: "newtab-weather-menu-change-temperature-units-fahrenheit",
-    // type: "empty",
-    // icon: "search",
     action: actionCreators.OnlyToMain({
       type: actionTypes.SET_PREF,
       data: {
@@ -1819,8 +1797,6 @@ const LinkMenuOptions = {
   }),
   ChangeTempUnitCelsius: () => ({
     id: "newtab-weather-menu-change-temperature-units-celsius",
-    // type: "empty",
-    // icon: "search",
     action: actionCreators.OnlyToMain({
       type: actionTypes.SET_PREF,
       data: {
@@ -1831,8 +1807,6 @@ const LinkMenuOptions = {
   }),
   HideWeather: () => ({
     id: "newtab-weather-menu-hide-weather",
-    // type: "empty",
-    // icon: "search",
     action: actionCreators.OnlyToMain({
       type: actionTypes.SET_PREF,
       data: {
@@ -1843,8 +1817,6 @@ const LinkMenuOptions = {
   }),
   OpenLearnMoreURL: site => ({
     id: "newtab-weather-menu-learn-more",
-    // type: "empty",
-    // icon: "search",
     action: actionCreators.OnlyToMain({
       type: actionTypes.OPEN_LINK,
       data: { url: site.url },
@@ -9003,6 +8975,7 @@ const DiscoveryStreamBase = (0,external_ReactRedux_namespaceObject.connect)(stat
 
 
 
+
 class _WallpapersSection extends (external_React_default()).PureComponent {
   constructor(props) {
     super(props);
@@ -9021,6 +8994,10 @@ class _WallpapersSection extends (external_React_default()).PureComponent {
     const prefs = this.props.Prefs.values;
     const colorMode = this.prefersDarkQuery?.matches ? "dark" : "light";
     this.props.setPref(`newtabWallpapers.wallpaper-${colorMode}`, id);
+    this.handleUserEvent({
+      selected_wallpaper: id,
+      hadPreviousWallpaper: !!this.props.activeWallpaper
+    });
     // bug 1892095
     if (prefs["newtabWallpapers.wallpaper-dark"] === "" && colorMode === "light") {
       this.props.setPref("newtabWallpapers.wallpaper-dark", id.replace("light", "dark"));
@@ -9032,6 +9009,18 @@ class _WallpapersSection extends (external_React_default()).PureComponent {
   handleReset() {
     const colorMode = this.prefersDarkQuery?.matches ? "dark" : "light";
     this.props.setPref(`newtabWallpapers.wallpaper-${colorMode}`, "");
+    this.handleUserEvent({
+      selected_wallpaper: "none",
+      hadPreviousWallpaper: !!this.props.activeWallpaper
+    });
+  }
+
+  // Record user interaction when changing wallpaper and reseting wallpaper to default
+  handleUserEvent(data) {
+    this.props.dispatch(actionCreators.OnlyToMain({
+      type: actionTypes.WALLPAPER_CLICK,
+      data
+    }));
   }
   render() {
     const {
@@ -9624,17 +9613,113 @@ const Search_Search = (0,external_ReactRedux_namespaceObject.connect)(state => (
 
 
 
+
+const Weather_VISIBLE = "visible";
+const Weather_VISIBILITY_CHANGE_EVENT = "visibilitychange";
 class _Weather extends (external_React_default()).PureComponent {
   constructor(props) {
     super(props);
     this.state = {
       contextMenuKeyboard: false,
       showContextMenu: false,
-      url: "https://example.com"
+      url: "https://example.com",
+      impressionSeen: false,
+      errorSeen: false
+    };
+    this.setImpressionRef = element => {
+      this.impressionElement = element;
+    };
+    this.setErrorRef = element => {
+      this.errorElement = element;
     };
     this.onClick = this.onClick.bind(this);
     this.onKeyDown = this.onKeyDown.bind(this);
     this.onUpdate = this.onUpdate.bind(this);
+    this.onProviderClick = this.onProviderClick.bind(this);
+  }
+  componentDidMount() {
+    const {
+      props
+    } = this;
+    if (!props.dispatch) {
+      return;
+    }
+    if (props.document.visibilityState === Weather_VISIBLE) {
+      // Setup the impression observer once the page is visible.
+      this.setImpressionObservers();
+    } else {
+      // We should only ever send the latest impression stats ping, so remove any
+      // older listeners.
+      if (this._onVisibilityChange) {
+        props.document.removeEventListener(Weather_VISIBILITY_CHANGE_EVENT, this._onVisibilityChange);
+      }
+      this._onVisibilityChange = () => {
+        if (props.document.visibilityState === Weather_VISIBLE) {
+          // Setup the impression observer once the page is visible.
+          this.setImpressionObservers();
+          props.document.removeEventListener(Weather_VISIBILITY_CHANGE_EVENT, this._onVisibilityChange);
+        }
+      };
+      props.document.addEventListener(Weather_VISIBILITY_CHANGE_EVENT, this._onVisibilityChange);
+    }
+  }
+  componentWillUnmount() {
+    // Remove observers on unmount
+    if (this.observer && this.impressionElement) {
+      this.observer.unobserve(this.impressionElement);
+    }
+    if (this.observer && this.errorElement) {
+      this.observer.unobserve(this.errorElement);
+    }
+    if (this._onVisibilityChange) {
+      this.props.document.removeEventListener(Weather_VISIBILITY_CHANGE_EVENT, this._onVisibilityChange);
+    }
+  }
+  setImpressionObservers() {
+    if (this.impressionElement) {
+      this.observer = new IntersectionObserver(this.onImpression.bind(this));
+      this.observer.observe(this.impressionElement);
+    }
+    if (this.errorElement) {
+      this.observer = new IntersectionObserver(this.onError.bind(this));
+      this.observer.observe(this.errorElement);
+    }
+  }
+  onImpression(entries) {
+    if (this.state) {
+      const entry = entries.find(e => e.isIntersecting);
+      if (entry) {
+        if (this.impressionElement) {
+          this.observer.unobserve(this.impressionElement);
+        }
+        this.props.dispatch(actionCreators.OnlyToMain({
+          type: actionTypes.WEATHER_IMPRESSION
+        }));
+
+        // Stop observing since element has been seen
+        this.setState({
+          impressionSeen: true
+        });
+      }
+    }
+  }
+  onError(entries) {
+    if (this.state) {
+      const entry = entries.find(e => e.isIntersecting);
+      if (entry) {
+        if (this.errorElement) {
+          this.observer.unobserve(this.errorElement);
+        }
+        this.props.dispatch(actionCreators.OnlyToMain({
+          type: actionTypes.WEATHER_LOAD_ERROR
+        }));
+
+        // Stop observing since element has been seen
+        this.setState({
+          errorSeen: true
+        });
+      }
+    }
   }
   openContextMenu(isKeyBoard) {
     if (this.props.onUpdate) {
@@ -9662,6 +9747,14 @@ class _Weather extends (external_React_default()).PureComponent {
     this.setState({
       showContextMenu
     });
+  }
+  onProviderClick() {
+    this.props.dispatch(actionCreators.OnlyToMain({
+      type: actionTypes.WEATHER_OPEN_PROVIDER_URL,
+      data: {
+        source: "WEATHER"
+      }
+    }));
   }
   render() {
     // Check if weather should be rendered
@@ -9693,6 +9786,7 @@ class _Weather extends (external_React_default()).PureComponent {
     // Only return the widget if we have data. Otherwise, show error state
     if (WEATHER_SUGGESTION) {
       return /*#__PURE__*/external_React_default().createElement("div", {
+        ref: this.setImpressionRef,
         className: outerClassName
       }, /*#__PURE__*/external_React_default().createElement("div", {
         className: "weatherCard"
@@ -9700,7 +9794,8 @@ class _Weather extends (external_React_default()).PureComponent {
         "data-l10n-id": "newtab-weather-see-forecast",
         "data-l10n-args": "{\"provider\": \"AccuWeather\"}",
         href: WEATHER_SUGGESTION.forecast.url,
-        className: "weatherInfoLink"
+        className: "weatherInfoLink",
+        onClick: this.onProviderClick
       }, /*#__PURE__*/external_React_default().createElement("div", {
         className: "weatherIconCol"
       }, /*#__PURE__*/external_React_default().createElement("span", {
@@ -9747,6 +9842,7 @@ class _Weather extends (external_React_default()).PureComponent {
       }));
     }
     return /*#__PURE__*/external_React_default().createElement("div", {
+      ref: this.setErrorRef,
       className: outerClassName
     }, /*#__PURE__*/external_React_default().createElement("div", {
       className: "weatherNotAvailable"
@@ -9759,7 +9855,9 @@ class _Weather extends (external_React_default()).PureComponent {
 }
 const Weather_Weather = (0,external_ReactRedux_namespaceObject.connect)(state => ({
   Weather: state.Weather,
-  Prefs: state.Prefs
+  Prefs: state.Prefs,
+  IntersectionObserver: globalThis.IntersectionObserver,
+  document: globalThis.document
 }))(_Weather);
 ;// CONCATENATED MODULE: ./content-src/components/Base/Base.jsx
 function Base_extends() { Base_extends = Object.assign ? Object.assign.bind() : function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return Base_extends.apply(this, arguments); }
