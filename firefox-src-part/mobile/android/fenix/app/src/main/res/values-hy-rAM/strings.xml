@@ -588,7 +588,9 @@
     <!-- Preference category for account information -->
     <string name="preferences_category_account">Հաշիվ</string>
     <!-- Preference for changing where the toolbar is positioned -->
-    <string name="preferences_toolbar">Գործիքագոտի</string>
+    <string name="preferences_toolbar" moz:removedIn="129" tools:ignore="UnusedResources">Գործիքագոտի</string>
+    <!-- Preference for changing where the AddressBar is positioned -->
+    <string name="preferences_toolbar_2">Հասցեի գոտու տեղադրություն</string>
     <!-- Preference for changing default theme to dark or light mode -->
     <string name="preferences_theme">Ոճ</string>
     <!-- Preference for customizing the home screen -->
@@ -895,9 +897,14 @@
     <!-- Preference for using the dynamic toolbar -->
     <string name="preference_gestures_dynamic_toolbar">Ոլորել՝ գործիքագոտիի թաքցնման համար</string>
     <!-- Preference for switching tabs by swiping horizontally on the toolbar -->
-    <string name="preference_gestures_swipe_toolbar_switch_tabs">Սահարկեք գործիքագոտին կողքից՝ ներդիրների փոխարկման համար</string>
+    <string name="preference_gestures_swipe_toolbar_switch_tabs" moz:removedIn="129" tools:ignore="UnusedResources">Սահարկեք գործիքագոտին կողքից՝ ներդիրների փոխարկման համար</string>
     <!-- Preference for showing the opened tabs by swiping up on the toolbar-->
     <string name="preference_gestures_swipe_toolbar_show_tabs">Սահարկել գործիքագոտին վերև՝ ներդիրների բացման համար</string>
+
+    <!-- Preference for using the dynamic toolbars -->
+    <string name="preference_gestures_dynamic_toolbar_2">Ոլորեք՝ հասցեագոտին ու գործիքագոտին թաքցնելու համար</string>
+    <!-- Preference for switching tabs by swiping horizontally on the addressbar -->
+    <string name="preference_gestures_swipe_toolbar_switch_tabs_2">Սահարկեք գործիքագոտին կողքից՝ ներդիրներին անցնելու համար</string>
 
     <!-- Library -->
     <!-- Option in Library to open Downloads page -->
@@ -2591,6 +2598,15 @@
     <!-- Content description (not visible, for screen readers etc.): For a language list item that is selected. -->
     <string name="download_languages_item_content_description_selected_state" moz:removedIn="127" tools:ignore="UnusedResources">Ընտրված</string>
 
+    <!-- The title of the warning card informs the user that an error has occurred when fetching the list of languages. -->
+    <string name="download_languages_fetch_error_warning_text">Չստացվեց բեռնել լեզուները։ Խնդրում ենք կրկին ստուգել՝ ավելի ուշ։</string>
+    <!-- The title of the warning card informs the user that an error has occurred at downloading a language.
+      The first parameter is the language name, for example, "Spanish". -->
+    <string name="download_languages_error_warning_text"><![CDATA[Չհաջողվեց ներբեռնել <b>%1$s</b>-ը: Խնդրում եմ կրկին փորձեք։]]></string>
+    <!-- The title of the warning card informs the user that an error has occurred at deleting a language.
+          The first parameter is the language name, for example, "Spanish". -->
+    <string name="download_languages_delete_error_warning_text"><![CDATA[Չհաջողվեց ջնջել <b>%1$s</b>-ը: Խնդրում եմ կրկին փորձեք։]]></string>
+
     <!-- Title for the dialog used by the translations feature to confirm deleting a language.
     The dialog will be presented when the user requests deletion of a language.
     The first parameter is the name of the language, for example, "Spanish" and the second parameter is the size in kilobytes or megabytes of the language file. -->
@@ -2616,7 +2632,7 @@
     <!-- Additional information for the data saving mode warning dialog used by the translations feature. This text explains the reason a download is required for a translation. -->
     <string name="download_language_file_dialog_message_all_languages">Մենք ներբեռնում ենք մասնակի լեզուներ Ձեր շտեմում՝ թարգմանությունները գաղտնի պահելու համար:</string>
     <!-- Additional information for the data saving mode warning dialog used by the translations feature. This text explains the reason a download is required for a translation without mentioning the cache. -->
-    <string name="download_language_file_dialog_message_all_languages_no_cache">Մենք ներբեռնում ենք մասնակի լեզուներ՝ թարգմանությունները գաղտնի պահելու համար:</string>
+    <string name="download_language_file_dialog_message_all_languages_no_cache" moz:removedIn="129" tools:ignore="UnusedResources">Մենք ներբեռնում ենք մասնակի լեզուներ՝ թարգմանությունները գաղտնի պահելու համար:</string>
     <!-- Checkbox label text on the data saving mode warning dialog used by the translations feature. This checkbox allows users to ignore the data usage warnings. -->
     <string name="download_language_file_dialog_checkbox_text">Միշտ ներբեռնել տվյալների պահպանման կերպում</string>
     <!-- Button text on the data saving mode warning dialog used by the translations feature to allow users to confirm they wish to continue and download the language file. -->
