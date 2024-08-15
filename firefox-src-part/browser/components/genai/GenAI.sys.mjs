@@ -13,8 +13,6 @@ ChromeUtils.defineESModuleGetters(lazy, {
   ExperimentAPI: "resource://nimbus/ExperimentAPI.sys.mjs",
   NimbusFeatures: "resource://nimbus/ExperimentAPI.sys.mjs",
   PrefUtils: "resource://normandy/lib/PrefUtils.sys.mjs",
-  clearTimeout: "resource://gre/modules/Timer.sys.mjs",
-  setTimeout: "resource://gre/modules/Timer.sys.mjs",
 });
 ChromeUtils.defineLazyGetter(
   lazy,
@@ -91,17 +89,14 @@ XPCOMUtils.defineLazyPreferenceGetter(
 );
 XPCOMUtils.defineLazyPreferenceGetter(
   lazy,
-  "chatShortcutsDebounce",
-  "browser.ml.chat.shortcutsDebounce",
-  200
-);
-XPCOMUtils.defineLazyPreferenceGetter(
-  lazy,
   "chatSidebar",
   "browser.ml.chat.sidebar"
 );
 
 export const GenAI = {
+  // Cache of potentially localized prompt
+  chatPromptPrefix: "",
+
   // Any chat provider can be used and those that match the URLs in this object
   // will allow for additional UI shown such as populating dropdown with a name,
   // showing links, and other special behaviors needed for individual providers.
@@ -329,7 +324,7 @@ export const GenAI = {
       case "GenAI:HideShortcuts":
         hide();
         break;
-      case "GenAI:SelectionChange":
+      case "GenAI:ShowShortcuts": {
         // Add shortcuts to the current tab's brower stack if it doesn't exist
         if (!shortcuts) {
           shortcuts = stack.appendChild(document.createElement("div"));
@@ -392,36 +387,30 @@ export const GenAI = {
           });
         }
 
-        // Immediately hide shortcuts and debounce multiple selection changes
-        hide();
-        if (shortcuts.timeout) {
-          lazy.clearTimeout(shortcuts.timeout);
-        }
-        // Save the latest selection so it can be used by timeout and popup
+        // Save the latest selection so it can be used by popup
         shortcuts.selection = data.selection;
-        shortcuts.timeout = lazy.setTimeout(() => {
-          // Pref might have changed since the timeout started
-          if (!lazy.chatShortcuts || shortcuts.hasAttribute("shown")) {
-            return;
-          }
+        if (shortcuts.hasAttribute("shown")) {
+          return;
+        }
 
-          shortcuts.toggleAttribute("shown");
-          Glean.genaiChatbot.shortcutsDisplayed.record({
-            selection: shortcuts.selection.length,
-          });
+        shortcuts.toggleAttribute("shown");
+        Glean.genaiChatbot.shortcutsDisplayed.record({
+          delay: data.delay,
+          selection: data.selection.length,
+        });
 
-          // Position the shortcuts relative to the browser's top-left corner
-          const rect = browser.getBoundingClientRect();
-          shortcuts.style.setProperty(
-            "--shortcuts-x",
-            data.x - window.screenX - rect.x + "px"
-          );
-          shortcuts.style.setProperty(
-            "--shortcuts-y",
-            data.y - window.screenY - rect.y + "px"
-          );
-        }, lazy.chatShortcutsDebounce);
+        // Position the shortcuts relative to the browser's top-left corner
+        const rect = browser.getBoundingClientRect();
+        shortcuts.style.setProperty(
+          "--shortcuts-x",
+          data.x - window.screenX - rect.x + "px"
+        );
+        shortcuts.style.setProperty(
+          "--shortcuts-y",
+          data.y - window.screenY - rect.y + "px"
+        );
         break;
+      }
     }
   },
 
@@ -501,6 +490,36 @@ export const GenAI = {
   },
 
   /**
+   * Updates chat prompt prefix.
+   */
+  async prepareChatPromptPrefix() {
+    if (
+      !this.chatPromptPrefix ||
+      this.chatLastPrefix != lazy.chatPromptPrefix
+    ) {
+      try {
+        // Check json for localized prefix
+        const prefixObj = JSON.parse(lazy.chatPromptPrefix);
+        this.chatPromptPrefix = (
+          await lazy.l10n.formatMessages([
+            {
+              id: prefixObj.l10nId,
+              args: { tabTitle: "%tabTitle%", selection: "%selection|12000%" },
+            },
+          ])
+        )[0].value;
+      } catch (ex) {
+        // Treat as plain text prefix
+        this.chatPromptPrefix = lazy.chatPromptPrefix;
+      }
+      if (this.chatPromptPrefix) {
+        this.chatPromptPrefix += "\n\n";
+      }
+      this.chatLastPrefix = lazy.chatPromptPrefix;
+    }
+  },
+
+  /**
    * Build a prompt with context.
    *
    * @param {MozMenuItem} item Use value falling back to label
@@ -510,7 +529,7 @@ export const GenAI = {
   buildChatPrompt(item, context = {}) {
     // Combine prompt prefix with the item then replace placeholders from the
     // original prompt (and not from context)
-    return (lazy.chatPromptPrefix + (item.value || item.label)).replace(
+    return (this.chatPromptPrefix + (item.value || item.label)).replace(
       // Handle %placeholder% as key|options
       /\%(\w+)(?:\|([^%]+))?\%/g,
       (placeholder, key, options) =>
@@ -537,6 +556,7 @@ export const GenAI = {
       selection: context.selection?.length ?? 0,
     });
 
+    await this.prepareChatPromptPrefix();
     const prompt = this.buildChatPrompt(promptObj, context);
 
     // Pass the prompt via GET url ?q= param or request header
