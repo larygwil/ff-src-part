@@ -306,7 +306,7 @@
     <string name="preference_privacy_should_block_cookies_third_party_only_option">Bloquear somente cookies de terceiros</string>
 
     <string name="preference_privacy_should_block_cookies_cross_site_option">Bloquear cookies entre sites</string>
-    <string name="preference_privacy_should_block_cookies_yes_option2">Sim, por favor</string>
+    <string name="preference_privacy_should_block_cookies_yes_option2">Sim</string>
 
     <!-- Preference Title: Biometrics can be used to unlock Focus if the previous session's data was not erased by the user. -->
     <string name="preference_security_biometric">Usar impressão digital para desbloquear o aplicativo</string>
@@ -608,6 +608,9 @@
 
     <!-- Label for a button in the "tabs tray" to erase the browsing history (closes all tabs and removes associated data). -->
     <string name="tabs_tray_action_erase">Limpar o histórico de navegação</string>
+
+    <!-- Label for the option in the Focus "tabs tray" to clos the other tabs except the current tab. -->
+    <string name="tabs_tray_action_erase_other">Fechar as outras abas</string>
 
     <!-- If the user decides to open the current page in another browser and if Firefox is not installed then we show this
       item in the list of browsers. Clicking it will open the app store installed on the device (usually that's Google Play). -->
