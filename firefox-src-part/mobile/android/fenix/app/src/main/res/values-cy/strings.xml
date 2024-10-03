@@ -96,9 +96,9 @@
 
     <!-- Total cookie protection "contextual feature recommendation" (CFR) -->
     <!-- Text for the message displayed in the contextual feature recommendation popup promoting the total cookie protection feature. -->
-    <string name="tcp_cfr_message">Mae ein nodwedd preifatrwydd mwyaf pwerus eto yn ynysu tracwyr traws-wefan.</string>
+    <string name="tcp_cfr_message" moz:removedIn="132" tools:ignore="UnusedResources">Mae ein nodwedd preifatrwydd mwyaf pwerus eto yn ynysu tracwyr traws-wefan.</string>
     <!-- Text displayed that links to website containing documentation about the "Total cookie protection" feature. -->
-    <string name="tcp_cfr_learn_more">Dysgwch am Ddiogelwch Cyflawn Cwcis</string>
+    <string name="tcp_cfr_learn_more" moz:removedIn="132" tools:ignore="UnusedResources">Dysgwch am Ddiogelwch Cyflawn Cwcis</string>
 
     <!-- Private browsing erase action "contextual feature recommendation" (CFR) -->
     <!-- Text for the message displayed in the contextual feature recommendation popup promoting the erase private browsing feature. -->
@@ -119,9 +119,9 @@
 
     <!-- Tablet navigation bar "contextual feature recommendation" (CFR) -->
     <!-- Text for the title displayed in the contextual feature recommendation popup promoting the tablet navigation bar. -->
-    <string name="tablet_nav_bar_cfr_title">Newydd: saethau un tap nôl ac ymlaen</string>
+    <string name="tablet_nav_bar_cfr_title" moz:removedIn="132" tools:ignore="UnusedResources">Newydd: saethau un tap nôl ac ymlaen</string>
     <!-- Text for the message displayed in the contextual feature recommendation popup promoting the tablet navigation bar. -->
-    <string name="tablet_nav_bar_cfr_message">Mwynhewch lywio cyflymach sydd bob amser ar flaenau eich bysedd.</string>
+    <string name="tablet_nav_bar_cfr_message" moz:removedIn="132" tools:ignore="UnusedResources">Mwynhewch lywio cyflymach sydd bob amser ar flaenau eich bysedd.</string>
 
     <!-- Text for the info dialog when camera permissions have been denied but user tries to access a camera feature. -->
     <string name="camera_permissions_needed_message">Mae angen mynediad i’r camera. Ewch i osodiadau Android, tapiwch Permissions, a thapio Allow.</string>
@@ -214,6 +214,13 @@
     <string name="browser_menu_extensions_banner_learn_more">Dysgu rhagor</string>
     <!-- Browser menu button that opens the extensions manager -->
     <string name="browser_menu_manage_extensions">Rheoli estyniadau</string>
+    <!-- Content description (not visible, for screen readers etc.): Section heading for recommended extensions.-->
+    <string name="browser_menu_recommended_section_content_description">Estyniadau cymeradwy</string>
+    <!-- Content description (not visible, for screen readers etc.): Label for plus icon used to add extension.
+      The first parameter is the name of the extension (for example: ClearURLs). -->
+    <string name="browser_menu_extension_plus_icon_content_description_2">Ychwanegu %1$s</string>
+    <!-- Content description (not visible, for screen readers etc.): Label for plus icon used to add extensions. -->
+    <string name="browser_menu_extension_plus_icon_content_description" moz:removedIn="124" tools:ignore="UnusedResources">Ychwanegu estyniad</string>
     <!-- Browser menu button that opens AMO in a tab -->
     <string name="browser_menu_discover_more_extensions">Darganfod rhagor o estyniadau</string>
     <!-- Browser menu description that is shown when one or more extensions are disabled due to extension errors -->
@@ -306,7 +313,7 @@
     <string name="browser_menu_switch_to_mobile_site">Newid i wefan symudol</string>
     <!-- Browser menu label that navigates to the page tools sub-menu -->
     <string name="browser_menu_tools">Offer</string>
-    <!-- Content description (not visible, for screen readers etc.): Back button for the page tools sub-menu -->
+    <!-- Content description (not visible, for screen readers etc.): Back button for all menu redesign sub-menu -->
     <string name="browser_menu_back_button_content_description">Nôl i\'r brif ddewislen</string>
     <!-- Browser menu description that describes the various tools related menu items inside of the tools sub-menu -->
     <string name="browser_menu_tools_description_with_translate">Golwg Darllenydd, Cyfieithu, Argraffu, Rhannu, Agor ap</string>
@@ -405,7 +412,7 @@
 
     <!-- Home onboarding -->
     <!-- Onboarding home screen popup dialog, shown on top of the Jump back in section. -->
-    <string name="onboarding_home_screen_jump_back_contextual_hint_2">Dyma’ch gwefan cartref personol. Bydd tabiau diweddar, nodau tudalen, a chanlyniadau chwilio yn ymddangos yma.</string>
+    <string name="onboarding_home_screen_jump_back_contextual_hint_2" moz:removedIn="132">Dyma’ch gwefan cartref personol. Bydd tabiau diweddar, nodau tudalen, a chanlyniadau chwilio yn ymddangos yma.</string>
     <!-- Home onboarding dialog welcome screen title text. -->
     <string name="onboarding_home_welcome_title_2">Croeso i rhyngrwyd mwy personol</string>
     <!-- Home onboarding dialog welcome screen description text. -->
@@ -899,6 +906,10 @@
     <string name="preferences_marketing_data">Data marchnata</string>
     <!-- Preference description for marketing data collection -->
     <string name="preferences_marketing_data_description2">Yn rhannu data defnydd sylfaenol gydag Adjust, ein gwerthwr marchnata symudol</string>
+    <!-- Preference switch title for automatically submitting crash reports -->
+    <string name="preferences_automatically_submit_crashes_title">Cyflwynwch adroddiadau chwalu\'n awtomatig</string>
+    <!-- Preference switch description for automatically submitting crash reports -->
+    <string name="preferences_automatically_submit_crashes_description">Wrth gychwyn mae\'n rhannu data chwalu yn awtomatig gyda Mozilla ar ôl chwaliadau</string>
     <!-- Title for studies preferences -->
     <string name="preference_experiments_2">Astudiaethau</string>
     <!-- Summary for studies preferences -->
@@ -1194,6 +1205,15 @@
     <!-- Restore tab button text on the tab crash page -->
     <string name="tab_crash_restore">Adfer tab</string>
 
+    <!-- Unsubmitted crash dialog title, The first parameter is the name of the app (e.g. Firefox)  -->
+    <string name="unsubmitted_crash_dialog_title">Roedd yn rhaid i %s ailgychwyn</string>
+    <!-- Unsubmitted crash dialog checkbox label for automatically sending reports in the future -->
+    <string name="unsubmitted_crash_dialog_checkbox_label">Anfonwch adroddiadau damwain yn awtomatig</string>
+    <!-- Unsubmitted crash dialog negative button to dismiss the dialog -->
+    <string name="unsubmitted_crash_dialog_negative_button">Cau</string>
+    <!-- Unsubmitted crash dialog positive button to submit crash report -->
+    <string name="unsubmitted_crash_dialog_positive_button">Anfonwch adroddiad chwalu</string>
+
     <!-- Bookmarks -->
     <!-- Confirmation message for a dialog confirming if the user wants to delete the selected folder -->
     <string name="bookmark_delete_folder_confirmation_dialog">Ydych chi’n siŵr eich bod am ddileu’r ffolder yma?</string>
@@ -1275,11 +1295,22 @@
     <!-- Content description for the bookmark list new folder navigation bar button -->
     <string name="bookmark_add_new_folder_button_content_description">Ychwanegu ffolder newydd</string>
     <!-- Content description for the bookmark navigation bar close button -->
-    <string name="bookmark_close_button_content_description">Cau nodau tudalen</string>
+    <string name="bookmark_close_button_content_description" tools:ignore="UnusedResources" moz:removedIn="130">Cau nodau tudalen</string>
     <!-- Content description for bookmark search floating action button -->
     <string name="bookmark_search_button_content_description">Chwilio’r nodau tudalen</string>
     <!-- Content description for the overflow menu for a bookmark item. Paramter will a folder name or bookmark title. -->
     <string name="bookmark_item_menu_button_content_description">Dewislen Eitem %s</string>
+
+    <!-- Title for the bookmark list empty state-->
+    <string name="bookmark_empty_list_title">Dim nodau tudalen eto</string>
+    <!-- Description for the bookmark list empty state when you're not signed into sync. -->
+    <string name="bookmark_empty_list_guest_description">Cadwch wefannau wrth i chi bori. Mewngofnodwch i gipio nodau tudalen o ddyfeisiau eraill sydd wedi\'u cydweddu.</string>
+    <!-- Text for the button to navigate to sync authentication -->
+    <string name="bookmark_empty_list_guest_cta">Mewngofnodwch i gydweddu</string>
+    <!-- Description for the bookmark list empty state when you're signed into sync. -->
+    <string name="bookmark_empty_list_authenticated_description">Cadwch wefannau wrth i chi bori. Byddwn hefyd yn cipio nodau tudalen o ddyfeisiau  eraill sydd wedi\'u cydweddu.</string>
+    <!-- Description for the bookmark list empty state when you're in an empty folder. -->
+    <string name="bookmark_empty_list_folder_description">Ychwanegwch nodau tudalen wrth i chi bori fel y gallwch ddod o hyd i\'ch hoff wefannau yn nes ymlaen.</string>
 
     <!-- Site Permissions -->
     <!-- Button label that take the user to the Android App setting -->
@@ -2449,13 +2480,13 @@
     <!-- Text for opt-out button from the review quality check contextual onboarding card. -->
     <string name="review_quality_check_contextual_onboarding_secondary_button_text">Nid nawr</string>
     <!-- Text for the first CFR presenting the review quality check feature. -->
-    <string name="review_quality_check_first_cfr_message">Darganfyddwch a allwch ymddiried yn adolygiadau’r cynnyrch hwn - cyn i chi brynu.</string>
+    <string name="review_quality_check_first_cfr_message" moz:removedIn="132" tools:ignore="UnusedResources">Darganfyddwch a allwch ymddiried yn adolygiadau’r cynnyrch hwn - cyn i chi brynu.</string>
     <!-- Text displayed in the first CFR presenting the review quality check feature that opens the review checker when clicked. -->
-    <string name="review_quality_check_first_cfr_action" tools:ignore="UnusedResources">Rhowch gynnig ar y gwirydd adolygiadau</string>
+    <string name="review_quality_check_first_cfr_action" moz:removedIn="132" tools:ignore="UnusedResources">Rhowch gynnig ar y gwirydd adolygiadau</string>
     <!-- Text for the second CFR presenting the review quality check feature. -->
-    <string name="review_quality_check_second_cfr_message">A yw’r adolygiadau hyn yn ddibynadwy? Gwiriwch nawr i weld sgôr wedi’i addasu.</string>
+    <string name="review_quality_check_second_cfr_message" moz:removedIn="132" tools:ignore="UnusedResources">A yw’r adolygiadau hyn yn ddibynadwy? Gwiriwch nawr i weld sgôr wedi’i addasu.</string>
     <!-- Text displayed in the second CFR presenting the review quality check feature that opens the review checker when clicked. -->
-    <string name="review_quality_check_second_cfr_action" tools:ignore="UnusedResources">Agor y gwirydd adolygiadau</string>
+    <string name="review_quality_check_second_cfr_action" moz:removedIn="132" tools:ignore="UnusedResources">Agor y gwirydd adolygiadau</string>
     <!-- Flag showing that the review quality check feature is work in progress. -->
     <string name="review_quality_check_beta_flag" moz:removedIn="130" tools:ignore="UnusedResources">Beta</string>
     <!-- Content description (not visible, for screen readers etc.) for opening browser menu button to open review quality check bottom sheet. -->
@@ -2806,16 +2837,24 @@
     <string name="likert_scale_option_6" tools:ignore="UnusedResources">Dydw i ddim yn ei ddefnyddio</string>
     <!-- Option for likert scale. Note: The word "Firefox" should NOT be translated. -->
     <string name="likert_scale_option_7" tools:ignore="BrandUsage,UnusedResources">Dydw i ddim yn defnyddio chwilio ar Firefox</string>
+    <!-- Option for likert scale -->
+    <string name="likert_scale_option_8" tools:ignore="UnusedResources">Dw i ddim yn defnyddio cydweddu</string>
     <!-- Text shown in prompt for homepage microsurvey. Note: The word "Firefox" should NOT be translated. -->
     <string name="microsurvey_prompt_homepage_title" tools:ignore="BrandUsage,UnusedResources" moz:removedIn="130">Pa mor fodlon ydych chi gyda\'ch cartref Firefox?</string>
     <!-- Text shown in prompt for printing microsurvey. "sec" It's an abbreviation for "second". Note: The word "Firefox" should NOT be translated. -->
     <string name="microsurvey_prompt_printing_title" tools:ignore="BrandUsage,UnusedResources">Helpwch i wella argraffu yn Firefox. Dim ond eiliad mae\'n ei gymryd</string>
+    <!-- Text shown in prompt for search microsurvey. Note: The word "Firefox" should NOT be translated. -->
+    <string name="microsurvey_prompt_search_title" tools:ignore="BrandUsage,UnusedResources">Helpwch i wella chwilio yn Firefox. Dim ond munud mae\'n ei gymryd</string>
+    <!-- Text shown in prompt for sync microsurvey. Note: The word "Firefox" should NOT be translated. -->
+    <string name="microsurvey_prompt_sync_title" tools:ignore="BrandUsage,UnusedResources">Helpwch i wella cydweddu yn Firefox. Dim ond munud mae\'n ei gymryd</string>
     <!-- Text shown in the survey title for printing microsurvey. Note: The word "Firefox" should NOT be translated. -->
     <string name="microsurvey_survey_printing_title" tools:ignore="BrandUsage,UnusedResources">Pa mor fodlon ydych chi gydag argraffu yn Firefox?</string>
     <!-- Text shown in the survey title for homepage microsurvey. Note: The word "Firefox" should NOT be translated. -->
     <string name="microsurvey_homepage_title" tools:ignore="BrandUsage,UnusedResources">Pa mor fodlon ydych chi gyda\'ch tudalen cartref Firefox?</string>
     <!-- Text shown in the survey title for search experience microsurvey. Note: The word "Firefox" should NOT be translated. -->
     <string name="microsurvey_search_title" tools:ignore="BrandUsage,UnusedResources">Pa mor fodlon ydych chi gyda\'r profiad chwilio yn Firefox?</string>
+    <!-- Text shown in the survey title for sync experience microsurvey. Note: The word "Firefox" should NOT be translated. -->
+    <string name="microsurvey_sync_title" tools:ignore="BrandUsage,UnusedResources">Pa mor fodlon ydych chi gyda\'r profiad cydweddu yn Firefox?</string>
     <!-- Accessibility -->
     <!-- Content description for the survey application icon. Note: The word "Firefox" should NOT be translated.  -->
     <string name="microsurvey_app_icon_content_description" tools:ignore="BrandUsage">Logo Firefox</string>
@@ -2843,6 +2882,10 @@
     <string name="debug_drawer_cfr_tools_title">Offer CFR</string>
     <!-- The title of the reset CFR section in CFR Tools -->
     <string name="debug_drawer_cfr_tools_reset_cfr_title">Ailosod CFRs</string>
+
+    <!-- Glean debug tools -->
+    <!-- The title of the glean debugging feature -->
+    <string name="glean_debug_tools_title">Offer Dadfygio Glanhau</string>
 
     <!-- Messages explaining how to exit fullscreen mode -->
     <!-- Message shown to explain how to exit fullscreen mode when gesture navigation is enabled -->
