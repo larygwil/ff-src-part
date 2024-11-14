@@ -13,6 +13,7 @@ ChromeUtils.defineESModuleGetters(lazy, {
   BrowserSearchTelemetry: "resource:///modules/BrowserSearchTelemetry.sys.mjs",
   BrowserUIUtils: "resource:///modules/BrowserUIUtils.sys.mjs",
   BrowserUtils: "resource://gre/modules/BrowserUtils.sys.mjs",
+  CustomizableUI: "resource:///modules/CustomizableUI.sys.mjs",
   ExtensionSearchHandler:
     "resource://gre/modules/ExtensionSearchHandler.sys.mjs",
   ObjectUtils: "resource://gre/modules/ObjectUtils.sys.mjs",
@@ -80,6 +81,8 @@ let px = number => number.toFixed(2) + "px";
  * Implements the text input part of the address bar UI.
  */
 export class UrlbarInput {
+  #allowBreakout = false;
+
   /**
    * @param {object} options
    *   The initial options for UrlbarInput.
@@ -198,7 +201,6 @@ export class UrlbarInput {
       "#urlbar-search-mode-indicator-close"
     );
     this._searchModeLabel = this.querySelector("#urlbar-label-search-mode");
-    this._toolbar = this.textbox.closest("toolbar");
 
     ChromeUtils.defineLazyGetter(this, "valueFormatter", () => {
       return new lazy.UrlbarValueFormatter(this);
@@ -264,18 +266,23 @@ export class UrlbarInput {
     // recording abandonment events when the command causes a blur event.
     this.view.panel.addEventListener("command", this, true);
 
+    lazy.CustomizableUI.addListener(this);
+    this.window.addEventListener("unload", this);
+
     this.window.gBrowser.tabContainer.addEventListener("TabSelect", this);
 
     this.window.addEventListener("customizationstarting", this);
     this.window.addEventListener("aftercustomization", this);
-
+    this.window.addEventListener("toolbarvisibilitychange", this);
     const menubar = this.window.document.getElementById("toolbar-menubar");
     if (menubar) {
       menubar.addEventListener("DOMMenuBarInactive", this);
       menubar.addEventListener("DOMMenuBarActive", this);
     }
 
-    if (this._toolbar) {
+    // Expanding requires a parent toolbar, and us not being read-only.
+    this.#allowBreakout = !!this.textbox.closest("toolbar");
+    if (this.#allowBreakout) {
       // TODO(emilio): This could use CSS anchor positioning rather than this
       // ResizeObserver, eventually.
       let observer = new this.window.ResizeObserver(([entry]) => {
@@ -2104,8 +2111,7 @@ export class UrlbarInput {
   }
 
   async updateLayoutBreakout() {
-    if (!this._toolbar) {
-      // Expanding requires a parent toolbar.
+    if (!this.#allowBreakout) {
       return;
     }
     if (this.document.fullscreenElement) {
@@ -2120,7 +2126,7 @@ export class UrlbarInput {
       );
       return;
     }
-    await this._updateLayoutBreakoutDimensions();
+    await this.#updateLayoutBreakoutDimensions();
   }
 
   startLayoutExtend() {
@@ -2148,8 +2154,6 @@ export class UrlbarInput {
 
     this.setAttribute("breakout-extend", "true");
 
-    this.textbox.showPopover();
-
     // Enable the animation only after the first extend call to ensure it
     // doesn't run when opening a new window.
     if (!this.hasAttribute("breakout-extend-animate")) {
@@ -2162,7 +2166,6 @@ export class UrlbarInput {
   }
 
   endLayoutExtend() {
-    this.#updateTextboxPosition();
     // If reduce motion is enabled, we want to collapse the Urlbar here so the
     // user sees only sees two states: not expanded, and expanded with the view
     // open.
@@ -2171,6 +2174,7 @@ export class UrlbarInput {
     }
 
     this.removeAttribute("breakout-extend");
+    this.#updateTextboxPosition();
   }
 
   /**
@@ -2388,17 +2392,22 @@ export class UrlbarInput {
   }
 
   #updateTextboxPosition() {
-    if (this.view.isOpen) {
-      // We need to adjust the position of the textbox by measuring its container
-      this.textbox.style.top = px(
-        getBoundsWithoutFlushing(this.textbox.parentNode).top
-      );
-    } else {
+    if (!this.view.isOpen) {
       this.textbox.style.top = "";
+      return;
     }
+    this.textbox.style.top = px(
+      this.textbox.parentNode.getBoxQuads({
+        ignoreTransforms: true,
+        flush: false,
+      })[0].p1.y
+    );
   }
 
   #updateTextboxPositionNextFrame() {
+    if (!this.hasAttribute("breakout")) {
+      return;
+    }
     // Allow for any layout changes to take place (e.g. when the menubar becomes
     // inactive) before re-measuring to position the textbox
     this.window.requestAnimationFrame(() => {
@@ -2408,20 +2417,25 @@ export class UrlbarInput {
     });
   }
 
-  async _updateLayoutBreakoutDimensions() {
-    // When this method gets called a second time before the first call
-    // finishes, we need to disregard the first one.
-    let updateKey = {};
-    this._layoutBreakoutUpdateKey = updateKey;
-
+  #stopBreakout() {
     this.removeAttribute("breakout");
+    this.textbox.parentNode.removeAttribute("breakout");
+    this.textbox.style.top = "";
     try {
       this.textbox.hidePopover();
     } catch (ex) {
       // No big deal if not a popover already.
     }
+    this._layoutBreakoutUpdateKey = {};
+  }
 
-    this.textbox.parentNode.removeAttribute("breakout");
+  async #updateLayoutBreakoutDimensions() {
+    this.#stopBreakout();
+
+    // When this method gets called a second time before the first call
+    // finishes, we need to disregard the first one.
+    let updateKey = {};
+    this._layoutBreakoutUpdateKey = updateKey;
 
     await this.window.promiseDocumentFlushed(() => {});
     await new Promise(resolve => {
@@ -2441,6 +2455,8 @@ export class UrlbarInput {
 
         this.setAttribute("breakout", "true");
         this.textbox.parentNode.setAttribute("breakout", "true");
+        this.textbox.showPopover();
+        this.#updateTextboxPosition();
 
         resolve();
       });
@@ -3520,6 +3536,8 @@ export class UrlbarInput {
   _initStripOnShare() {
     let contextMenu = this.querySelector("moz-input-box").menupopup;
     let insertLocation = this.#findMenuItemLocation("cmd_copy");
+    // FIXME(bug 1927220): This check is wrong, !getAttribute() is a
+    // boolean.
     if (!insertLocation.getAttribute("cmd") == "cmd_copy") {
       return;
     }
@@ -4637,27 +4655,49 @@ export class UrlbarInput {
 
   _on_customizationstarting() {
     this.blur();
+    this.#stopBreakout();
 
     this.inputField.controllers.removeController(this._copyCutController);
     delete this._copyCutController;
   }
 
+  // TODO(emilio, bug 1927942): Consider removing this listener and using
+  // onCustomizeEnd.
   _on_aftercustomization() {
+    this.updateLayoutBreakout();
     this._initCopyCutController();
     this._initPasteAndGo();
     this._initStripOnShare();
   }
 
-  _on_DOMMenuBarActive() {
-    if (this.hasAttribute("breakout")) {
-      this.#updateTextboxPositionNextFrame();
+  // CustomizableUI might unbind and bind us again, which makes us lose the
+  // popover state, which this fixes up. This can easily happen outside of
+  // customize mode with a call to CustomizableUI.reset().
+  // TODO(emilio): Do we need some of the on-aftercustomization fixups here?
+  onWidgetAfterDOMChange(aNode) {
+    if (aNode != this.textbox.parentNode || !this.hasAttribute("breakout")) {
+      return;
     }
+    if (!this.textbox.matches(":popover-open")) {
+      this.textbox.showPopover();
+    }
+    this.#updateTextboxPositionNextFrame();
+  }
+
+  _on_unload() {
+    lazy.CustomizableUI.removeListener(this);
+  }
+
+  _on_toolbarvisibilitychange() {
+    this.#updateTextboxPositionNextFrame();
+  }
+
+  _on_DOMMenuBarActive() {
+    this.#updateTextboxPositionNextFrame();
   }
 
   _on_DOMMenuBarInactive() {
-    if (this.hasAttribute("breakout")) {
-      this.#updateTextboxPositionNextFrame();
-    }
+    this.#updateTextboxPositionNextFrame();
   }
 
   #allTextSelectedOnKeyDown = false;
@@ -4860,12 +4900,13 @@ function losslessDecodeURI(aURI) {
   // Encode all adjacent space chars (U+0020), to prevent spoofing attempts
   // where they would push part of the URL to overflow the location bar
   // (bug 1395508). A single space, or the last space if the are many, is
-  // preserved to maintain readability of certain urls. We only do this for the
-  // common space, because others may be eaten when copied to the clipboard, so
-  // it's safer to preserve them encoded.
+  // preserved to maintain readability of certain urls if it's not followed by a
+  // control or separator character. We only do this for the common space,
+  // because others may be eaten when copied to the clipboard,so it's safer to
+  // preserve them encoded.
   value = value.replace(
     // eslint-disable-next-line no-control-regex
-    /[\u0000-\u001f\u007f-\u00a0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u2800\u3000\ufffc]|[\r\n\t]|\u0020(?=\u0020)|\s$/g,
+    /[[\p{Separator}--\u0020]\p{Control}\u2800\ufffc]|\u0020(?=[\p{Other}\p{Separator}])|\s$/gv,
     encodeURIComponent
   );
 
@@ -4887,9 +4928,10 @@ function losslessDecodeURI(aURI) {
   //   U+1BCA0-1BCA3 (U+D82F + U+DCA0-DCA3)
   // Mimicking UI parts:
   //   U+1F50F-1F513 (U+D83D + U+DD0F-DD13), U+1F6E1 (U+D83D + U+DEE1)
+  // Unassigned codepoints, sometimes shown as empty glyphs.
   value = value.replace(
     // eslint-disable-next-line no-misleading-character-class
-    /[\u00ad\u034f\u061c\u06dd\u070f\u115f\u1160\u17b4\u17b5\u180b-\u180e\u200b\u200e\u200f\u202a-\u202e\u2060-\u206f\u3164\u0600-\u0605\u08e2\ufe00-\ufe0f\ufeff\uffa0\ufff0-\ufffb]|\ud804[\udcbd\udccd]|\ud80d[\udc30-\udc38]|\ud82f[\udca0-\udca3]|\ud834[\udd73-\udd7a]|[\udb40-\udb43][\udc00-\udfff]|\ud83d[\udd0f-\udd13\udee1]/g,
+    /[\u00ad\u034f\u061c\u06dd\u070f\u115f\u1160\u17b4\u17b5\u180b-\u180e\u200b\u200e\u200f\u202a-\u202e\u2060-\u206f\u3164\u0600-\u0605\u08e2\ufe00-\ufe0f\ufeff\uffa0\ufff0-\ufffb\p{Unassigned}\p{Private_Use}]|\ud804[\udcbd\udccd]|\ud80d[\udc30-\udc38]|\ud82f[\udca0-\udca3]|\ud834[\udd73-\udd7a]|[\udb40-\udb43][\udc00-\udfff]|\ud83d[\udd0f-\udd13\udee1]/gv,
     encodeURIComponent
   );
   return value;

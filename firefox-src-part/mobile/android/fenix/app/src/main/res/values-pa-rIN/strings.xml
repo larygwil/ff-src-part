@@ -330,6 +330,10 @@
     <string name="browser_menu_back_button_content_description">ਮੁੱਖ ਮੇਨੂ ਉੱਤੇ ਵਾਪਸ ਜਾਓ</string>
     <!-- Content description (not visible, for screen readers etc.) for bottom sheet handlebar main menu. -->
     <string name="browser_main_menu_handlebar_content_description">ਮੁੱਖ ਮੇਨੂ ਸ਼ੀਟ ਨੂੰ ਬੰਦ ਕਰੋ</string>
+    <!-- Content description (not visible, for screen readers etc.) for main menu help button. -->
+    <string name="browser_main_menu_content_description_help_button">ਮਦਦ</string>
+    <!-- Content description (not visible, for screen readers etc.) for main menu settings button. -->
+    <string name="browser_main_menu_content_description_settings_button">ਸੈਟਿੰਗਾਂ</string>
     <!-- Content description (not visible, for screen readers etc.) for bottom sheet handlebar extensions menu. -->
     <string name="browser_extensions_menu_handlebar_content_description">ਇਕਸਟੈਨਸ਼ਨ ਮੇਨੂ ਸ਼ੀਟ ਨੂੰ ਬੰਦ ਕਰੋ</string>
     <!-- Content description (not visible, for screen readers etc.) for bottom sheet handlebar save menu. -->
@@ -555,6 +559,10 @@
     <string name="onboarding_add_on_reviews_label">ਰੀਵਿਊ: %1$s</string>
     <!-- Content description for the add-on icon. -->
     <string name="onboarding_add_on_icon_content_description">ਐਡ-ਆਨ ਆਈਕਾਨ</string>
+    <!-- Content description for the an installed add-on icon. -->
+    <string name="onboarding_installed_add_on_icon_content_description">ਇੰਸਟਾਲ ਹੋਈਆਂ ਐਡ-ਆਨ</string>
+    <!-- Content description for the an installing add-on icon. -->
+    <string name="onboarding_installing_add_on_icon_content_description">ਐਡ-ਆਨ ਆਈਕਾਨ ਇੰਸਟਾਲ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ</string>
     <!-- Content description for the add add-on button. -->
     <string name="onboarding_add_on_add_button_content_description">ਐਡ-ਆਨ ਬਟਨ ਨੂੰ ਜੋੜੋ</string>
     <!-- Content description for the star rating group. -->
@@ -1255,6 +1263,22 @@
     <!-- Text for the button to remove a single download item -->
     <string name="download_delete_item_1">ਹਟਾਓ</string>
 
+
+    <!-- WebCompat Reporter -->
+
+    <!-- These reason strings are dropdown options on a WebCompat reporter form, indicating what is broken on the site. -->
+    <!-- Broken site reason text for site slow or not working -->
+    <string name="webcompat_reporter_reason_slow">ਸਾਈਟ ਹੌਲੀ ਹੈ ਜਾਂ ਕੰਮ ਨਹੀਂ ਕਰਦੀ ਹੈ</string>
+    <!-- Broken site reason text for images or videos -->
+    <string name="webcompat_reporter_reason_media">ਚਿੱਤਰ ਜਾਂ ਵੀਡੀਓ</string>
+    <!-- Broken site reason text for buttons, links, and other content -->
+    <string name="webcompat_reporter_reason_content">ਬਟਨ, ਲਿੰਕ ਜਾਂ ਹੋਰ ਸਮੱਗਰੀ</string>
+    <!-- Broken site reason text for sign in or sign out -->
+    <string name="webcompat_reporter_reason_account">ਸਾਈਨ-ਇਨ ਜਾਂ ਸਾਈਨ-ਆਉਟ</string>
+    <!-- Broken site reason text for ad blocker -->
+    <string name="webcompat_reporter_reason_ad_blocker">ਇਸ਼ਤਿਹਾਰ ਰੋਕੂ</string>
+    <!-- Broken site reason text for something else -->
+    <string name="webcompat_reporter_reason_other">ਕੁਝ ਹੋਰ</string>
 
     <!-- Crashes -->
     <!-- Title text displayed on the tab crash page. This first parameter is the name of the application (For example: Fenix) -->
