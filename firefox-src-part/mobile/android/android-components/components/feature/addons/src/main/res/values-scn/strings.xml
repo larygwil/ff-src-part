@@ -25,17 +25,17 @@
     <!-- Content description for a permission item, for an installed add-on details page. %1$s will be replaced with the permission text name, %2$d will be replaced with the permission position in the list and %3$d will be replaced with the total number of permissions in the list.Taking as an example "Read and modify privacy settings" the whole text will read Read and modify privacy settings, 2 of 6. -->
     <string name="mozac_feature_addons_permissions_content_description_item">%1$s, %2$d di %3$d</string>
     <!-- Description for tabs add-on permission. -->
-    <string name="mozac_feature_addons_permissions_tabs_description">Accèdiri ê schedi dû navigaturi</string>
+    <string name="mozac_feature_addons_permissions_tabs_description">Accèdiri ê schedi dû navicaturi</string>
     <!-- Description for unlimited_storage permission. -->
     <string name="mozac_feature_addons_permissions_unlimited_storage_description">Sarbari na quantità senza lìmiti di dati nnô dispusitivu</string>
     <!-- Description for navigation permission. -->
-    <string name="mozac_feature_addons_permissions_web_navigation_description">Accèdiri a l\'attività dû navigatri mentri chi l\'usi</string>
+    <string name="mozac_feature_addons_permissions_web_navigation_description">Accèdiri a l\'attività dû navicatri mentri chi l\'usi</string>
     <!-- Description for bookmarks permission. -->
     <string name="mozac_feature_addons_permissions_bookmarks_description">Lèggiri e canciari i nzingalibbra</string>
     <!-- Description for browser_setting permission. -->
-    <string name="mozac_feature_addons_permissions_browser_setting_description">Lèggiri e canciari i mpustazzioni dû navigaturi</string>
+    <string name="mozac_feature_addons_permissions_browser_setting_description">Lèggiri e canciari i mpustazzioni dû navicaturi</string>
     <!-- Description for browser_data permission. -->
-    <string name="mozac_feature_addons_permissions_browser_data_description">Cancillari a crunuluggìa ricenti di navigazzioni, i viscotta e i dati rilativi</string>
+    <string name="mozac_feature_addons_permissions_browser_data_description">Cancillari a crunuluggìa ricenti di navicazzioni, i viscotta e i dati rilativi</string>
     <!-- Description for clipboard_read permission. -->
     <string name="mozac_feature_addons_permissions_clipboard_read_description">Pigghiari dati dû pitazzu</string>
     <!-- Description for clipboard_write permission. -->
@@ -43,17 +43,17 @@
     <!-- Description for declarativeNetRequest permission. -->
     <string name="mozac_feature_addons_permissions_declarative_net_request_description">Bluccari cuntinuti di na pàggina quali chi fussi</string>
     <!-- Description for declarativeNetRequestFeedback permission. -->
-    <string name="mozac_feature_addons_permissions_declarative_net_request_feedback_description">Lèggiri a crunuluggìa di navigazzioni</string>
+    <string name="mozac_feature_addons_permissions_declarative_net_request_feedback_description">Lèggiri a crunuluggìa di navicazzioni</string>
     <!-- Description for downloads permission. -->
-    <string name="mozac_feature_addons_permissions_downloads_description">Scàrricari prichi e lèggiri e canciari a crunuluggìa dî scarricamenti dû navigaturi</string>
+    <string name="mozac_feature_addons_permissions_downloads_description">Scàrricari prichi e lèggiri e canciari a crunuluggìa dî scarricamenti dû navicaturi</string>
     <!-- Description for downloads_open permission. -->
     <string name="mozac_feature_addons_permissions_downloads_open_description">Gràpiri i prichi scarricati nnô to dispusitivu</string>
     <!-- Description for find permission. -->
     <string name="mozac_feature_addons_permissions_find_description">Lèggiri u testu di tutti i schedi graputi</string>
     <!-- Description for geolocation permission. -->
-    <string name="mozac_feature_addons_permissions_geolocation_description">Accèdiri â to pusizziuni</string>
+    <string name="mozac_feature_addons_permissions_geolocation_description">Accèdiri â to pusizzioni</string>
     <!-- Description for history permission. -->
-    <string name="mozac_feature_addons_permissions_history_description">Accèdiri â crunuluggìa di navigazzioni</string>
+    <string name="mozac_feature_addons_permissions_history_description">Accèdiri â crunuluggìa di navicazzioni</string>
     <!-- Description for management permission. -->
     <string name="mozac_feature_addons_permissions_management_description">Cuntrullari l\'usu dî stinneri e manijari i temi</string>
     <!-- Description for native_messaging permission. -->
@@ -63,13 +63,13 @@
     <!-- Description for pkcs11 permission. -->
     <string name="mozac_feature_addons_permissions_pkcs11_description">Furniri sirbizza d\'autinticazzioni crittugràfica</string>
     <!-- Description for proxy permission. -->
-    <string name="mozac_feature_addons_permissions_proxy_description">Cuntrullari i mpustazzioni dû proxy dû navigaturi</string>
+    <string name="mozac_feature_addons_permissions_proxy_description">Cuntrullari i mpustazzioni dû proxy dû navicaturi</string>
     <!-- Description for sessions permission. -->
     <string name="mozac_feature_addons_permissions_sessions_description">Accèdiri ê schedi chiujuti di picca</string>
     <!-- Description for tab_hide permission. -->
     <string name="mozac_feature_addons_permissions_tab_hide_description">Ammucciari e mustrari schedi</string>
     <!-- Description for top_sites permission. -->
-    <string name="mozac_feature_addons_permissions_top_sites_description">Accèdiri â crunuluggìa di navigazzioni</string>
+    <string name="mozac_feature_addons_permissions_top_sites_description">Accèdiri â crunuluggìa di navicazzioni</string>
     <!-- Description for trialML permission. -->
     <string name="mozac_feature_addons_permissions_trial_ml_description">Scarricari e abbiari mudeḍḍi NA nnô to dispusitivu</string>
     <!-- Description for userScripts permission. -->
@@ -77,7 +77,7 @@
     <!-- Description for devtools permission. -->
     <string name="mozac_feature_addons_permissions_devtools_description">Pirmèttiri ê stigghi di sbiluppu l\'accessu ê dati dî schedi</string>
     <!-- The version on of add-on. -->
-    <string name="mozac_feature_addons_version">Virsiuni</string>
+    <string name="mozac_feature_addons_version">Virsioni</string>
     <!-- The author of an add-on. -->
     <string name="mozac_feature_addons_author">Auturi</string>
     <!-- The last date that the add-on was updated. -->
@@ -95,9 +95,9 @@
     <!-- Indicates the add-on is enabled. -->
     <string name="mozac_feature_addons_settings_on">Attiva</string>
     <!-- Indicates the add-on is allowed in private browsing mode. -->
-    <string name="mozac_feature_addons_settings_allow_in_private_browsing">Pirmetti nnâ navigazzioni privata</string>
+    <string name="mozac_feature_addons_settings_allow_in_private_browsing">Pirmetti nnâ navicazzioni privata</string>
     <!-- Indicates the add-on is allowed in private browsing mode. -->
-    <string name="mozac_feature_addons_settings_run_in_private_browsing">Aḍḍuma nnâ navigazzioni privata</string>
+    <string name="mozac_feature_addons_settings_run_in_private_browsing">Aḍḍuma nnâ navicazzioni privata</string>
     <!-- This is displayed when the add-on is not allowed to run in private browsing. -->
     <string name="mozac_feature_addons_not_allowed_in_private_browsing">Nun pirmèttiri nnê finestri privati</string>
     <!-- Indicates the add-on is enabled. -->
@@ -170,6 +170,8 @@
     <string name="mozac_feature_addons_updater_notification_content_singular">Cc\'è bisognu d\'un pirmisu novu</string>
     <!-- Name of the "notification channel" used for displaying a notification for updating an extension. See https://developer.android.com/training/notify-user/channels -->
     <string name="mozac_feature_addons_updater_notification_channel_2">Attualizzi dî stinneri</string>
+    <!-- Name of the "notification channel" used for displaying a notification for new supported add-ons. See https://developer.android.com/training/notify-user/channels -->
+    <string name="mozac_feature_addons_supported_checker_notification_channel" tools:ignore="UnusedResources">Virificaturi dî juncitini suppurtati</string>
     <!-- The tile of the notification, this will be shown to the user when one newly supported add-on is available.-->
     <string name="mozac_feature_addons_supported_checker_notification_title" tools:ignore="UnusedResources">Nova juncitina dispunìbbili</string>
     <!-- The tile of the notification, this will be shown to the user when more than one newly supported add-ons are available.-->
@@ -180,6 +182,8 @@
     <string name="mozac_feature_addons_supported_checker_notification_content_two">Junci %1$s e %2$s a %3$s</string>
     <!-- The content of the notification, this will be shown to the user when more than two newly supported add-ons are available. %1$s is the app name (in most cases Firefox). -->
     <string name="mozac_feature_addons_supported_checker_notification_content_more_than_two">Jùncili a %1$s</string>
+    <!-- This is the caption for not yet supported screen caption -->
+    <string name="mozac_feature_addons_not_yet_supported_caption2">Stamu travagghiannu p\'uffrìriti n\'aḍḍijuta di stinneri cunzigghiati.</string>
     <!-- This is the caption for the extension installation progress overlay -->
     <string name="mozac_extension_install_progress_caption">Staju scarricannu e virificannu u stinneriu…</string>
     <!-- Error shown when something unexpected happened while trying to get the extension list from the server -->
@@ -195,7 +199,7 @@
     <!-- Text shown when installing an add-on has failed. -->
     <string name="mozac_feature_addons_cant_install_extension">Mpussìbbili nzitari u stinneriu</string>
     <!-- Text shown when attempting to install an extension and a network error happened. -->
-    <string name="mozac_feature_addons_extension_failed_to_install_network_error">Stu stinneriu nun potti èssiri scarricatu picchì a cunnissiuni sfallìu.</string>
+    <string name="mozac_feature_addons_extension_failed_to_install_network_error">Stu stinneriu nun potti èssiri scarricatu picchì a cunnissioni sfallìu.</string>
     <!-- Text shown when attempting to install an extension and the downloaded file is corrupted. -->
     <string name="mozac_feature_addons_extension_failed_to_install_corrupt_error">Stu stinneriu nun potti èssiri nzitatu picchì parissi stravijatu.</string>
     <!-- Text shown when attempting to install an add-on and an error occurred because the extension was not signed. -->
@@ -229,7 +233,7 @@
     <!-- Text shown after failed to remove an add-on. %1$s is the add-on name. -->
     <string name="mozac_feature_addons_failed_to_remove" tools:ignore="UnusedResources">Mpussìbbili livari a %1$s</string>
     <!-- Label shown to indicate that the add-on was migrated from a previous version of the app. %1$s is the app name most of the case it will be Firefox. -->
-    <string name="mozac_feature_addons_migrated_from_a_previous_version_label" tools:ignore="UnusedResources">Sta juncitina fu migrata di na virsiuni pricidenti di %1$s</string>
+    <string name="mozac_feature_addons_migrated_from_a_previous_version_label" tools:ignore="UnusedResources">Sta juncitina fu migrata di na virsioni pricidenti di %1$s</string>
     <!-- Text shown in not yet supported add-ons section. -->
     <string name="mozac_feature_addons_unsupported_caption_2">1 stinneriu</string>
     <!-- Text shown in not yet supported add-ons section - plural. %1$s is the number of unsupported extensions. -->
@@ -271,5 +275,5 @@
     <!-- Status message below an add-on in the add-ons manager when this add-on hasn't been signed correctly. %1$s is the add-on name. -->
     <string name="mozac_feature_addons_status_unsigned">%1$s nun potti èssiri virificatu comu sicuru e fu sdisabbilitatu.</string>
     <!-- Status message below an add-on in the add-ons manager when this add-on isn't compatible with the application version. %1$s is the add-on name, %2$s is the app name and %3$s is the app version. -->
-    <string name="mozac_feature_addons_status_incompatible">%1$s nun è cumpatìbili câ to virsiuni di %2$s (virsiuni %3$s).</string>
+    <string name="mozac_feature_addons_status_incompatible">%1$s nun è cumpatìbili câ to virsioni di %2$s (virsioni %3$s).</string>
 </resources>
