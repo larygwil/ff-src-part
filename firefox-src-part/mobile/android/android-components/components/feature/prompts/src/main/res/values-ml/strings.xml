@@ -47,6 +47,8 @@
     <string name="mozac_feature_prompts_allow">അനുവദിക്കുക</string>
     <!-- Text of a negative button in dialog requesting to open a new window. -->
     <string name="mozac_feature_prompts_deny">നിരസിക്കുക</string>
+    <!-- Text of the title of a dialog when a page is requesting to open a new window. -->
+    <string name="mozac_feature_prompts_popup_dialog_title">ഈ വെബ്സ്ഥാനത്തിനെ തുറക്കാൻ അനുവദിക്കട്ടെ?</string>
     <!-- Title of the dialog shown when a user is leaving a website and there is still data not saved yet. -->
     <string name="mozac_feature_prompt_before_unload_dialog_title">താങ്കൾക്ക് ഉറപ്പാണോ?</string>
     <!-- Body text of the dialog shown when a user is leaving a website and there is still data not saved yet. -->
@@ -104,8 +106,6 @@
     <!-- Title for using the suggest strong password confirmation dialog -->
     <string name="mozac_feature_prompts_suggest_strong_password_title">ഒരു കഠിനമായ രഹസ്യവാക്കു് ഉപയോഗിക്കട്ടെ?</string>
 
-    <!-- Content description for the suggest strong password confirmation dialog -->
-    <string name="mozac_feature_prompts_suggest_strong_password_description_2" moz:removedIn="133" tools:ignore="UnusedResources">ഒരു ശക്തമായ ക്രമരഹിതമായ രഹസ്യവാക്കു് ഉപയോഗിച്ചു് താങ്ങളുടെ അക്കൗണ്ടുകൾ പരിരക്ഷിക്കുക. പില്കാല ഉപയോഗത്തിനു് ഇതു് താങ്ങളുടെ അക്കൗണ്ടിൽ കരുതിവച്ചിരിക്കും.</string>
     <!-- Content description for the suggest strong password confirmation dialog -->
     <string name="mozac_feature_prompts_suggest_strong_password_description_3">ഒരു ശക്തമായ ക്രമരഹിതമായ രഹസ്യവാക്കു് ഉപയോഗിച്ചു് താങ്ങളുടെ അക്കൗണ്ടു് പരിരക്ഷിക്കുക. പില്കാല ഉപയോഗത്തിനു് ഇതു് താങ്ങളുടെ അക്കൗണ്ടിൽ കരുതിവച്ചിരിക്കും.</string>
 
