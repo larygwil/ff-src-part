@@ -329,6 +329,9 @@
     <!-- Placeholder text shown in the search bar before a user enters text -->
     <string name="locale_search_hint">Пошук мовы</string>
 
+    <!-- Search Fragment -->
+    <!-- Button in the search view that lets a user search by scanning a QR code -->
+    <string name="search_scan_button_2">Сканаваць QR-код</string>
     <!-- Button in the search view when shortcuts are displayed that takes a user to the search engine settings -->
     <string name="search_shortcuts_engine_settings">Налады пошукавых сістэм</string>
     <!-- Button in the search view that lets a user navigate to the site in their clipboard -->
@@ -352,6 +355,10 @@
 
     <!-- Header text for the search selector menu -->
     <string name="search_header_menu_item_2">Гэтым разам шукаць у:</string>
+
+    <!-- Content description (not visible, for screen readers etc.): Search engine icon.
+    The parameter is the search engine name (for example: DuckDuckGo). -->
+    <string name="search_engine_icon_content_description_1">Пошукавая сістэма: %s</string>
 
     <!-- Home onboarding -->
     <!-- Home onboarding dialog welcome screen title text. -->
@@ -439,6 +446,12 @@
     <string name="onboarding_preferences_dialog_negative_button" tools:ignore="UnusedResources" moz:removedIn="136">Скасаваць</string>
     <!-- Terms of service onboarding title card label. 'Firefox' intentionally hardcoded here-->
     <string name="onboarding_welcome_to_firefox" tools:ignore="BrandUsage">Калі ласка да Firefox</string>
+    <!-- Used as text for the link in onboarding_term_of_service_line_one. -->
+    <string name="onboarding_term_of_service_line_one_link_text" moz:removedIn="136" tools:ignore="UnusedResources">Умовы абслугоўвання</string>
+    <!-- Used as text for the link in onboarding_term_of_service_line_two. -->
+    <string name="onboarding_term_of_service_line_two_link_text">Паведамленнем аб прыватнасці</string>
+    <!-- Onboarding label for 'Save and continue' button, used by Nimbus experiments. -->
+    <string name="onboarding_save_and_continue_button">Захаваць і працягваць</string>
     <!-- Onboarding toolbar selection card label for 'skip' button, used by Nimbus experiments. -->
     <string name="onboarding_customize_toolbar_skip_button" moz:removedIn="135" tools:ignore="UnusedResources">Прапусціць</string>
     <!-- Onboarding toolbar selection card label for 'top' option, used by Nimbus experiments. -->
@@ -842,14 +855,10 @@
     <!-- Text displayed when there are no exceptions, with learn more link that brings users to a tracking protection SUMO page -->
     <string name="exceptions_empty_message_learn_more_link">Даведацца больш</string>
 
-    <!-- Preference switch for usage and technical data collection -->
-    <string name="preference_usage_data" moz:removedIn="134" tools:ignore="UnusedResources">Выкарыстанне і тэхнічныя дадзеныя</string>
     <!-- Preference description for usage and technical data collection -->
-    <string name="preferences_usage_data_description">Дзяліцца звесткамі пра прадукцыйнасць, выкарыстанне, апаратнае забеспячэнне і налады вашага браўзера з Mozilla, каб дапамагчы ўдасканаліць %1$s</string>
+    <string name="preferences_usage_data_description" tools:ignore="UnusedResources" moz:removedIn="136">Дзяліцца звесткамі пра прадукцыйнасць, выкарыстанне, апаратнае забеспячэнне і налады вашага браўзера з Mozilla, каб дапамагчы ўдасканаліць %1$s</string>
     <!-- Preference switch for marketing data collection -->
-    <string name="preferences_marketing_data">Маркетынгавыя дадзеныя</string>
-    <!-- Preference description for marketing data collection -->
-    <string name="preferences_marketing_data_description2" moz:removedIn="134" tools:ignore="UnusedResources">Дзеліцца асноўнымі звесткамі аб выкарыстанні з Adjust, нашым пастаўшчыком мабільнага маркетынгу</string>
+    <string name="preferences_marketing_data" tools:ignore="UnusedResources" moz:removedIn="136">Маркетынгавыя дадзеныя</string>
 
     <!-- Title for studies preferences -->
     <string name="preference_experiments_2">Даследаванні</string>
@@ -1009,7 +1018,7 @@
     <!-- Title of the active section on the studies list -->
     <string name="studies_active">Актыўнае</string>
     <!-- Description for studies, it indicates why Firefox use studies. The first parameter is the name of the application. -->
-    <string name="studies_description_2">%1$s можа ўсталёўваць і выконваць даследаванні час ад часу.</string>
+    <string name="studies_description_2" tools:ignore="UnusedResources" moz:removedIn="136">%1$s можа ўсталёўваць і выконваць даследаванні час ад часу.</string>
     <!-- Learn more link for studies, links to an article for more information about studies. -->
     <string name="studies_learn_more">Даведацца больш</string>
     <!-- Dialog message shown after removing a study -->
@@ -1198,6 +1207,8 @@
     <string name="bookmark_saved_in_folder_snackbar">Захавана ў “%s”</string>
     <!-- Snackbar edit button shown after a bookmark has been created. -->
     <string name="edit_bookmark_snackbar_action">ЗМЯНІЦЬ</string>
+    <!-- Bookmark menu move button -->
+    <string name="bookmark_menu_move_button">Перанесці</string>
     <!-- Bookmark overflow menu edit button -->
     <string name="bookmark_menu_edit_button">Змяніць</string>
     <!-- Bookmark overflow menu copy button -->
@@ -1232,6 +1243,8 @@
     <string name="bookmark_folder_label">ПАПКА</string>
     <!-- Bookmark NAME editing field label -->
     <string name="bookmark_name_label">НАЗВА</string>
+    <!-- Label for a text input field for a bookmark or folder name -->
+    <string name="bookmark_name_label_normal_case">Назва</string>
     <!-- Bookmark add folder screen title -->
     <string name="bookmark_add_folder_fragment_label">Дадаць папку</string>
     <!-- Bookmark select folder screen title -->
