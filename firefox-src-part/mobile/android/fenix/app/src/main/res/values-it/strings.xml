@@ -624,6 +624,14 @@
     <string name="onboarding_marketing_learn_more" tools:ignore="UnusedResources">Come utilizziamo i dati</string>
     <!-- Marketing onboarding page button label. Button to confirm choice and start browsing. -->
     <string name="onboarding_marketing_positive_button" tools:ignore="UnusedResources">Conferma e inizia a navigare</string>
+
+    <!-- Marketing onboarding page title variant. “One last thing” refers to the final step or action in the onboarding process that we’re asking users to take before they can start using the browser. -->
+    <string name="onboarding_marketing_title_1" tools:ignore="UnusedResources">Un’ultima cosa</string>
+    <!-- Marketing onboarding page body variant. 'Firefox' is intentionally hardcoded. -->
+    <string name="onboarding_marketing_body_1" tools:ignore="BrandUsage,UnusedResources">Condividi come hai scoperto Firefox e il fatto che lo utilizzi con i partner per il marketing di Mozilla. Questi dati non vengono mai venduti.</string>
+    <!-- Marketing onboarding page button label variant. Button to confirm choice and start browsing. -->
+    <string name="onboarding_marketing_positive_button_1" tools:ignore="UnusedResources">Accetta e inizia a navigare</string>
+
     <!-- Onboarding header for the toolbar selection card, used by Nimbus experiments. -->
     <string name="onboarding_customize_toolbar_title" tools:ignore="UnusedResources">Scegli la posizione della barra degli strumenti</string>
     <!-- Onboarding sub header for toolbar selection card, used by Nimbus experiments. -->
@@ -840,6 +848,8 @@
     <string name="preferences_show_voice_search">Mostra ricerca vocale</string>
     <!-- Preference title for switch preference to show search suggestions also in private mode -->
     <string name="preferences_show_search_suggestions_in_private">Mostra in sessioni anonime</string>
+    <!-- Preference title for switch preference to show trending search suggestions -->
+    <string name="preferences_show_trending_search_suggestions">Mostra suggerimenti di tendenza</string>
     <!-- Preference title for switch preference to show a clipboard suggestion when searching -->
     <string name="preferences_show_clipboard_suggestions">Mostra suggerimenti dagli appunti</string>
     <!-- Preference title for switch preference to suggest browsing history when searching -->
@@ -863,6 +873,16 @@
     <string name="preferences_show_nonsponsored_suggestions">Suggerimenti da %1$s</string>
     <!-- Summary for preference to show Firefox Suggest search suggestions for web content -->
     <string name="preferences_show_nonsponsored_suggestions_summary">Ottieni suggerimenti dal Web relativi alla tua ricerca</string>
+    <!-- Preference for link sharing -->
+    <string name="preferences_link_sharing">Condivisione link</string>
+    <!-- Title for the link sharing toggle. %1$s is replaced by the brand name (e.g. Firefox).  -->
+    <string name="link_sharing_toggle_title">Includi un link per il download di %1$s nelle condivisioni su WhatsApp</string>
+    <!-- Body for the link sharing toggle.  %1$s is replaced by the brand name (e.g. Firefox).  -->
+    <string name="link_sharing_toggle_body">Invita i tuoi amici a navigare più velocemente e in modo più sicuro con %1$s ogni volta che condividi un link su WhatsApp.</string>
+    <!--Snackbar message shown when user shares a link -->
+    <string name="link_shared_snackbar_message">Condiviso link</string>
+    <!-- Snackbar action label shown when user shares a link  -->
+    <string name="link_shared_snackbar_action">Gestisci impostazioni</string>
     <!-- Preference for open links in third party apps -->
     <string name="preferences_open_links_in_apps">Apri i link nelle app</string>
 
@@ -1787,6 +1807,12 @@
     <!-- Text for the button to connect another device -->
     <string name="sync_add_new_device_connect_button">Connetti un altro dispositivo…</string>
 
+    <!-- A message template for the shared link with a footer. %1$s is the shared link, %2$s is the app name (e.g. Firefox) and %3$s is a download link for the app. -->
+    <string name="sent_from_firefox_template" tools:ignore="UnusedResources">%1$s \n\nInviato da %2$s 🦊 Prova il browser per dispositivi mobili: %3$s</string>
+
+    <!-- A short message template for the shared link with a footer. %1$s is the shared link, %2$s is the app name (e.g. Firefox) and %3$s is a download link for the app. -->
+    <string name="sent_from_firefox_template_short" tools:ignore="UnusedResources">%1$s Inviato da %2$s 🦊 %3$s</string>
+
     <!-- Notifications -->
     <!-- Text shown in the notification that pops up to remind the user that a private browsing session is active. -->
     <string name="notification_pbm_delete_text_2">Chiudi le schede anonime</string>
@@ -2108,6 +2134,99 @@
     <!-- Content description (not visible, for screen readers etc.):
     Enhanced tracking protection exception preference icon for ETP settings. -->
     <string name="preference_etp_exceptions_icon_description">Icona delle preferenze per le eccezioni della protezione antitracciamento avanzata</string>
+
+    <!-- DNS Over HTTPS (DoH) -->
+    <!-- Preference title for DNS over HTTPS settings -->
+    <string name="preference_doh_title">DNS su HTTPS</string>
+    <!-- Description of the preference to enable "DNS over HTTPS". %1$s is replaced by a link using `preference_doh_learn_more` at text ("Learn More"). -->
+    <string name="preference_doh_summary">Il meccanismo di risoluzione dei nomi di dominio tramite HTTPS (DNS su HTTPS) invia le richieste per i nomi di dominio tramite una connessione crittata, fornendo un sistema sicuro che rende più difficile scoprire quali siti stai per visitare. %1$s</string>
+    <!-- Used as text for the link in `preference_doh_title`, points to documentation about "DNS over HTTPS" -->
+    <string name="preference_doh_learn_more">Ulteriori informazioni</string>
+
+    <!-- Content description for the toolbar "Navigate up" button -->
+    <string name="preference_doh_up_description">Vai su</string>
+    <!-- Content description for the "Exceptions" button -->
+    <string name="preference_doh_exceptions_description">Eccezioni</string>
+    <!-- Content description for the "Info" button -->
+    <string name="preference_doh_info_description">Info</string>
+    <!-- Content description for the "Add Site" button -->
+    <string name="preference_doh_add_site_description">Aggiungi sito</string>
+
+    <!-- Title displayed for "Default Protection" option under "DNS over HTTPS" -->
+    <string name="preference_doh_default_protection">Protezione predefinita</string>
+    <!-- Summary displayed for "Default Protection" option under "DNS over HTTPS". %1$s is the name of the application (e.g. Fenix). -->
+    <string name="preference_doh_default_protection_summary">%1$s decide quando utilizzare un DNS sicuro per proteggere la tua privacy.</string>
+    <!-- Bullet point 1 for "Default Protection" information page under "DNS over HTTPS" -->
+    <string name="preference_doh_default_protection_info_1">Utilizza il fornitore che hai selezionato</string>
+    <!-- Bullet point 2 for "Default Protection" information page under "DNS over HTTPS" -->
+    <string name="preference_doh_default_protection_info_2">Utilizza il sistema predefinito di risoluzione dei nomi se si verifica un problema con il fornitore di DNS sicuro</string>
+    <!-- Bullet point 3 for "Default Protection" information page under "DNS over HTTPS". %1$s is replaced by a link using `preference_doh_learn_more` at text ("Learn More"). -->
+    <string name="preference_doh_default_protection_info_3">Utilizza un fornitore locale dove possibile. %1$s</string>
+    <!-- Bullet point 4 for "Default Protection" information page under "DNS over HTTPS" -->
+    <string name="preference_doh_default_protection_info_4">Disattiva in presenza di VPN, controllo parentale o criteri aziendali</string>
+    <!-- Bullet point 5 for "Default Protection" information page under "DNS over HTTPS". %1$s is the name of the application (e.g. Fenix). %2$s is replaced by a link using `preference_doh_learn_more` at text ("Learn More"). -->
+    <string name="preference_doh_default_protection_info_5">Disattiva nel caso in cui la rete richieda a %1$s di non utilizzare un DNS sicuro. %2$s</string>
+
+    <!-- Title displayed for "Increased Protection" option under "DNS over HTTPS" -->
+    <string name="preference_doh_increased_protection">Protezione maggiore</string>
+    <!-- Summary displayed for "Increased Protection" option under "DNS over HTTPS" -->
+    <string name="preference_doh_increased_protection_summary">Puoi decidere quando utilizzare un DNS sicuro e scegliere il fornitore.</string>
+    <!-- Bullet point 1 for "Increased Protection" information page under "DNS over HTTPS" -->
+    <string name="preference_doh_increased_protection_info_1">Utilizza il fornitore che hai selezionato</string>
+    <!-- Bullet point 2 for "Increased Protection" information page under "DNS over HTTPS" -->
+    <string name="preference_doh_increased_protection_info_2">Utilizza il sistema predefinito di risoluzione dei nomi solo se si verifica un problema con il DNS sicuro</string>
+
+    <!-- Title displayed for "Max Protection" option under "DNS over HTTPS" -->
+    <string name="preference_doh_max_protection">Protezione massima</string>
+    <!-- Summary displayed for "Max Protection" option under "DNS over HTTPS". %1$s is the name of the application (e.g. Fenix). -->
+    <string name="preference_doh_max_protection_summary">%1$s utilizzerà sempre un DNS sicuro. Verrà visualizzato un avviso prima di utilizzare il DNS di sistema.</string>
+    <!-- Bullet point 1 for "Max Protection" information page under "DNS over HTTPS" -->
+    <string name="preference_doh_max_protection_info_1">Utilizza solo il fornitore che hai selezionato</string>
+    <!-- Bullet point 2 for "Max Protection" information page under "DNS over HTTPS" -->
+    <string name="preference_doh_max_protection_info_2">Avvisa sempre se il DNS sicuro non è disponibile</string>
+    <!-- Bullet point 3 for "Max Protection" information page under "DNS over HTTPS" -->
+    <string name="preference_doh_max_protection_info_3">Se il DNS sicuro non è disponibile, i siti potrebbero non caricarsi o non funzionare correttamente</string>
+
+    <!-- Title displayed for "Off" option under "DNS over HTTPS" -->
+    <string name="preference_doh_off">Disattivato</string>
+    <!-- Summary displayed for "Off" option under "DNS over HTTPS" -->
+    <string name="preference_doh_off_summary">Utilizza il sistema predefinito di risoluzione dei nomi</string>
+
+    <!-- Text displayed above provider dropdown under "DNS over HTTPS" -->
+    <string name="preference_doh_choose_provider">Scegli fornitore</string>
+    <!-- Text displayed for "Default provider" under "DNS over HTTPS" providers -->
+    <string name="preference_doh_provider_default">(predefinito)</string>
+    <!-- Text displayed for "Custom" under "DNS over HTTPS" providers -->
+    <string name="preference_doh_provider_custom">Personalizzato</string>
+    <!-- Text displayed for "Custom provider" dialog under "DNS over HTTPS" -->
+    <string name="preference_doh_provider_custom_dialog_title">Fornitore personalizzato</string>
+    <!-- Text displayed above provider textfield under "DNS over HTTPS" -->
+    <string name="preference_doh_provider_custom_dialog_textfield">Fornitore</string>
+    <!-- Error text displayed for provider textfield under "DNS over HTTPS" if the URL does not start with "https://" or its scheme is not "https"-->
+    <string name="preference_doh_provider_custom_dialog_error_https">L’indirizzo deve iniziare con “https://”</string>
+    <!-- Error text displayed for provider textfield under "DNS over HTTPS" if the URL is invalid -->
+    <string name="preference_doh_provider_custom_dialog_error_invalid">Indirizzo non valido</string>
+    <!-- Cancel button text for provider textfield under "DNS over HTTPS" -->
+    <string name="preference_doh_provider_custom_dialog_cancel">Annulla</string>
+    <!-- Add button text for provider textfield under "DNS over HTTPS" -->
+    <string name="preference_doh_provider_custom_dialog_add">Aggiungi</string>
+
+    <!-- Preference to access list of login exceptions that we don't use DNS over HTTPS -->
+    <string name="preference_doh_exceptions">Eccezioni</string>
+    <!-- Description of "exceptions" for "DNS over HTTPS". The first parameter is the name of the application. (For example: Fenix) -->
+    <string name="preference_doh_exceptions_summary">%1$s non utilizzerà un DNS sicuro per questi siti e i relativi sottodomini.</string>
+    <!-- Text displayed that links to adding website domain for "DNS over HTTPS" exceptions. -->
+    <string name="preference_doh_exceptions_add">Aggiungi sito</string>
+    <!-- Text displayed above the input field when adding exceptions for "DNS over HTTPS". -->
+    <string name="preference_doh_exceptions_add_site">Sito</string>
+    <!-- Placeholder URL displayed in the input field when adding exceptions for "DNS over HTTPS". -->
+    <string name="preference_doh_exceptions_add_placeholder">example.com</string>
+    <!-- Error displayed in the input field when adding invalid URLs for "DNS over HTTPS". -->
+    <string name="preference_doh_exceptions_add_error">Deve essere un dominio valido</string>
+    <!-- Text displayed on the button within the input field for adding exceptions to "DNS over HTTPS" -->
+    <string name="preference_doh_exceptions_add_save">Salva</string>
+    <!-- Text displayed for removing all exceptions in "DNS over HTTPS" -->
+    <string name="preference_doh_exceptions_remove_all_exceptions">Rimuovi tutte le eccezioni</string>
 
     <!-- About page link text to open support link -->
     <string name="about_support">Supporto</string>
@@ -2454,7 +2573,7 @@
     <string name="browser_menu_remove_from_shortcuts">Rimuovi dalle scorciatoie</string>
     <!-- text shown before the issuer name to indicate who its verified by, parameter is the name of
      the certificate authority that verified the ticket-->
-    <string name="certificate_info_verified_by">Verificato da: %1$s</string>
+    <string name="certificate_info_verified_by">Verificata da: %1$s</string>
     <!-- Login overflow menu delete button -->
     <string name="login_menu_delete_button">Elimina</string>
     <!-- Login overflow menu edit button -->
@@ -2589,6 +2708,11 @@
     <!-- Search suggestions title for Firefox Suggest. -->
     <string name="firefox_suggest_header" tools:ignore="BrandUsage">Firefox Suggest</string>
 
+    <!-- Search suggestions title for trending searches. -->
+    <string name="trending_searches_header" moz:removedIn="137" tools:ignore="UnusedResources">Ricerche di tendenza</string>
+    <!-- Search suggestions title for trending search suggestions.
+        %s is a placeholder for the name of the search engine providing the trending search suggestions. -->
+    <string name="trending_searches_header_2">Di tendenza su %s</string>
     <!-- Title for search suggestions when Google is the default search suggestion engine. -->
     <string name="google_search_engine_suggestion_header">Ricerca Google</string>
     <!-- Title for search suggestions when the default search suggestion engine is anything other than Google. The first parameter is default search engine name. -->
@@ -3024,6 +3148,10 @@
     <string name="download_language_file_dialog_negative_button_text">Annulla</string>
 
     <!-- Unified Trust Panel -->
+    <!-- Text for the protection panel header when the site is secure. -->
+    <string name="protection_panel_header_secure">Sicuro</string>
+    <!-- Text for the protection panel header when the site is not secure. -->
+    <string name="protection_panel_header_not_secure">Non sicuro</string>
     <!-- Title text for the protection panel banner when the site is not secure. -->
     <string name="protection_panel_banner_not_secure_title">Fai attenzione su questo sito</string>
     <!-- Description text for the protection panel banner when the site is not secure. -->
@@ -3044,6 +3172,37 @@
     <string name="protection_panel_etp_toggle_enabled_description">Se qualcosa non funziona su questo sito, prova a disattivare le protezioni.</string>
     <!-- Description text for the Enhanced Tracking Protection toggle when tracking protection is disabled. -->
     <string name="protection_panel_etp_toggle_disabled_description">Le protezioni sono DISATTIVATE. Si consiglia di riattivarle.</string>
+
+    <!-- Text for displaying the total number of trackers blocked in the protection panel.
+        %d is a placeholder for the number of trackers blocked. -->
+    <string name="protection_panel_num_trackers_blocked">Elementi traccianti bloccati: %d</string>
+    <!-- Text for when no trackers have been blocked. -->
+    <string name="protection_panel_no_trackers_blocked">Nessun elemento tracciante rilevato</string>
+    <!-- Link text to navigate to privacy and security settings from the protection panel. -->
+    <string name="protection_panel_privacy_and_security_settings">Impostazioni per privacy e sicurezza</string>
+    <!-- Text for displaying the total number of trackers blocked in the trackers blocked panel.
+        %d is a placeholder for the number of trackers blocked. -->
+    <string name="trackers_blocked_panel_total_num_trackers_blocked">Elementi traccianti bloccati: %d</string>
+    <!-- Text for displaying the number of trackers blocked for a specific tracker category in the trackers blocked panel.
+        %s is a placeholder for the name of the tracker category.
+        %d is a placeholder for the number of trackers blocked. -->
+    <string name="trackers_blocked_panel_categorical_num_trackers_blocked">%s: %d</string>
+    <!-- Description text for a dialog confirming whether the user wants to delete all data for current site.
+        %s is a placeholder for the base domain of website. -->
+    <string name="clear_site_data_dialog_description"><![CDATA[La rimozione di cookie e dati dei siti web per <b>%s</b> potrebbe disconnetterti dal sito o svuotare eventuali carrelli in sospeso.]]></string>
+    <!-- Button text on the clear site data dialog to allow users to confirm they wish to clear the site data. -->
+    <string name="clear_site_data_dialog_positive_button_text">Cancella</string>
+    <!-- Button text on the clear site data dialog to allow users to cancel the action and not clear the site data. -->
+    <string name="clear_site_data_dialog_negative_button_text">Annulla</string>
+    <!-- Snackbar title shown when the site data has been cleared. -->
+    <string name="clear_site_data_snackbar">Rimossi cookie e dati dei siti web</string>
+    <!-- Text for the connection security panel when the site is secure. -->
+    <string name="connection_security_panel_secure">Connessione sicura</string>
+    <!-- Text for the connection security panel when the site is not secure. -->
+    <string name="connection_security_panel_not_secure">Connessione non sicura</string>
+    <!-- Text for the connection security panel to indicate who the certificate was verified by.
+    %s is a placeholder for the name of the certificate authority that verified the ticket -->
+    <string name="connection_security_panel_verified_by">Verificata da %s</string>
 
     <!-- Debug drawer -->
     <!-- The user-facing title of the Debug Drawer feature. -->

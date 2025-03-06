@@ -581,6 +581,12 @@
     <string name="onboarding_marketing_learn_more" tools:ignore="UnusedResources">എങ്ങനെയാണു് ഞങ്ങൾ ദത്തയെ ഉപയോഗിക്കുന്നതു്</string>
     <!-- Marketing onboarding page button label. Button to confirm choice and start browsing. -->
     <string name="onboarding_marketing_positive_button" tools:ignore="UnusedResources">ഉറപ്പിച്ചു് തിരയാൻ തുടങ്ങുക</string>
+
+    <!-- Marketing onboarding page title variant. “One last thing” refers to the final step or action in the onboarding process that we’re asking users to take before they can start using the browser. -->
+    <string name="onboarding_marketing_title_1" tools:ignore="UnusedResources">ഇനിയും ഒരു കാര്യം</string>
+    <!-- Marketing onboarding page button label variant. Button to confirm choice and start browsing. -->
+    <string name="onboarding_marketing_positive_button_1" tools:ignore="UnusedResources">തീൎച്ചപ്പെടുത്തിയിട്ടു് തിരയാൻ തുടങ്ങുവിൻ</string>
+
     <!-- Onboarding header for the toolbar selection card, used by Nimbus experiments. -->
     <string name="onboarding_customize_toolbar_title" tools:ignore="UnusedResources">കരുപ്പട്ട സ്ഥാനം തിരഞ്ഞെടുക്കുക</string>
     <!-- Onboarding sub header for toolbar selection card, used by Nimbus experiments. -->
@@ -807,6 +813,12 @@
     <!-- Preference title for switch preference to show Firefox Suggest search suggestions for web content.
          The first parameter is the name of the application. -->
     <string name="preferences_show_nonsponsored_suggestions">%1$s-ൽ നിന്നുള്ള നിർദ്ദേശങ്ങൾ</string>
+    <!-- Preference for link sharing -->
+    <string name="preferences_link_sharing">കണ്ണി പങ്കിടൽ</string>
+    <!--Snackbar message shown when user shares a link -->
+    <string name="link_shared_snackbar_message">കണ്ണി പങ്കിട്ടു</string>
+    <!-- Snackbar action label shown when user shares a link  -->
+    <string name="link_shared_snackbar_action">ക്രമീകരണങ്ങൾ കൈകാര്യം ചെയ്യുക</string>
     <!-- Preference for open links in third party apps -->
     <string name="preferences_open_links_in_apps">ആപ്പുകളിൽ കണ്ണികൾ തുറക്കുക</string>
 
@@ -844,6 +856,8 @@
     <!-- The title of the origin permission option allowing a user to enable the extension to run on all sites -->
     <string name="addons_permissions_allow_for_all_sites" tools:ignore="UnusedResources">എല്ല വെബ്സ്ഥാനങ്ങൾക്കു് അനുവദിക്കുക</string>
 
+    <!-- The subtitle for the allow for all sites preference toggle -->
+    <string name="addons_permissions_allow_for_all_sites_subtitle" tools:ignore="UnusedResources">ഈ വിപുലീകരണത്തെ താങ്ങൾ വിശ്വസിക്കുന്നുവെങ്കിൽ, ഓരോ വെബിടത്തിഌം താങ്ങൾക്കു് ഇതിനു് അനുമതി നൽകാം.</string>
     <!-- The text shown when an extension does not require permissions -->
     <string name="addons_does_not_require_permissions">ഈ വിപുലീകരണത്തിനു് അനുമതികളുടെ അവിശ്യമില്ല.</string>
 
@@ -1025,7 +1039,7 @@
     <!-- Preference for reconnecting to FxA sync -->
     <string name="preferences_sync_sign_in_to_reconnect">വീണ്ടും ബന്ധിപ്പിക്കുന്നതിന് പ്രവേശിക്കുക</string>
     <!-- Preference for removing FxA account -->
-    <string name="preferences_sync_remove_account">അക്കൗണ്ട് നീക്കം ചെയ്യുക</string>
+    <string name="preferences_sync_remove_account">അക്കൗണ്ട് മായ്ക്കുക</string>
 
     <!-- Pairing Feature strings -->
     <!-- Instructions on how to access pairing -->
@@ -1041,7 +1055,7 @@
     <!-- Preference for using light theme -->
     <string name="preference_light_theme">ഇളം</string>
     <!-- Preference for using dark theme -->
-    <string name="preference_dark_theme">കടും</string>
+    <string name="preference_dark_theme">ഇരുണ്ടത്</string>
 
     <!-- Preference for using using dark or light theme automatically set by battery -->
     <string name="preference_auto_battery_theme">ബാറ്ററി സേവർ സജ്ജമാക്കിയത്</string>
@@ -1353,7 +1367,7 @@
 
     <!-- Crashes -->
     <!-- Title text displayed on the tab crash page. This first parameter is the name of the application (For example: Fenix) -->
-    <string name="tab_crash_title_2">ക്ഷമിക്കണം. %1$s ന് ആ പേജ് ലഭ്യമാക്കാൻ കഴിഞ്ഞില്ല.</string>
+    <string name="tab_crash_title_2">പൊറുക്കണം. %1$s ന് ആ താൾ ലഭ്യമാക്കാൻ കഴിഞ്ഞില്ല.</string>
     <!-- Send crash report checkbox text on the tab crash page -->
     <string name="tab_crash_send_report">തകരാർ റിപ്പോ‍ർട്ട് മോസില്ലയിലേക്ക് അയയ്ക്കുക</string>
     <!-- Close tab button text on the tab crash page -->
@@ -1668,6 +1682,9 @@
     <!-- Text for the button to connect another device -->
     <string name="sync_add_new_device_connect_button">മറ്റൊരു ഉപകരണം ബന്ധിപ്പിക്കുക…</string>
 
+    <!-- A message template for the shared link with a footer. %1$s is the shared link, %2$s is the app name (e.g. Firefox) and %3$s is a download link for the app. -->
+    <string name="sent_from_firefox_template" tools:ignore="UnusedResources">%1$s\n\n%2$s-ൽ നിന്നു് അയച്ചു 🦊മൊബൈൽ അന്വേഷിയന്ത്രം ഉപയോഗിച്ചു നോക്കുക: %3$s</string>
+
     <!-- Notifications -->
     <!-- Text shown in the notification that pops up to remind the user that a private browsing session is active. -->
     <string name="notification_pbm_delete_text_2">സ്വകാര്യ ടാബുകള്‍ അടയ്ക്കുക</string>
@@ -1910,6 +1927,8 @@
     <string name="preference_enhanced_tracking_protection_custom_tracking_content_2">സ്വകാര്യ ടാബുകളിൽ മാത്രം</string>
     <!-- Preference for enhanced tracking protection for the custom protection settings -->
     <string name="preference_enhanced_tracking_protection_custom_cryptominers">ക്രിപ്റ്റോമൈനേഴ്സ്</string>
+    <!-- Preference for enhanced tracking protection for the custom protection settings -->
+    <string name="preference_enhanced_tracking_protection_custom_known_fingerprinters">അറിയപ്പെട്ട വിരലടയാളപ്പിന്തുടൎച്ചയന്ത്രം</string>
     <!-- Button label for navigating to the Enhanced Tracking Protection details -->
     <string name="enhanced_tracking_protection_details">വിശദാംശങ്ങള്‍</string>
     <!-- Header for categories that are being being blocked by current Enhanced Tracking Protection settings -->
@@ -1951,8 +1970,70 @@
     <string name="etp_redirect_trackers_title">പിന്തുടർച്ചായന്ത്രം വഴിതിരിച്ചുവിടുക</string>
     <!-- Description of redirect tracker cookies that can be blocked by Enhanced Tracking Protection -->
     <string name="etp_redirect_trackers_description">അറിയപ്പെടുന്ന ദത്താപിന്തുടർച്ച വെബ്‌സൈറ്റുകളിലേക്ക് വഴിതിരിച്ചിടുകൾ സജ്ജമാക്കിയ കുക്കികൾ മായ്ക്കുന്നു.</string>
+    <!-- Preference for fingerprinting protection for the custom protection settings -->
+    <string name="etp_suspected_fingerprinters_title">സംശയിക്കപ്പെട്ട വിരലടയാളപ്പിന്തുടൎച്ചയന്ത്രങ്ങൾ</string>
+    <!-- Category of trackers (fingerprinters) that can be blocked by Enhanced Tracking Protection -->
+    <string name="etp_known_fingerprinters_title">അറിയപ്പെട്ട വിരലടയാളപ്പിന്തുടൎച്ചയന്ത്രം</string>
     <!-- Text displayed that links to website about enhanced tracking protection SmartBlock -->
     <string name="preference_etp_smartblock_learn_more">കൂടുതലറിയുക</string>
+
+    <!-- Used as text for the link in `preference_doh_title`, points to documentation about "DNS over HTTPS" -->
+    <string name="preference_doh_learn_more">കൂടുതലറിയുക</string>
+
+    <!-- Content description for the toolbar "Navigate up" button -->
+    <string name="preference_doh_up_description">മുകളിലേക്ക്  ചെല്ലുക</string>
+    <!-- Content description for the "Exceptions" button -->
+    <string name="preference_doh_exceptions_description">വിട്ടുവീഴ്ചകള്‍</string>
+    <!-- Content description for the "Info" button -->
+    <string name="preference_doh_info_description">വിവരം</string>
+    <!-- Content description for the "Add Site" button -->
+    <string name="preference_doh_add_site_description">വെബിടം ചേൎക്കുക</string>
+
+    <!-- Title displayed for "Default Protection" option under "DNS over HTTPS" -->
+    <string name="preference_doh_default_protection">തനമിട്ട സംരക്ഷണം</string>
+
+    <!-- Title displayed for "Increased Protection" option under "DNS over HTTPS" -->
+    <string name="preference_doh_increased_protection">കൂട്ടിയ സംരക്ഷണം</string>
+
+    <!-- Title displayed for "Max Protection" option under "DNS over HTTPS" -->
+    <string name="preference_doh_max_protection">ഉച്ചനില സംരക്ഷണം</string>
+
+    <!-- Title displayed for "Off" option under "DNS over HTTPS" -->
+    <string name="preference_doh_off">അണച്ചതു്</string>
+
+    <!-- Text displayed above provider dropdown under "DNS over HTTPS" -->
+    <string name="preference_doh_choose_provider">ദാതാവു് തിരഞ്ഞെടുക്കുക</string>
+    <!-- Text displayed for "Default provider" under "DNS over HTTPS" providers -->
+    <string name="preference_doh_provider_default">(തനിമട്ടു്)</string>
+    <!-- Text displayed for "Custom" under "DNS over HTTPS" providers -->
+    <string name="preference_doh_provider_custom">ഇഷ്ടാനുസൃതം</string>
+    <!-- Text displayed for "Custom provider" dialog under "DNS over HTTPS" -->
+    <string name="preference_doh_provider_custom_dialog_title">ഇഷ്ടാനുസൃത ദാതാവു്</string>
+    <!-- Text displayed above provider textfield under "DNS over HTTPS" -->
+    <string name="preference_doh_provider_custom_dialog_textfield">ദാതാവു്</string>
+    <!-- Error text displayed for provider textfield under "DNS over HTTPS" if the URL does not start with "https://" or its scheme is not "https"-->
+    <string name="preference_doh_provider_custom_dialog_error_https">യൂ.ആർ.എൽ എല്ലാം “https://”- കൂടെ തുടങ്ങണം</string>
+    <!-- Error text displayed for provider textfield under "DNS over HTTPS" if the URL is invalid -->
+    <string name="preference_doh_provider_custom_dialog_error_invalid">തെറ്റായ URL</string>
+    <!-- Cancel button text for provider textfield under "DNS over HTTPS" -->
+    <string name="preference_doh_provider_custom_dialog_cancel">റദ്ദാക്കുക</string>
+    <!-- Add button text for provider textfield under "DNS over HTTPS" -->
+    <string name="preference_doh_provider_custom_dialog_add">ചേര്‍ക്കുക</string>
+
+    <!-- Preference to access list of login exceptions that we don't use DNS over HTTPS -->
+    <string name="preference_doh_exceptions">വിട്ടുവീഴ്ചകള്‍</string>
+    <!-- Text displayed that links to adding website domain for "DNS over HTTPS" exceptions. -->
+    <string name="preference_doh_exceptions_add">വെബിടം ചേൎക്കുക</string>
+    <!-- Text displayed above the input field when adding exceptions for "DNS over HTTPS". -->
+    <string name="preference_doh_exceptions_add_site">വെബിടം</string>
+    <!-- Placeholder URL displayed in the input field when adding exceptions for "DNS over HTTPS". -->
+    <string name="preference_doh_exceptions_add_placeholder">example.com</string>
+    <!-- Error displayed in the input field when adding invalid URLs for "DNS over HTTPS". -->
+    <string name="preference_doh_exceptions_add_error">സാധുവായ ഒരു മേഖലാവു് ആയിരിക്കണം</string>
+    <!-- Text displayed on the button within the input field for adding exceptions to "DNS over HTTPS" -->
+    <string name="preference_doh_exceptions_add_save">കരുതിവയ്ക്കുക</string>
+    <!-- Text displayed for removing all exceptions in "DNS over HTTPS" -->
+    <string name="preference_doh_exceptions_remove_all_exceptions">വിട്ടുവീഴ്ചകളെല്ലാം മാറ്റുക</string>
 
     <!-- About page link text to open support link -->
     <string name="about_support">പിന്തുണ</string>
@@ -2481,6 +2562,8 @@
     <string name="review_quality_check_analysis_updated_confirmation_action" moz:removedIn="136" tools:ignore="UnusedResources">മനസ്സിലായി</string>
     <!-- Title for error card displayed to the user when an error occurred. -->
     <string name="review_quality_check_generic_error_title" moz:removedIn="136" tools:ignore="UnusedResources">ഇപ്പോൾ വിവരങ്ങളൊന്നും ലഭ്യമല്ല</string>
+    <!-- Text for body of error card displayed to the user when an error occurred. -->
+    <string name="review_quality_check_generic_error_body" moz:removedIn="136" tools:ignore="UnusedResources">കുഴപ്പം പരിഹരിക്കാൻ ഞങ്ങൾ ശ്രമിക്കുന്നു. ദയവായി ഇച്ചിരി നേരം കഴിഞ്ഞു് വീണ്ടും നോക്കുക.</string>
     <!-- Title for error card displayed to the user when the device is disconnected from the network. -->
     <string name="review_quality_check_no_connection_title" moz:removedIn="136" tools:ignore="UnusedResources">ഗോളാന്തരവല സമ്പർക്കമില്ല</string>
     <!-- Clickable text from the contextual onboarding card that links to review quality check support article. -->
@@ -2579,7 +2662,7 @@
     <!-- The title of the warning card informs the user that the list of languages cannot be loaded. -->
     <string name="translation_error_could_not_load_languages_warning_text">ഭാഷാകൾ ലഭ്യമാക്കാൻ കഴിഞ്ഞില്ല. താങ്ങളുടെ ഗോളാന്തരവല സമ്പർക്കം പരിശോധിച്ച് വീണ്ടും ശ്രമിക്കുക.</string>
     <!-- The title of the warning card informs the user that a language is not supported. The first parameter is the name of the language that is not supported. -->
-    <string name="translation_error_language_not_supported_warning_text">ക്ഷമിക്കണം, ഞങ്ങൾ ഇതുവരെ %1$s-നെ പിന്തുണയ്ക്കുന്നില്ല.</string>
+    <string name="translation_error_language_not_supported_warning_text">പൊറുക്കണം, ഞങ്ങൾ ഇതുവരെ %1$s-നെ പിന്തുണയ്ക്കുന്നില്ല.</string>
     <!-- Snackbar title shown if the user closes the Translation Request dialogue and a translation is in progress. -->
     <string name="translation_in_progress_snackbar">വിവർത്തനം ചെയ്യുന്നു…</string>
 
@@ -2743,6 +2826,10 @@
     <string name="download_language_file_dialog_negative_button_text">റദ്ദാക്കുക</string>
 
     <!-- Unified Trust Panel -->
+    <!-- Text for the protection panel header when the site is secure. -->
+    <string name="protection_panel_header_secure">സുരക്ഷിതം</string>
+    <!-- Text for the protection panel header when the site is not secure. -->
+    <string name="protection_panel_header_not_secure">സുരക്ഷിതമല്ല</string>
     <!-- Title text for the protection panel banner when the site is not secure. -->
     <string name="protection_panel_banner_not_secure_title">ഈ വെബ്സ്ഥാനത്തിൽ ശ്രദ്ധത്തോളം ഇരിക്കുക</string>
     <!-- Description text for the protection panel banner when the site is not secure. -->
@@ -2764,6 +2851,34 @@
     <string name="protection_panel_etp_toggle_enabled_description">ഈ വെബ്സ്ഥാനത്തിൽ എന്തെങ്കിലും തകരാറുണ്ടെന്നു് തോന്നുന്നുണ്ടെങ്കിൽ പരിരക്ഷകളെ അണച്ചു് നോക്കൂ.</string>
     <!-- Description text for the Enhanced Tracking Protection toggle when tracking protection is disabled. -->
     <string name="protection_panel_etp_toggle_disabled_description">സംരക്ഷണങ്ങൾ അണച്ചിരിക്കുന്നു. അവയെ വീണ്ടും തുടങ്ങിവയ്ക്കുന്നതിലാണു് ബുദ്ധി.</string>
+
+    <!-- Text for displaying the total number of trackers blocked in the protection panel.
+        %d is a placeholder for the number of trackers blocked. -->
+    <string name="protection_panel_num_trackers_blocked">തടഞ്ഞിരിക്കുന്ന പിന്തുടർച്ചായന്ത്രങ്ങൾ: %d </string>
+    <!-- Text for when no trackers have been blocked. -->
+    <string name="protection_panel_no_trackers_blocked">പിന്തുടർച്ചയന്ത്രങ്ങൾ കണ്ടെത്താൻ കഴിഞ്ഞില്ല</string>
+    <!-- Link text to navigate to privacy and security settings from the protection panel. -->
+    <string name="protection_panel_privacy_and_security_settings">സ്വകാര്യതയും സുരക്ഷ ക്രമീകരണങ്ങൾ</string>
+    <!-- Text for displaying the total number of trackers blocked in the trackers blocked panel.
+        %d is a placeholder for the number of trackers blocked. -->
+    <string name="trackers_blocked_panel_total_num_trackers_blocked">തടഞ്ഞിരിക്കുന്ന പിന്തുടർച്ചായന്ത്രങ്ങൾ: %d </string>
+    <!-- Text for displaying the number of trackers blocked for a specific tracker category in the trackers blocked panel.
+        %s is a placeholder for the name of the tracker category.
+        %d is a placeholder for the number of trackers blocked. -->
+    <string name="trackers_blocked_panel_categorical_num_trackers_blocked">%s: %d</string>
+    <!-- Button text on the clear site data dialog to allow users to confirm they wish to clear the site data. -->
+    <string name="clear_site_data_dialog_positive_button_text">മായ്ക്കുക</string>
+    <!-- Button text on the clear site data dialog to allow users to cancel the action and not clear the site data. -->
+    <string name="clear_site_data_dialog_negative_button_text">റദ്ദാക്കുക</string>
+    <!-- Snackbar title shown when the site data has been cleared. -->
+    <string name="clear_site_data_snackbar">കുക്കികളും വെബുസ്ഥാന ദത്തയും മായച്ചു</string>
+    <!-- Text for the connection security panel when the site is secure. -->
+    <string name="connection_security_panel_secure">സുരക്ഷിതമായ സമ്പൎക്കം</string>
+    <!-- Text for the connection security panel when the site is not secure. -->
+    <string name="connection_security_panel_not_secure">സമ്പൎക്കം സുരക്ഷിതമല്ല</string>
+    <!-- Text for the connection security panel to indicate who the certificate was verified by.
+    %s is a placeholder for the name of the certificate authority that verified the ticket -->
+    <string name="connection_security_panel_verified_by">ഉറപ്പാക്കിയതു്: %s</string>
 
     <!-- Debug drawer -->
     <!-- The user-facing title of the Debug Drawer feature. -->
@@ -2945,5 +3060,5 @@
     <!-- The default content description for the eye trailing icon button in TextField -->
     <string name="text_field_eye_trailing_icon_default_content_description">മറഞ്ഞിരിക്കുന്ന വാചകം കാണിക്കുക</string>
     <!-- The default content description for the cross trailing icon button in TextField -->
-    <string name="text_field_cross_trailing_icon_default_content_description">പാഠം വേൎപ്പെടുത്തുക</string>
+    <string name="text_field_cross_trailing_icon_default_content_description">എഴുത്തു് വേൎപ്പെടുത്തുക</string>
 </resources>

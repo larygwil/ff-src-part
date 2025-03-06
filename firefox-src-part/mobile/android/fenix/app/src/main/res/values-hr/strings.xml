@@ -536,6 +536,7 @@
     <string name="onboarding_term_of_service_line_two_link_text">Napomena o privatnosti</string>
     <!-- Used as text for the link in onboarding_term_of_service_line_three. -->
     <string name="onboarding_term_of_service_line_three_link_text">Upravljaj</string>
+
     <!-- Onboarding header for the toolbar selection card, used by Nimbus experiments. -->
     <string name="onboarding_customize_toolbar_title" tools:ignore="UnusedResources">Odaberi položaj alatne trake</string>
     <!-- Onboarding sub header for toolbar selection card, used by Nimbus experiments. -->
@@ -2812,7 +2813,6 @@
     <!-- Button text on the data saving mode warning dialog used by the translations feature to allow users to cancel the action and not perform a download of the language file. -->
     <string name="download_language_file_dialog_negative_button_text">Odustani</string>
 
-    <!-- Unified Trust Panel -->
     <!-- Title text for the protection panel banner when the site is not secure. -->
     <string name="protection_panel_banner_not_secure_title">Oprez na ovoj stranici</string>
     <!-- Description text for the protection panel banner when the site is not secure. -->

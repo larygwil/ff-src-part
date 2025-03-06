@@ -617,6 +617,14 @@
     <string name="onboarding_marketing_learn_more" tools:ignore="UnusedResources">เราใช้ข้อมูลอย่างไร</string>
     <!-- Marketing onboarding page button label. Button to confirm choice and start browsing. -->
     <string name="onboarding_marketing_positive_button" tools:ignore="UnusedResources">ยืนยันและเริ่มเรียกดู</string>
+
+    <!-- Marketing onboarding page title variant. “One last thing” refers to the final step or action in the onboarding process that we’re asking users to take before they can start using the browser. -->
+    <string name="onboarding_marketing_title_1" tools:ignore="UnusedResources">ขั้นตอนสุดท้าย</string>
+    <!-- Marketing onboarding page body variant. 'Firefox' is intentionally hardcoded. -->
+    <string name="onboarding_marketing_body_1" tools:ignore="BrandUsage,UnusedResources">แบ่งปันว่าคุณค้นพบ Firefox ได้อย่างไร และคุณใช้มันอย่างไรกับพันธมิตรด้านการตลาดของ Mozilla โดยข้อมูลนี้จะไม่ถูกนำไปขาย</string>
+    <!-- Marketing onboarding page button label variant. Button to confirm choice and start browsing. -->
+    <string name="onboarding_marketing_positive_button_1" tools:ignore="UnusedResources">ยอมรับและเริ่มการเรียกดู</string>
+
     <!-- Onboarding header for the toolbar selection card, used by Nimbus experiments. -->
     <string name="onboarding_customize_toolbar_title" tools:ignore="UnusedResources">เลือกตำแหน่งแถบเครื่องมือ</string>
     <!-- Onboarding sub header for toolbar selection card, used by Nimbus experiments. -->
@@ -833,6 +841,8 @@
     <string name="preferences_show_voice_search">แสดงการค้นหาด้วยเสียง</string>
     <!-- Preference title for switch preference to show search suggestions also in private mode -->
     <string name="preferences_show_search_suggestions_in_private">แสดงในวาระส่วนตัว</string>
+    <!-- Preference title for switch preference to show trending search suggestions -->
+    <string name="preferences_show_trending_search_suggestions">แสดงข้อเสนอแนะที่กำลังนิยม</string>
     <!-- Preference title for switch preference to show a clipboard suggestion when searching -->
     <string name="preferences_show_clipboard_suggestions">แสดงข้อเสนอแนะคลิปบอร์ด</string>
     <!-- Preference title for switch preference to suggest browsing history when searching -->
@@ -855,6 +865,16 @@
     <string name="preferences_show_nonsponsored_suggestions">คำแนะนำจาก %1$s</string>
     <!-- Summary for preference to show Firefox Suggest search suggestions for web content -->
     <string name="preferences_show_nonsponsored_suggestions_summary">รับคำแนะนำจากเว็บที่เกี่ยวข้องกับการค้นหาของคุณ</string>
+    <!-- Preference for link sharing -->
+    <string name="preferences_link_sharing">การแบ่งปันลิงก์</string>
+    <!-- Title for the link sharing toggle. %1$s is replaced by the brand name (e.g. Firefox).  -->
+    <string name="link_sharing_toggle_title">รวมลิงก์ดาวน์โหลด %1$s ไว้บนข้อความที่แบ่งปันทาง WhatsApp</string>
+    <!-- Body for the link sharing toggle.  %1$s is replaced by the brand name (e.g. Firefox).  -->
+    <string name="link_sharing_toggle_body">เชิญเพื่อนของคุณมาลองเรียกดูเว็บอย่างรวดเร็วและปลอดภัยยิ่งขึ้นด้วย %1$s ได้ทุกครั้งที่คุณแบ่งปันลิงก์ทาง WhatsApp</string>
+    <!--Snackbar message shown when user shares a link -->
+    <string name="link_shared_snackbar_message">แบ่งปันลิงก์แล้ว</string>
+    <!-- Snackbar action label shown when user shares a link  -->
+    <string name="link_shared_snackbar_action">จัดการการตั้งค่า</string>
     <!-- Preference for open links in third party apps -->
     <string name="preferences_open_links_in_apps">เปิดลิงก์ในแอป</string>
 
@@ -1756,6 +1776,11 @@
     <!-- Text for the button to connect another device -->
     <string name="sync_add_new_device_connect_button">เชื่อมต่ออุปกรณ์อื่น…</string>
 
+    <!-- A message template for the shared link with a footer. %1$s is the shared link, %2$s is the app name (e.g. Firefox) and %3$s is a download link for the app. -->
+    <string name="sent_from_firefox_template" tools:ignore="UnusedResources">%1$s\n\nส่งจาก %2$s 🦊 ลองใช้เบราว์เซอร์มือถือ: %3$s</string>
+    <!-- A short message template for the shared link with a footer. %1$s is the shared link, %2$s is the app name (e.g. Firefox) and %3$s is a download link for the app. -->
+    <string name="sent_from_firefox_template_short" tools:ignore="UnusedResources">%1$s\n\nส่งจาก %2$s 🦊 %3$s</string>
+
     <!-- Notifications -->
     <!-- Text shown in the notification that pops up to remind the user that a private browsing session is active. -->
     <string name="notification_pbm_delete_text_2">ปิดแท็บส่วนตัว</string>
@@ -2074,6 +2099,104 @@
     <!-- Content description (not visible, for screen readers etc.):
     Enhanced tracking protection exception preference icon for ETP settings. -->
     <string name="preference_etp_exceptions_icon_description">ไอคอนการกำหนดลักษณะข้อยกเว้นการป้องกันการติดตามที่ปรับปรุงใหม่</string>
+
+    <!-- DNS Over HTTPS (DoH) -->
+    <!-- Preference title for DNS over HTTPS settings -->
+    <string name="preference_doh_title">DNS Over HTTPS</string>
+    <!-- Description of the preference to enable "DNS over HTTPS". %1$s is replaced by a link using `preference_doh_learn_more` at text ("Learn More"). -->
+    <string name="preference_doh_summary">Domain Name System (DNS) over HTTPS จะส่งคำขอชื่อโดเมนของคุณผ่านการเชื่อมต่อที่มีการเข้ารหัส เพื่อเสริมความปลอดภัยให้กับ DNS และทำให้ผู้อื่นดูว่าคุณกำลังจะเข้าถึงเว็บไซต์ใดได้ยากขึ้น %1$s</string>
+    <!-- Used as text for the link in `preference_doh_title`, points to documentation about "DNS over HTTPS" -->
+    <string name="preference_doh_learn_more">เรียนรู้เพิ่มเติม</string>
+
+    <!-- Content description for the toolbar "Navigate up" button -->
+    <string name="preference_doh_up_description">นำทางขึ้นไปด้านบน</string>
+    <!-- Content description for the "Exceptions" button -->
+    <string name="preference_doh_exceptions_description">ข้อยกเว้น</string>
+
+    <!-- Content description for the "Info" button -->
+    <string name="preference_doh_info_description">ข้อมูล</string>
+    <!-- Content description for the "Add Site" button -->
+    <string name="preference_doh_add_site_description">เพิ่มไซต์</string>
+
+    <!-- Title displayed for "Default Protection" option under "DNS over HTTPS" -->
+    <string name="preference_doh_default_protection">การปกป้องแบบเริ่มต้น</string>
+    <!-- Summary displayed for "Default Protection" option under "DNS over HTTPS". %1$s is the name of the application (e.g. Fenix). -->
+    <string name="preference_doh_default_protection_summary">%1$s จะตัดสินใจว่าควรใช้ DNS ที่เชื่อถือได้เมื่อใดเพื่อที่จะปกป้องความเป็นส่วนตัวของคุณ</string>
+    <!-- Bullet point 1 for "Default Protection" information page under "DNS over HTTPS" -->
+    <string name="preference_doh_default_protection_info_1">ใช้ผู้ให้บริการที่คุณเลือก</string>
+
+    <!-- Bullet point 2 for "Default Protection" information page under "DNS over HTTPS" -->
+    <string name="preference_doh_default_protection_info_2">ใช้ DNS resolver เริ่มต้นของคุณถ้ามีปัญหากับผู้ให้บริการ secure DNS</string>
+    <!-- Bullet point 3 for "Default Protection" information page under "DNS over HTTPS". %1$s is replaced by a link using `preference_doh_learn_more` at text ("Learn More"). -->
+    <string name="preference_doh_default_protection_info_3">ใช้ผู้ให้บริการเฉพาะที่ถ้าเป็นไปได้ %1$s</string>
+    <!-- Bullet point 4 for "Default Protection" information page under "DNS over HTTPS" -->
+    <string name="preference_doh_default_protection_info_4">ปิดใช้เมื่อ VPN การควบคุมโดยผู้ปกครอง หรือนโยบายองค์กรทำงาน</string>
+
+    <!-- Bullet point 5 for "Default Protection" information page under "DNS over HTTPS". %1$s is the name of the application (e.g. Fenix). %2$s is replaced by a link using `preference_doh_learn_more` at text ("Learn More"). -->
+    <string name="preference_doh_default_protection_info_5">ปิดเมื่อเครือข่ายแจ้ง %1$s ว่าไม่ควรใช้ DNS ที่เชื่อถือได้ %2$s</string>
+
+    <!-- Title displayed for "Increased Protection" option under "DNS over HTTPS" -->
+    <string name="preference_doh_increased_protection">การปกป้องแบบเพิ่มเติม</string>
+    <!-- Summary displayed for "Increased Protection" option under "DNS over HTTPS" -->
+    <string name="preference_doh_increased_protection_summary">ให้คุณควบคุมว่าควรใช้ DNS ที่เชื่อถือได้เมื่อใดและเลือกผู้ให้บริการของคุณเองได้</string>
+    <!-- Bullet point 1 for "Increased Protection" information page under "DNS over HTTPS" -->
+    <string name="preference_doh_increased_protection_info_1">ใช้ผู้ให้บริการที่คุณเลือก</string>
+
+    <!-- Bullet point 2 for "Increased Protection" information page under "DNS over HTTPS" -->
+    <string name="preference_doh_increased_protection_info_2">ใช้ DNS resolver เริ่มต้นของคุณเฉพาะเมื่อมีปัญหากับ DNS ที่เชื่อถือได้เท่านั้น</string>
+
+    <!-- Title displayed for "Max Protection" option under "DNS over HTTPS" -->
+    <string name="preference_doh_max_protection">การปกป้องแบบสูงสุด</string>
+    <!-- Summary displayed for "Max Protection" option under "DNS over HTTPS". %1$s is the name of the application (e.g. Fenix). -->
+    <string name="preference_doh_max_protection_summary">%1$s จะใช้ DNS ที่เชื่อถือได้เสมอ คุณจะเห็นคำเตือนเกี่ยวกับความเสี่ยงด้านความปลอดภัยก่อนที่เราจะใช้ DNS ของระบบของคุณ</string>
+    <!-- Bullet point 1 for "Max Protection" information page under "DNS over HTTPS" -->
+    <string name="preference_doh_max_protection_info_1">ใช้เฉพาะผู้ให้บริการที่คุณเลือกเท่านั้น</string>
+    <!-- Bullet point 2 for "Max Protection" information page under "DNS over HTTPS" -->
+    <string name="preference_doh_max_protection_info_2">เตือนเสมอเมื่อ DNS ที่เชื่อถือได้ใช้ไม่ได้</string>
+    <!-- Bullet point 3 for "Max Protection" information page under "DNS over HTTPS" -->
+    <string name="preference_doh_max_protection_info_3">ถ้า DNS ที่เชื่อถือได้ใช้ไม่ได้ ไซต์ต่างๆ จะไม่โหลดหรือทำงานถูกต้อง</string>
+
+    <!-- Title displayed for "Off" option under "DNS over HTTPS" -->
+    <string name="preference_doh_off">ปิด</string>
+    <!-- Summary displayed for "Off" option under "DNS over HTTPS" -->
+    <string name="preference_doh_off_summary">ใช้ DNS resolver เริ่มต้นของคุณ</string>
+
+    <!-- Text displayed above provider dropdown under "DNS over HTTPS" -->
+    <string name="preference_doh_choose_provider">เลือกผู้ให้บริการ</string>
+    <!-- Text displayed for "Default provider" under "DNS over HTTPS" providers -->
+    <string name="preference_doh_provider_default">(ค่าเริ่มต้น)</string>
+    <!-- Text displayed for "Custom" under "DNS over HTTPS" providers -->
+    <string name="preference_doh_provider_custom">กำหนดเอง</string>
+    <!-- Text displayed for "Custom provider" dialog under "DNS over HTTPS" -->
+    <string name="preference_doh_provider_custom_dialog_title">ผู้ให้บริการที่กำหนดเอง</string>
+    <!-- Text displayed above provider textfield under "DNS over HTTPS" -->
+    <string name="preference_doh_provider_custom_dialog_textfield">ผู้ให้บริการ</string>
+    <!-- Error text displayed for provider textfield under "DNS over HTTPS" if the URL does not start with "https://" or its scheme is not "https"-->
+    <string name="preference_doh_provider_custom_dialog_error_https">URL ต้องขึ้นต้นด้วย “https://”</string>
+    <!-- Error text displayed for provider textfield under "DNS over HTTPS" if the URL is invalid -->
+    <string name="preference_doh_provider_custom_dialog_error_invalid">URL ไม่ถูกต้อง</string>
+    <!-- Cancel button text for provider textfield under "DNS over HTTPS" -->
+    <string name="preference_doh_provider_custom_dialog_cancel">ยกเลิก</string>
+    <!-- Add button text for provider textfield under "DNS over HTTPS" -->
+    <string name="preference_doh_provider_custom_dialog_add">เพิ่ม</string>
+
+    <!-- Preference to access list of login exceptions that we don't use DNS over HTTPS -->
+    <string name="preference_doh_exceptions">ข้อยกเว้น</string>
+
+    <!-- Description of "exceptions" for "DNS over HTTPS". The first parameter is the name of the application. (For example: Fenix) -->
+    <string name="preference_doh_exceptions_summary">%1$s จะไม่ใช้ DNS ที่เชื่อถือได้บนไซต์เหล่านี้รวมถึงโดเมนย่อยของไซต์เหล่านี้</string>
+    <!-- Text displayed that links to adding website domain for "DNS over HTTPS" exceptions. -->
+    <string name="preference_doh_exceptions_add">เพิ่มไซต์</string>
+    <!-- Text displayed above the input field when adding exceptions for "DNS over HTTPS". -->
+    <string name="preference_doh_exceptions_add_site">ไซต์</string>
+    <!-- Placeholder URL displayed in the input field when adding exceptions for "DNS over HTTPS". -->
+    <string name="preference_doh_exceptions_add_placeholder">example.com</string>
+    <!-- Error displayed in the input field when adding invalid URLs for "DNS over HTTPS". -->
+    <string name="preference_doh_exceptions_add_error">ต้องเป็นโดเมนที่ถูกต้อง</string>
+    <!-- Text displayed on the button within the input field for adding exceptions to "DNS over HTTPS" -->
+    <string name="preference_doh_exceptions_add_save">บันทึก</string>
+    <!-- Text displayed for removing all exceptions in "DNS over HTTPS" -->
+    <string name="preference_doh_exceptions_remove_all_exceptions">เอาข้อยกเว้นออกทั้งหมด</string>
 
     <!-- About page link text to open support link -->
     <string name="about_support">การสนับสนุน</string>
@@ -2554,6 +2677,11 @@
     <!-- Search suggestions title for Firefox Suggest. -->
     <string name="firefox_suggest_header" tools:ignore="BrandUsage">Firefox Suggest</string>
 
+    <!-- Search suggestions title for trending searches. -->
+    <string name="trending_searches_header" moz:removedIn="137" tools:ignore="UnusedResources">การค้นหาที่กำลังนิยม</string>
+    <!-- Search suggestions title for trending search suggestions.
+        %s is a placeholder for the name of the search engine providing the trending search suggestions. -->
+    <string name="trending_searches_header_2">เป็นที่นิยมใน %s</string>
     <!-- Title for search suggestions when Google is the default search suggestion engine. -->
     <string name="google_search_engine_suggestion_header">ค้นหาด้วย Google</string>
     <!-- Title for search suggestions when the default search suggestion engine is anything other than Google. The first parameter is default search engine name. -->
@@ -2986,6 +3114,10 @@
     <string name="download_language_file_dialog_negative_button_text">ยกเลิก</string>
 
     <!-- Unified Trust Panel -->
+    <!-- Text for the protection panel header when the site is secure. -->
+    <string name="protection_panel_header_secure">ปลอดภัย</string>
+    <!-- Text for the protection panel header when the site is not secure. -->
+    <string name="protection_panel_header_not_secure">ไม่ปลอดภัย</string>
     <!-- Title text for the protection panel banner when the site is not secure. -->
     <string name="protection_panel_banner_not_secure_title">โปรดระวังในไซต์นี้</string>
     <!-- Description text for the protection panel banner when the site is not secure. -->
@@ -3007,6 +3139,37 @@
     <string name="protection_panel_etp_toggle_enabled_description">หากมีบางอย่างดูเสียหายในไซต์นี้ ให้ลองปิดการป้องกัน</string>
     <!-- Description text for the Enhanced Tracking Protection toggle when tracking protection is disabled. -->
     <string name="protection_panel_etp_toggle_disabled_description">การป้องกันปิดอยู่ เราขอแนะนำให้เปิดกลับมาใหม่อีกครั้ง</string>
+
+    <!-- Text for displaying the total number of trackers blocked in the protection panel.
+        %d is a placeholder for the number of trackers blocked. -->
+    <string name="protection_panel_num_trackers_blocked">ตัวติดตามที่ปิดกั้น: %d</string>
+    <!-- Text for when no trackers have been blocked. -->
+    <string name="protection_panel_no_trackers_blocked">ไม่พบตัวติดตาม</string>
+    <!-- Link text to navigate to privacy and security settings from the protection panel. -->
+    <string name="protection_panel_privacy_and_security_settings">การตั้งค่าความเป็นส่วนตัวและความปลอดภัย</string>
+    <!-- Text for displaying the total number of trackers blocked in the trackers blocked panel.
+        %d is a placeholder for the number of trackers blocked. -->
+    <string name="trackers_blocked_panel_total_num_trackers_blocked">ตัวติดตามที่ปิดกั้น: %d</string>
+    <!-- Text for displaying the number of trackers blocked for a specific tracker category in the trackers blocked panel.
+        %s is a placeholder for the name of the tracker category.
+        %d is a placeholder for the number of trackers blocked. -->
+    <string name="trackers_blocked_panel_categorical_num_trackers_blocked">%s: %d</string>
+    <!-- Description text for a dialog confirming whether the user wants to delete all data for current site.
+        %s is a placeholder for the base domain of website. -->
+    <string name="clear_site_data_dialog_description"><![CDATA[การเอาคุกกี้และข้อมูลไซต์สำหรับ <b>%s</b> ออกอาจทำให้คุณออกจากระบบเว็บไซต์และล้างตะกร้าสินค้า]]></string>
+    <!-- Button text on the clear site data dialog to allow users to confirm they wish to clear the site data. -->
+    <string name="clear_site_data_dialog_positive_button_text">ล้าง</string>
+    <!-- Button text on the clear site data dialog to allow users to cancel the action and not clear the site data. -->
+    <string name="clear_site_data_dialog_negative_button_text">ยกเลิก</string>
+    <!-- Snackbar title shown when the site data has been cleared. -->
+    <string name="clear_site_data_snackbar">เอาคุกกี้และข้อมูลไซต์ออกแล้ว</string>
+    <!-- Text for the connection security panel when the site is secure. -->
+    <string name="connection_security_panel_secure">การเชื่อมต่อปลอดภัย</string>
+    <!-- Text for the connection security panel when the site is not secure. -->
+    <string name="connection_security_panel_not_secure">การเชื่อมต่อไม่ปลอดภัย</string>
+    <!-- Text for the connection security panel to indicate who the certificate was verified by.
+    %s is a placeholder for the name of the certificate authority that verified the ticket -->
+    <string name="connection_security_panel_verified_by">ยืนยันโดย %s</string>
 
     <!-- Debug drawer -->
     <!-- The user-facing title of the Debug Drawer feature. -->

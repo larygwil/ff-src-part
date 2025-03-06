@@ -616,6 +616,7 @@
     <string name="onboarding_marketing_learn_more" tools:ignore="UnusedResources">Com utilitzem les dades</string>
     <!-- Marketing onboarding page button label. Button to confirm choice and start browsing. -->
     <string name="onboarding_marketing_positive_button" tools:ignore="UnusedResources">Confirma i comença a navegar</string>
+
     <!-- Onboarding header for the toolbar selection card, used by Nimbus experiments. -->
     <string name="onboarding_customize_toolbar_title" tools:ignore="UnusedResources">Trieu la ubicació de la barra d’eines</string>
     <!-- Onboarding sub header for toolbar selection card, used by Nimbus experiments. -->
@@ -2977,7 +2978,6 @@
     <!-- Button text on the data saving mode warning dialog used by the translations feature to allow users to cancel the action and not perform a download of the language file. -->
     <string name="download_language_file_dialog_negative_button_text">Cancel·la</string>
 
-    <!-- Unified Trust Panel -->
     <!-- Title text for the protection panel banner when the site is not secure. -->
     <string name="protection_panel_banner_not_secure_title">Aneu amb compte en aquest lloc</string>
     <!-- Description text for the protection panel banner when the site is not secure. -->
