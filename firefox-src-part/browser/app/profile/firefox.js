@@ -540,6 +540,15 @@ pref("browser.urlbar.quicksuggest.contextualOptIn.secondReshowAfterPeriodDays", 
 // Period until reshow the Firefox Suggest contextual opt-in result when third dismissed.
 pref("browser.urlbar.quicksuggest.contextualOptIn.thirdReshowAfterPeriodDays", 60);
 
+// Number of impression for the Firefox Suggest contextual opt-in result.
+pref("browser.urlbar.quicksuggest.contextualOptIn.impressionCount", 0);
+
+// Limit for impression to dismiss the Firefox Suggest contextual opt-in result.
+pref("browser.urlbar.quicksuggest.contextualOptIn.impressionLimit", 20);
+
+// Days until dismiss the Firefox Suggest contextual opt-in result after first impression.
+pref("browser.urlbar.quicksuggest.contextualOptIn.impressionDaysLimit", 5);
+
 // Whether the quick suggest feature in the urlbar is enabled.
 pref("browser.urlbar.quicksuggest.enabled", false);
 
@@ -2362,7 +2371,7 @@ pref("browser.contentblocking.reject-and-isolate-cookies.preferences.ui.enabled"
 //     "btp": BTP enabled
 //     "-btp": BTP disabled
 // One value from each section must be included in the browser.contentblocking.features.strict pref.
-pref("browser.contentblocking.features.strict", "tp,tpPrivate,cookieBehavior5,cookieBehaviorPBM5,cm,fp,stp,emailTP,emailTPPrivate,lvl2,rp,rpTop,ocsp,qps,qpsPBM,fpp,fppPrivate,3pcd,btp");
+pref("browser.contentblocking.features.strict", "tp,tpPrivate,cookieBehavior5,cookieBehaviorPBM5,cm,fp,stp,emailTP,emailTPPrivate,lvl2,rp,rpTop,ocsp,qps,qpsPBM,fpp,fppPrivate,btp");
 
 // Hide the "Change Block List" link for trackers/tracking content in the custom
 // Content Blocking/ETP panel. By default, it will not be visible. There is also
