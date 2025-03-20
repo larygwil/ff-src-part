@@ -10106,7 +10106,7 @@ function InterestPicker({
   const [focusedIndex, setFocusedIndex] = (0,external_React_namespaceObject.useState)(0);
   const prefs = (0,external_ReactRedux_namespaceObject.useSelector)(state => state.Prefs.values);
   const visibleSections = prefs[PREF_VISIBLE_SECTIONS]?.split(",").map(item => item.trim()).filter(item => item);
-  const following = prefs[PREF_FOLLOWED_SECTIONS] ? prefs[PREF_FOLLOWED_SECTIONS].split(",") : [];
+  const following = prefs[PREF_FOLLOWED_SECTIONS]?.split(",").map(item => item.trim()).filter(item => item) || [];
   const handleIntersection = (0,external_React_namespaceObject.useCallback)(() => {
     dispatch(actionCreators.AlsoToMain({
       type: actionTypes.INLINE_SELECTION_IMPRESSION,
@@ -10154,7 +10154,7 @@ function InterestPicker({
         // add section to visible sections and place after the inline picker
         // subtract 1 from the rank so that it is normalized with array index
         visibleSections.splice(receivedFeedRank - 1, 0, topic);
-        dispatch(actionCreators.SetPref(PREF_VISIBLE_SECTIONS, visibleSections.join(",")));
+        dispatch(actionCreators.SetPref(PREF_VISIBLE_SECTIONS, visibleSections.join(", ")));
       }
     } else {
       updatedTopics = updatedTopics.filter(t => t !== topic);
@@ -10168,7 +10168,7 @@ function InterestPicker({
         position: receivedFeedRank
       }
     }));
-    dispatch(actionCreators.SetPref(PREF_FOLLOWED_SECTIONS, updatedTopics.join(",")));
+    dispatch(actionCreators.SetPref(PREF_FOLLOWED_SECTIONS, updatedTopics.join(", ")));
   }
   return /*#__PURE__*/external_React_default().createElement("section", {
     className: "inline-selection-wrapper ds-section",
@@ -13378,7 +13378,7 @@ class BaseContent extends (external_React_default()).PureComponent {
     const {
       wallpaperList
     } = this.props.Wallpapers;
-    const activeWallpaper = this.props.Prefs.values[`newtabWallpapers.wallpaper-${this.state.colorMode}`];
+    const activeWallpaper = this.props.Prefs.values[`newtabWallpapers.wallpaper`];
     const selected = wallpaperList.find(wp => wp.title === activeWallpaper);
     // make sure a wallpaper is selected and that the attribution also exists
     if (!selected?.attribution) {
@@ -13562,7 +13562,7 @@ class BaseContent extends (external_React_default()).PureComponent {
     const layoutsVariantBEnabled = prefs["newtabLayouts.variant-b"];
     const shortcutsRefresh = prefs["newtabShortcuts.refresh"];
     const layoutsVariantAorB = layoutsVariantAEnabled || layoutsVariantBEnabled;
-    const activeWallpaper = prefs[`newtabWallpapers.wallpaper-${this.state.colorMode}`];
+    const activeWallpaper = prefs[`newtabWallpapers.wallpaper`];
     const wallpapersV2Enabled = prefs["newtabWallpapers.v2.enabled"];
     const weatherEnabled = prefs.showWeather;
     const {

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools" xmlns:moz="http://mozac.org/tools">
-  <!-- App name for private browsing mode. The first parameter is the name of the app defined in app_name (for example: Fenix) -->
+  <!-- App name for private browsing mode. %s is the name of the app (for example "Firefox"). -->
   <string name="app_name_private_5">Приватний перегляд %s</string>
-  <!-- App name for private browsing mode. The first parameter is the name of the app defined in app_name (for example: Fenix) -->
+  <!-- App name for private browsing mode. %s is the name of the app (for example "Firefox"). -->
   <string name="app_name_private_4">%s (Приватний перегляд)</string>
   <!--
     Home Fragment
@@ -32,7 +32,7 @@
   <string name="no_open_tabs_description">Тут з’являтимуться ваші відкриті вкладки.</string>
   <!-- No Private Tabs Message Description -->
   <string name="no_private_tabs_description">Тут зʼявлятимуться ваші приватні вкладки.</string>
-  <!-- Tab tray multi select title in app bar. The first parameter is the number of tabs selected -->
+  <!-- Tab tray multi select title in app bar. %1$d is the number of tabs selected -->
   <string name="tab_tray_multi_select_title">Вибрано %1$d</string>
   <!-- Label of button in create collection dialog for creating a new collection -->
   <string name="tab_tray_add_new_collection">Додати нову збірку</string>
@@ -56,13 +56,13 @@
   <string name="home_bookmarks_show_all_content_description">Показати всі закладки</string>
   <!-- Text for the menu button to remove a recently saved bookmark from the user's home screen -->
   <string name="home_bookmarks_menu_item_remove">Вилучити</string>
-  <!-- About content. The first parameter is the name of the application. (For example: Fenix) -->
+  <!-- About content. %1$s is the name of the app (for example "Firefox"). -->
   <string name="about_content">%1$s розроблено Mozilla.</string>
   <!--
     Private Browsing
 
-    Explanation for private browsing displayed to users on home view when they first enable private mode
-    The first parameter is the name of the app defined in app_name (for example: Fenix)
+    Explanation for private browsing displayed to users on home view when they first enable private mode.
+    %1$s is the name of the app (for example "Firefox").
   -->
   <string name="private_browsing_placeholder_description_2">%1$s стирає вашу історію пошуку та перегляду для приватних вкладок, коли ви закриваєте їх чи виходите з програми. Це не робить вас анонімними для вебсайтів чи вашого провайдера, але дозволяє приховати вашу діяльність в інтернеті від будь-кого іншого, хто використовує цей пристрій.</string>
   <string name="private_browsing_common_myths">
@@ -77,14 +77,14 @@
   <!--
     Explanation for private browsing displayed to users on home view when they first enable
     private mode in our new Total Private Browsing mode.
-    The first parameter is the name of the app defined in app_name (for example: Firefox Nightly)
-    The second parameter is the clickable link text in felt_privacy_info_card_subtitle_link_text
+    %1$s is the name of the app (for example "Firefox").
+    %2$s is a link using felt_privacy_info_card_subtitle_link_text as text
   -->
   <string name="felt_privacy_info_card_subtitle_2">%1$s видаляє ваші файли cookie, історію і дані сайтів, коли ви закриваєте всі приватні вкладки. %2$s</string>
   <!--
     Clickable portion of the explanation for private browsing that links the user to our
     about privacy page.
-    This string is used in felt_privacy_info_card_subtitle as the second parameter.
+    This string is used in felt_privacy_info_card_subtitle as the text for the link.
   -->
   <string name="felt_privacy_info_card_subtitle_link_text">Хто може бачити мою діяльність?</string>
   <!--
@@ -100,7 +100,7 @@
   <!--
     Open in App "contextual feature recommendation" (CFR)
 
-    Text for the info message. The first parameter is the name of the application.
+    Text for the info message. %1$s is the name of the app (for example "Firefox").
   -->
   <string name="open_in_app_cfr_info_message_2">Ви можете налаштувати %1$s на автоматичне відкривання посилань у програмах.</string>
   <!-- Text for the positive action button -->
@@ -151,7 +151,7 @@
   <string name="tab_tray_inactive_auto_close_title">Закрити через місяць автоматично?</string>
   <!--
     Text for the body for the auto-close dialog of the inactive tabs.
-    The first parameter is the name of the application.
+    %1$s is the name of the app (for example "Firefox").
   -->
   <string name="tab_tray_inactive_auto_close_body_2">%1$s може закривати вкладки, які ви не переглядали впродовж останнього місяця.</string>
   <!-- Content description for close button in the auto-close dialog of the inactive tabs. -->
@@ -219,19 +219,19 @@
   <string name="browser_menu_extensions">Розширення</string>
   <!--
     Browser menu banner header text for extensions onboarding.
-    The first parameter is the name of the app defined in app_name (for example: Fenix).
+    %s is the name of the app (for example "Firefox").
   -->
   <string name="browser_menu_extensions_banner_onboarding_header">Зробіть %s своїм</string>
   <!-- Browser menu banner header text for extensions onboarding when all installed extensions have been disabled. -->
   <string name="browser_menu_disabled_extensions_banner_onboarding_header">У вас є встановлені, але не ввімкнені розширення</string>
   <!--
     Browser menu banner body text for extensions onboarding.
-    The first parameter is the name of the app defined in app_name (for example: Fenix).
+    %s is the name of the app (for example "Firefox").
   -->
   <string name="browser_menu_extensions_banner_onboarding_body">Розширення вдосконалюють ваше користування браузером – від зміни зовнішнього вигляду і продуктивності %s до підвищення рівня приватності й безпеки.</string>
   <!--
     Browser menu banner body text for extensions onboarding when all installed extensions have been disabled.
-    The first parameter is the name of the button that opens extension manager (for example "Manage extensions").
+    %s is the label of the button that opens the extension manager (for example "Manage extensions").
   -->
   <string name="browser_menu_disabled_extensions_banner_onboarding_body">Щоб використовувати розширення, увімкніть їх у налаштуваннях або виберіть “%s” нижче.</string>
   <!-- Browser menu banner link text for learning more about extensions -->
@@ -242,7 +242,7 @@
   <string name="browser_menu_recommended_section_content_description">Рекомендовані розширення</string>
   <!--
     Content description (not visible, for screen readers etc.): Label for plus icon used to add extension.
-    The first parameter is the name of the extension (for example: ClearURLs).
+    %1$s is the name of the extension (for example: ClearURLs).
   -->
   <string name="browser_menu_extension_plus_icon_content_description_2">Додати %1$s</string>
   <!-- Browser menu button that opens AMO in a tab -->
@@ -293,17 +293,17 @@
   <string name="browser_menu_share_2">Поділитися…</string>
   <!--
     Browser menu button shown in custom tabs that opens the current tab in Fenix
-    The first parameter is the name of the app defined in app_name (for example: Fenix)
+    %1$s is the name of the app (for example "Firefox").
   -->
   <string name="browser_menu_open_in_fenix">Відкрити в %1$s</string>
   <!--
     Browser menu text shown in custom tabs to indicate this is a Fenix tab
-    The first parameter is the name of the app defined in app_name (for example: Fenix)
+    %1$s is the name of the app (for example "Firefox").
   -->
   <string name="browser_menu_powered_by">ТЕХНОЛОГІЇ %1$s</string>
   <!--
     Browser menu text shown in custom tabs to indicate this is a Fenix tab
-    The first parameter is the name of the app defined in app_name (for example: Fenix)
+    %1$s is the name of the app (for example "Firefox").
   -->
   <string name="browser_menu_powered_by2">Технологія %1$s</string>
   <!-- Browser menu button to put the current page in reader mode -->
@@ -336,7 +336,7 @@
   <string name="browser_menu_passwords">Паролі</string>
   <!--
     Browser menu label that navigates to the SUMO page for the Firefox for Android release notes.
-    The first parameter is the name of the app defined in app_name (for example: Fenix)
+    %1$s is the name of the app (for example "Firefox").
   -->
   <string name="browser_menu_new_in_firefox">Що нового у %1$s</string>
   <!-- Browser menu label that toggles the request for the desktop site of the currently visited page -->
@@ -394,14 +394,14 @@
   <string name="browser_menu_webcompat_reporter">Повідомити про пошкоджений сайт…</string>
   <!--
     Browser menu label that is displayed when the current page has been translated by the translation feature.
-    The first parameter is the name of the language that page was translated to (e.g. English).
+    %1$s is the name of the language that page was translated to (e.g. English).
   -->
   <string name="browser_menu_translated_to">Перекладено на %1$s</string>
   <!-- Browser menu label for the print feature -->
   <string name="browser_menu_print">Друкувати…</string>
   <!--
     Browser menu label for the Delete browsing data on quit feature.
-    The first parameter is the name of the app defined in app_name (for example: Fenix).
+    %1$s is the name of the app (for example "Firefox").
   -->
   <string name="browser_menu_delete_browsing_data_on_quit">Вийти з %1$s</string>
   <!--
@@ -433,8 +433,8 @@
   <string name="browser_toolbar_translate">Перекласти сторінку</string>
   <!--
     Content description (not visible, for screen readers etc.) for the translate page toolbar button that opens the translations dialog when the page is translated successfully.
-    The first parameter is the name of the language that is displayed in the original page. (For example: English)
-    The second parameter is the name of the language which the page was translated to. (For example: French)
+    %1$s is the name of the language that is displayed in the original page. (For example: English)
+    %2$s is the name of the language which the page was translated to. (For example: French)
   -->
   <string name="browser_toolbar_translated_successfully">Сторінку перекладено з %1$s на %2$s.</string>
   <!--
@@ -463,9 +463,9 @@
   <string name="search_suggestions_onboarding_do_not_allow_button">Не дозволяти</string>
   <!-- Search suggestion onboarding hint title text -->
   <string name="search_suggestions_onboarding_title">Дозволяти пошукові пропозиції у приватних сеансах?</string>
-  <!-- Search suggestion onboarding hint description text, first parameter is the name of the app defined in app_name (for example: Fenix) -->
+  <!-- Search suggestion onboarding hint description text, %s is the name of the app (for example "Firefox"). -->
   <string name="search_suggestions_onboarding_text">%s відправлятиме все, що ви вводите в адресному рядку, вашій типовій пошуковій системі.</string>
-  <!-- Search engine suggestion title text. The first parameter is the name of the suggested engine -->
+  <!-- Search engine suggestion title text. %s is the name of the suggested engine. -->
   <string name="search_engine_suggestions_title">Пошук в %s</string>
   <!-- Search engine suggestion description text -->
   <string name="search_engine_suggestions_description">Пошук безпосередньо з панелі адреси</string>
@@ -475,12 +475,12 @@
   <string name="search_header_menu_item_2">Шукати в:</string>
   <!--
     Content description (not visible, for screen readers etc.): Search engine icon.
-    The parameter is the search engine name (for example: DuckDuckGo).
+    %s is the search engine name (for example: DuckDuckGo).
   -->
   <string name="search_engine_icon_content_description_1">Пошукова система: %s</string>
   <!--
     Content description (not visible, for screen readers etc.) of the search engine selector from the search toolbar.
-    The parameter is the search engine name (for example: DuckDuckGo).
+    %s is the search engine name (for example: DuckDuckGo).
     The colon character (in "%s:") is intended to have the screen reader make a small pause between the search engine name and the description of the button.
   -->
   <string name="search_engine_selector_content_description">%s: вибір пошукової системи</string>
@@ -600,7 +600,7 @@
   <string name="onboarding_add_on_dark_reader_name" tools:ignore="UnusedResources">Dark Reader</string>
   <!-- Privacy Badger description for the onboarding add-ons card, used by Nimbus experiments. -->
   <string name="onboarding_add_on_dark_reader_description" tools:ignore="UnusedResources">Спеціальний темний режим для мобільного інтернету.</string>
-  <!-- Label for the number of reviews for an add-on. The parameter is for the formatted number of reviews e.g. "1,234", "12,345", "123,456". -->
+  <!-- Label for the number of reviews for an add-on. %1$s is the formatted number of reviews e.g. "1,234", "12,345", "123,456". -->
   <string name="onboarding_add_on_reviews_label">Відгуків: %1$s</string>
   <!-- Content description for the add-on icon. -->
   <string name="onboarding_add_on_icon_content_description">Піктограма додатка</string>
@@ -610,7 +610,7 @@
   <string name="onboarding_installing_add_on_icon_content_description">Піктограма встановлення додатка</string>
   <!-- Content description for the add add-on button. -->
   <string name="onboarding_add_on_add_button_content_description">Додати кнопку додатка</string>
-  <!-- Content description for the star rating group. -->
+  <!-- Content description for the star rating group. %1$s is the rating. -->
   <string name="onboarding_add_on_star_rating_content_description">Оцінка – %1$s з 5</string>
   <!-- Title for the privacy preferences dialog shown during onboarding. Note: The word "Firefox" should NOT be translated. -->
   <string name="onboarding_preferences_dialog_title" tools:ignore="BrandUsage">Допоможіть нам зробити Firefox кращим</string>
@@ -654,7 +654,7 @@
   <string name="onboarding_term_of_service_line_two_2" tools:ignore="BrandUsage">Firefox піклується про вашу приватність. Прочитайте %1$s, щоб дізнатися більше.</string>
   <!-- Used as text for the link in onboarding_term_of_service_line_two. -->
   <string name="onboarding_term_of_service_line_two_link_text">Положення про приватність</string>
-  <!-- Line three of the terms of service onboarding page. 'Firefox' and 'Mozilla' are intentionally hardcoded. %1$S is replaced by an active link, using onboarding_term_of_service_line_three_link_text as text (“Manage”). -->
+  <!-- Line three of the terms of service onboarding page. 'Firefox' and 'Mozilla' are intentionally hardcoded. %1$s is replaced by an active link using onboarding_term_of_service_line_three_link_text as text (“Manage”). -->
   <string name="onboarding_term_of_service_line_three" tools:ignore="BrandUsage">Щоб вдосконалити браузер, Firefox надсилає дані діагностики та взаємодії до Mozilla. %1$s</string>
   <!-- Used as text for the link in onboarding_term_of_service_line_three. -->
   <string name="onboarding_term_of_service_line_three_link_text">Керувати</string>
@@ -668,6 +668,12 @@
   <string name="onboarding_marketing_learn_more" tools:ignore="UnusedResources">Як ми використовуємо дані</string>
   <!-- Marketing onboarding page button label. Button to confirm choice and start browsing. -->
   <string name="onboarding_marketing_positive_button" tools:ignore="UnusedResources">Підтвердити та почати перегляд</string>
+  <!-- Marketing onboarding page title variant. “One last thing” refers to the final step or action in the onboarding process that we’re asking users to take before they can start using the browser. -->
+  <string name="onboarding_marketing_title_1" tools:ignore="UnusedResources">І ще дещо</string>
+  <!-- Marketing onboarding page body variant. 'Firefox' is intentionally hardcoded. -->
+  <string name="onboarding_marketing_body_1" tools:ignore="BrandUsage,UnusedResources">Поділіться з маркетинговими партнерами Mozilla, як ви дізналися про Firefox і що ви ним користуєтеся. Ці дані ніколи не продаються.</string>
+  <!-- Marketing onboarding page button label variant. Button to confirm choice and start browsing. -->
+  <string name="onboarding_marketing_positive_button_1" tools:ignore="UnusedResources">Погодитися і почати перегляд</string>
   <!-- Onboarding header for the toolbar selection card, used by Nimbus experiments. -->
   <string name="onboarding_customize_toolbar_title" tools:ignore="UnusedResources">Виберіть розташування панелі інструментів</string>
   <!-- Onboarding sub header for toolbar selection card, used by Nimbus experiments. -->
@@ -704,9 +710,15 @@
   <!-- Onboarding theme selection card label for 'Not now' button, used by Nimbus experiments. -->
   <string name="onboarding_customize_theme_not_now_button" moz:removedIn="136" tools:ignore="UnusedResources">Не зараз</string>
   <!--
+    Widget Picker
+
+    Widget description for widget picker screen
+  -->
+  <string name="widget_picket_description">Почати швидкий пошук</string>
+  <!--
     Search Widget
 
-    Content description for searching with a widget. The first parameter is the name of the application.
+    Content description for searching with a widget. %1$s is the name of the app (for example "Firefox").
   -->
   <string name="search_widget_content_description_2">Відкрити нову вкладку %1$s</string>
   <!-- Text preview for smaller sized widgets -->
@@ -751,7 +763,7 @@
   <string name="preferences_rate">Оцінити в Google Play</string>
   <!--
     Preference linking to about page for Fenix
-    The first parameter is the name of the app defined in app_name (for example: Fenix)
+    %1$s is the name of the app (for example "Firefox").
   -->
   <string name="preferences_about">Про %1$s</string>
   <!-- Preference for settings related to changing the default browser -->
@@ -794,17 +806,17 @@
   <string name="reduce_cookie_banner_unsupported_site_request_submitted_2">Запит на підтримку сайту надіслано</string>
   <!-- Text for indicating cookie banner handling is currently not supported for this site, this is shown as part of the protections panel with the tracking protection toggle -->
   <string name="reduce_cookie_banner_unsupported_site">Сайт наразі не підтримується</string>
-  <!-- Title text for a detail explanation indicating cookie banner handling is on this site, this is shown as part of the cookie banner panel in the toolbar. The first parameter is a shortened URL of the current site -->
+  <!-- Title text for a detail explanation indicating cookie banner handling is on this site, this is shown as part of the cookie banner panel in the toolbar. %1$s is a shortened URL of the current site. -->
   <string name="reduce_cookie_banner_details_panel_title_on_for_site_1">Увімкнути блокувальник банерів про файли cookie для %1$s?</string>
-  <!-- Title text for a detail explanation indicating cookie banner handling is off this site, this is shown as part of the cookie banner panel in the toolbar. The first parameter is a shortened URL of the current site -->
+  <!-- Title text for a detail explanation indicating cookie banner handling is off this site, this is shown as part of the cookie banner panel in the toolbar. %1$s is a shortened URL of the current site. -->
   <string name="reduce_cookie_banner_details_panel_title_off_for_site_1">Вимкнути блокувальник банерів про файли cookie для %1$s?</string>
-  <!-- Title text for a detail explanation indicating cookie banner reducer didn't work for the current site, this is shown as part of the cookie banner panel in the toolbar. The first parameter is the application name -->
+  <!-- Title text for a detail explanation indicating cookie banner reducer didn't work for the current site, this is shown as part of the cookie banner panel in the toolbar. %1$s is the name of the app (for example "Firefox"). -->
   <string name="reduce_cookie_banner_details_panel_title_unsupported_site_request_2">На цьому сайті %1$s не може автоматично відхиляти запити на збереження файлів cookie. Ви можете надіслати запит для підтримки цього сайту в майбутньому.</string>
-  <!-- Long text for a detail explanation indicating what will happen if cookie banner handling is off for a site, this is shown as part of the cookie banner panel in the toolbar. The first parameter is the application name -->
+  <!-- Long text for a detail explanation indicating what will happen if cookie banner handling is off for a site, this is shown as part of the cookie banner panel in the toolbar. %1$s is the name of the app (for example "Firefox"). -->
   <string name="reduce_cookie_banner_details_panel_description_off_for_site_1">Вимкніть %1$s, щоб очистити файли cookie та перезавантажити цей сайт. Це може призвести до виходу з вебсайту та очищення збережених покупок у кошику.</string>
-  <!-- Long text for a detail explanation indicating what will happen if cookie banner handling is on for a site, this is shown as part of the cookie banner panel in the toolbar. The first parameter is the application name -->
+  <!-- Long text for a detail explanation indicating what will happen if cookie banner handling is on for a site, this is shown as part of the cookie banner panel in the toolbar. %1$s is the name of the app (for example "Firefox"). -->
   <string name="reduce_cookie_banner_details_panel_description_on_for_site_3">Увімкніть, і %1$s намагатиметься автоматично відхиляти всі банери про файли cookie на цьому сайті.</string>
-  <!-- Title for the cookie banner re-engagement CFR, the placeholder is replaced with app name -->
+  <!-- Title for the cookie banner re-engagement CFR, the placeholder is replaced with app name. %1$s is the name of the app (for example "Firefox"). -->
   <string name="cookie_banner_cfr_title">%1$s щойно відхилив файли cookie</string>
   <!-- Message for the cookie banner re-engagement CFR -->
   <string name="cookie_banner_cfr_message">Менше відволікань і менше файлів cookie, які відстежують вас на цьому сайті.</string>
@@ -870,12 +882,18 @@
   <string name="preferences_show_voice_search">Показати голосовий пошук</string>
   <!-- Preference title for switch preference to show search suggestions also in private mode -->
   <string name="preferences_show_search_suggestions_in_private">Показувати в приватних сеансах</string>
+  <!-- Preference title for switch preference to show trending search suggestions -->
+  <string name="preferences_show_trending_search_suggestions">Показати популярні пропозиції</string>
+  <!-- Preference title for switch preference to show recent search suggestions -->
+  <string name="preferences_show_recent_search_suggestions">Показати останні пошуки</string>
   <!-- Preference title for switch preference to show a clipboard suggestion when searching -->
   <string name="preferences_show_clipboard_suggestions">Пропозиції з буфера обміну</string>
   <!-- Preference title for switch preference to suggest browsing history when searching -->
   <string name="preferences_search_browsing_history">Шукати в історії перегляду</string>
   <!-- Preference title for switch preference to suggest bookmarks when searching -->
   <string name="preferences_search_bookmarks">Шукати закладки</string>
+  <!-- Preference title for switch preference to show shortcuts when searching -->
+  <string name="preferences_show_shortcuts">Показати ярлики</string>
   <!-- Preference title for switch preference to suggest synced tabs when searching -->
   <string name="preferences_search_synced_tabs">Шукати синхронізовані вкладки</string>
   <!-- Preference for account settings -->
@@ -886,16 +904,26 @@
   <string name="preferences_show_sponsored_suggestions">Пропозиції від спонсорів</string>
   <!--
     Summary for preference to show sponsored Firefox Suggest search suggestions.
-    The first parameter is the name of the application.
+    %1$s is the name of the app (for example "Firefox").
   -->
   <string name="preferences_show_sponsored_suggestions_summary">Підтримайте %1$s за допомогою періодичних спонсорованих пропозицій</string>
   <!--
     Preference title for switch preference to show Firefox Suggest search suggestions for web content.
-    The first parameter is the name of the application.
+    %1$s is the name of the app (for example "Firefox").
   -->
   <string name="preferences_show_nonsponsored_suggestions">Пропозиції від %1$s</string>
   <!-- Summary for preference to show Firefox Suggest search suggestions for web content -->
   <string name="preferences_show_nonsponsored_suggestions_summary">Отримувати пропозиції з інтернету, пов’язані з вашим пошуком</string>
+  <!-- Preference for link sharing -->
+  <string name="preferences_link_sharing">Обмін посиланнями</string>
+  <!-- Title for the link sharing toggle. %1$s is replaced by the brand name (e.g. Firefox). -->
+  <string name="link_sharing_toggle_title">Додавати посилання для завантаження %1$s під час поширення у WhatsApp</string>
+  <!-- Body for the link sharing toggle.  %1$s is replaced by the brand name (e.g. Firefox). -->
+  <string name="link_sharing_toggle_body">Запропонуйте своїм друзям спробувати швидший і безпечніший перегляд із %1$s щоразу, коли ви ділитеся посиланням у WhatsApp.</string>
+  <!-- Snackbar message shown when user shares a link -->
+  <string name="link_shared_snackbar_message">Посилання надіслано</string>
+  <!-- Snackbar action label shown when user shares a link -->
+  <string name="link_shared_snackbar_action">Керувати налаштуваннями</string>
   <!-- Preference for open links in third party apps -->
   <string name="preferences_open_links_in_apps">Відкривати посилання у програмах</string>
   <!-- Preference for open links in third party apps always open in apps option -->
@@ -965,7 +993,7 @@
   <string name="customize_toggle_recently_visited">Недавно відвідані</string>
   <!-- Title for the customize home screen section with Pocket. -->
   <string name="customize_toggle_pocket_2">Розповіді, що спонукають замислитися</string>
-  <!-- Summary for the customize home screen section with Pocket. The first parameter is product name Pocket -->
+  <!-- Summary for the customize home screen section with Pocket. %s is "Pocket". -->
   <string name="customize_toggle_pocket_summary">Пропоновані статті від %s</string>
   <!-- Title for the customize home screen section with sponsored Pocket stories. -->
   <string name="customize_toggle_pocket_sponsored">Матеріали від спонсорів</string>
@@ -976,7 +1004,7 @@
   <!--
     Wallpapers
 
-    Content description for various wallpapers. The first parameter is the name of the wallpaper
+    Content description for various wallpapers. %1$s is the name of the wallpaper.
   -->
   <string name="wallpapers_item_name_content_description">Елемент шпалер: %1$s</string>
   <!-- Snackbar message for when wallpaper is selected -->
@@ -991,11 +1019,11 @@
   <string name="wallpaper_select_error_snackbar_message">Не вдалося змінити шпалери</string>
   <!-- Text displayed that links to website containing documentation about the "Limited Edition" wallpapers. -->
   <string name="wallpaper_learn_more">Докладніше</string>
-  <!-- Text for classic wallpapers title. The first parameter is the Firefox name. -->
+  <!-- Text for classic wallpapers title. %s is the name of the app (for example "Firefox"). -->
   <string name="wallpaper_classic_title">Класичні %s</string>
   <!-- Text for artist series wallpapers title. "Artist series" represents a collection of artist collaborated wallpapers. -->
   <string name="wallpaper_artist_series_title">Художня серія</string>
-  <!-- Description text for the artist series wallpapers with learn more link. The first parameter is the learn more string defined in wallpaper_learn_more. "Independent voices" is the name of the wallpaper collection -->
+  <!-- Description text for the artist series wallpapers with learn more link. %s is a learn more link using wallpaper_learn_more as text. "Independent voices" is the name of the wallpaper collection -->
   <string name="wallpaper_artist_series_description_with_learn_more">Збірка "Незалежні голоси". %s</string>
   <!-- Description text for the artist series wallpapers. "Independent voices" is the name of the wallpaper collection -->
   <string name="wallpaper_artist_series_description">Збірка "Незалежні голоси".</string>
@@ -1024,7 +1052,7 @@
   <!--
     This is a message shown to the user when too many errors have occurred with the extensions process and they have been disabled.
     The user can decide if they would like to continue trying to start extensions or if they'd rather continue without them.
-    The first parameter is the application name.
+    %1$s is the name of the app (for example "Firefox").
   -->
   <string name="extension_process_crash_dialog_message">Одне або кілька розширень припинили працювати, через що ваша система стала нестабільною. %1$s невдало намагався перезапустити розширення.\n\nРозширення не будуть перезапущені під час поточного сеансу.\n\nЦю проблему можна вирішити, видаливши або вимкнувши розширення.</string>
   <!-- Button text on the extension crash dialog to prompt the user to try restarting the extensions but the dialog will reappear if it is unsuccessful again -->
@@ -1059,18 +1087,18 @@
   <string name="empty_device_name_error">Назва пристрою обов’язкова.</string>
   <!-- Label indicating that sync is in progress -->
   <string name="sync_syncing_in_progress">Синхронізація…</string>
-  <!-- Label summary indicating that sync failed. The first parameter is the date stamp showing last time it succeeded -->
+  <!-- Label summary indicating that sync failed. %s is the date stamp showing last time it succeeded. -->
   <string name="sync_failed_summary">Помилка синхронізації. Востаннє синхронізовано: %s</string>
   <!-- Label summary showing never synced -->
   <string name="sync_failed_never_synced_summary">Помилка синхронізації. Востаннє синхронізовано: ніколи</string>
-  <!-- Label summary the date we last synced. The first parameter is date stamp showing last time synced -->
+  <!-- Label summary the date we last synced. %s is date stamp showing last time sync was completed. -->
   <string name="sync_last_synced_summary">Востаннє синхронізовано: %s</string>
   <!-- Label summary showing never synced -->
   <string name="sync_never_synced_summary">Востаннє синхронізовано: ніколи</string>
   <!--
     Text for displaying the default device name.
-    The first parameter is the application name, the second is the device manufacturer name
-    and the third is the device model.
+    %1$s is the name of the app (for example "Firefox"). %2$s is the device manufacturer name
+    and %3$s is the device model.
   -->
   <string name="default_device_name_2">%1$s на %2$s %3$s</string>
   <!-- Preference for syncing payment methods -->
@@ -1112,15 +1140,15 @@
   <!-- Text displayed when there are no exceptions, with learn more link that brings users to a tracking protection SUMO page -->
   <string name="exceptions_empty_message_learn_more_link">Докладніше</string>
   <!-- Preference switch for usage and technical data collection -->
-  <string name="preference_usage_data_1">Технічні дані та дані взаємодії</string>
+  <string name="preference_usage_data_1" tools:ignore="UnusedResources" moz:removedIn="138">Технічні дані та дані взаємодії</string>
   <!-- Preference switch for usage and technical data collection -->
-  <string name="preference_usage_data_2" tools:ignore="UnusedResources">Надсилати технічні й аналітичні дані</string>
+  <string name="preference_usage_data_2">Надсилати технічні й аналітичні дані</string>
   <!-- Preference switch for usage and technical learn more link -->
-  <string name="preference_usage_data_learn_more" tools:ignore="UnusedResources">Докладніше</string>
-  <!-- Preference description for usage and technical data collection -->
+  <string name="preference_usage_data_learn_more">Докладніше</string>
+  <!-- Preference description for usage and technical data collection. %1$s is the name of the app (for example "Firefox"). -->
   <string name="preferences_usage_data_description" tools:ignore="UnusedResources" moz:removedIn="136">Надсилати в Mozilla дані про використання, швидкодію, апаратне забезпечення та налаштування браузера, щоб допомогти вдосконалити %1$s</string>
   <!-- Preference description for marketing data collection. Note: The words "Firefox" should NOT be translated -->
-  <string name="preferences_usage_data_description_1" tools:ignore="BrandUsage, UnusedResources">Дані про ваш пристрій, конфігурацію обладнання та використання допомагають нам удосконалити функції, швидкодію і стабільність Firefox.</string>
+  <string name="preferences_usage_data_description_1" tools:ignore="BrandUsage">Дані про ваш пристрій, конфігурацію обладнання та використання допомагають нам удосконалити функції, швидкодію і стабільність Firefox.</string>
   <!-- Preference switch for marketing data collection -->
   <string name="preferences_marketing_data" tools:ignore="UnusedResources" moz:removedIn="136">Маркетингові дані</string>
   <!-- Preference switch for campaign measurement data (marketing data) collection -->
@@ -1330,7 +1358,7 @@
   <string name="studies_remove">Вилучити</string>
   <!-- Title of the active section on the studies list -->
   <string name="studies_active">Активні</string>
-  <!-- Description for studies, it indicates why Firefox use studies. The first parameter is the name of the application. -->
+  <!-- Description for studies, it indicates why Firefox use studies. %1$s is the name of the app (for example "Firefox"). -->
   <string name="studies_description_2" tools:ignore="UnusedResources" moz:removedIn="136">%1$s може час від часу встановлювати й виконувати дослідження.</string>
   <!-- Description for studies -->
   <string name="studies_description_3">Випробуйте нові функції та ідеї, перш ніж вони стануть доступними для всіх.</string>
@@ -1390,7 +1418,7 @@
   <string name="tabs_tray_select_tabs">Виберіть вкладки</string>
   <!-- Content description (not visible, for screen readers etc.): Close tab button. Closes the current session when pressed -->
   <string name="close_tab">Закрити вкладку</string>
-  <!-- Content description (not visible, for screen readers etc.): Close tab <title> button. First parameter is tab title -->
+  <!-- Content description (not visible, for screen readers etc.): Close tab <title> button. %s is the tab title -->
   <string name="close_tab_title">Закрити вкладку %s</string>
   <!-- Content description (not visible, for screen readers etc.): Opens the open tabs menu when pressed -->
   <string name="open_tabs_menu">Відкрити меню вкладок</string>
@@ -1408,7 +1436,7 @@
   <string name="remove_top_site">Вилучити</string>
   <!-- Text for the menu button to delete a top site from history -->
   <string name="delete_from_history">Видалити з історії</string>
-  <!-- Postfix for private WebApp titles, placeholder is replaced with app name -->
+  <!-- Postfix for private WebApp titles. %1$s is the name of the app (for example "Firefox"). -->
   <string name="pwa_site_controls_title_private">%1$s (Приватний режим)</string>
   <!--
     History
@@ -1420,13 +1448,13 @@
   <string name="history_delete_all">Видалити історію</string>
   <!-- Text for the snackbar to confirm that multiple browsing history items has been deleted -->
   <string name="history_delete_multiple_items_snackbar">Історію видалено</string>
-  <!-- Text for the snackbar to confirm that a single browsing history item has been deleted. The first parameter is the shortened URL of the deleted history item. -->
+  <!-- Text for the snackbar to confirm that a single browsing history item has been deleted. %1$s is the shortened URL of the deleted history item. -->
   <string name="history_delete_single_item_snackbar">%1$s видалено</string>
   <!-- Context description text for the button to delete a single history item -->
   <string name="history_delete_item">Видалити</string>
   <!--
     History multi select title in app bar
-    The first parameter is the number of bookmarks selected
+    %1$d is the number of bookmarks selected
   -->
   <string name="history_multi_select_title">Вибрано %1$d</string>
   <!-- Text for the header that groups the history for today -->
@@ -1447,24 +1475,38 @@
     Text for the snackbar to confirm that multiple downloads items have been removed
   -->
   <string name="download_delete_multiple_items_snackbar_1">Завантаження вилучено</string>
-  <!-- Text for the snackbar to confirm that a single download item has been removed. The first parameter is the name of the download item. -->
+  <!-- Text for the snackbar to confirm that a single download item has been removed. %1$s is the name of the download item. -->
   <string name="download_delete_single_item_snackbar">Вилучено %1$s</string>
   <!-- Text shown when no download exists -->
   <string name="download_empty_message_1">Завантажених файлів немає</string>
   <!--
     History multi select title in app bar
-    The first parameter is the number of downloads selected
+    %1$d is the number of downloads selected
   -->
   <string name="download_multi_select_title">Вибрано %1$d</string>
   <!-- Text for the button to remove a single download item -->
   <string name="download_delete_item_1">Вилучити</string>
+  <!--
+    Time period headers for downloads
+
+    Text for the header that groups the downloads for today
+  -->
+  <string name="download_time_period_today">Сьогодні</string>
+  <!-- Text for the header that groups the downloads for yesterday -->
+  <string name="download_time_period_yesterday">Вчора</string>
+  <!-- Text for the header that groups the downloads the past 7 days -->
+  <string name="download_time_period_last_7_days">Останні 7 днів</string>
+  <!-- Text for the header that groups the downloads the past 30 days -->
+  <string name="download_time_period_last_30_days">Останні 30 днів</string>
+  <!-- Text for the header that groups the downloads older than other groups -->
+  <string name="download_time_period_older">Старіші</string>
   <!--
     WebCompat Reporter
 
     The title of the Web Compat Reporter feature. This is displayed in the top app bar.
   -->
   <string name="webcompat_reporter_screen_title">Повідомити про пошкоджений сайт</string>
-  <!-- The description of the Web Compat Reporter feature. This first parameter is the name of the application (For example: Fenix) -->
+  <!-- The description of the Web Compat Reporter feature. %1$s is the name of the app (for example "Firefox"). -->
   <string name="webcompat_reporter_description">Допоможіть зробити %1$s кращим для всіх. Співробітники Mozilla використовують інформацію, яку ви надсилаєте, для усунення проблем з вебсайтами.</string>
   <!-- The text field label of the URL text field. This is displayed above the user-inputted URL. -->
   <string name="webcompat_reporter_label_url">URL</string>
@@ -1509,7 +1551,7 @@
   <!--
     Crashes
 
-    Title text displayed on the tab crash page. This first parameter is the name of the application (For example: Fenix)
+    Title text displayed on the tab crash page. %1$s is the name of the app (for example "Firefox").
   -->
   <string name="tab_crash_title_2">Шкода, але %1$s не може завантажити цю сторінку.</string>
   <!-- Send crash report checkbox text on the tab crash page -->
@@ -1518,7 +1560,7 @@
   <string name="tab_crash_close">Закрити вкладку</string>
   <!-- Restore tab button text on the tab crash page -->
   <string name="tab_crash_restore">Відновити вкладку</string>
-  <!-- Unsubmitted crash dialog title, The first parameter is the name of the app (e.g. Firefox) -->
+  <!-- Unsubmitted crash dialog title, %s is the name of the app (for example "Firefox"). -->
   <string name="unsubmitted_crash_dialog_title">%s довелося перезапустити</string>
   <!-- Unsubmitted crash dialog checkbox label for automatically sending reports in the future -->
   <string name="unsubmitted_crash_dialog_checkbox_label">Автоматично надсилати звіти про збої</string>
@@ -1534,13 +1576,13 @@
   <string name="bookmark_delete_folder_confirmation_dialog">Ви впевнені, що хочете видалити цю теку?</string>
   <!-- Confirmation message for a dialog confirming if the user wants to delete multiple items. -->
   <string name="bookmark_delete_folders_confirmation_dialog">Ви дійсно бажаєте видалити вибрані елементи?</string>
-  <!-- Confirmation message for a dialog confirming if the user wants to delete multiple items including folders. Parameter will be replaced by app name. -->
+  <!-- Confirmation message for a dialog confirming if the user wants to delete multiple items including folders. %s is the name of the app (for example "Firefox"). -->
   <string name="bookmark_delete_multiple_folders_confirmation_dialog">%s видалить вибрані елементи.</string>
   <!-- Text for the cancel button on delete bookmark dialog -->
   <string name="bookmark_delete_negative">Скасувати</string>
   <!-- Screen title for adding a bookmarks folder -->
   <string name="bookmark_add_folder">Додати теку</string>
-  <!-- Snackbar title that confirms a bookmark was saved into a folder. Parameter will be replaced by the name of the folder the bookmark was saved into. -->
+  <!-- Snackbar title that confirms a bookmark was saved into a folder. %s is the name of the folder the bookmark was saved into. -->
   <string name="bookmark_saved_in_folder_snackbar">Збережено в “%s”</string>
   <!-- Snackbar edit button shown after a bookmark has been created. -->
   <string name="edit_bookmark_snackbar_action">ЗМІНИТИ</string>
@@ -1566,7 +1608,7 @@
   <string name="bookmark_menu_save_button">Зберегти</string>
   <!--
     Bookmark multi select title in app bar
-    The first parameter is the number of bookmarks selected
+    %1$d is the number of bookmarks selected
   -->
   <string name="bookmarks_multi_select_title">Вибрано %1$d</string>
   <!-- Bookmark editing screen title -->
@@ -1597,7 +1639,7 @@
   <string name="bookmarks_empty_message">Немає закладок</string>
   <!--
     Bookmark snackbar message on deletion
-    The first parameter is the host part of the URL of the bookmark deleted, if any
+    %1$s is the host part of the URL of the bookmark deleted, if any
   -->
   <string name="bookmark_deletion_snackbar_message">%1$s видалено</string>
   <!-- Bookmark snackbar message on deleting multiple bookmarks not including folders -->
@@ -1606,9 +1648,9 @@
   <string name="bookmark_deletion_multiple_snackbar_message_3">Видалення вибраних тек</string>
   <!-- Bookmark undo button for deletion snackbar action -->
   <string name="bookmark_undo_deletion">ВІДНОВИТИ</string>
-  <!-- Bookmark snackbar message for deleting a single item. Parameter is the title of the item being deleted -->
+  <!-- Bookmark snackbar message for deleting a single item. %s is the title of the item being deleted -->
   <string name="bookmark_delete_single_item">%s видалено</string>
-  <!-- Bookmark snackbar message for deleting multiple items. Parameter is the number of items being deleted -->
+  <!-- Bookmark snackbar message for deleting multiple items. %s is the number of items being deleted -->
   <string name="bookmark_delete_multiple_items">Видалені елементи: %s</string>
   <!-- Text for the button to search all bookmarks -->
   <string name="bookmark_search">Введіть пошукові терміни</string>
@@ -1622,7 +1664,7 @@
   <string name="bookmark_delete_folder_content_description">Видалити теку</string>
   <!-- Content description for bookmark search floating action button -->
   <string name="bookmark_search_button_content_description">Шукати закладки</string>
-  <!-- Content description for the overflow menu for a bookmark item. Paramter will a folder name or bookmark title. -->
+  <!-- Content description for the overflow menu for a bookmark item. %s is a folder name or bookmark title. -->
   <string name="bookmark_item_menu_button_content_description">Елемент меню для %s</string>
   <!-- Title for the bookmark list empty state -->
   <string name="bookmark_empty_list_title">Немає закладок</string>
@@ -1837,6 +1879,10 @@
   <string name="sync_add_new_device_learn_button">Докладніше про надсилання вкладок…</string>
   <!-- Text for the button to connect another device -->
   <string name="sync_add_new_device_connect_button">Під’єднати інший пристрій…</string>
+  <!-- A message template for the shared link with a footer. %1$s is the shared link, %2$s is the app name (e.g. Firefox) and %3$s is a download link for the app. -->
+  <string name="sent_from_firefox_template" tools:ignore="UnusedResources">%1$s\n\nНадіслано з %2$s 🦊 Спробуйте мобільний браузер: %3$s</string>
+  <!-- A short message template for the shared link with a footer. %1$s is the shared link, %2$s is the app name (e.g. Firefox) and %3$s is a download link for the app. -->
+  <string name="sent_from_firefox_template_short" tools:ignore="UnusedResources">%1$s\n\nНадіслано з %2$s 🦊 %3$s</string>
   <!--
     Notifications
 
@@ -1901,7 +1947,7 @@
   <string name="snackbar_tabs_closed">Вкладки закрито</string>
   <!-- Text shown in snackbar when user closes multiple inactive tabs. %1$s will be replaced with the number of tabs closed. -->
   <string name="snackbar_num_tabs_closed">Вкладки закрито: %1$s</string>
-  <!-- Text shown in snackbar when user bookmarks a list of tabs. Parameter will be replaced by the name of the folder the bookmark was saved into. -->
+  <!-- Text shown in snackbar when user bookmarks a list of tabs. %s is the name of the folder the bookmark was saved into. -->
   <string name="snackbar_message_bookmarks_saved_in">Закладки збережено в “%s”!</string>
   <!-- Text shown in snackbar when user adds a site to shortcuts -->
   <string name="snackbar_added_to_shortcuts">Додано до ярликів!</string>
@@ -1917,7 +1963,7 @@
   <string name="snackbar_top_site_removed">Сайт вилучено</string>
   <!--
     QR code scanner prompt which appears after scanning a code, but before navigating to it
-    First parameter is the name of the app, second parameter is the URL or text scanned
+    %1$s is the name of the app (for example "Firefox"), %2$s is the URL or text scanned
   -->
   <string name="qr_scanner_confirmation_dialog_message">Дозволити %1$s відкрити %2$s</string>
   <!-- QR code scanner prompt dialog positive option to allow navigation to scanned link -->
@@ -1928,7 +1974,7 @@
   <string name="qr_scanner_dialog_invalid">Вебадреса недійсна.</string>
   <!-- QR code scanner prompt dialog positive option when there is an error -->
   <string name="qr_scanner_dialog_invalid_ok">OK</string>
-  <!-- Tab collection deletion prompt dialog message. Placeholder will be replaced with the collection name -->
+  <!-- Tab collection deletion prompt dialog message. %1$s is the collection name. -->
   <string name="tab_collection_dialog_message">Ви дійсно хочете видалити %1$s?</string>
   <!-- Tab collection deletion prompt dialog option to delete the collection -->
   <string name="tab_collection_dialog_positive">Видалити</string>
@@ -1948,7 +1994,7 @@
   <string name="preferences_delete_browsing_data">Видалити дані перегляду</string>
   <!-- Title for the tabs item in Delete browsing data -->
   <string name="preferences_delete_browsing_data_tabs_title_2">Відкриті вкладки</string>
-  <!-- Subtitle for the tabs item in Delete browsing data, parameter will be replaced with the number of open tabs -->
+  <!-- Subtitle for the tabs item in Delete browsing data, %d is the number of open tabs -->
   <string name="preferences_delete_browsing_data_tabs_subtitle">Вкладок: %d</string>
   <!--
     Title for the data and history items in Delete browsing data
@@ -1957,7 +2003,7 @@
   -->
   <string name="preferences_delete_browsing_data_browsing_history_title">Історія перегляду</string>
   <!--
-    Subtitle for the data and history items in delete browsing data, parameter will be replaced with the
+    Subtitle for the data and history items in delete browsing data, %d is the
     number of history items the user has
   -->
   <string name="preferences_delete_browsing_data_browsing_data_subtitle">Адрес: %d</string>
@@ -1991,7 +2037,7 @@
   <string name="delete_history_prompt_button_today_and_yesterday">Сьогодні та вчора</string>
   <!-- Radio button in the delete browsing data dialog to delete all history. -->
   <string name="delete_history_prompt_button_everything">Усе</string>
-  <!-- Dialog message to the user asking to delete browsing data. Parameter will be replaced by app name. -->
+  <!-- Dialog message to the user asking to delete browsing data. %s is the name of the app (for example "Firefox"). -->
   <string name="delete_browsing_data_prompt_message_3">%s видалить вибрані дані перегляду.</string>
   <!-- Text for the cancel button for the data deletion dialog -->
   <string name="delete_browsing_data_prompt_cancel">Скасувати</string>
@@ -2001,7 +2047,7 @@
   <string name="preferences_delete_browsing_data_snackbar">Дані перегляду видалено</string>
   <!-- Text for the snackbar to show the user that the deletion of browsing data is in progress -->
   <string name="deleting_browsing_data_in_progress">Видалення даних перегляду…</string>
-  <!-- Dialog message to the user asking to delete all history items inside the opened group. Parameter will be replaced by a history group name. -->
+  <!-- Dialog message to the user asking to delete all history items inside the opened group. %s is a history group name. -->
   <string name="delete_all_history_group_prompt_message">Видалити всі сайти в “%s”</string>
   <!-- Text for the cancel button for the history group deletion dialog -->
   <string name="delete_history_group_prompt_cancel">Скасувати</string>
@@ -2039,7 +2085,7 @@
   <string name="sign_in_with_email">Використати е-пошту</string>
   <!-- Text shown for settings option for create new account text.'Firefox' intentionally hardcoded here. -->
   <string name="sign_in_create_account_text" tools:ignore="BrandUsage">Не маєте облікового запису? &lt;u&gt;Створіть його&lt;/u&gt; для синхронізації Firefox між пристроями.</string>
-  <!-- Text shown in confirmation dialog to sign out of account. The first parameter is the name of the app (e.g. Firefox Preview) -->
+  <!-- Text shown in confirmation dialog to sign out of account. %s is the name of the app (for example "Firefox"). -->
   <string name="sign_out_confirmation_message_2">%s припинить синхронізацію з вашим обліковим записом, але не видалить жодних даних перегляду на цьому пристрої.</string>
   <!-- Option to continue signing out of account shown in confirmation dialog to sign out of account -->
   <string name="sign_out_disconnect">Від’єднатись</string>
@@ -2057,7 +2103,7 @@
   <string name="preference_enhanced_tracking_protection">Розширений захист від стеження</string>
   <!-- Preference summary for enhanced tracking protection settings on/off switch -->
   <string name="preference_enhanced_tracking_protection_summary">Тепер із функцією Total Cookie Protection, наша найпотужніша перепона від стеження між сайтами.</string>
-  <!-- Description of enhanced tracking protection. The parameter is the name of the application (For example: Firefox Fenix) -->
+  <!-- Description of enhanced tracking protection. %s is the name of the app (for example "Firefox"). -->
   <string name="preference_enhanced_tracking_protection_explanation_2">%s захищає вас від численних найпоширеніших елементів стеження, що переслідують вас в мережі.</string>
   <!-- Text displayed that links to website about enhanced tracking protection -->
   <string name="preference_enhanced_tracking_protection_explanation_learn_more">Докладніше</string>
@@ -2146,11 +2192,11 @@
     back from ETP details (Ex: Tracking content)
   -->
   <string name="etp_back_button_content_description">Перейти назад</string>
-  <!-- About page link text to open what's new link -->
+  <!-- About page link text to open what's new link. %s is the name of the app (for example "Firefox"). -->
   <string name="about_whats_new">Що нового в %s</string>
   <!--
     Open source licenses page title
-    The first parameter is the app name
+    %s is the name of the app (for example "Firefox")
   -->
   <string name="open_source_licenses_title">%s | Вільні бібліотеки</string>
   <!-- Category of trackers (redirect trackers) that can be blocked by Enhanced Tracking Protection -->
@@ -2175,6 +2221,94 @@
     Enhanced tracking protection exception preference icon for ETP settings.
   -->
   <string name="preference_etp_exceptions_icon_description">Піктограма налаштувань винятків розширеного захисту від стеження</string>
+  <!--
+    DNS Over HTTPS (DoH)
+
+    Preference title for DNS over HTTPS settings
+  -->
+  <string name="preference_doh_title">DNS через HTTPS</string>
+  <!-- Description of the preference to enable "DNS over HTTPS". %1$s is replaced by a link using `preference_doh_learn_more` at text ("Learn More"). -->
+  <string name="preference_doh_summary">Завдяки системі DNS через HTTPS ваші запити на доменне ім’я шифруються, ускладнюючи стороннім особам можливість перегляду, до якого вебсайту ви збираєтеся отримати доступ. %1$s</string>
+  <!-- Used as text for the link in `preference_doh_title`, points to documentation about "DNS over HTTPS" -->
+  <string name="preference_doh_learn_more">Докладніше</string>
+  <!-- Content description for the toolbar "Navigate up" button -->
+  <string name="preference_doh_up_description">Вгору</string>
+  <!-- Content description for the "Exceptions" button -->
+  <string name="preference_doh_exceptions_description">Винятки</string>
+  <!-- Content description for the "Info" button -->
+  <string name="preference_doh_info_description">Інфо</string>
+  <!-- Content description for the "Add Site" button -->
+  <string name="preference_doh_add_site_description">Додати сайт</string>
+  <!-- Title displayed for "Default Protection" option under "DNS over HTTPS" -->
+  <string name="preference_doh_default_protection">Типовий захист</string>
+  <!-- Summary displayed for "Default Protection" option under "DNS over HTTPS". %1$s is the name of the application (e.g. Fenix). -->
+  <string name="preference_doh_default_protection_summary">%1$s вирішує, коли використовувати захищену DNS для захисту вашої приватності.</string>
+  <!-- Bullet point 1 for "Default Protection" information page under "DNS over HTTPS" -->
+  <string name="preference_doh_default_protection_info_1">Використовувати вибраного провайдера</string>
+  <!-- Bullet point 2 for "Default Protection" information page under "DNS over HTTPS" -->
+  <string name="preference_doh_default_protection_info_2">Використовувати ваш типовий DNS-перетворювач у разі проблем із провайдером захищеної DNS</string>
+  <!-- Bullet point 3 for "Default Protection" information page under "DNS over HTTPS". %1$s is replaced by a link using `preference_doh_learn_more` at text ("Learn More"). -->
+  <string name="preference_doh_default_protection_info_3">Використовувати локального провайдера, якщо це можливо. %1$s</string>
+  <!-- Bullet point 4 for "Default Protection" information page under "DNS over HTTPS" -->
+  <string name="preference_doh_default_protection_info_4">Вимикати, якщо є активні політики VPN, батьківський контроль або корпоративні політики</string>
+  <!-- Bullet point 5 for "Default Protection" information page under "DNS over HTTPS". %1$s is the name of the application (e.g. Fenix). %2$s is replaced by a link using `preference_doh_learn_more` at text ("Learn More"). -->
+  <string name="preference_doh_default_protection_info_5">Вимикати, якщо мережа повідомляє %1$s, що не слід використовувати безпечну DNS. %2$s</string>
+  <!-- Title displayed for "Increased Protection" option under "DNS over HTTPS" -->
+  <string name="preference_doh_increased_protection">Підвищений захист</string>
+  <!-- Summary displayed for "Increased Protection" option under "DNS over HTTPS" -->
+  <string name="preference_doh_increased_protection_summary">Ви визначаєте, коли використовувати захищену DNS, і обираєте свого провайдера.</string>
+  <!-- Bullet point 1 for "Increased Protection" information page under "DNS over HTTPS" -->
+  <string name="preference_doh_increased_protection_info_1">Використовувати вибраного провайдера</string>
+  <!-- Bullet point 2 for "Increased Protection" information page under "DNS over HTTPS" -->
+  <string name="preference_doh_increased_protection_info_2">Ваш типовий DNS-перетворювач використовується, лише якщо є проблема з захищеною DNS</string>
+  <!-- Title displayed for "Max Protection" option under "DNS over HTTPS" -->
+  <string name="preference_doh_max_protection">Максимальний захист</string>
+  <!-- Summary displayed for "Max Protection" option under "DNS over HTTPS". %1$s is the name of the application (e.g. Fenix). -->
+  <string name="preference_doh_max_protection_summary">%1$s завжди використовуватиме захищену DNS. Ви побачите попередження про загрозу безпеці, перш ніж ми використаємо DNS вашої системи.</string>
+  <!-- Bullet point 1 for "Max Protection" information page under "DNS over HTTPS" -->
+  <string name="preference_doh_max_protection_info_1">Використовувати лише вибраного провайдера</string>
+  <!-- Bullet point 2 for "Max Protection" information page under "DNS over HTTPS" -->
+  <string name="preference_doh_max_protection_info_2">Завжди попереджати, якщо захищена DNS недоступна</string>
+  <!-- Bullet point 3 for "Max Protection" information page under "DNS over HTTPS" -->
+  <string name="preference_doh_max_protection_info_3">Якщо захищена DNS недоступна, сайти не завантажуватимуться або не працюватимуть належним чином</string>
+  <!-- Title displayed for "Off" option under "DNS over HTTPS" -->
+  <string name="preference_doh_off">Вимкнено</string>
+  <!-- Summary displayed for "Off" option under "DNS over HTTPS" -->
+  <string name="preference_doh_off_summary">Використовувати ваш типовий DNS-перетворювач</string>
+  <!-- Text displayed above provider dropdown under "DNS over HTTPS" -->
+  <string name="preference_doh_choose_provider">Вибрати провайдера</string>
+  <!-- Text displayed for "Default provider" under "DNS over HTTPS" providers -->
+  <string name="preference_doh_provider_default">(типово)</string>
+  <!-- Text displayed for "Custom" under "DNS over HTTPS" providers -->
+  <string name="preference_doh_provider_custom">Власний</string>
+  <!-- Text displayed for "Custom provider" dialog under "DNS over HTTPS" -->
+  <string name="preference_doh_provider_custom_dialog_title">Власний провайдер</string>
+  <!-- Text displayed above provider textfield under "DNS over HTTPS" -->
+  <string name="preference_doh_provider_custom_dialog_textfield">Провайдер</string>
+  <!-- Error text displayed for provider textfield under "DNS over HTTPS" if the URL does not start with "https://" or its scheme is not "https" -->
+  <string name="preference_doh_provider_custom_dialog_error_https">URL-адреса має починатися з “https://”</string>
+  <!-- Error text displayed for provider textfield under "DNS over HTTPS" if the URL is invalid -->
+  <string name="preference_doh_provider_custom_dialog_error_invalid">Недійсний URL</string>
+  <!-- Cancel button text for provider textfield under "DNS over HTTPS" -->
+  <string name="preference_doh_provider_custom_dialog_cancel">Скасувати</string>
+  <!-- Add button text for provider textfield under "DNS over HTTPS" -->
+  <string name="preference_doh_provider_custom_dialog_add">Додати</string>
+  <!-- Preference to access list of login exceptions that we don't use DNS over HTTPS -->
+  <string name="preference_doh_exceptions">Винятки</string>
+  <!-- Description of "exceptions" for "DNS over HTTPS". %1$s is the name of the app (for example "Firefox"). -->
+  <string name="preference_doh_exceptions_summary">%1$s не використовуватиме захищену DNS на цих сайтах та їхніх піддоменах.</string>
+  <!-- Text displayed that links to adding website domain for "DNS over HTTPS" exceptions. -->
+  <string name="preference_doh_exceptions_add">Додати сайт</string>
+  <!-- Text displayed above the input field when adding exceptions for "DNS over HTTPS". -->
+  <string name="preference_doh_exceptions_add_site">Сайт</string>
+  <!-- Placeholder URL displayed in the input field when adding exceptions for "DNS over HTTPS". -->
+  <string name="preference_doh_exceptions_add_placeholder">example.com</string>
+  <!-- Error displayed in the input field when adding invalid URLs for "DNS over HTTPS". -->
+  <string name="preference_doh_exceptions_add_error">Має бути дійсний домен</string>
+  <!-- Text displayed on the button within the input field for adding exceptions to "DNS over HTTPS" -->
+  <string name="preference_doh_exceptions_add_save">Зберегти</string>
+  <!-- Text displayed for removing all exceptions in "DNS over HTTPS" -->
+  <string name="preference_doh_exceptions_remove_all_exceptions">Вилучити всі винятки</string>
   <!-- About page link text to open support link -->
   <string name="about_support">Підтримка</string>
   <!-- About page link text to list of past crashes (like about:crashes on desktop) -->
@@ -2191,7 +2325,7 @@
   <string name="about_other_open_source_libraries">Бібліотеки, які ми використовуємо</string>
   <!--
     Toast shown to the user when they are activating the secret dev menu
-    The first parameter is number of long clicks left to enable the menu
+    %1$d is number of long clicks left to enable the menu
   -->
   <string name="about_debug_menu_toast_progress">Натискань до увімкнення меню налагодження: %1$d</string>
   <string name="about_debug_menu_toast_done">Меню налагодження увімкнено</string>
@@ -2243,15 +2377,15 @@
   <string name="preferences_passwords_sync_logins_across_devices_2">Синхронізація паролів між пристроями</string>
   <!-- Preference to access list of saved passwords -->
   <string name="preferences_passwords_saved_logins_2">Збережені паролі</string>
-  <!-- Description of empty list of saved passwords. Placeholder is replaced with app name. -->
+  <!-- Description of empty list of saved passwords. %s is the name of the app (for example "Firefox"). -->
   <string name="preferences_passwords_saved_logins_description_empty_text_2">Тут з’являтимуться паролі, які ви зберігаєте чи синхронізуєте в %s. Усі паролі зашифровано.</string>
   <!-- Clickable text for opening an external link for more information about Sync. -->
   <string name="preferences_passwords_saved_logins_description_empty_learn_more_link_2">Докладніше про синхронізацію</string>
   <!-- Preference to access list of login exceptions that we never save logins for -->
   <string name="preferences_passwords_exceptions">Винятки</string>
-  <!-- Empty description of list of login exceptions that we never save passwords for. Parameter will be replaced by app name. -->
+  <!-- Empty description of list of login exceptions that we never save passwords for. %s is the name of the app (for example "Firefox"). -->
   <string name="preferences_passwords_exceptions_description_empty_2">%s не зберігатиме паролі для вказаних тут сайтів.</string>
-  <!-- Description of list of login exceptions that we never save passwords for. Parameter will be replaced by app name. -->
+  <!-- Description of list of login exceptions that we never save passwords for. %s is the name of the app (for example "Firefox"). -->
   <string name="preferences_passwords_exceptions_description_2">%s не зберігатиме паролі для цих сайтів.</string>
   <!-- Text on button to remove all saved login exceptions -->
   <string name="preferences_passwords_exceptions_remove_all">Видалити всі винятки</string>
@@ -2317,7 +2451,7 @@
   <string name="preferences_credit_cards_2">Способи оплати</string>
   <!-- Preference for saving and autofilling credit cards -->
   <string name="preferences_credit_cards_save_and_autofill_cards_2">Зберігати й заповнювати способи оплати</string>
-  <!-- Preference summary for saving and autofilling payment method data. Parameter will be replaced by app name. -->
+  <!-- Preference summary for saving and autofilling payment method data. %s is the name of the app (for example "Firefox"). -->
   <string name="preferences_credit_cards_save_and_autofill_cards_summary_2">%s шифрує всі збережені способи оплати</string>
   <!-- Preference option for syncing credit cards across devices. This is displayed when the user is not signed into sync -->
   <string name="preferences_credit_cards_sync_cards_across_devices">Синхронізувати картки між пристроями</string>
@@ -2459,13 +2593,13 @@
   <string name="search_add_custom_engine_error_empty_search_string">Введіть пошуковий запит</string>
   <!-- Text shown when a user leaves out the required template string -->
   <string name="search_add_custom_engine_error_missing_template">Перевірте пошуковий запит на відповідність формату зразка</string>
-  <!-- Text shown when we aren't able to validate the custom search query. The first parameter is the url of the custom search engine -->
+  <!-- Text shown when we aren't able to validate the custom search query. %s is the url of the custom search engine. -->
   <string name="search_add_custom_engine_error_cannot_reach">Помилка з’єднання з “%s”</string>
-  <!-- Text shown when a user creates a new search engine -->
+  <!-- Text shown when a user creates a new search engine. %s is the url of the custom search engine. -->
   <string name="search_add_custom_engine_success_message">%s створено</string>
-  <!-- Text shown when a user successfully edits a custom search engine -->
+  <!-- Text shown when a user successfully edits a custom search engine. %s is the url of the custom search engine. -->
   <string name="search_edit_custom_engine_success_message">%s збережено</string>
-  <!-- Text shown when a user successfully deletes a custom search engine -->
+  <!-- Text shown when a user successfully deletes a custom search engine. %s is the url of the custom search engine. -->
   <string name="search_delete_search_engine_success_message">%s видалено</string>
   <!-- Heading for the instructions to allow a permission -->
   <string name="phone_feature_blocked_intro">Щоб дозволити це:</string>
@@ -2473,15 +2607,17 @@
   <string name="phone_feature_blocked_step_settings">1. Відкрийте налаштування Android</string>
   <!-- Second step for the allowing a permission -->
   <string name="phone_feature_blocked_step_permissions">2. Торкніться &lt;b&gt;Дозволи&lt;/b&gt;</string>
-  <!-- Third step for the allowing a permission (Fore example: Camera) -->
+  <!-- Third step for the allowing a permission (%1$s is the permission name, for example "Camera"). -->
   <string name="phone_feature_blocked_step_feature">3. Увімкніть перемикач &lt;b&gt;%1$s&lt;/b&gt;</string>
   <!-- Label that indicates a site is using a secure connection -->
   <string name="quick_settings_sheet_secure_connection_2">З’єднання захищене</string>
   <!-- Label that indicates a site is using a insecure connection -->
   <string name="quick_settings_sheet_insecure_connection_2">З’єднання не захищене</string>
+  <!-- Label that indicates a site is displaying a local document -->
+  <string name="quick_settings_sheet_local_page">Ця сторінка зберігається на вашому пристрої.</string>
   <!-- Label to clear site data -->
   <string name="clear_site_data">Стерти файли cookie та дані сайтів</string>
-  <!-- Confirmation message for a dialog confirming if the user wants to delete all data for current site -->
+  <!-- Confirmation message for a dialog confirming if the user wants to delete all data for current site. %s is the domain of the site. -->
   <string name="confirm_clear_site_data">Ви дійсно хочете очистити всі файли cookie та дані сайту &lt;b&gt;%s&lt;/b&gt;?</string>
   <!-- Confirmation message for a dialog confirming if the user wants to delete all the permissions for all sites -->
   <string name="confirm_clear_permissions_on_all_sites">Ви впевнені, що хочете очистити всі дозволи на всіх сайтах?</string>
@@ -2498,7 +2634,7 @@
   <!-- Browser menu button that removes a shortcut from the home fragment -->
   <string name="browser_menu_remove_from_shortcuts">Вилучити з ярликів</string>
   <!--
-    text shown before the issuer name to indicate who its verified by, parameter is the name of
+    text shown before the issuer name to indicate who its verified by, %1$s is the name of
     the certificate authority that verified the ticket
   -->
   <string name="certificate_info_verified_by">Засвідчено: %1$s</string>
@@ -2634,10 +2770,19 @@
     Search suggestions title for Firefox Suggest.
   -->
   <string name="firefox_suggest_header" tools:ignore="BrandUsage">Пропозиції Firefox</string>
+  <!-- Search suggestions title for trending searches. -->
+  <string name="trending_searches_header" moz:removedIn="137" tools:ignore="UnusedResources">Популярні пошукові запити</string>
+  <!--
+    Search suggestions title for trending search suggestions.
+    %s is a placeholder for the name of the search engine providing the trending search suggestions.
+  -->
+  <string name="trending_searches_header_2">Популярні в %s</string>
   <!-- Title for search suggestions when Google is the default search suggestion engine. -->
   <string name="google_search_engine_suggestion_header">Пошук Google</string>
-  <!-- Title for search suggestions when the default search suggestion engine is anything other than Google. The first parameter is default search engine name. -->
+  <!-- Title for search suggestions when the default search suggestion engine is anything other than Google. %s is default search engine name. -->
   <string name="other_default_search_engine_suggestion_header">%s пошук</string>
+  <!-- Title for recent search suggestions. -->
+  <string name="recent_searches_header">Недавні пошуки</string>
   <!--
     Default browser experiment
 
@@ -2664,9 +2809,9 @@
   <string name="pocket_stories_categories_header">Розповіді за темами</string>
   <!-- Text of a button allowing users to access an external url for more Pocket recommendations. -->
   <string name="pocket_stories_placeholder_text">Знайти більше</string>
-  <!-- Title of an app feature. Smaller than a heading. The first parameter is product name Pocket -->
+  <!-- Title of an app feature. Smaller than a heading. %s is "Pocket". -->
   <string name="pocket_stories_feature_title_2">Від %s.</string>
-  <!-- Caption for describing a certain feature. The placeholder is for a clickable text (eg: Learn more) which will load an url in a new tab when clicked. -->
+  <!-- Caption for describing a certain feature. %s is a link using pocket_stories_feature_learn_more as text, which will load an url in a new tab when clicked. -->
   <string name="pocket_stories_feature_caption" tools:ignore="BrandUsage">Частина родини Firefox. %s</string>
   <!-- Clickable text for opening an external link for more information about Pocket. -->
   <string name="pocket_stories_feature_learn_more">Докладніше</string>
@@ -2698,7 +2843,7 @@
   <string name="review_quality_check_highlights_title" moz:removedIn="136" tools:ignore="UnusedResources">Обране з недавніх відгуків</string>
   <!-- Title for section explaining how we analyze the reliability of a product's reviews. -->
   <string name="review_quality_check_explanation_title" moz:removedIn="136" tools:ignore="UnusedResources">Як ми визначаємо якість відгуку</string>
-  <!-- Paragraph explaining how we analyze the reliability of a product's reviews. First parameter is the Fakespot product name. In the phrase "Fakespot by Mozilla", "by" can be localized. Does not need to stay by. -->
+  <!-- Paragraph explaining how we analyze the reliability of a product's reviews. %s is "Fakespot". In the phrase "Fakespot by Mozilla", "by" can be localized. -->
   <string name="review_quality_check_explanation_body_reliability" moz:removedIn="136" tools:ignore="UnusedResources">Mozilla використовує технологію ШІ від %s, щоб перевірити надійність відгуків про товар. Це допоможе вам оцінити лише якість відгуку, а не якість товару.</string>
   <!-- Paragraph explaining the grading system we use to classify the reliability of a product's reviews. -->
   <string name="review_quality_check_info_review_grade_header" moz:removedIn="136" tools:ignore="UnusedResources">Кожному відгуку про товар ми присвоюємо &lt;b&gt;буквену оцінку&lt;/b&gt; від A до F.</string>
@@ -2710,17 +2855,17 @@
   <string name="review_quality_check_info_grade_info_DF" moz:removedIn="136" tools:ignore="UnusedResources">Сумнівні – нечесні відгуки, найімовірніше від упереджених оглядачів.</string>
   <!-- Paragraph explaining how a product's adjusted grading is calculated. -->
   <string name="review_quality_check_explanation_body_adjusted_grading" moz:removedIn="136" tools:ignore="UnusedResources">&lt;b&gt;Скоригований рейтинг&lt;/b&gt; на основі лише відгуків, які ми вважаємо надійними.</string>
-  <!-- Paragraph explaining product review highlights. First parameter is the name of the retailer (e.g. Amazon). -->
+  <!-- Paragraph explaining product review highlights. %s is the name of the retailer (e.g. Amazon). -->
   <string name="review_quality_check_explanation_body_highlights" moz:removedIn="136" tools:ignore="UnusedResources">&lt;b&gt;Обрані&lt;/b&gt; беруться з відгуків %s за останні 80 днів, які ми вважаємо надійними.</string>
-  <!-- Text for learn more caption presenting a link with information about review quality. First parameter is for clickable text defined in review_quality_check_info_learn_more_link. -->
+  <!-- Text for learn more caption presenting a link with information about review quality. %s is a link using review_quality_check_info_learn_more_link as text. -->
   <string name="review_quality_check_info_learn_more" moz:removedIn="136" tools:ignore="UnusedResources">Дізнатися більше про %s.</string>
-  <!-- Clickable text that links to review quality check SuMo page. First parameter is the Fakespot product name. -->
+  <!-- Clickable text that links to review quality check SuMo page. %s is "Fakespot". -->
   <string name="review_quality_check_info_learn_more_link_2" moz:removedIn="136" tools:ignore="UnusedResources">як %s визначає якість відгуку</string>
   <!-- Text for title of settings section. -->
   <string name="review_quality_check_settings_title" moz:removedIn="136" tools:ignore="UnusedResources">Налаштування</string>
   <!-- Text for label for switch preference to show recommended products from review quality check settings section. -->
   <string name="review_quality_check_settings_recommended_products" moz:removedIn="136" tools:ignore="UnusedResources">Показувати рекламу в засобі перевірки</string>
-  <!-- Description for switch preference to show recommended products from review quality check settings section. First parameter is for clickable text defined in review_quality_check_settings_recommended_products_learn_more. -->
+  <!-- Description for switch preference to show recommended products from review quality check settings section. %s is a link using review_quality_check_settings_recommended_products_learn_more as text. -->
   <string name="review_quality_check_settings_recommended_products_description_2" moz:removedIn="136" tools:ignore="UnusedResources">Ви періодично бачитимете рекламу відповідних товарів. Ми рекламуємо лише товари з надійними відгуками. %s</string>
   <!-- Clickable text that links to review quality check recommended products support article. -->
   <string name="review_quality_check_settings_recommended_products_learn_more" moz:removedIn="136" tools:ignore="UnusedResources">Докладніше</string>
@@ -2728,11 +2873,11 @@
   <string name="review_quality_check_settings_turn_off" moz:removedIn="136" tools:ignore="UnusedResources">Вимкнути засіб перевірки відгуків</string>
   <!-- Text for title of recommended product section. This is displayed above a product image, suggested as an alternative to the product reviewed. -->
   <string name="review_quality_check_ad_title" moz:removedIn="136" tools:ignore="UnusedResources">Більше товарів</string>
-  <!-- Caption for recommended product section indicating this is an ad by Fakespot. First parameter is the Fakespot product name. -->
+  <!-- Caption for recommended product section indicating this is an ad by Fakespot. %s is "Fakespot". -->
   <string name="review_quality_check_ad_caption" moz:removedIn="136" tools:ignore="UnusedResources">Реклама від %s</string>
-  <!-- Caption for review quality check panel. First parameter is for clickable text defined in review_quality_check_powered_by_link. -->
+  <!-- Caption for review quality check panel. %s is a link using review_quality_check_powered_by_link as text. -->
   <string name="review_quality_check_powered_by_2" moz:removedIn="136" tools:ignore="UnusedResources">Засіб перевірки відгуків від %s</string>
-  <!-- Clickable text that links to Fakespot.com. First parameter is the Fakespot product name. In the phrase "Fakespot by Mozilla", "by" can be localized. Does not need to stay by. -->
+  <!-- Clickable text that links to Fakespot.com. %s is "Fakespot". In the phrase "Fakespot by Mozilla", "by" can be localized. -->
   <string name="review_quality_check_powered_by_link" moz:removedIn="136" tools:ignore="UnusedResources">%s від Mozilla</string>
   <!-- Text for title of warning card informing the user that the current analysis is outdated. -->
   <string name="review_quality_check_outdated_analysis_warning_title" moz:removedIn="136" tools:ignore="UnusedResources">Нова інформація для перевірки</string>
@@ -2748,7 +2893,7 @@
   <string name="review_quality_check_product_availability_warning_body" moz:removedIn="136" tools:ignore="UnusedResources">Якщо цей товар знову з’явиться, повідомте про це нам, і ми його проаналізуємо.</string>
   <!-- Clickable text for warning card informing the user that the current product is currently not available. Clicking this should inform the server that the product is available. -->
   <string name="review_quality_check_product_availability_warning_action_2" moz:removedIn="136" tools:ignore="UnusedResources">Повідомити про наявність товару</string>
-  <!-- Title for warning card informing the user that the current product's analysis is still processing. The parameter is the percentage progress (0-100%) of the analysis process (e.g. 56%). -->
+  <!-- Title for warning card informing the user that the current product's analysis is still processing. %s is the percentage progress (0-100%) of the analysis process (e.g. 56%). -->
   <string name="review_quality_check_analysis_in_progress_warning_title_2" moz:removedIn="136" tools:ignore="UnusedResources">Перевірка якості відгуку (%s)</string>
   <!-- Text for body of warning card informing the user that the current product's analysis is still processing. -->
   <string name="review_quality_check_analysis_in_progress_warning_body" moz:removedIn="136" tools:ignore="UnusedResources">Це може тривати близько 60 секунд.</string>
@@ -2784,15 +2929,15 @@
   <string name="review_quality_check_no_analysis_link" moz:removedIn="136" tools:ignore="UnusedResources">Перевірити якість відгуку</string>
   <!-- Headline for review quality check contextual onboarding card. -->
   <string name="review_quality_check_contextual_onboarding_title" moz:removedIn="136" tools:ignore="UnusedResources">Спробуйте наш надійний путівник відгуками про товари</string>
-  <!-- Description for review quality check contextual onboarding card. The first and last two parameters are for retailer names (e.g. Amazon, Walmart). The second parameter is for the name of the application (e.g. Firefox). -->
+  <!-- Description for review quality check contextual onboarding card. %1$s, %3$s and %4$s are for retailer names (e.g. Amazon, Walmart). %2$s% is for the name of the application (for example "Firefox"). -->
   <string name="review_quality_check_contextual_onboarding_description" moz:removedIn="136" tools:ignore="UnusedResources">Дізнайтеся чи надійні відгуки про товар, перед купівлею в %1$s. Перевірка відгуків — вбудована у браузер експериментальна функція від %2$s. Вона також працює на %3$s і %4$s.</string>
-  <!-- Description for review quality check contextual onboarding card. The first parameters is for retailer name (e.g. Amazon). The second parameter is for the name of the application (e.g. Firefox). -->
+  <!-- Description for review quality check contextual onboarding card. %1$s is for retailer name (e.g. Amazon). %2$s is for the name of the application (for example "Firefox"). -->
   <string name="review_quality_check_contextual_onboarding_description_one_vendor" moz:removedIn="136" tools:ignore="UnusedResources">Дізнайтеся чи надійні відгуки про товар, перед купівлею в %1$s. Перевірка відгуків – вбудована у браузер експериментальна функція від %2$s.</string>
-  <!-- Paragraph presenting review quality check feature. First parameter is the Fakespot product name. Second parameter is for clickable text defined in review_quality_check_contextual_onboarding_learn_more_link. In the phrase "Fakespot by Mozilla", "by" can be localized. Does not need to stay by. -->
+  <!-- Paragraph presenting review quality check feature. %1$s is "Fakespot". %2$s is a link using review_quality_check_contextual_onboarding_learn_more_link as text. In the phrase "Fakespot by Mozilla", "by" can be localized. -->
   <string name="review_quality_check_contextual_onboarding_learn_more" moz:removedIn="136" tools:ignore="UnusedResources">Використовуючи можливості %1$s від Mozilla, ми допомагаємо вам уникнути упереджених і несправжніх відгуків. Наша модель ШІ постійно вдосконалюється, щоб захистити вас під час покупок. %2$s</string>
   <!-- Clickable text from the contextual onboarding card that links to review quality check support article. -->
   <string name="review_quality_check_contextual_onboarding_learn_more_link" moz:removedIn="136" tools:ignore="UnusedResources">Докладніше</string>
-  <!-- Caption text to be displayed in review quality check contextual onboarding card above the opt-in button. First parameter is Firefox app name, third parameter is the Fakespot product name. Second & fourth are for clickable texts defined in review_quality_check_contextual_onboarding_privacy_policy_3 and review_quality_check_contextual_onboarding_terms_use. -->
+  <!-- Caption text to be displayed in review quality check contextual onboarding card above the opt-in button. %1$s is the name of the app (for example "Firefox"), %3$s is "Fakespot". %2$s and %4$s are links using review_quality_check_contextual_onboarding_privacy_policy_3 and review_quality_check_contextual_onboarding_terms_use as text. -->
   <string name="review_quality_check_contextual_onboarding_caption_4" moz:removedIn="136" tools:ignore="UnusedResources">Вибравши “Так, спробувати”, ви погоджуєтеся з %2$s %1$s і %4$s %3$s.</string>
   <!-- Clickable text from the review quality check contextual onboarding card that links to Fakespot privacy notice. -->
   <string name="review_quality_check_contextual_onboarding_privacy_policy_3" moz:removedIn="136" tools:ignore="UnusedResources">положенням про приватність</string>
@@ -2806,7 +2951,7 @@
   <string name="review_quality_check_open_handle_content_description" moz:removedIn="136" tools:ignore="UnusedResources">Відкрити засіб перевірки відгуків</string>
   <!-- Content description (not visible, for screen readers etc.) for closing browser menu button to open review quality check bottom sheet. -->
   <string name="review_quality_check_close_handle_content_description" moz:removedIn="136" tools:ignore="UnusedResources">Закрити засіб перевірки відгуків</string>
-  <!-- Content description (not visible, for screen readers etc.) for review quality check star rating. First parameter is the number of stars (1-5) representing the rating. -->
+  <!-- Content description (not visible, for screen readers etc.) for review quality check star rating. %1$s is the number of stars (1-5) representing the rating. -->
   <string name="review_quality_check_star_rating_content_description" moz:removedIn="136" tools:ignore="UnusedResources">%1$s із 5 зірок</string>
   <!-- Text for minimize button from highlights card. When clicked the highlights card should reduce its size. -->
   <string name="review_quality_check_highlights_show_less" moz:removedIn="136" tools:ignore="UnusedResources">Показати менше</string>
@@ -2822,7 +2967,7 @@
   <string name="review_quality_check_highlights_type_packaging_appearance" moz:removedIn="136" tools:ignore="UnusedResources">Пакування та вигляд</string>
   <!-- Text for highlights card competitiveness category header. Reviews shown under this header should refer the product's competitiveness. -->
   <string name="review_quality_check_highlights_type_competitiveness" moz:removedIn="136" tools:ignore="UnusedResources">Конкурентоспроможність</string>
-  <!-- Text that is surrounded by quotes. The parameter is the actual text that is in quotes. An example of that text could be: Excellent craftsmanship, and that is displayed as “Excellent craftsmanship”. The text comes from a buyer's review that the feature is highlighting" -->
+  <!-- Text that is surrounded by quotes. %s is the actual text that is in quotes. An example of that text could be: Excellent craftsmanship, and that is displayed as “Excellent craftsmanship”. The text comes from a buyer's review that the feature is highlighting" -->
   <string name="surrounded_with_quotes" moz:removedIn="136" tools:ignore="UnusedResources">“%s“</string>
   <!--
     Accessibility services actions labels. These will be appended to accessibility actions like "Double tap to.." but not by or applications but by services like Talkback.
@@ -2842,7 +2987,7 @@
   <string name="a11y_action_label_read_article">читати статтю</string>
   <!-- Action label for links to the Firefox Pocket website. Talkback will append this to say "Double tap to open link to learn more". -->
   <string name="a11y_action_label_pocket_learn_more">відкрити посилання, щоб дізнатися більше</string>
-  <!-- Content description for headings announced by accessibility service. The first parameter is the text of the heading. Talkback will announce the first parameter and then speak the word "Heading" indicating to the user that this text is a heading for a section. -->
+  <!-- Content description for headings announced by accessibility service. %s is the text of the heading. Talkback will announce the text and then speak the word "Heading" indicating to the user that this text is a heading for a section. -->
   <string name="a11y_heading">%s, заголовок</string>
   <!-- Title for dialog displayed when trying to access links present in a text. -->
   <string name="a11y_links_title">Посилання</string>
@@ -2858,13 +3003,13 @@
   <string name="translations_bottom_sheet_title">Перекласти цю сторінку?</string>
   <!--
     Title for the translation dialog after a translation was completed successfully.
-    The first parameter is the name of the language that the page was translated from, for example, "French".
-    The second parameter is the name of the language that the page was translated to, for example, "English".
+    %1$s is the name of the language that the page was translated from, for example, "French".
+    %2$s is the name of the language that the page was translated to, for example, "English".
   -->
   <string name="translations_bottom_sheet_title_translation_completed">Сторінку перекладено з %1$s на %2$s</string>
-  <!-- Title for the translation dialog that allows a user to translate the webpage when a user uses the translation feature the first time. The first parameter is the name of the application, for example, "Fenix". -->
+  <!-- Title for the translation dialog that allows a user to translate the webpage when a user uses the translation feature the first time. %1$s is the name of the app (for example "Firefox"). -->
   <string name="translations_bottom_sheet_title_first_time">Спробуйте приватні переклади у %1$s</string>
-  <!-- Additional information on the translation dialog that appears when a user uses the translation feature the first time. The first parameter is clickable text with a link, for example, "Learn more". -->
+  <!-- Additional information on the translation dialog that appears when a user uses the translation feature the first time. %1$s is a link using translations_bottom_sheet_info_message_learn_more as text. -->
   <string name="translations_bottom_sheet_info_message">Для вашої приватності переклади завжди відбуваються на пристрої. Невдовзі з’являться нові мови та вдосконалення! %1$s</string>
   <!-- Text that links to additional information about the Firefox translations feature. -->
   <string name="translations_bottom_sheet_info_message_learn_more">Докладніше</string>
@@ -2896,7 +3041,7 @@
   <string name="translation_error_could_not_translate_warning_text">Виникла проблема з перекладом. Повторіть спробу.</string>
   <!-- The title of the warning card informs the user that the list of languages cannot be loaded. -->
   <string name="translation_error_could_not_load_languages_warning_text">Не вдалося завантажити мови. Перевірте інтернет-з’єднання і повторіть спробу.</string>
-  <!-- The title of the warning card informs the user that a language is not supported. The first parameter is the name of the language that is not supported. -->
+  <!-- The title of the warning card informs the user that a language is not supported. %1$s is the name of the language that is not supported. -->
   <string name="translation_error_language_not_supported_warning_text">На жаль, %1$s ще не підтримується.</string>
   <!-- Snackbar title shown if the user closes the Translation Request dialogue and a translation is in progress. -->
   <string name="translation_in_progress_snackbar">Переклад…</string>
@@ -2904,7 +3049,7 @@
     Title for the data saving mode warning dialog used in the translation request dialog.
     This dialog will be presented when the user attempts to perform
     a translation without the necessary language files downloaded first when Android's data saver mode is enabled and the user is not using WiFi.
-    The first parameter is the size in kilobytes or megabytes of the language file.
+    %1$s is the size in kilobytes or megabytes of the language file.
   -->
   <string name="translations_download_language_file_dialog_title">Завантажити мову в режимі заощадження даних (%1$s)?</string>
   <!--
@@ -2915,9 +3060,9 @@
   <string name="translation_option_bottom_sheet_title_heading">Параметри перекладу</string>
   <!-- Toggle switch label that allows a user to set the setting if they would like the browser to always offer or suggest translations when available. -->
   <string name="translation_option_bottom_sheet_always_translate">Завжди пропонувати переклад</string>
-  <!-- Toggle switch label that allows a user to set if they would like a given language to automatically translate or not. The first parameter is the language name, for example, "Spanish". -->
+  <!-- Toggle switch label that allows a user to set if they would like a given language to automatically translate or not. %1$s is the language name, for example, "Spanish". -->
   <string name="translation_option_bottom_sheet_always_translate_in_language">Завжди перекладати %1$s</string>
-  <!-- Toggle switch label that allows a user to set if they would like to never be offered a translation of the given language. The first parameter is the language name, for example, "Spanish". -->
+  <!-- Toggle switch label that allows a user to set if they would like to never be offered a translation of the given language. %1$s is the language name, for example, "Spanish". -->
   <string name="translation_option_bottom_sheet_never_translate_in_language">Ніколи не перекладати %1$s</string>
   <!-- Toggle switch label that allows a user to set the setting if they would like the browser to never translate the site the user is currently visiting. -->
   <string name="translation_option_bottom_sheet_never_translate_site">Ніколи не перекладати цей сайт</string>
@@ -2927,7 +3072,7 @@
   <string name="translation_option_bottom_sheet_switch_description">Перевизначає пропозиції перекладу</string>
   <!-- Button text for the button that will take the user to the translation settings dialog. -->
   <string name="translation_option_bottom_sheet_translation_settings">Налаштування перекладу</string>
-  <!-- Button text for the button that will take the user to a website to learn more about how translations works in the given app. The first parameter is the name of the application, for example, "Fenix". -->
+  <!-- Button text for the button that will take the user to a website to learn more about how translations works in the given app. %1$s is the name of the app (for example "Firefox"). -->
   <string name="translation_option_bottom_sheet_about_translations">Про переклади в %1$s</string>
   <!-- Content description (not visible, for screen readers etc.) for closing the translations bottom sheet. -->
   <string name="translation_option_bottom_sheet_close_content_description">Закрити блок перекладів</string>
@@ -2967,15 +3112,15 @@
     Preference option for offering to translate. Radio button title text.
   -->
   <string name="automatic_translation_option_offer_to_translate_title_preference">Пропонувати переклад (типово)</string>
-  <!-- Preference option for offering to translate. Radio button summary text. The first parameter is the name of the app defined in app_name (for example: Fenix) -->
+  <!-- Preference option for offering to translate. Radio button summary text. %1$s is the name of the app (for example "Firefox"). -->
   <string name="automatic_translation_option_offer_to_translate_summary_preference">%1$s пропонуватиме переклад для сайтів цією мовою.</string>
   <!-- Preference option for always translate. Radio button title text. -->
   <string name="automatic_translation_option_always_translate_title_preference">Завжди перекладати</string>
-  <!-- Preference option for always translate. Radio button summary text. The first parameter is the name of the app defined in app_name (for example: Fenix) -->
+  <!-- Preference option for always translate. Radio button summary text. %1$s is the name of the app (for example "Firefox"). -->
   <string name="automatic_translation_option_always_translate_summary_preference">%1$s автоматично перекладатиме цю мову під час завантаження сторінки.</string>
   <!-- Preference option for never translate. Radio button title text. -->
   <string name="automatic_translation_option_never_translate_title_preference">Ніколи не перекладати</string>
-  <!-- Preference option for never translate. Radio button summary text. The first parameter is the name of the app defined in app_name (for example: Fenix) -->
+  <!-- Preference option for never translate. Radio button summary text. %1$s is the name of the app (for example "Firefox"). -->
   <string name="automatic_translation_option_never_translate_summary_preference">%1$s ніколи не пропонуватиме переклад для сайтів цією мовою.</string>
   <!--
     Never translate site preference screen
@@ -2987,14 +3132,14 @@
   <string name="never_translate_site_header_preference">Щоб додати новий сайт: відкрийте його і в меню перекладу виберіть “Ніколи не перекладати цей сайт”.</string>
   <!--
     Content description (not visible, for screen readers etc.): For a never-translated site list item that is selected.
-    The first parameter is web site url (for example:"wikipedia.com")
+    %1$s is web site url (for example:"wikipedia.com")
   -->
   <string name="never_translate_site_item_list_content_description_preference">Вилучити %1$s</string>
   <!-- The title of the warning card informs the user that an error has occurred at the never translate sites list. -->
   <string name="never_translate_site_error_warning_text">Не вдалося завантажити сайти. Повторіть спробу пізніше.</string>
   <!--
     The Delete site dialogue title will appear when the user clicks on a list item.
-    The first parameter is web site url (for example:"wikipedia.com")
+    %1$s is web site url (for example:"wikipedia.com")
   -->
   <string name="never_translate_site_dialog_title_preference">Видалити %1$s?</string>
   <!-- The Delete site dialogue positive button will appear when the user clicks on a list item. The site will be deleted. -->
@@ -3007,7 +3152,7 @@
     Title of the toolbar for the translation feature screen where users may download different languages for translation.
   -->
   <string name="download_languages_translations_toolbar_title_preference">Завантажити мови</string>
-  <!-- Screen header presenting the download language preference feature. It will appear under the toolbar.The first parameter is "Learn More," a clickable text with a link. Talkback will append this to say "Double tap to open link to learn more". -->
+  <!-- Screen header presenting the download language preference feature. It will appear under the toolbar. %1$s is a link using download_languages_header_learn_more_preference as text ("Learn more"). Talkback will append this to say "Double tap to open link to learn more". -->
   <string name="download_languages_header_preference">Завантажте мови для швидшого перекладу офлайн. %1$s</string>
   <!-- Clickable text from the screen header that links to a website. -->
   <string name="download_languages_header_learn_more_preference">Докладніше</string>
@@ -3017,8 +3162,8 @@
   <string name="download_languages_default_system_language_require_preference">обов’язково</string>
   <!--
     A text for download language preference item.
-    The first parameter is the language name, for example, "Spanish".
-    The second parameter is the language file size, for example, "(3.91 KB)" or, if the language package name is a pivot language, "(required)".
+    %1$s is the language name, for example, "Spanish".
+    %2$s is the language file size, for example, "(3.91 KB)" or, if the language package name is a pivot language, the string defined in download_languages_default_system_language_require_preference ("required").
   -->
   <string name="download_languages_language_item_preference">%1$s (%2$s)</string>
   <!-- The subhead of the download language preference screen will appear above the items that were not downloaded. -->
@@ -3033,8 +3178,8 @@
   <string name="download_languages_item_content_description_delete_in_progress_state">Виконується</string>
   <!--
     Content description (not visible, for screen readers etc.): For a language list item, downloading is in progress.
-    The first parameter is the language name, for example, "Spanish".
-    The second parameter is the language file size, for example, "(3.91 KB)".
+    %1$s is the language name, for example, "Spanish".
+    %2$s is the language file size, for example, "(3.91 KB)".
   -->
   <string name="download_languages_item_content_description_download_in_progress_state">Зупинити завантаження %1$s (%2$s)</string>
   <!-- Content description (not visible, for screen readers etc.): For a language list item that was not downloaded. -->
@@ -3043,29 +3188,29 @@
   <string name="download_languages_fetch_error_warning_text">Не вдалося завантажити мови. Повторіть спробу пізніше.</string>
   <!--
     The title of the warning card informs the user that an error has occurred at downloading a language.
-    The first parameter is the language name, for example, "Spanish".
+    %1$s is the language name, for example, "Spanish".
   -->
   <string name="download_languages_error_warning_text">Не вдалося завантажити &lt;b&gt;%1$s&lt;/b&gt;. Повторіть спробу.</string>
   <!--
     The title of the warning card informs the user that an error has occurred at deleting a language.
-    The first parameter is the language name, for example, "Spanish".
+    %1$s is the language name, for example, "Spanish".
   -->
   <string name="download_languages_delete_error_warning_text">Не вдалося видалити &lt;b&gt;%1$s&lt;/b&gt;. Повторіть спробу.</string>
   <!--
     Title for the dialog used by the translations feature to confirm deleting a language.
     The dialog will be presented when the user requests deletion of a language.
-    The first parameter is the name of the language, for example, "Spanish" and the second parameter is the size in kilobytes or megabytes of the language file.
+    %1$s is the name of the language, for example, "Spanish" and %2$s is the size in kilobytes or megabytes of the language file.
   -->
   <string name="delete_language_file_dialog_title">Видалити %1$s (%2$s)?</string>
-  <!-- Additional information for the dialog used by the translations feature to confirm deleting a language. The first parameter is the name of the application, for example, "Fenix". -->
+  <!-- Additional information for the dialog used by the translations feature to confirm deleting a language. %1$s is the name of the app (for example "Firefox"). -->
   <string name="delete_language_file_dialog_message">Якщо ви видалите цю мову, %1$s завантажуватиме частину словників у ваш кеш під час перекладу.</string>
   <!--
     Title for the dialog used by the translations feature to confirm deleting all languages file.
     The dialog will be presented when the user requests deletion of all languages file.
-    The first parameter is the size in kilobytes or megabytes of the language file.
+    %1$s is the size in kilobytes or megabytes of the language file.
   -->
   <string name="delete_language_all_languages_file_dialog_title">Видалити всі мови (%1$s)?</string>
-  <!-- Additional information for the dialog used by the translations feature to confirm deleting all languages file. The first parameter is the name of the application, for example, "Fenix". -->
+  <!-- Additional information for the dialog used by the translations feature to confirm deleting all languages file. %1$s is the name of the app (for example "Firefox"). -->
   <string name="delete_language_all_languages_file_dialog_message">Якщо ви видалите всі мови, %1$s завантажуватиме частину словників у ваш кеш під час перекладу.</string>
   <!-- Button text on the dialog used by the translations feature to confirm deleting a language. -->
   <string name="delete_language_file_dialog_positive_button_text">Видалити</string>
@@ -3075,7 +3220,7 @@
     Title for the data saving mode warning dialog used by the translations feature.
     This dialog will be presented when the user attempts to download a language or perform
     a translation without the necessary language files downloaded first when Android's data saver mode is enabled and the user is not using WiFi.
-    The first parameter is the size in kilobytes or megabytes of the language file.
+    %1$s is the size in kilobytes or megabytes of the language file.
   -->
   <string name="download_language_file_dialog_title">Завантажувати в режимі заощадження даних (%1$s)?</string>
   <!-- Additional information for the data saving mode warning dialog used by the translations feature. This text explains the reason a download is required for a translation. -->
@@ -3088,6 +3233,14 @@
   <string name="download_language_file_dialog_positive_button_text_all_languages">Завантажити і перекласти</string>
   <!-- Button text on the data saving mode warning dialog used by the translations feature to allow users to cancel the action and not perform a download of the language file. -->
   <string name="download_language_file_dialog_negative_button_text">Скасувати</string>
+  <!--
+    Unified Trust Panel
+
+    Text for the protection panel header when the site is secure.
+  -->
+  <string name="protection_panel_header_secure">Захищений</string>
+  <!-- Text for the protection panel header when the site is not secure. -->
+  <string name="protection_panel_header_not_secure">Не захищений</string>
   <!-- Title text for the protection panel banner when the site is not secure. -->
   <string name="protection_panel_banner_not_secure_title">Будьте обережні на цьому сайті</string>
   <!-- Description text for the protection panel banner when the site is not secure. -->
@@ -3096,12 +3249,12 @@
   <string name="protection_panel_banner_not_protected_title">Ви вимкнули захист</string>
   <!--
     Description text for the protection panel banner when tracking protection is disabled.
-    The first parameter is the name of the app defined in app_name (for example: Fenix)
+    %s is the name of the app (for example "Firefox").
   -->
   <string name="protection_panel_banner_not_protected_description">%s не працює. Ми пропонуємо знову ввімкнути захист.</string>
   <!--
     Title text for the protection panel banner when tracking protection is enabled.
-    The first parameter is the name of the app defined in app_name (for example: Fenix)
+    %s is the name of the app (for example "Firefox").
   -->
   <string name="protection_panel_banner_protected_title">%s на сторожі</string>
   <!-- Description text for the protection panel banner when tracking protection is enabled. -->
@@ -3112,6 +3265,46 @@
   <string name="protection_panel_etp_toggle_enabled_description">Якщо на цьому сайті щось не працює, спробуйте вимкнути захист.</string>
   <!-- Description text for the Enhanced Tracking Protection toggle when tracking protection is disabled. -->
   <string name="protection_panel_etp_toggle_disabled_description">Захист ВИМКНЕНО. Ми пропонуємо ввімкнути його знову.</string>
+  <!--
+    Text for displaying the total number of trackers blocked in the protection panel.
+    %d is a placeholder for the number of trackers blocked.
+  -->
+  <string name="protection_panel_num_trackers_blocked">Заблоковано стеження: %d</string>
+  <!-- Text for when no trackers have been blocked. -->
+  <string name="protection_panel_no_trackers_blocked">Стеження не виявлено</string>
+  <!-- Link text to navigate to privacy and security settings from the protection panel. -->
+  <string name="protection_panel_privacy_and_security_settings">Налаштування приватності та безпеки</string>
+  <!--
+    Text for displaying the total number of trackers blocked in the trackers blocked panel.
+    %d is a placeholder for the number of trackers blocked.
+  -->
+  <string name="trackers_blocked_panel_total_num_trackers_blocked">Заблоковано стеження: %d</string>
+  <!--
+    Text for displaying the number of trackers blocked for a specific tracker category in the trackers blocked panel.
+    %s is a placeholder for the name of the tracker category.
+    %d is a placeholder for the number of trackers blocked.
+  -->
+  <string name="trackers_blocked_panel_categorical_num_trackers_blocked">%s: %d</string>
+  <!--
+    Description text for a dialog confirming whether the user wants to delete all data for current site.
+    %s is a placeholder for the base domain of website.
+  -->
+  <string name="clear_site_data_dialog_description">Вилучення файлів cookie та даних для &lt;b&gt;%s&lt;/b&gt; може призвести до виходу на вебсайтах і очищення кошиків для покупок.</string>
+  <!-- Button text on the clear site data dialog to allow users to confirm they wish to clear the site data. -->
+  <string name="clear_site_data_dialog_positive_button_text">Очистити</string>
+  <!-- Button text on the clear site data dialog to allow users to cancel the action and not clear the site data. -->
+  <string name="clear_site_data_dialog_negative_button_text">Скасувати</string>
+  <!-- Snackbar title shown when the site data has been cleared. -->
+  <string name="clear_site_data_snackbar">Файли cookie та дані сайтів вилучено</string>
+  <!-- Text for the connection security panel when the site is secure. -->
+  <string name="connection_security_panel_secure">Захищене з’єднання</string>
+  <!-- Text for the connection security panel when the site is not secure. -->
+  <string name="connection_security_panel_not_secure">Незахищене з’єднання</string>
+  <!--
+    Text for the connection security panel to indicate who the certificate was verified by.
+    %s is a placeholder for the name of the certificate authority that verified the ticket
+  -->
+  <string name="connection_security_panel_verified_by">Засвідчено %s</string>
   <!--
     Debug drawer
 
@@ -3150,7 +3343,7 @@
   <string name="debug_drawer_tab_tools_tab_quantity_non_zero_error">Будь ласка, введіть число більше нуля</string>
   <!--
     The error message of the text field in the tab creation tool when the text field is a
-    quantity greater than the max tabs. The first parameter is the maximum number of tabs
+    quantity greater than the max tabs. %1$s is the maximum number of tabs
     that can be generated in one operation.
   -->
   <string name="debug_drawer_tab_tools_tab_quantity_exceed_max_error">Перевищено максимальну кількість вкладок (%1$s), яку можна створити за одну операцію</string>
@@ -3232,11 +3425,11 @@
     The title of the Logins feature in the Debug Drawer.
   -->
   <string name="debug_drawer_logins_title">Паролі</string>
-  <!-- The title of the logins section in the Logins feature, where the parameter will be the site domain -->
+  <!-- The title of the logins section in the Logins feature. %s is the site domain. -->
   <string name="debug_drawer_logins_current_domain_label">Поточний домен: %s</string>
   <!-- The label for a button to add a new fake login for the current domain in the Logins feature. -->
   <string name="debug_drawer_logins_add_login_button">Додати підставне ім’я користувача для цього домену</string>
-  <!-- Content description for delete button where parameter will be the username of the login -->
+  <!-- Content description for delete button. %s is the username of the login. -->
   <string name="debug_drawer_logins_delete_login_button_content_description">Видалити запис із іменем користувача %s</string>
   <!--
     Debug drawer addresses

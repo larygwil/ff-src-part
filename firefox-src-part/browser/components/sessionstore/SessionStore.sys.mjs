@@ -1292,13 +1292,15 @@ var SessionStoreInternal = {
           // Update the session start time using the restored session state.
           this._updateSessionStartTime(state);
 
-          // Make sure that at least the first window doesn't have anything hidden.
-          delete state.windows[0].hidden;
-          // Since nothing is hidden in the first window, it cannot be a popup.
-          delete state.windows[0].isPopup;
-          // We don't want to minimize and then open a window at startup.
-          if (state.windows[0].sizemode == "minimized") {
-            state.windows[0].sizemode = "normal";
+          if (state.windows.length) {
+            // Make sure that at least the first window doesn't have anything hidden.
+            delete state.windows[0].hidden;
+            // Since nothing is hidden in the first window, it cannot be a popup.
+            delete state.windows[0].isPopup;
+            // We don't want to minimize and then open a window at startup.
+            if (state.windows[0].sizemode == "minimized") {
+              state.windows[0].sizemode = "normal";
+            }
           }
 
           // clear any lastSessionWindowID attributes since those don't matter
@@ -1846,8 +1848,10 @@ var SessionStoreInternal = {
         this.saveStateDelayed(win);
         break;
       case "TabGroupRemoveRequested":
-        this.onTabGroupRemoveRequested(win, target);
-        this._notifyOfClosedObjectsChange();
+        if (!aEvent.detail?.skipSessionStore) {
+          this.onTabGroupRemoveRequested(win, target);
+          this._notifyOfClosedObjectsChange();
+        }
         break;
       case "oop-browser-crashed":
       case "oop-browser-buildid-mismatch":
@@ -3168,7 +3172,7 @@ var SessionStoreInternal = {
    *        The array of closed tabs to save to. This could be a
    *        window's _closedTabs array or the tab list of a
    *        closed tab group.
-   * @param {boolean} [options.closedInTabGroup]
+   * @param {boolean} [options.closedInTabGroup=false]
    *        If this tab was closed due to the closing of a tab group.
    */
   maybeSaveClosedTab(
@@ -3344,16 +3348,15 @@ var SessionStoreInternal = {
    * Insert a given |tabData| object into the list of |closedTabs|. We will
    * determine the right insertion point based on the .closedAt properties of
    * all tabs already in the list. The list will be truncated to contain a
-   * maximum of |this._max_tabs_undo| entries.
+   * maximum of |this._max_tabs_undo| entries if required.
    *
-   * @param winData (object)
-   *        The data of the window.
-   * @param tabData (object)
-   *        The tabData to be inserted.
-   * @param closedTabs (array)
-   *        The list of closed tabs for a window.
-   * @param saveAction (boolean)
-   *        Whether or not to add an action to the closed actions stack on save.
+   * @param {WindowStateData} winData
+   * @param {ClosedTabStateData[]} closedTabs
+   *   The list of closed tabs for a window or tab group.
+   * @param {ClosedTabStateData} tabData
+   *   The closed tab that should be inserted into `closedTabs`
+   * @param {boolean} [saveAction=true]
+   *   Whether or not to add an action to the closed actions stack on save.
    */
   saveClosedTabData(winData, closedTabs, tabData, saveAction = true) {
     // Find the index of the first tab in the list
@@ -3393,8 +3396,13 @@ var SessionStoreInternal = {
       this._addClosedAction(this._LAST_ACTION_CLOSED_TAB, tabData.closedId);
     }
 
-    // Truncate the list of closed tabs, if needed.
-    if (closedTabs.length > this._max_tabs_undo) {
+    // Truncate the list of closed tabs, if needed. For closed tabs within tab
+    // groups, always keep all closed tabs because users expect tab groups to
+    // be intact.
+    if (
+      !tabData.closedInTabGroupId &&
+      closedTabs.length > this._max_tabs_undo
+    ) {
       closedTabs.splice(this._max_tabs_undo, closedTabs.length);
     }
   },
@@ -4995,6 +5003,15 @@ var SessionStoreInternal = {
     }
 
     lazy.DevToolsShim.restoreDevToolsSession(lastSessionState);
+
+    // When the deferred session was created, open tab groups were converted to saved groups.
+    // Now that they have been restored, they need to be removed from the saved groups list.
+    let groupsToRemove = this._savedGroups.filter(
+      group => group.removeAfterRestore
+    );
+    for (let group of groupsToRemove) {
+      this.forgetSavedTabGroup(group.id);
+    }
 
     // Set data that persists between sessions
     this._recentCrashes =
@@ -6961,9 +6978,6 @@ var SessionStoreInternal = {
    * defaultState will be restored at startup. state will be passed into
    * LastSession and will be kept in case the user explicitly wants
    * to restore the previous session (publicly exposed as restoreLastSession).
-   * Note that restoreLastSession will not restore any grouped tabs that were
-   * present at last shutdown, as they will have been converted to saved
-   * groups.
    *
    * @param state
    *        The startupState, presumably from SessionStartup.state
@@ -6976,7 +6990,11 @@ var SessionStoreInternal = {
     // SessionStartup.state.
     let state = Cu.cloneInto(startupState, {});
     let hasPinnedTabs = false;
-    let defaultState = { windows: [], selectedWindow: 1 };
+    let defaultState = {
+      windows: [],
+      selectedWindow: 1,
+      savedGroups: state.savedGroups || [],
+    };
     state.selectedWindow = state.selectedWindow || 1;
 
     // Look at each window, remove pinned tabs, adjust selectedindex,
@@ -7017,8 +7035,7 @@ var SessionStoreInternal = {
           // We don't want to increment tIndex here.
           continue;
         } else if (window.tabs[tIndex].groupId) {
-          // Convert any open groups into saved groups
-          // and remove them from the session.
+          // Convert any open groups into saved groups.
           let groupStateToSave = window.groups.find(
             groupState => groupState.id == window.tabs[tIndex].groupId
           );
@@ -7026,12 +7043,13 @@ var SessionStoreInternal = {
           if (!groupToSave) {
             groupToSave =
               lazy.TabGroupState.savedInClosedWindow(groupStateToSave);
+            // If the session is manually restored, these groups will be removed from the saved groups list
+            // to prevent duplication.
+            groupToSave.removeAfterRestore = true;
             groupsToSave.set(groupStateToSave.id, groupToSave);
           }
-          let [tabToAdd] = window.tabs.splice(tIndex, 1);
+          let tabToAdd = window.tabs[tIndex];
           groupToSave.tabs.push(this._formatTabStateForSavedGroup(tabToAdd));
-          // We don't want to increment tIndex here.
-          continue;
         } else if (!window.tabs[tIndex].hidden && PERSIST_SESSIONS) {
           // Add any previously open tabs that aren't pinned or hidden to the recently closed tabs list
           // which we want to persist between sessions; if the session is manually restored, they will
@@ -7069,9 +7087,14 @@ var SessionStoreInternal = {
         tIndex++;
       }
 
-      defaultState.savedGroups = startupState.savedGroups || [];
       groupsToSave.forEach(groupState => {
-        defaultState.savedGroups.push(groupState);
+        if (
+          !defaultState.savedGroups.find(
+            existingGroup => existingGroup.id == groupState.id
+          )
+        ) {
+          defaultState.savedGroups.push(groupState);
+        }
       });
 
       hasPinnedTabs ||= !!newWindowState.tabs.length;
