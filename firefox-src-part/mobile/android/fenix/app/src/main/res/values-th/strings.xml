@@ -90,11 +90,11 @@
 
     Text for the Private mode shortcut CFR message for adding a private mode shortcut to open private tabs from the Home screen
   -->
-  <string name="private_mode_cfr_message_2">เปิดแท็บส่วนตัวถัดไปของคุณโดยแตะเพียงครั้งเดียว</string>
+  <string name="private_mode_cfr_message_2" moz:removedIn="138" tools:ignore="UnusedResources">เปิดแท็บส่วนตัวถัดไปของคุณโดยแตะเพียงครั้งเดียว</string>
   <!-- Text for the positive button to accept adding a Private Browsing shortcut to the Home screen -->
-  <string name="private_mode_cfr_pos_button_text">เพิ่มไปยังหน้าจอหลัก</string>
+  <string name="private_mode_cfr_pos_button_text" moz:removedIn="138" tools:ignore="UnusedResources">เพิ่มไปยังหน้าจอหลัก</string>
   <!-- Text for the negative button to decline adding a Private Browsing shortcut to the Home screen -->
-  <string name="cfr_neg_button_text">ไม่ ขอบคุณ</string>
+  <string name="cfr_neg_button_text" moz:removedIn="138" tools:ignore="UnusedResources">ไม่ ขอบคุณ</string>
   <!--
     Open in App "contextual feature recommendation" (CFR)
 
@@ -1484,6 +1484,40 @@
   <string name="download_multi_select_title">เลือกอยู่ %1$d</string>
   <!-- Text for the button to remove a single download item -->
   <string name="download_delete_item_1">เอาออก</string>
+  <!--
+    Time period headers for downloads
+
+    Text for the header that groups the downloads for today
+  -->
+  <string name="download_time_period_today">วันนี้</string>
+  <!-- Text for the header that groups the downloads for yesterday -->
+  <string name="download_time_period_yesterday">เมื่อวาน</string>
+  <!-- Text for the header that groups the downloads the past 7 days -->
+  <string name="download_time_period_last_7_days">7 วันที่ผ่านมา</string>
+  <!-- Text for the header that groups the downloads the past 30 days -->
+  <string name="download_time_period_last_30_days">30 วันที่ผ่านมา</string>
+  <!-- Text for the header that groups the downloads older than other groups -->
+  <string name="download_time_period_older">เก่ากว่า</string>
+  <!--
+    Downloads Content Type Filters
+
+    Text for the filter button to show all files in the downloads list
+  -->
+  <string name="download_content_type_filter_all">ทั้งหมด</string>
+  <!-- Text for the filter button to show only images in the downloads list -->
+  <string name="download_content_type_filter_image">รูปภาพ</string>
+  <!-- Text for the filter button to show only video files in the downloads list -->
+  <string name="download_content_type_filter_video">วิดีโอ</string>
+  <!-- Text for the filter button to show only documents in the downloads list -->
+  <string name="download_content_type_filter_document">เอกสาร</string>
+  <!-- Text for the filter button to show all other file types in the downloads list -->
+  <string name="download_content_type_filter_other">อื่น ๆ</string>
+  <!--
+    Description of a downloaded item, displayed in the downloads list.
+    %1$s: The size of the downloaded file.
+    %2$s: The URL of the downloaded file.
+  -->
+  <string name="download_item_description">%1$s • %2$s</string>
   <!--
     WebCompat Reporter
 
@@ -3505,4 +3539,12 @@
   <string name="text_field_eye_trailing_icon_default_content_description">แสดงข้อความที่ซ่อนอยู่</string>
   <!-- The default content description for the cross trailing icon button in TextField -->
   <string name="text_field_cross_trailing_icon_default_content_description">ล้างข้อความ</string>
+  <!--
+    Setup checklist component
+
+    Accessibility description for a check mark on a completed task
+  -->
+  <string name="a11y_completed_task_description">งานที่เสร็จสมบูรณ์</string>
+  <!-- Accessibility description for the task icon -->
+  <string name="a11y_task_icon_description">ไอคอนงาน</string>
 </resources>

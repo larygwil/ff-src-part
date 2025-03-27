@@ -90,11 +90,11 @@
 
     Text for the Private mode shortcut CFR message for adding a private mode shortcut to open private tabs from the Home screen
   -->
-  <string name="private_mode_cfr_message_2">Apri la prossima scheda anonima con un solo tocco.</string>
+  <string name="private_mode_cfr_message_2" moz:removedIn="138" tools:ignore="UnusedResources">Apri la prossima scheda anonima con un solo tocco.</string>
   <!-- Text for the positive button to accept adding a Private Browsing shortcut to the Home screen -->
-  <string name="private_mode_cfr_pos_button_text">Agg. a schermata principale</string>
+  <string name="private_mode_cfr_pos_button_text" moz:removedIn="138" tools:ignore="UnusedResources">Agg. a schermata principale</string>
   <!-- Text for the negative button to decline adding a Private Browsing shortcut to the Home screen -->
-  <string name="cfr_neg_button_text">No grazie</string>
+  <string name="cfr_neg_button_text" moz:removedIn="138" tools:ignore="UnusedResources">No grazie</string>
   <!--
     Open in App "contextual feature recommendation" (CFR)
 
@@ -1498,6 +1498,26 @@
   <string name="download_time_period_last_30_days">Ultimi 30 giorni</string>
   <!-- Text for the header that groups the downloads older than other groups -->
   <string name="download_time_period_older">Più vecchi</string>
+  <!--
+    Downloads Content Type Filters
+
+    Text for the filter button to show all files in the downloads list
+  -->
+  <string name="download_content_type_filter_all">Tutto</string>
+  <!-- Text for the filter button to show only images in the downloads list -->
+  <string name="download_content_type_filter_image">Immagini</string>
+  <!-- Text for the filter button to show only video files in the downloads list -->
+  <string name="download_content_type_filter_video">Video</string>
+  <!-- Text for the filter button to show only documents in the downloads list -->
+  <string name="download_content_type_filter_document">Documenti</string>
+  <!-- Text for the filter button to show all other file types in the downloads list -->
+  <string name="download_content_type_filter_other">Altro</string>
+  <!--
+    Description of a downloaded item, displayed in the downloads list.
+    %1$s: The size of the downloaded file.
+    %2$s: The URL of the downloaded file.
+  -->
+  <string name="download_item_description">%1$s • %2$s</string>
   <!--
     WebCompat Reporter
 
@@ -2972,15 +2992,15 @@
 
     Action label for elements that can be collapsed if interacting with them. Talkback will append this to say "Double tap to collapse".
   -->
-  <string name="a11y_action_label_collapse">comprimi</string>
+  <string name="a11y_action_label_collapse">comprimere</string>
   <!-- Current state for elements that can be collapsed if interacting with them. Talkback will dictate this after a state change. -->
   <string name="a11y_state_label_collapsed">compresso</string>
   <!-- Action label for elements that can be expanded if interacting with them. Talkback will append this to say "Double tap to expand". -->
-  <string name="a11y_action_label_expand">espandi</string>
+  <string name="a11y_action_label_expand">espandere</string>
   <!-- Current state for elements that can be expanded if interacting with them. Talkback will dictate this after a state change. -->
   <string name="a11y_state_label_expanded">espanso</string>
   <!-- Action label for links to a website containing documentation about a wallpaper collection. Talkback will append this to say "Double tap to open link to learn more about this collection". -->
-  <string name="a11y_action_label_wallpaper_collection_learn_more">apri il link per ulteriori informazioni su questa raccolta</string>
+  <string name="a11y_action_label_wallpaper_collection_learn_more">aprire il link con ulteriori informazioni su questa raccolta</string>
   <!-- Action label for links that point to an article. Talkback will append this to say "Double tap to read the article". -->
   <string name="a11y_action_label_read_article">leggere l’articolo</string>
   <!-- Action label for links to the Firefox Pocket website. Talkback will append this to say "Double tap to open link to learn more". -->
@@ -3519,4 +3539,12 @@
   <string name="text_field_eye_trailing_icon_default_content_description">Mostra testo nascosto</string>
   <!-- The default content description for the cross trailing icon button in TextField -->
   <string name="text_field_cross_trailing_icon_default_content_description">Cancella testo</string>
+  <!--
+    Setup checklist component
+
+    Accessibility description for a check mark on a completed task
+  -->
+  <string name="a11y_completed_task_description">Attività completata</string>
+  <!-- Accessibility description for the task icon -->
+  <string name="a11y_task_icon_description">Icona attività</string>
 </resources>
