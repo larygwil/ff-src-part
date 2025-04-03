@@ -1475,18 +1475,18 @@
 
     Text for the snackbar to confirm that multiple downloads items have been removed
   -->
-  <string name="download_delete_multiple_items_snackbar_1">ውርዶች ተወግደዋል</string>
+  <string name="download_delete_multiple_items_snackbar_1" moz:removedIn="138" tools:ignore="UnusedResources">ውርዶች ተወግደዋል</string>
   <!-- Text for the snackbar to confirm that a single download item has been removed. %1$s is the name of the download item. -->
-  <string name="download_delete_single_item_snackbar">%1$s ተወግዷል</string>
+  <string name="download_delete_single_item_snackbar" moz:removedIn="138" tools:ignore="UnusedResources">%1$s ተወግዷል</string>
   <!-- Text shown when no download exists -->
-  <string name="download_empty_message_1">ምንም የወረዱ ፋይሎች የሉም</string>
+  <string name="download_empty_message_1" moz:removedIn="138" tools:ignore="UnusedResources">ምንም የወረዱ ፋይሎች የሉም</string>
   <!--
     History multi select title in app bar
     %1$d is the number of downloads selected
   -->
   <string name="download_multi_select_title">%1$d ተመርጧል</string>
   <!-- Text for the button to remove a single download item -->
-  <string name="download_delete_item_1">አስወግድ</string>
+  <string name="download_delete_item_1" moz:removedIn="138" tools:ignore="UnusedResources">አስወግድ</string>
   <!--
     Time period headers for downloads
 
@@ -1514,13 +1514,13 @@
   <!-- Text for the filter button to show only documents in the downloads list -->
   <string name="download_content_type_filter_document">ሠነዶች</string>
   <!-- Text for the filter button to show all other file types in the downloads list -->
-  <string name="download_content_type_filter_other">ሌሎች</string>
+  <string name="download_content_type_filter_other" moz:removedIn="138" tools:ignore="UnusedResources">ሌሎች</string>
   <!--
     Description of a downloaded item, displayed in the downloads list.
     %1$s: The size of the downloaded file.
     %2$s: The URL of the downloaded file.
   -->
-  <string name="download_item_description">%1$s • %2$s</string>
+  <string name="download_item_description" moz:removedIn="138" tools:ignore="UnusedResources">%1$s • %2$s</string>
   <!--
     WebCompat Reporter
 

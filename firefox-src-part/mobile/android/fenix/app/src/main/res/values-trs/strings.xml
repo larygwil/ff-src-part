@@ -853,18 +853,18 @@
 
     Text for the snackbar to confirm that multiple downloads items have been removed
   -->
-  <string name="download_delete_multiple_items_snackbar_1">Nej sa nadunïnjt ngà nare’</string>
+  <string name="download_delete_multiple_items_snackbar_1" moz:removedIn="138" tools:ignore="UnusedResources">Nej sa nadunïnjt ngà nare’</string>
   <!-- Text for the snackbar to confirm that a single download item has been removed. %1$s is the name of the download item. -->
-  <string name="download_delete_single_item_snackbar">Ngà gahuin anêj %1$s</string>
+  <string name="download_delete_single_item_snackbar" moz:removedIn="138" tools:ignore="UnusedResources">Ngà gahuin anêj %1$s</string>
   <!-- Text shown when no download exists -->
-  <string name="download_empty_message_1">Nitāj à’ngō achibô nanïnj ïn nu</string>
+  <string name="download_empty_message_1" moz:removedIn="138" tools:ignore="UnusedResources">Nitāj à’ngō achibô nanïnj ïn nu</string>
   <!--
     History multi select title in app bar
     %1$d is the number of downloads selected
   -->
   <string name="download_multi_select_title">Ngà naguit %1$d</string>
   <!-- Text for the button to remove a single download item -->
-  <string name="download_delete_item_1">Nādure\'</string>
+  <string name="download_delete_item_1" moz:removedIn="138" tools:ignore="UnusedResources">Nādure\'</string>
   <!--
     Crashes
 

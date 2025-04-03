@@ -1472,18 +1472,18 @@
 
     Text for the snackbar to confirm that multiple downloads items have been removed
   -->
-  <string name="download_delete_multiple_items_snackbar_1">การดาวน์โหลดถูกลบ</string>
+  <string name="download_delete_multiple_items_snackbar_1" moz:removedIn="138" tools:ignore="UnusedResources">การดาวน์โหลดถูกลบ</string>
   <!-- Text for the snackbar to confirm that a single download item has been removed. %1$s is the name of the download item. -->
-  <string name="download_delete_single_item_snackbar">เอา %1$s ออกแล้ว</string>
+  <string name="download_delete_single_item_snackbar" moz:removedIn="138" tools:ignore="UnusedResources">เอา %1$s ออกแล้ว</string>
   <!-- Text shown when no download exists -->
-  <string name="download_empty_message_1">ไม่มีไฟล์ที่ดาวน์โหลด</string>
+  <string name="download_empty_message_1" moz:removedIn="138" tools:ignore="UnusedResources">ไม่มีไฟล์ที่ดาวน์โหลด</string>
   <!--
     History multi select title in app bar
     %1$d is the number of downloads selected
   -->
   <string name="download_multi_select_title">เลือกอยู่ %1$d</string>
   <!-- Text for the button to remove a single download item -->
-  <string name="download_delete_item_1">เอาออก</string>
+  <string name="download_delete_item_1" moz:removedIn="138" tools:ignore="UnusedResources">เอาออก</string>
   <!--
     Time period headers for downloads
 
@@ -1511,13 +1511,13 @@
   <!-- Text for the filter button to show only documents in the downloads list -->
   <string name="download_content_type_filter_document">เอกสาร</string>
   <!-- Text for the filter button to show all other file types in the downloads list -->
-  <string name="download_content_type_filter_other">อื่น ๆ</string>
+  <string name="download_content_type_filter_other" moz:removedIn="138" tools:ignore="UnusedResources">อื่น ๆ</string>
   <!--
     Description of a downloaded item, displayed in the downloads list.
     %1$s: The size of the downloaded file.
     %2$s: The URL of the downloaded file.
   -->
-  <string name="download_item_description">%1$s • %2$s</string>
+  <string name="download_item_description" moz:removedIn="138" tools:ignore="UnusedResources">%1$s • %2$s</string>
   <!--
     WebCompat Reporter
 

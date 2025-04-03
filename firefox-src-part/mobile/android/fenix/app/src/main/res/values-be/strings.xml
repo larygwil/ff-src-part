@@ -223,6 +223,8 @@
   <string name="browser_menu_discover_more_extensions">Адкрыйце для сябе іншыя пашырэнні</string>
   <!-- Browser menu description that is shown when one or more extensions are disabled due to extension errors -->
   <string name="browser_menu_extensions_disabled_description">Часова адключана</string>
+  <!-- The description of the browser menu appears when the user hasn't installed any extensions. -->
+  <string name="browser_menu_no_extensions_installed_description">Няма ўключаных пашырэнняў</string>
   <!-- Browser menu button that opens account settings -->
   <string name="browser_menu_account_settings">Ваш уліковы запіс</string>
   <!-- Browser menu button that sends a user to help articles -->
@@ -307,8 +309,12 @@
   <string name="browser_menu_new_in_firefox">Новае ў %1$s</string>
   <!-- Browser menu label that toggles the request for the desktop site of the currently visited page -->
   <string name="browser_menu_switch_to_desktop_site">Пераключыцца на версію для ПК</string>
+  <!-- Browser menu label that toggles the request for the mobile site of the currently visited page -->
+  <string name="browser_menu_switch_to_mobile_site">Пераключыцца на мабільную версію</string>
   <!-- Browser menu label that navigates to the page tools sub-menu -->
   <string name="browser_menu_tools">Прылады</string>
+  <!-- Content description (not visible, for screen readers etc.) for main menu help button. -->
+  <string name="browser_main_menu_content_description_help_button">Даведка</string>
   <!-- Content description (not visible, for screen readers etc.) for main menu settings button. -->
   <string name="browser_main_menu_content_description_settings_button">Налады</string>
   <!--
@@ -1223,18 +1229,18 @@
 
     Text for the snackbar to confirm that multiple downloads items have been removed
   -->
-  <string name="download_delete_multiple_items_snackbar_1">Сцягванні выдалены</string>
+  <string name="download_delete_multiple_items_snackbar_1" moz:removedIn="138" tools:ignore="UnusedResources">Сцягванні выдалены</string>
   <!-- Text for the snackbar to confirm that a single download item has been removed. %1$s is the name of the download item. -->
-  <string name="download_delete_single_item_snackbar">Выдалена %1$s</string>
+  <string name="download_delete_single_item_snackbar" moz:removedIn="138" tools:ignore="UnusedResources">Выдалена %1$s</string>
   <!-- Text shown when no download exists -->
-  <string name="download_empty_message_1">Няма сцягнутых файлаў</string>
+  <string name="download_empty_message_1" moz:removedIn="138" tools:ignore="UnusedResources">Няма сцягнутых файлаў</string>
   <!--
     History multi select title in app bar
     %1$d is the number of downloads selected
   -->
   <string name="download_multi_select_title">Вылучана: %1$d</string>
   <!-- Text for the button to remove a single download item -->
-  <string name="download_delete_item_1">Выдаліць</string>
+  <string name="download_delete_item_1" moz:removedIn="138" tools:ignore="UnusedResources">Выдаліць</string>
   <!--
     WebCompat Reporter
 

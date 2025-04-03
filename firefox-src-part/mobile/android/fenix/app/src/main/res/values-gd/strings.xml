@@ -1273,18 +1273,18 @@
 
     Text for the snackbar to confirm that multiple downloads items have been removed
   -->
-  <string name="download_delete_multiple_items_snackbar_1">Chaidh na luchdaich thu a-nuas a thoirt air falbh</string>
+  <string name="download_delete_multiple_items_snackbar_1" moz:removedIn="138" tools:ignore="UnusedResources">Chaidh na luchdaich thu a-nuas a thoirt air falbh</string>
   <!-- Text for the snackbar to confirm that a single download item has been removed. %1$s is the name of the download item. -->
-  <string name="download_delete_single_item_snackbar">Chaidh %1$s a thoirt air falbh</string>
+  <string name="download_delete_single_item_snackbar" moz:removedIn="138" tools:ignore="UnusedResources">Chaidh %1$s a thoirt air falbh</string>
   <!-- Text shown when no download exists -->
-  <string name="download_empty_message_1">Cha deach dad a luchdadh a-nuas</string>
+  <string name="download_empty_message_1" moz:removedIn="138" tools:ignore="UnusedResources">Cha deach dad a luchdadh a-nuas</string>
   <!--
     History multi select title in app bar
     %1$d is the number of downloads selected
   -->
   <string name="download_multi_select_title">%1$d air an taghadh</string>
   <!-- Text for the button to remove a single download item -->
-  <string name="download_delete_item_1">Thoir air falbh</string>
+  <string name="download_delete_item_1" moz:removedIn="138" tools:ignore="UnusedResources">Thoir air falbh</string>
   <!--
     Crashes
 

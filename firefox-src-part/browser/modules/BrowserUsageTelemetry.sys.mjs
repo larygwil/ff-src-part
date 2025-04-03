@@ -14,8 +14,10 @@ ChromeUtils.defineESModuleGetters(lazy, {
   DeferredTask: "resource://gre/modules/DeferredTask.sys.mjs",
   PageActions: "resource:///modules/PageActions.sys.mjs",
   PrivateBrowsingUtils: "resource://gre/modules/PrivateBrowsingUtils.sys.mjs",
-  SearchSERPTelemetry: "resource:///modules/SearchSERPTelemetry.sys.mjs",
-  SearchSERPTelemetryUtils: "resource:///modules/SearchSERPTelemetry.sys.mjs",
+  SearchSERPTelemetry:
+    "moz-src:///browser/components/search/SearchSERPTelemetry.sys.mjs",
+  SearchSERPTelemetryUtils:
+    "moz-src:///browser/components/search/SearchSERPTelemetry.sys.mjs",
 
   WindowsInstallsInfo:
     "resource://gre/modules/components-utils/WindowsInstallsInfo.sys.mjs",
@@ -595,6 +597,9 @@ export let BrowserUsageTelemetry = {
       case "TabGroupExpand":
         this._onTabGroupExpandOrCollapse();
         break;
+      case "TabGroupSaved":
+        this._onTabGroupSave(event);
+        break;
       case "unload":
         this._unregisterWindow(event.target);
         break;
@@ -1147,6 +1152,7 @@ export let BrowserUsageTelemetry = {
     win.addEventListener("TabUngrouped", this);
     win.addEventListener("TabGroupCollapse", this);
     win.addEventListener("TabGroupExpand", this);
+    win.addEventListener("TabGroupSaved", this);
 
     win.gBrowser.tabContainer.addEventListener(TAB_RESTORING_TOPIC, this);
     win.gBrowser.addTabsProgressListener(URICountListener);
@@ -1165,6 +1171,7 @@ export let BrowserUsageTelemetry = {
     win.removeEventListener("TabUngrouped", this);
     win.removeEventListener("TabGroupCollapse", this);
     win.removeEventListener("TabGroupExpand", this);
+    win.removeEventListener("TabGroupSaved", this);
 
     win.defaultView.gBrowser.tabContainer.removeEventListener(
       TAB_RESTORING_TOPIC,
@@ -1216,7 +1223,7 @@ export let BrowserUsageTelemetry = {
   },
 
   _onTabGroupCreate(event) {
-    if (event.detail.isUserCreated) {
+    if (event.detail.isUserTriggered) {
       Glean.tabgroup.createGroup.record({
         id: event.target.id,
         layout: lazy.sidebarVerticalTabs ? "vertical" : "horizontal",
@@ -1225,8 +1232,16 @@ export let BrowserUsageTelemetry = {
       });
     }
 
-    this._onTabGroupChangeTask.disarm();
-    this._onTabGroupChangeTask.arm();
+    this._onTabGroupChange();
+  },
+
+  _onTabGroupSave(event) {
+    Glean.tabgroup.save.record({
+      user_triggered: event.detail.isUserTriggered,
+      id: event.target.id,
+    });
+
+    this._onTabGroupChange();
   },
 
   _onTabGroupChange() {
