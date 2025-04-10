@@ -7,6 +7,9 @@
 // This is loaded into chrome windows with the subscript loader. Wrap in
 // a block to prevent accidentally leaking globals onto `window`.
 {
+  const { TabGroupMetrics } = ChromeUtils.importESModule(
+    "moz-src:///browser/components/tabbrowser/TabGroupMetrics.sys.mjs"
+  );
   const { TabStateFlusher } = ChromeUtils.importESModule(
     "resource:///modules/sessionstore/TabStateFlusher.sys.mjs"
   );
@@ -324,6 +327,7 @@
     #smartTabGroupingManager;
     #suggestionsOptinContainer;
     #suggestionsOptin;
+    #suggestionsRunToken;
 
     constructor() {
       super();
@@ -370,6 +374,11 @@
       );
       this.#panel = this.querySelector("panel");
       this.#nameField = this.querySelector("#tab-group-name");
+      this.#panel.addEventListener("click", e => {
+        if (e.target !== this.#nameField) {
+          this.#nameField.blur();
+        }
+      });
       this.#swatchesContainer = this.querySelector(
         ".tab-group-editor-swatches"
       );
@@ -439,7 +448,10 @@
       document
         .getElementById("tabGroupEditor_deleteGroup")
         .addEventListener("command", () => {
-          gBrowser.removeTabGroup(this.activeGroup);
+          gBrowser.removeTabGroup(this.activeGroup, {
+            isUserTriggered: true,
+            telemetrySource: TabGroupMetrics.METRIC_SOURCE.TAB_GROUP_MENU,
+          });
         });
 
       this.panel.addEventListener("popupshown", this);
@@ -500,6 +512,7 @@
       this.#suggestionsOptin.addEventListener(
         "MlModelOptinCancelDownload",
         () => {
+          this.#suggestionsRunToken = null;
           this.#handleMLOptinTelemetry("step2-optin-cancel-download");
           this.#smartTabGroupingManager.terminateProcess();
           this.suggestionState = this.createMode
@@ -582,6 +595,7 @@
       );
       this.#cancelSuggestionsButton.addEventListener("click", () => {
         this.#handleMlTelemetry("cancel");
+        this.#suggestionsRunToken = null;
         this.close();
       });
       this.#suggestionsSeparator = this.querySelector(
@@ -602,6 +616,7 @@
         "#tab-group-suggestions-load-cancel"
       );
       this.#suggestionsLoadCancel.addEventListener("click", () => {
+        this.#suggestionsRunToken = null;
         this.#handleLoadSuggestionsCancel();
       });
     }
@@ -733,6 +748,7 @@
       }
       this.#activeGroup.label = newLabel;
       this.#nameField.value = newLabel;
+      this.#nameField.select();
       this.#suggestedMlLabel = newLabel;
     }
 
@@ -829,7 +845,7 @@
           );
           if (
             this.smartTabGroupsEnabled &&
-            (this.#suggestedMlLabel || this.#hasSuggestedMlTabs)
+            (this.#suggestedMlLabel !== null || this.#hasSuggestedMlTabs)
           ) {
             this.#handleMlTelemetry("save-popup-hidden");
           }
@@ -895,7 +911,8 @@
     }
 
     #handleLoadSuggestionsCancel() {
-      // TODO look into actually canceling any processes
+      this.#suggestionsRunToken = null;
+
       this.suggestionState = this.createMode
         ? MozTabbrowserTabGroupMenu.State.CREATE_AI_INITIAL
         : MozTabbrowserTabGroupMenu.State.EDIT_AI_INITIAL;
@@ -951,14 +968,20 @@
 
       // Init progress with value to show determiniate progress
       this.#suggestionsOptin.progressStatus = 0;
+      const runToken = Date.now();
+      this.#suggestionsRunToken = runToken;
       await this.#smartTabGroupingManager.preloadAllModels(prog => {
         this.#suggestionsOptin.progressStatus = prog.percentage;
       });
-
       // Clean up optin UI
       this.#setFormToDisabled(false);
       this.#suggestionsOptin.isHidden = true;
       this.#suggestionsOptin.isLoading = false;
+
+      if (runToken !== this.#suggestionsRunToken) {
+        // User has canceled
+        return;
+      }
 
       // Continue on with the suggest flow
       this.#handleMLOptinTelemetry("step3-optin-completed");
@@ -968,12 +991,18 @@
 
     async #handleSmartSuggest() {
       // Loading
+      const runToken = Date.now();
+      this.#suggestionsRunToken = runToken;
+
       this.suggestionState = MozTabbrowserTabGroupMenu.State.LOADING;
       const tabs = await this.#smartTabGroupingManager.smartTabGroupingForGroup(
         this.activeGroup,
         gBrowser.tabs
       );
-
+      if (this.#suggestionsRunToken != runToken) {
+        // User has canceled
+        return;
+      }
       if (!tabs.length) {
         // No un-grouped tabs found
         this.suggestionState = this.#createMode
@@ -1010,7 +1039,7 @@
       if (!this.smartTabGroupsEnabled) {
         return;
       }
-      if (this.#suggestedMlLabel) {
+      if (this.#suggestedMlLabel !== null) {
         this.#smartTabGroupingManager.handleLabelTelemetry({
           action,
           numTabsInGroup: this.#activeGroup.tabs.length,
@@ -1018,7 +1047,7 @@
           userLabel: this.#nameField.value,
           id: this.#activeGroup.id,
         });
-        this.#suggestedMlLabel = "";
+        this.#suggestedMlLabel = null;
       }
       if (this.#hasSuggestedMlTabs) {
         this.#smartTabGroupingManager.handleSuggestTelemetry({

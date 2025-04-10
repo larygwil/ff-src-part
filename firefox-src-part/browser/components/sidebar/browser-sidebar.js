@@ -572,6 +572,9 @@ var SidebarController = {
     await this._state.loadInitialState(state);
     await this.waitUntilStable(); // Finish newly scheduled tasks.
     this.updateToolbarButton();
+    if (this.sidebarRevampVisibility === "expand-on-hover") {
+      await this.toggleExpandOnHover(true);
+    }
     this.uiStateInitialized = true;
   },
 
@@ -794,7 +797,9 @@ var SidebarController = {
         Services.prefs.setBoolPref("sidebar.verticalTabs", false);
       }
     } else {
-      this._state.launcherVisible = true;
+      // initial launcher visibleness with sidebar.revamp is is one of the
+      // default properties managed by SidebarState
+      this._state.launcherVisible = this._state.defaultLauncherVisible;
     }
     if (!this._sidebars.get(this.lastOpenedId)) {
       this.lastOpenedId = this.DEFAULT_SIDEBAR_ID;
@@ -1951,6 +1956,10 @@ var SidebarController = {
 
   async setLauncherCollapsedWidth() {
     let browserEl = document.getElementById("browser");
+    if (this.getUIState().launcherExpanded) {
+      this._state.launcherExpanded = false;
+    }
+    await this.waitUntilStable();
     let collapsedWidth = await new Promise(resolve => {
       requestAnimationFrame(() => {
         resolve(this._getRects([this.sidebarMain])[0][1].width);
@@ -1963,29 +1972,9 @@ var SidebarController = {
     );
   },
 
-  handleEvent(e) {
-    switch (e.type) {
-      case "mouseout":
-        if (
-          (this._positionStart && e.x < 0) ||
-          (!this._positionStart && e.x > window.outerWidth)
-        ) {
-          this.mouseEnterTask?.disarm();
-          // Only collapse sidebar if not moused over the window
-          if (this.getUIState().launcherExpanded) {
-            if (this._animationEnabled && !window.gReduceMotion) {
-              this._animateSidebarMain();
-            }
-            this._state.launcherExpanded = false;
-          }
-        }
-        break;
-    }
-  },
-
   getMouseTargetRect() {
     let launcherRect = window.windowUtils.getBoundsWithoutFlushing(
-      SidebarController.sidebarContainer
+      SidebarController.sidebarMain
     );
     return {
       top: launcherRect.top,
@@ -2008,18 +1997,13 @@ var SidebarController = {
       if (!this._state) {
         this._state = new this.SidebarState(this);
       }
-      if (this.getUIState().launcherExpanded && !isDragEnded) {
-        this._state.launcherExpanded = false;
-      }
       await this.waitUntilStable();
       MousePosTracker.addListener(this);
-      window.addEventListener("mouseout", this);
       if (!isDragEnded) {
         await this.setLauncherCollapsedWidth();
       }
     } else {
       MousePosTracker.removeListener(this);
-      window.removeEventListener("mouseout", this);
       if (!this.mouseOverTask?.isFinalized) {
         this.mouseOverTask?.finalize();
       }
@@ -2132,14 +2116,12 @@ XPCOMUtils.defineLazyPreferenceGetter(
   "sidebarRevampVisibility",
   "sidebar.visibility",
   "always-show",
-  async (_aPreference, _previousValue, newValue) => {
+  (_aPreference, _previousValue, newValue) => {
     if (
       !SidebarController.inSingleTabWindow &&
       !SidebarController.uninitializing
     ) {
-      await SidebarController.toggleExpandOnHover(
-        newValue === "expand-on-hover"
-      );
+      SidebarController.toggleExpandOnHover(newValue === "expand-on-hover");
       SidebarController.recordVisibilitySetting(newValue);
       if (SidebarController._state) {
         // we need to use the pref rather than SidebarController's getter here
@@ -2189,6 +2171,21 @@ XPCOMUtils.defineLazyPreferenceGetter(
       !SidebarController.inSingleTabWindow
     ) {
       SidebarController.recordTabsLayoutSetting(newValue);
+    }
+  }
+);
+
+XPCOMUtils.defineLazyPreferenceGetter(
+  SidebarController,
+  "revampDefaultLauncherVisible",
+  "sidebar.revamp.defaultLauncherVisible",
+  false,
+  (_aPreference, _previousValue, _newValue) => {
+    if (
+      !SidebarController.uninitializing &&
+      !SidebarController.inSingleTabWindow
+    ) {
+      SidebarController._state.updateVisibility();
     }
   }
 );

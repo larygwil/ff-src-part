@@ -56,6 +56,7 @@ export const DIM_REDUCTION_METHODS = {};
 const MISSING_ANCHOR_IN_CLUSTER_PENALTY = 0.2;
 const NEAREST_NEIGHBOR_DEFAULT_THRESHOLD = 0.21;
 const MAX_NN_GROUPED_TABS = 4;
+const MAX_SUGGESTED_TABS = 10;
 
 const DISSIMILAR_TAB_LABEL = "none";
 const ADULT_TAB_LABEL = "adult content";
@@ -97,6 +98,7 @@ const TAB_URLS_TO_EXCLUDE = [
   "about:home",
   "about:privatebrowsing",
   "chrome://browser/content/blanktab.html",
+  "about:firefoxview",
 ];
 
 /**
@@ -204,7 +206,7 @@ export class SmartTabGroupingManager {
           groupLabel: group?.label,
         });
     }
-    return suggestedTabs;
+    return suggestedTabs.slice(0, MAX_SUGGESTED_TABS);
   }
 
   /**

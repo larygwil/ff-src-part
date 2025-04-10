@@ -2091,6 +2091,8 @@ pref("pdfjs.handleOctetStream", true);
 // Is the sidebar positioned ahead of the content browser
 pref("sidebar.position_start", true);
 pref("sidebar.revamp", false);
+// Should the sidebar launcher default to visible or not with horizontal tabs
+pref("sidebar.revamp.defaultLauncherVisible", true);
 // This is nightly only for now, as we need to address bug 1933527 and bug 1934039.
 #ifdef NIGHTLY_BUILD
 pref("sidebar.revamp.round-content-area", true);
@@ -2131,6 +2133,7 @@ pref("browser.ml.chat.sidebar", true);
 pref("browser.ml.linkPreview.allowedLanguages", "en");
 pref("browser.ml.linkPreview.enabled", false);
 pref("browser.ml.linkPreview.outputSentences", 3);
+pref("browser.ml.linkPreview.blockListEnabled", true);
 
 // Block insecure active content on https pages
 pref("security.mixed_content.block_active_content", true);
