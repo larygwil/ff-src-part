@@ -126,9 +126,9 @@
 
     Text for the title displayed in the contextual feature recommendation popup promoting swipe of address bar.
   -->
-  <string name="address_bar_swipe_cfr_title">Deslize a barra de ferramentas para mudar de aba</string>
+  <string name="address_bar_swipe_cfr_title" tools:ignore="UnusedResources" moz:removedIn="139">Deslize a barra de ferramentas para mudar de aba</string>
   <!-- Text for the message displayed in the contextual feature recommendation popup promoting swipe of address bar. -->
-  <string name="address_bar_swipe_cfr_message">Deslize para esquerda ou direita para mudar. Na última aba, deslize para esquerda para abrir uma nova.</string>
+  <string name="address_bar_swipe_cfr_message" tools:ignore="UnusedResources" moz:removedIn="139">Deslize para esquerda ou direita para mudar. Na última aba, deslize para esquerda para abrir uma nova.</string>
   <!-- Text for the info dialog when camera permissions have been denied but user tries to access a camera feature. -->
   <string name="camera_permissions_needed_message">É necessário acesso à câmera. Use as configurações do Android para mudar as permissões para permitir acesso.</string>
   <!-- Text for the positive action button to go to Android Settings to grant permissions. -->
@@ -1384,6 +1384,8 @@
   <string name="tab_tray_multiselect_share_content_description">Compartilhar abas selecionadas</string>
   <!-- Content description for tabs tray multiselect menu -->
   <string name="tab_tray_multiselect_menu_content_description">Menu de abas selecionadas</string>
+  <!-- Title text displayed for a homepage tab in the tabs tray. -->
+  <string name="tab_tray_homepage_tab">Página inicial</string>
   <!-- Content description (not visible, for screen readers etc.): Removes tab from collection button. Removes the selected tab from collection when pressed -->
   <string name="remove_tab_from_collection">Remover aba da coleção</string>
   <!-- Text for button to enter multiselect mode in tabs tray -->
@@ -1524,6 +1526,8 @@
   <string name="download_search_placeholder" tools:ignore="UnusedResources">Pesquisar nos arquivos baixados</string>
   <!-- Text to indicate that no downloads match the search query. -->
   <string name="download_search_no_results_found" tools:ignore="UnusedResources">Nenhum resultado encontrado</string>
+  <!-- Text for the "Select all" button, which selects all downloaded items in the downloads list. -->
+  <string name="download_select_all_items">Selecionar tudo</string>
   <!--
     Downloads Content Type Filters
 
@@ -3434,11 +3438,51 @@
 
     The default content description for the eye trailing icon button in TextField
   -->
-  <string name="text_field_eye_trailing_icon_default_content_description">Mostrar texto oculto</string>
+  <string name="text_field_eye_trailing_icon_default_content_description" moz:removedIn="139" tools:ignore="UnusedResources">Mostrar texto oculto</string>
   <!-- The default content description for the cross trailing icon button in TextField -->
-  <string name="text_field_cross_trailing_icon_default_content_description">Limpar texto</string>
+  <string name="text_field_cross_trailing_icon_default_content_description" moz:removedIn="139" tools:ignore="UnusedResources">Limpar texto</string>
   <!--
     Setup checklist feature
+
+    ===== Setup checklist feature: Title =====
+
+    Title for the setup checklist feature when the state is 'incomplete'. %1$s is the name of the app (for example "Firefox").
+  -->
+  <string name="setup_checklist_title_state_incomplete">Concluir a configuração do %1$s</string>
+  <!-- Title for the setup checklist feature when the state is 'completed' -->
+  <string name="setup_checklist_title_state_completed">Parabéns!</string>
+  <!--
+    ===== Setup checklist feature: Subtitles for 3 steps =====
+
+    Subtitle for a setup checklist with 3 steps initial step. %1$s is the name of the app (for example "Firefox").
+  -->
+  <string name="setup_checklist_subtitle_3_steps_initial_state">Complete estas 3 etapas de configuração do %1$s para ter a melhor experiência de navegação.</string>
+  <!-- Subtitle for a setup checklist with 3 steps when the first task is completed. -->
+  <string name="setup_checklist_subtitle_3_steps_first_step">Ótimo começo! Você completou 1 de 3 etapas.</string>
+  <!-- Subtitle for a setup checklist with 3 steps when two of the tasks are completed. -->
+  <string name="setup_checklist_subtitle_3_steps_second_step">Quase lá! Duas etapas concluídas, falta apenas uma.</string>
+  <!-- Subtitle for a setup checklist with 3 steps completed state. %1$s is the name of the app (for example "Firefox"). -->
+  <string name="setup_checklist_subtitle_3_steps_completed_state">Você completou todas as 3 etapas. Aproveite a velocidade, privacidade e segurança do %1$s.</string>
+  <!--
+    ===== Setup checklist feature: Subtitles for 6 steps =====
+
+    Subtitle for a setup checklist with 6 steps initial state. %1$s is the name of the app (for example "Firefox").
+  -->
+  <string name="setup_checklist_subtitle_6_steps_initial_state">Complete estas 6 etapas de configuração do %1$s para ter a melhor experiência de navegação.</string>
+  <!-- Subtitle for a setup checklist with 6 steps when the first task is completed. -->
+  <string name="setup_checklist_subtitle_6_steps_first_step">Ótimo começo! Você completou 1 de 6 etapas.</string>
+  <!-- Subtitle for the setup checklist when the second task is completed. -->
+  <string name="setup_checklist_subtitle_6_steps_second_step">Você completou 2 de 6 etapas. Grande progresso!</string>
+  <!-- Subtitle for a setup checklist with 6 steps when three of the tasks are completed. -->
+  <string name="setup_checklist_subtitle_6_steps_third_step">Meio caminho andado! Três etapas concluídas, faltam mais 3.</string>
+  <!-- Subtitle for a setup checklist with 6 steps when the fourth task is completed. -->
+  <string name="setup_checklist_subtitle_6_steps_fourth_step">Já foram 4 etapas. Só faltam 2!</string>
+  <!-- Subtitle for a setup checklist with 6 steps when the fifth task is completed. -->
+  <string name="setup_checklist_subtitle_6_steps_fifth_step">Quase lá! Apenas 1 etapa para terminar.</string>
+  <!-- Subtitle for a setup checklist with 6 steps completed state. %1$s is the name of the app (for example "Firefox"). -->
+  <string name="setup_checklist_subtitle_6_steps_completed_state">Você completou todas as 6 etapas. Aproveite a velocidade, privacidade e segurança do %1$s.</string>
+  <!--
+    ===== Setup checklist feature: Task titles =====
 
     The title of the default browser task for the setup checklist
   -->
@@ -3453,13 +3497,27 @@
   <string name="setup_checklist_task_explore_extensions">Descobrir extensões</string>
   <!-- The title of the search widget task for the setup checklist -->
   <string name="setup_checklist_task_search_widget">Instalar widget de pesquisa</string>
-  <!-- The title of the 'essentials' group in the setup checklist. %1$s is the name of the app (for example "Firefox"). -->
+  <!--
+    ===== Setup checklist feature: Group titles =====
+
+    The title of the 'essentials' group in the setup checklist. %1$s is the name of the app (for example "Firefox").
+  -->
   <string name="setup_checklist_group_essentials">Essenciais do %1$s</string>
   <!-- The title of the 'customize' group in the setup checklist. %1$s is the name of the app (for example "Firefox"). -->
   <string name="setup_checklist_group_customize">Personalize seu %1$s</string>
   <!-- The title of the 'helpful tools' group in the setup checklist -->
   <string name="setup_checklist_group_helpful_tools">Ferramentas úteis</string>
-  <!-- Accessibility description for a check mark on a completed task -->
+  <!--
+    ===== Setup checklist feature: Button =====
+
+    Text for the 'remove' button for the setup checklist
+  -->
+  <string name="setup_checklist_button_remove">Remover lista de verificação</string>
+  <!--
+    ===== Setup checklist feature: Accessibility =====
+
+    Accessibility description for a check mark on a completed task
+  -->
   <string name="a11y_completed_task_description">Tarefa concluída</string>
   <!-- Accessibility description for the task icon -->
   <string name="a11y_task_icon_description">Ícone de tarefa</string>

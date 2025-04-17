@@ -126,9 +126,11 @@
 
     Text for the title displayed in the contextual feature recommendation popup promoting swipe of address bar.
   -->
-  <string name="address_bar_swipe_cfr_title">החלקה על סרגל הכלים תחליף בין לשוניות</string>
+  <string name="address_bar_swipe_cfr_title" tools:ignore="UnusedResources" moz:removedIn="139">החלקה על סרגל הכלים תחליף בין לשוניות</string>
   <!-- Text for the message displayed in the contextual feature recommendation popup promoting swipe of address bar. -->
-  <string name="address_bar_swipe_cfr_message">ניתן להחליק ימינה או שמאלה כדי להחליף בין לשוניות. החלקה שמאלה על הלשונית האחרונה שלך תפתח לשונית חדשה.</string>
+  <string name="address_bar_swipe_cfr_message" tools:ignore="UnusedResources" moz:removedIn="139">ניתן להחליק ימינה או שמאלה כדי להחליף בין לשוניות. החלקה שמאלה על הלשונית האחרונה שלך תפתח לשונית חדשה.</string>
+  <!-- Text for the message displayed in the contextual feature recommendation popup promoting swipe of address bar. -->
+  <string name="address_bar_swipe_cfr_message_2">יש להחליק את סרגל הכלים שמאלה או ימינה כדי לעבור בין לשוניות.</string>
   <!-- Text for the info dialog when camera permissions have been denied but user tries to access a camera feature. -->
   <string name="camera_permissions_needed_message">דרושה גישה למצלמה. יש לעבור להגדרות ה־Android, להקיש על הרשאות ולאחר מכן על ״לאפשר״.</string>
   <!-- Text for the positive action button to go to Android Settings to grant permissions. -->
@@ -1382,6 +1384,8 @@
   <string name="tab_tray_multiselect_share_content_description">שיתוף לשוניות נבחרות</string>
   <!-- Content description for tabs tray multiselect menu -->
   <string name="tab_tray_multiselect_menu_content_description">תפריט לשוניות נבחרות</string>
+  <!-- Title text displayed for a homepage tab in the tabs tray. -->
+  <string name="tab_tray_homepage_tab">דף הבית</string>
   <!-- Content description (not visible, for screen readers etc.): Removes tab from collection button. Removes the selected tab from collection when pressed -->
   <string name="remove_tab_from_collection">הסרת לשונית מהאוסף</string>
   <!-- Text for button to enter multiselect mode in tabs tray -->
@@ -1522,6 +1526,8 @@
   <string name="download_search_placeholder" tools:ignore="UnusedResources">חיפוש בהורדות</string>
   <!-- Text to indicate that no downloads match the search query. -->
   <string name="download_search_no_results_found" tools:ignore="UnusedResources">לא נמצאו תוצאות</string>
+  <!-- Text for the "Select all" button, which selects all downloaded items in the downloads list. -->
+  <string name="download_select_all_items">בחירת הכול</string>
   <!--
     Downloads Content Type Filters
 
@@ -3366,6 +3372,26 @@
   -->
   <string name="glean_debug_tools_title">כלי ניפוי שגיאות של Glean</string>
   <!--
+    Debug drawer region tools
+
+    Title of the Region tools in the Debug Drawer.
+    This tool allows temporarily overriding the home region (user's default locale)
+    and the current region (device's detected location) for testing purposes.
+  -->
+  <string name="debug_drawer_region_tools_title">כלי אזור</string>
+  <!-- The description of the Region tools in the Debug Drawer -->
+  <string name="debug_drawer_regin_tools_description">עוקף באופן זמני את ערכי הבית והאזור הנוכחיים לצורכי בדיקה.</string>
+  <!-- The text label for displaying home region. -->
+  <string name="debug_drawer_home_region_label">אזור הבית</string>
+  <!-- The text label for displaying current region. -->
+  <string name="debug_drawer_current_region_label">אזור נוכחי</string>
+  <!-- The text field label for overriding home region. -->
+  <string name="debug_drawer_override_home_region_label">עקיפת אזור הבית</string>
+  <!-- The text field label for overriding current region. -->
+  <string name="debug_drawer_override_current_region_label">עקיפת האזור הנוכחי</string>
+  <!-- The title of the button for overriding home and current region. -->
+  <string name="debug_drawer_override_region">עקיפת הבית והאזור הנוכחי</string>
+  <!--
     Messages explaining how to exit fullscreen mode
 
     Message shown to explain how to exit fullscreen mode when gesture navigation is enabled.
@@ -3424,11 +3450,51 @@
 
     The default content description for the eye trailing icon button in TextField
   -->
-  <string name="text_field_eye_trailing_icon_default_content_description">הצגת טקסט מוסתר</string>
+  <string name="text_field_eye_trailing_icon_default_content_description" moz:removedIn="139" tools:ignore="UnusedResources">הצגת טקסט מוסתר</string>
   <!-- The default content description for the cross trailing icon button in TextField -->
-  <string name="text_field_cross_trailing_icon_default_content_description">ניקוי טקסט</string>
+  <string name="text_field_cross_trailing_icon_default_content_description" moz:removedIn="139" tools:ignore="UnusedResources">ניקוי טקסט</string>
   <!--
     Setup checklist feature
+
+    ===== Setup checklist feature: Title =====
+
+    Title for the setup checklist feature when the state is 'incomplete'. %1$s is the name of the app (for example "Firefox").
+  -->
+  <string name="setup_checklist_title_state_incomplete">סיום ההגדרה של %1$s</string>
+  <!-- Title for the setup checklist feature when the state is 'completed' -->
+  <string name="setup_checklist_title_state_completed">ברכותינו!</string>
+  <!--
+    ===== Setup checklist feature: Subtitles for 3 steps =====
+
+    Subtitle for a setup checklist with 3 steps initial step. %1$s is the name of the app (for example "Firefox").
+  -->
+  <string name="setup_checklist_subtitle_3_steps_initial_state">כדאי להשלים את 3 השלבים האלה כדי להגדיר את %1$s לחווית הגלישה הטובה ביותר.</string>
+  <!-- Subtitle for a setup checklist with 3 steps when the first task is completed. -->
+  <string name="setup_checklist_subtitle_3_steps_first_step">התחלה מעולה! השלמת 1 מתוך 3 שלבים.</string>
+  <!-- Subtitle for a setup checklist with 3 steps when two of the tasks are completed. -->
+  <string name="setup_checklist_subtitle_3_steps_second_step">כמעט שם! שני שלבים הושלמו, נותר עוד שלב אחד לסיום.</string>
+  <!-- Subtitle for a setup checklist with 3 steps completed state. %1$s is the name of the app (for example "Firefox"). -->
+  <string name="setup_checklist_subtitle_3_steps_completed_state">השלמת את כל 3 השלבים. כעת באפשרותך ליהנות מהמהירות, הפרטיות והאבטחה של %1$s.</string>
+  <!--
+    ===== Setup checklist feature: Subtitles for 6 steps =====
+
+    Subtitle for a setup checklist with 6 steps initial state. %1$s is the name of the app (for example "Firefox").
+  -->
+  <string name="setup_checklist_subtitle_6_steps_initial_state">כדאי להשלים את כל 6 השלבים כדי להגדיר את %1$s לחווית הגלישה הטובה ביותר.</string>
+  <!-- Subtitle for a setup checklist with 6 steps when the first task is completed. -->
+  <string name="setup_checklist_subtitle_6_steps_first_step">התחלה מעולה! השלמת 1 מתוך 6 שלבים.</string>
+  <!-- Subtitle for the setup checklist when the second task is completed. -->
+  <string name="setup_checklist_subtitle_6_steps_second_step">השלמת 2 מתוך 6 שלבים. התקדמות נהדרת!</string>
+  <!-- Subtitle for a setup checklist with 6 steps when three of the tasks are completed. -->
+  <string name="setup_checklist_subtitle_6_steps_third_step">הגעת לחצי הדרך! השלמת 3 שלבים, ונשארו עוד 3 לסיום.</string>
+  <!-- Subtitle for a setup checklist with 6 steps when the fourth task is completed. -->
+  <string name="setup_checklist_subtitle_6_steps_fourth_step">השלמת 4 שלבים. נותרו רק עוד 2!</string>
+  <!-- Subtitle for a setup checklist with 6 steps when the fifth task is completed. -->
+  <string name="setup_checklist_subtitle_6_steps_fifth_step">כמעט שם! נשאר רק עוד שלב אחד לקו הסיום.</string>
+  <!-- Subtitle for a setup checklist with 6 steps completed state. %1$s is the name of the app (for example "Firefox"). -->
+  <string name="setup_checklist_subtitle_6_steps_completed_state">השלמת את כל 6 השלבים. כעת באפשרותך ליהנות מהמהירות, הפרטיות והאבטחה של %1$s.</string>
+  <!--
+    ===== Setup checklist feature: Task titles =====
 
     The title of the default browser task for the setup checklist
   -->
@@ -3447,7 +3513,17 @@
   <string name="setup_checklist_group_customize">התאמה אישית של ה־%1$s שלך</string>
   <!-- The title of the 'helpful tools' group in the setup checklist -->
   <string name="setup_checklist_group_helpful_tools">כלים מועילים</string>
-  <!-- Accessibility description for a check mark on a completed task -->
+  <!--
+    ===== Setup checklist feature: Button =====
+
+    Text for the 'remove' button for the setup checklist
+  -->
+  <string name="setup_checklist_button_remove">הסרת רשימת תיוג</string>
+  <!--
+    ===== Setup checklist feature: Accessibility =====
+
+    Accessibility description for a check mark on a completed task
+  -->
   <string name="a11y_completed_task_description">משימה שהושלמה</string>
   <!-- Accessibility description for the task icon -->
   <string name="a11y_task_icon_description">סמל של משימה</string>

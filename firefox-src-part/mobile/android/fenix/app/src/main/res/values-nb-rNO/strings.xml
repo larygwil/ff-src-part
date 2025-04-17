@@ -125,9 +125,9 @@
 
     Text for the title displayed in the contextual feature recommendation popup promoting swipe of address bar.
   -->
-  <string name="address_bar_swipe_cfr_title">Sveip over verktøylinjen for å bytte fane</string>
+  <string name="address_bar_swipe_cfr_title" tools:ignore="UnusedResources" moz:removedIn="139">Sveip over verktøylinjen for å bytte fane</string>
   <!-- Text for the message displayed in the contextual feature recommendation popup promoting swipe of address bar. -->
-  <string name="address_bar_swipe_cfr_message">Sveip til venstre eller høyre for å bytte. Sveip til venstre på den siste fanen for å åpne en ny fane.</string>
+  <string name="address_bar_swipe_cfr_message" tools:ignore="UnusedResources" moz:removedIn="139">Sveip til venstre eller høyre for å bytte. Sveip til venstre på den siste fanen for å åpne en ny fane.</string>
   <!-- Text for the info dialog when camera permissions have been denied but user tries to access a camera feature. -->
   <string name="camera_permissions_needed_message">Kameratilgang er nødvendig. Gå til Android-innstillinger, trykk på tillatelser, og trykk på tillat.</string>
   <!-- Text for the positive action button to go to Android Settings to grant permissions. -->
@@ -3337,7 +3337,7 @@
 
     The default content description for the eye trailing icon button in TextField
   -->
-  <string name="text_field_eye_trailing_icon_default_content_description">Vis skjult tekst</string>
+  <string name="text_field_eye_trailing_icon_default_content_description" moz:removedIn="139" tools:ignore="UnusedResources">Vis skjult tekst</string>
   <!-- The default content description for the cross trailing icon button in TextField -->
-  <string name="text_field_cross_trailing_icon_default_content_description">Fjern tekst</string>
+  <string name="text_field_cross_trailing_icon_default_content_description" moz:removedIn="139" tools:ignore="UnusedResources">Fjern tekst</string>
 </resources>

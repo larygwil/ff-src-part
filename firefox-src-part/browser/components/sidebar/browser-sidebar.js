@@ -1218,20 +1218,24 @@ var SidebarController = {
     if (expandOnToggle) {
       // just expand/collapse the launcher
       this._state.updateVisibility(true, !initialExpandedValue);
-    } else {
-      const shouldShowLauncher = !this._state.launcherVisible;
-      // show/hide the launcher
-      this._state.updateVisibility(shouldShowLauncher);
-      // if we're showing and there was panel open, open it again
-      if (shouldShowLauncher && this._state.command) {
-        this._show(this._state.command);
-      } else if (!shouldShowLauncher) {
-        // hide the open panel. It will re-open next time as we don't change the command value
-        this.hide({ dismissPanel: false });
-      }
+      this.updateToolbarButton();
+      return;
     }
 
-    this.updateToolbarButton();
+    const shouldShowLauncher = !this._state.launcherVisible;
+    // show/hide the launcher
+    this._state.updateVisibility(shouldShowLauncher);
+    // if we're showing and there was panel open, open it again
+    if (shouldShowLauncher && this._state.command) {
+      await this.show(this._state.command);
+    } else if (!shouldShowLauncher) {
+      // hide will only update the toolbar button state if the panel was open
+      if (!this.isOpen) {
+        this.updateToolbarButton();
+      }
+      // hide the open panel. It will re-open next time as we don't change the command value
+      this.hide({ dismissPanel: false });
+    }
   },
 
   /**
@@ -1751,7 +1755,7 @@ var SidebarController = {
    *                                        hiding of the sidebar.
    * @param {boolean} options.dismissPanel -Only close the panel or close the whole sidebar (the default.)
    */
-  hide({ triggerNode, dismissPanel = true } = {}) {
+  hide({ triggerNode, dismissPanel = this.sidebarRevampEnabled } = {}) {
     if (!this.isOpen) {
       return;
     }

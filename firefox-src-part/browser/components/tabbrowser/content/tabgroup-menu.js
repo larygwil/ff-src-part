@@ -7,8 +7,8 @@
 // This is loaded into chrome windows with the subscript loader. Wrap in
 // a block to prevent accidentally leaking globals onto `window`.
 {
-  const { TabGroupMetrics } = ChromeUtils.importESModule(
-    "moz-src:///browser/components/tabbrowser/TabGroupMetrics.sys.mjs"
+  const { TabMetrics } = ChromeUtils.importESModule(
+    "moz-src:///browser/components/tabbrowser/TabMetrics.sys.mjs"
   );
   const { TabStateFlusher } = ChromeUtils.importESModule(
     "resource:///modules/sessionstore/TabStateFlusher.sys.mjs"
@@ -448,10 +448,12 @@
       document
         .getElementById("tabGroupEditor_deleteGroup")
         .addEventListener("command", () => {
-          gBrowser.removeTabGroup(this.activeGroup, {
-            isUserTriggered: true,
-            telemetrySource: TabGroupMetrics.METRIC_SOURCE.TAB_GROUP_MENU,
-          });
+          gBrowser.removeTabGroup(
+            this.activeGroup,
+            TabMetrics.userTriggeredContext(
+              TabMetrics.METRIC_SOURCE.TAB_GROUP_MENU
+            )
+          );
         });
 
       this.panel.addEventListener("popupshown", this);
@@ -871,7 +873,11 @@
           this.close(false);
           break;
         case KeyEvent.DOM_VK_RETURN:
-          this.close();
+          // When focus is on a toolbarbutton, we need to wait for the command
+          // event, which will ultimately close the panel as well.
+          if (event.target.nodeName != "toolbarbutton") {
+            this.close();
+          }
           break;
       }
     }

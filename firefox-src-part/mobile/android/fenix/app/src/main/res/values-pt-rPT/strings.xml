@@ -126,9 +126,11 @@
 
     Text for the title displayed in the contextual feature recommendation popup promoting swipe of address bar.
   -->
-  <string name="address_bar_swipe_cfr_title">Deslize a barra de ferramentas para alternar entre separadores</string>
+  <string name="address_bar_swipe_cfr_title" tools:ignore="UnusedResources" moz:removedIn="139">Deslize a barra de ferramentas para alternar entre separadores</string>
   <!-- Text for the message displayed in the contextual feature recommendation popup promoting swipe of address bar. -->
-  <string name="address_bar_swipe_cfr_message">Deslize para a esquerda ou direita para alternar. Deslize para a esquerda no seu último separador para abrir um novo separador.</string>
+  <string name="address_bar_swipe_cfr_message" tools:ignore="UnusedResources" moz:removedIn="139">Deslize para a esquerda ou direita para alternar. Deslize para a esquerda no seu último separador para abrir um novo separador.</string>
+  <!-- Text for the message displayed in the contextual feature recommendation popup promoting swipe of address bar. -->
+  <string name="address_bar_swipe_cfr_message_2">Deslize a barra de ferramentas para a esquerda ou direita para alternar entre separadores.</string>
   <!-- Text for the info dialog when camera permissions have been denied but user tries to access a camera feature. -->
   <string name="camera_permissions_needed_message">É necessário acesso à câmara. Aceda às definições do Android, toque em permissões e toque em permitir.</string>
   <!-- Text for the positive action button to go to Android Settings to grant permissions. -->
@@ -1384,6 +1386,8 @@
   <string name="tab_tray_multiselect_share_content_description">Partilhar os separadores selecionados</string>
   <!-- Content description for tabs tray multiselect menu -->
   <string name="tab_tray_multiselect_menu_content_description">Menu de separadores selecionados</string>
+  <!-- Title text displayed for a homepage tab in the tabs tray. -->
+  <string name="tab_tray_homepage_tab">Página inicial</string>
   <!-- Content description (not visible, for screen readers etc.): Removes tab from collection button. Removes the selected tab from collection when pressed -->
   <string name="remove_tab_from_collection">Remover separador da coleção</string>
   <!-- Text for button to enter multiselect mode in tabs tray -->
@@ -1524,6 +1528,8 @@
   <string name="download_search_placeholder" tools:ignore="UnusedResources">Pesquisar transferências</string>
   <!-- Text to indicate that no downloads match the search query. -->
   <string name="download_search_no_results_found" tools:ignore="UnusedResources">Não foram encontrados resultados</string>
+  <!-- Text for the "Select all" button, which selects all downloaded items in the downloads list. -->
+  <string name="download_select_all_items">Selecionar tudo</string>
   <!--
     Downloads Content Type Filters
 
@@ -3375,6 +3381,26 @@
   -->
   <string name="glean_debug_tools_title">Ferramentas de depuração Glean</string>
   <!--
+    Debug drawer region tools
+
+    Title of the Region tools in the Debug Drawer.
+    This tool allows temporarily overriding the home region (user's default locale)
+    and the current region (device's detected location) for testing purposes.
+  -->
+  <string name="debug_drawer_region_tools_title">Ferramentas de região</string>
+  <!-- The description of the Region tools in the Debug Drawer -->
+  <string name="debug_drawer_regin_tools_description">Sobrepõe temporariamente os valores da casa e da região atual para testes.</string>
+  <!-- The text label for displaying home region. -->
+  <string name="debug_drawer_home_region_label">Região inicial</string>
+  <!-- The text label for displaying current region. -->
+  <string name="debug_drawer_current_region_label">Região atual</string>
+  <!-- The text field label for overriding home region. -->
+  <string name="debug_drawer_override_home_region_label">Sobrepor região base</string>
+  <!-- The text field label for overriding current region. -->
+  <string name="debug_drawer_override_current_region_label">Sobrepor região atual</string>
+  <!-- The title of the button for overriding home and current region. -->
+  <string name="debug_drawer_override_region">Sobrepor casa e região atual</string>
+  <!--
     Messages explaining how to exit fullscreen mode
 
     Message shown to explain how to exit fullscreen mode when gesture navigation is enabled.
@@ -3433,32 +3459,86 @@
 
     The default content description for the eye trailing icon button in TextField
   -->
-  <string name="text_field_eye_trailing_icon_default_content_description">Mostrar texto oculto</string>
+  <string name="text_field_eye_trailing_icon_default_content_description" moz:removedIn="139" tools:ignore="UnusedResources">Mostrar texto oculto</string>
   <!-- The default content description for the cross trailing icon button in TextField -->
-  <string name="text_field_cross_trailing_icon_default_content_description">Limpar texto</string>
+  <string name="text_field_cross_trailing_icon_default_content_description" moz:removedIn="139" tools:ignore="UnusedResources">Limpar texto</string>
   <!--
     Setup checklist feature
+
+    ===== Setup checklist feature: Title =====
+
+    Title for the setup checklist feature when the state is 'incomplete'. %1$s is the name of the app (for example "Firefox").
+  -->
+  <string name="setup_checklist_title_state_incomplete">Concluir a configuração de %1$s</string>
+  <!-- Title for the setup checklist feature when the state is 'completed' -->
+  <string name="setup_checklist_title_state_completed">Parabéns!</string>
+  <!--
+    ===== Setup checklist feature: Subtitles for 3 steps =====
+
+    Subtitle for a setup checklist with 3 steps initial step. %1$s is the name of the app (for example "Firefox").
+  -->
+  <string name="setup_checklist_subtitle_3_steps_initial_state">Conclua estes 3 passos para configurar o %1$s para a melhor experiência de navegação.</string>
+  <!-- Subtitle for a setup checklist with 3 steps when the first task is completed. -->
+  <string name="setup_checklist_subtitle_3_steps_first_step">Ótimo começo! Concluiu 1 de 3 passos.</string>
+  <!-- Subtitle for a setup checklist with 3 steps when two of the tasks are completed. -->
+  <string name="setup_checklist_subtitle_3_steps_second_step">Quase lá! 2 passos concluídos e falta apenas 1.</string>
+  <!-- Subtitle for a setup checklist with 3 steps completed state. %1$s is the name of the app (for example "Firefox"). -->
+  <string name="setup_checklist_subtitle_3_steps_completed_state">Concluiu todos os 3 passos. Desfrute da velocidade, privacidade e segurança do %1$s.</string>
+  <!--
+    ===== Setup checklist feature: Subtitles for 6 steps =====
+
+    Subtitle for a setup checklist with 6 steps initial state. %1$s is the name of the app (for example "Firefox").
+  -->
+  <string name="setup_checklist_subtitle_6_steps_initial_state">Conclua todos os 6 passos para configurar o %1$s para a melhor experiência de navegação.</string>
+  <!-- Subtitle for a setup checklist with 6 steps when the first task is completed. -->
+  <string name="setup_checklist_subtitle_6_steps_first_step">Ótimo começo! Concluiu 1 de 6 passos.</string>
+  <!-- Subtitle for the setup checklist when the second task is completed. -->
+  <string name="setup_checklist_subtitle_6_steps_second_step">Concluiu 2 de 6 passos. Excelente progresso!</string>
+  <!-- Subtitle for a setup checklist with 6 steps when three of the tasks are completed. -->
+  <string name="setup_checklist_subtitle_6_steps_third_step">Está a meio caminho! Três passos concluídos e faltam apenas 3.</string>
+  <!-- Subtitle for a setup checklist with 6 steps when the fourth task is completed. -->
+  <string name="setup_checklist_subtitle_6_steps_fourth_step">4 passos concluídos. Faltam apenas mais 2!</string>
+  <!-- Subtitle for a setup checklist with 6 steps when the fifth task is completed. -->
+  <string name="setup_checklist_subtitle_6_steps_fifth_step">Quase lá! Está apenas a 1 passo da meta.</string>
+  <!-- Subtitle for a setup checklist with 6 steps completed state. %1$s is the name of the app (for example "Firefox"). -->
+  <string name="setup_checklist_subtitle_6_steps_completed_state">Concluiu todos os 6 passos de configuração. Desfrute da velocidade, privacidade e segurança do %1$s.</string>
+  <!--
+    ===== Setup checklist feature: Task titles =====
 
     The title of the default browser task for the setup checklist
   -->
   <string name="setup_checklist_task_default_browser">Definir como navegador predefinido</string>
   <!-- The title of the sign-in task for the setup checklist -->
-  <string name="setup_checklist_task_account_sync">Inicie sessão na sua conta</string>
+  <string name="setup_checklist_task_account_sync">Iniciar sessão na sua conta</string>
   <!-- The title of the theme selection task for the setup checklist -->
-  <string name="setup_checklist_task_theme_selection">Selecione um tema</string>
+  <string name="setup_checklist_task_theme_selection">Selecionar um tema</string>
   <!-- The title of the toolbar selection task for the setup checklist -->
-  <string name="setup_checklist_task_toolbar_selection">Escolha o posicionamento da barra de ferramentas</string>
+  <string name="setup_checklist_task_toolbar_selection">Escolher o posicionamento da barra de ferramentas</string>
   <!-- The title of the explore extensions task for the setup checklist -->
   <string name="setup_checklist_task_explore_extensions">Explorar extensões</string>
   <!-- The title of the search widget task for the setup checklist -->
   <string name="setup_checklist_task_search_widget">Instalar o widget de pesquisa</string>
-  <!-- The title of the 'essentials' group in the setup checklist. %1$s is the name of the app (for example "Firefox"). -->
-  <string name="setup_checklist_group_essentials">%1$s essenciais</string>
+  <!--
+    ===== Setup checklist feature: Group titles =====
+
+    The title of the 'essentials' group in the setup checklist. %1$s is the name of the app (for example "Firefox").
+  -->
+  <string name="setup_checklist_group_essentials">O essencial do %1$s </string>
   <!-- The title of the 'customize' group in the setup checklist. %1$s is the name of the app (for example "Firefox"). -->
   <string name="setup_checklist_group_customize">Personalize o seu %1$s</string>
   <!-- The title of the 'helpful tools' group in the setup checklist -->
   <string name="setup_checklist_group_helpful_tools">Ferramentas úteis</string>
-  <!-- Accessibility description for a check mark on a completed task -->
+  <!--
+    ===== Setup checklist feature: Button =====
+
+    Text for the 'remove' button for the setup checklist
+  -->
+  <string name="setup_checklist_button_remove">Remover lista de verificação</string>
+  <!--
+    ===== Setup checklist feature: Accessibility =====
+
+    Accessibility description for a check mark on a completed task
+  -->
   <string name="a11y_completed_task_description">Tarefa concluída</string>
   <!-- Accessibility description for the task icon -->
   <string name="a11y_task_icon_description">Ícone da tarefa</string>

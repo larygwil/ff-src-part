@@ -2359,17 +2359,25 @@ main section {
   margin: 0 -16px;
 }
 .home-section .external-link {
-  font-size: 14px;
-  cursor: pointer;
-  border: 1px solid transparent;
-  border-radius: 4px;
   -moz-context-properties: fill;
-  fill: var(--newtab-text-primary-color);
   background: url("chrome://global/skin/icons/settings.svg") left no-repeat;
   background-size: 16px;
-  padding-inline-start: 21px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  color: var(--link-color);
+  cursor: pointer;
+  fill: var(--newtab-text-primary-color);
+  font-size: var(--font-size-small);
   margin-bottom: 20px;
+  padding-inline-start: 21px;
   text-decoration: underline;
+}
+.home-section .external-link:hover {
+  color: var(--link-color-hover);
+  text-decoration: none;
+}
+.home-section .external-link:active {
+  color: var(--link-color-active);
 }
 @media (forced-colors: active) {
   .home-section .external-link {
@@ -2379,9 +2387,6 @@ main section {
 }
 .home-section .external-link:dir(rtl) {
   background-position-x: right;
-}
-.home-section .external-link:hover {
-  text-decoration: none;
 }
 
 .external-link:focus-visible,
@@ -2638,17 +2643,17 @@ main section {
 .wallpaper-input.light-sky {
   background-image: url("chrome://newtab/content/data/content/assets/wallpapers/light-sky.avif");
 }
-.wallpaper-input:checked {
-  border-color: transparent;
-  outline-color: var(--color-accent-primary-active);
-  padding: 2px;
-}
 .wallpaper-input:focus-visible {
   outline-color: var(--newtab-primary-action-background);
 }
 .wallpaper-input:hover {
   filter: brightness(55%);
   outline-color: transparent;
+}
+.wallpaper-input:focus {
+  border-color: transparent;
+  outline-color: var(--color-accent-primary-active);
+  padding: 2px;
 }
 
 .theme-custom-color-picker {
@@ -8046,13 +8051,8 @@ main section {
 .ad-banner-wrapper .ad-banner-inner.leaderboard {
   max-width: var(--leaderboard-width);
 }
-.ad-banner-wrapper .ad-banner-inner.leaderboard .ad-banner-dismiss {
-  width: var(--leaderboard-width);
-}
 .ad-banner-wrapper .ad-banner-inner.leaderboard .ad-banner-content {
   height: var(--leaderboard-height);
-  width: var(--leaderboard-width);
-  margin: 0 auto;
 }
 .ad-banner-wrapper .ad-banner-inner.leaderboard .ad-banner-sponsored {
   width: var(--leaderboard-width);
@@ -8067,8 +8067,6 @@ main section {
 }
 .ad-banner-wrapper .ad-banner-inner.billboard .ad-banner-content {
   height: var(--billboard-height);
-  width: var(--billboard-width);
-  margin: 0 auto;
 }
 .ad-banner-wrapper .ad-banner-inner.billboard .ad-banner-sponsored {
   width: var(--billboard-width);
@@ -8077,6 +8075,9 @@ main section {
   .ad-banner-wrapper .ad-banner-inner.billboard {
     display: none;
   }
+}
+.ad-banner-wrapper .ad-banner-inner .ad-banner-link {
+  display: inline-block;
 }
 .ad-banner-wrapper .ad-banner-inner .ad-banner-sponsored {
   margin-block: var(--space-small) 0;
@@ -8094,30 +8095,41 @@ main section {
 }
 
 .ads-context-menu-wrapper {
+  margin-block-start: var(--space-xsmall);
   text-align: end;
-}
-.lightWallpaper .ads-context-menu-wrapper {
-  color-scheme: light;
-}
-.darkWallpaper .ads-context-menu-wrapper {
-  color-scheme: dark;
 }
 
 .ads-context-menu {
   float: right;
   position: relative;
 }
-.ads-context-menu > moz-button {
-  padding-block-end: var(--space-small);
-}
-.ads-context-menu > moz-button::part(button) {
-  background-color: light-dark(transparent, var(--button-background-color));
-}
 .ads-context-menu .context-menu {
   width: auto;
   /* Position the menu just under and to the right of the context menu button */
   top: calc(2.25 * var(--size-item-small));
   inset-inline-start: calc(-12.25 * var(--size-item-small));
+}
+.ads-context-menu > moz-button {
+  padding-block-end: var(--space-small);
+}
+.lightWallpaper .ads-context-menu > moz-button {
+  color-scheme: light;
+}
+.darkWallpaper .ads-context-menu > moz-button {
+  color-scheme: dark;
+}
+.ads-context-menu > moz-button::part(button) {
+  background-color: transparent;
+}
+.ads-context-menu > moz-button::part(button):hover {
+  background-color: var(--button-background-color-hover);
+}
+.ads-context-menu > moz-button::part(button):active {
+  background-color: var(--button-background-color-active);
+}
+
+.context-menu-open > moz-button::part(button) {
+  background-color: var(--button-background-color);
 }
 
 .section-context-menu {

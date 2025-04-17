@@ -28,6 +28,7 @@ const NOTIFY_RESTORING_ON_STARTUP = "sessionstore-restoring-on-startup";
 const NOTIFY_INITIATING_MANUAL_RESTORE =
   "sessionstore-initiating-manual-restore";
 const NOTIFY_CLOSED_OBJECTS_CHANGED = "sessionstore-closed-objects-changed";
+const NOTIFY_SAVED_TAB_GROUPS_CHANGED = "sessionstore-saved-tab-groups-changed";
 
 const NOTIFY_TAB_RESTORED = "sessionstore-debug-tab-restored"; // WARNING: debug-only
 const NOTIFY_DOMWINDOWCLOSED_HANDLED =
@@ -157,6 +158,7 @@ const kLastIndex = Number.MAX_SAFE_INTEGER - 1;
 
 import { PrivateBrowsingUtils } from "resource://gre/modules/PrivateBrowsingUtils.sys.mjs";
 
+import { TabMetrics } from "moz-src:///browser/components/tabbrowser/TabMetrics.sys.mjs";
 import { TelemetryTimestamps } from "resource://gre/modules/TelemetryTimestamps.sys.mjs";
 import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs";
 import { AppConstants } from "resource://gre/modules/AppConstants.sys.mjs";
@@ -889,7 +891,21 @@ export var SessionStore = {
    * @returns {MozTabbrowserTabGroup}
    *   a reference to the restored tab group in a browser window.
    */
-  openSavedTabGroup(tabGroupId, targetWindow) {
+  openSavedTabGroup(
+    tabGroupId,
+    targetWindow,
+    { source = TabMetrics.METRIC_SOURCE.UNKNOWN } = {}
+  ) {
+    let isVerticalMode = targetWindow.gBrowser.tabContainer.verticalMode;
+    Glean.tabgroup.reopen.record({
+      id: tabGroupId,
+      source,
+      layout: isVerticalMode
+        ? TabMetrics.METRIC_TABS_LAYOUT.VERTICAL
+        : TabMetrics.METRIC_TABS_LAYOUT.HORIZONTAL,
+      type: TabMetrics.METRIC_REOPEN_TYPE.SAVED,
+    });
+
     return SessionStoreInternal.openSavedTabGroup(tabGroupId, targetWindow);
   },
 
@@ -4470,6 +4486,7 @@ var SessionStoreInternal = {
       this.removeClosedTabData({}, savedGroup.tabs, i);
     }
     this._savedGroups.splice(savedGroupIndex, 1);
+    this._notifyOfSavedTabGroupsChange();
 
     // Notify of changes to closed objects.
     this._closedObjectsChanged = true;
@@ -6542,6 +6559,16 @@ var SessionStoreInternal = {
   },
 
   /**
+   * Notifies observers that the list of saved tab groups has changed.
+   * Waits a tick to allow SessionStorage a chance to register the change.
+   */
+  _notifyOfSavedTabGroupsChange() {
+    lazy.setTimeout(() => {
+      Services.obs.notifyObservers(null, NOTIFY_SAVED_TAB_GROUPS_CHANGED);
+    }, 0);
+  },
+
+  /**
    * Update the session start time and send a telemetry measurement
    * for the number of days elapsed since the session was started.
    *
@@ -6939,6 +6966,9 @@ var SessionStoreInternal = {
    * @returns {boolean} true if the group is saveable.
    */
   shouldSaveTabGroup: function ssi_shouldSaveTabGroup(group) {
+    if (!group) {
+      return false;
+    }
     for (let tab of group.tabs) {
       let tabState = lazy.TabState.collect(tab);
       if (this._shouldSaveTabState(tabState)) {
@@ -7915,6 +7945,7 @@ var SessionStoreInternal = {
       return;
     }
     this._savedGroups.push(savedTabGroupState);
+    this._notifyOfSavedTabGroupsChange();
   },
 
   /**

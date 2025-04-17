@@ -124,9 +124,9 @@
 
     Text for the title displayed in the contextual feature recommendation popup promoting swipe of address bar.
   -->
-  <string name="address_bar_swipe_cfr_title">Ŝovu la ilaron por ŝanĝi langetojn</string>
+  <string name="address_bar_swipe_cfr_title" tools:ignore="UnusedResources" moz:removedIn="139">Ŝovu la ilaron por ŝanĝi langetojn</string>
   <!-- Text for the message displayed in the contextual feature recommendation popup promoting swipe of address bar. -->
-  <string name="address_bar_swipe_cfr_message">Ŝovu maldekstren aŭ dekstren por ŝanĝi. Ŝovu maldekstren en vi lasta langeto por malfermi novan langeton.</string>
+  <string name="address_bar_swipe_cfr_message" tools:ignore="UnusedResources" moz:removedIn="139">Ŝovu maldekstren aŭ dekstren por ŝanĝi. Ŝovu maldekstren en vi lasta langeto por malfermi novan langeton.</string>
   <!-- Text for the info dialog when camera permissions have been denied but user tries to access a camera feature. -->
   <string name="camera_permissions_needed_message">Aliro al la fimilo postulata. Iru al agordoj de Android, tuŝetu Permesojn kaj poste Permesi.</string>
   <!-- Text for the positive action button to go to Android Settings to grant permissions. -->
@@ -3197,7 +3197,7 @@
 
     The default content description for the eye trailing icon button in TextField
   -->
-  <string name="text_field_eye_trailing_icon_default_content_description">Montri kaŝitan tekston</string>
+  <string name="text_field_eye_trailing_icon_default_content_description" moz:removedIn="139" tools:ignore="UnusedResources">Montri kaŝitan tekston</string>
   <!-- The default content description for the cross trailing icon button in TextField -->
-  <string name="text_field_cross_trailing_icon_default_content_description">Viŝi tekston</string>
+  <string name="text_field_cross_trailing_icon_default_content_description" moz:removedIn="139" tools:ignore="UnusedResources">Viŝi tekston</string>
 </resources>

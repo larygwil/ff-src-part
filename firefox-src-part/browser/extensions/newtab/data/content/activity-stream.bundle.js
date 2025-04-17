@@ -173,6 +173,7 @@ for (const type of [
   "INIT",
   "INLINE_SELECTION_CLICK",
   "INLINE_SELECTION_IMPRESSION",
+  "MESSAGE_BLOCK",
   "MESSAGE_CLICK",
   "MESSAGE_DISMISS",
   "MESSAGE_IMPRESSION",
@@ -2887,9 +2888,16 @@ function FeatureHighlight({
         outsideClickCallback();
       }
     };
+    const handleKeyDown = e => {
+      if (e.key === "Escape") {
+        outsideClickCallback();
+      }
+    };
     windowObj.document.addEventListener("click", handleOutsideClick);
+    windowObj.document.addEventListener("keydown", handleKeyDown);
     return () => {
       windowObj.document.removeEventListener("click", handleOutsideClick);
+      windowObj.document.removeEventListener("keydown", handleKeyDown);
     };
   }, [windowObj, outsideClickCallback]);
   const onToggleClick = (0,external_React_namespaceObject.useCallback)(() => {
@@ -4364,17 +4372,35 @@ function AdBannerContextMenu({
   const showReporting = prefs[PREF_REPORT_CONTENT_ENABLED];
   const ADBANNER_CONTEXT_MENU_OPTIONS = ["BlockAdUrl", ...(showReporting ? ["ReportAd"] : []), "ManageSponsoredContent", "OurSponsorsAndYourPrivacy"];
   const [showContextMenu, setShowContextMenu] = (0,external_React_namespaceObject.useState)(false);
+  const [contextMenuClassNames, setContextMenuClassNames] = (0,external_React_namespaceObject.useState)("ads-context-menu");
+
+  /**
+   * Toggles the style fix for context menu hover/active styles.
+   * This allows us to have unobtrusive, transparent button background by default,
+   * yet flip it over to semi-transparent grey when the menu is visible.
+   *
+   * @param contextMenuOpen
+   */
+  const toggleContextMenuStyleSwitch = contextMenuOpen => {
+    if (contextMenuOpen) {
+      setContextMenuClassNames("ads-context-menu context-menu-open");
+    } else {
+      setContextMenuClassNames("ads-context-menu");
+    }
+  };
   const onClick = e => {
     e.preventDefault();
+    toggleContextMenuStyleSwitch(!showContextMenu);
     setShowContextMenu(!showContextMenu);
   };
   const onUpdate = () => {
+    toggleContextMenuStyleSwitch(!showContextMenu);
     setShowContextMenu(!showContextMenu);
   };
   return /*#__PURE__*/external_React_default().createElement("div", {
     className: "ads-context-menu-wrapper"
   }, /*#__PURE__*/external_React_default().createElement("div", {
-    className: "ads-context-menu"
+    className: contextMenuClassNames
   }, /*#__PURE__*/external_React_default().createElement("moz-button", {
     type: "icon",
     size: "default",
@@ -12065,10 +12091,9 @@ class _WallpaperCategories extends (external_React_default()).PureComponent {
             this.categoryRef[index] = el;
           }
         },
-        name: "wallpaper-category",
         id: category,
         style: style,
-        type: "radio",
+        type: "button",
         onKeyDown: e => this.handleCategoryKeyDown(e, category)
         // Add overrides for custom wallpaper upload UI
         ,
@@ -13443,9 +13468,13 @@ function WallpaperFeatureHighlight({
   position,
   dispatch,
   handleDismiss,
-  handleClose,
-  handleClick
+  handleClick,
+  handleBlock
 }) {
+  const onDismiss = (0,external_React_namespaceObject.useCallback)(() => {
+    handleDismiss();
+    handleBlock();
+  }, [handleDismiss, handleBlock]);
   const onToggleClick = (0,external_React_namespaceObject.useCallback)(elementId => {
     dispatch({
       type: actionTypes.SHOW_PERSONALIZE
@@ -13454,8 +13483,8 @@ function WallpaperFeatureHighlight({
       event: "SHOW_PERSONALIZE"
     }));
     handleClick(elementId);
-    handleDismiss();
-  }, [dispatch, handleDismiss, handleClick]);
+    onDismiss();
+  }, [dispatch, onDismiss, handleClick]);
   return /*#__PURE__*/external_React_default().createElement("div", {
     className: "wallpaper-feature-highlight"
   }, /*#__PURE__*/external_React_default().createElement(FeatureHighlight, {
@@ -13488,8 +13517,8 @@ function WallpaperFeatureHighlight({
     }),
     openedOverride: true,
     showButtonIcon: false,
-    dismissCallback: handleDismiss,
-    outsideClickCallback: handleClose
+    dismissCallback: onDismiss,
+    outsideClickCallback: handleDismiss
   }));
 }
 ;// CONCATENATED MODULE: ./content-src/components/MessageWrapper/MessageWrapper.jsx
@@ -13557,6 +13586,17 @@ function MessageWrapper({
     }
     handleClose();
   }
+  function handleBlock() {
+    const {
+      id
+    } = message.messageData;
+    if (id) {
+      dispatch(actionCreators.OnlyToMain({
+        type: actionTypes.MESSAGE_BLOCK,
+        data: id
+      }));
+    }
+  }
   function handleClick(elementId) {
     const {
       id
@@ -13581,8 +13621,9 @@ function MessageWrapper({
   }, /*#__PURE__*/external_React_default().cloneElement(children, {
     isIntersecting,
     handleDismiss,
-    handleClose,
-    handleClick
+    handleClick,
+    handleBlock,
+    handleClose
   }));
 }
 

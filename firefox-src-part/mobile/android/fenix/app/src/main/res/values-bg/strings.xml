@@ -124,9 +124,11 @@
 
     Text for the title displayed in the contextual feature recommendation popup promoting swipe of address bar.
   -->
-  <string name="address_bar_swipe_cfr_title">Плъзнете адресната лента, за да смените разделите</string>
+  <string name="address_bar_swipe_cfr_title" tools:ignore="UnusedResources" moz:removedIn="139">Плъзнете адресната лента, за да смените разделите</string>
   <!-- Text for the message displayed in the contextual feature recommendation popup promoting swipe of address bar. -->
-  <string name="address_bar_swipe_cfr_message">Плъзнете наляво или надясно, за да сменяте. Плъзнете наляво в последния раздел, за да отворите нов.</string>
+  <string name="address_bar_swipe_cfr_message" tools:ignore="UnusedResources" moz:removedIn="139">Плъзнете наляво или надясно, за да сменяте. Плъзнете наляво в последния раздел, за да отворите нов.</string>
+  <!-- Text for the message displayed in the contextual feature recommendation popup promoting swipe of address bar. -->
+  <string name="address_bar_swipe_cfr_message_2">Плъзнете наляво или надясно лентата с инструменти, за да превключите разделите.</string>
   <!-- Text for the info dialog when camera permissions have been denied but user tries to access a camera feature. -->
   <string name="camera_permissions_needed_message">Необходим е достъп до камерата. Отворете настройките на Android, докоснете разрешения и изберете разрешаване.</string>
   <!-- Text for the positive action button to go to Android Settings to grant permissions. -->
@@ -1382,6 +1384,8 @@
   <string name="tab_tray_multiselect_share_content_description">Споделяне на избраните раздели</string>
   <!-- Content description for tabs tray multiselect menu -->
   <string name="tab_tray_multiselect_menu_content_description">Меню избрани раздели</string>
+  <!-- Title text displayed for a homepage tab in the tabs tray. -->
+  <string name="tab_tray_homepage_tab">Начална страница</string>
   <!-- Content description (not visible, for screen readers etc.): Removes tab from collection button. Removes the selected tab from collection when pressed -->
   <string name="remove_tab_from_collection">Премахване на раздела от спъсъка</string>
   <!-- Text for button to enter multiselect mode in tabs tray -->
@@ -1522,6 +1526,8 @@
   <string name="download_search_placeholder" tools:ignore="UnusedResources">Търсене на изтегляния</string>
   <!-- Text to indicate that no downloads match the search query. -->
   <string name="download_search_no_results_found" tools:ignore="UnusedResources">Няма резултати</string>
+  <!-- Text for the "Select all" button, which selects all downloaded items in the downloads list. -->
+  <string name="download_select_all_items">Избиране на всичко</string>
   <!--
     Downloads Content Type Filters
 
@@ -3373,6 +3379,26 @@
   -->
   <string name="glean_debug_tools_title">Събиране на инструменти за дебъгване</string>
   <!--
+    Debug drawer region tools
+
+    Title of the Region tools in the Debug Drawer.
+    This tool allows temporarily overriding the home region (user's default locale)
+    and the current region (device's detected location) for testing purposes.
+  -->
+  <string name="debug_drawer_region_tools_title">Регионални инструменти</string>
+  <!-- The description of the Region tools in the Debug Drawer -->
+  <string name="debug_drawer_regin_tools_description">Временно отменя стойностите за начало и текущ регион за тестване.</string>
+  <!-- The text label for displaying home region. -->
+  <string name="debug_drawer_home_region_label">Домашен регион</string>
+  <!-- The text label for displaying current region. -->
+  <string name="debug_drawer_current_region_label">Текущ район</string>
+  <!-- The text field label for overriding home region. -->
+  <string name="debug_drawer_override_home_region_label">Override home region</string>
+  <!-- The text field label for overriding current region. -->
+  <string name="debug_drawer_override_current_region_label">Замяна на текущия регион</string>
+  <!-- The title of the button for overriding home and current region. -->
+  <string name="debug_drawer_override_region">Заменяне на начало и текущ регион</string>
+  <!--
     Messages explaining how to exit fullscreen mode
 
     Message shown to explain how to exit fullscreen mode when gesture navigation is enabled.
@@ -3431,11 +3457,51 @@
 
     The default content description for the eye trailing icon button in TextField
   -->
-  <string name="text_field_eye_trailing_icon_default_content_description">Показване на скрит текст</string>
+  <string name="text_field_eye_trailing_icon_default_content_description" moz:removedIn="139" tools:ignore="UnusedResources">Показване на скрит текст</string>
   <!-- The default content description for the cross trailing icon button in TextField -->
-  <string name="text_field_cross_trailing_icon_default_content_description">Изчистване на текста</string>
+  <string name="text_field_cross_trailing_icon_default_content_description" moz:removedIn="139" tools:ignore="UnusedResources">Изчистване на текста</string>
   <!--
     Setup checklist feature
+
+    ===== Setup checklist feature: Title =====
+
+    Title for the setup checklist feature when the state is 'incomplete'. %1$s is the name of the app (for example "Firefox").
+  -->
+  <string name="setup_checklist_title_state_incomplete">Завършете настройката на %1$s</string>
+  <!-- Title for the setup checklist feature when the state is 'completed' -->
+  <string name="setup_checklist_title_state_completed">Поздравления!</string>
+  <!--
+    ===== Setup checklist feature: Subtitles for 3 steps =====
+
+    Subtitle for a setup checklist with 3 steps initial step. %1$s is the name of the app (for example "Firefox").
+  -->
+  <string name="setup_checklist_subtitle_3_steps_initial_state">Изпълнете тези 3 стъпки, за да настроите %1$s за най-добро изживяване при сърфиране.</string>
+  <!-- Subtitle for a setup checklist with 3 steps when the first task is completed. -->
+  <string name="setup_checklist_subtitle_3_steps_first_step">Страхотно начало! Завършихте 1 от общо 3 стъпки.</string>
+  <!-- Subtitle for a setup checklist with 3 steps when two of the tasks are completed. -->
+  <string name="setup_checklist_subtitle_3_steps_second_step">Почти е готов! Две стъпки са завършени и остава 1 до края.</string>
+  <!-- Subtitle for a setup checklist with 3 steps completed state. %1$s is the name of the app (for example "Firefox"). -->
+  <string name="setup_checklist_subtitle_3_steps_completed_state">Завършихте всичките 3 стъпки. Насладете се на скоростта, поверителността и сигурността на %1$s.</string>
+  <!--
+    ===== Setup checklist feature: Subtitles for 6 steps =====
+
+    Subtitle for a setup checklist with 6 steps initial state. %1$s is the name of the app (for example "Firefox").
+  -->
+  <string name="setup_checklist_subtitle_6_steps_initial_state">Завършете всички 6 стъпки, за да настроите %1$s за най-добро изживяване при сърфиране.</string>
+  <!-- Subtitle for a setup checklist with 6 steps when the first task is completed. -->
+  <string name="setup_checklist_subtitle_6_steps_first_step">Страхотно начало! Завършихте 1 от общо 6 стъпки.</string>
+  <!-- Subtitle for the setup checklist when the second task is completed. -->
+  <string name="setup_checklist_subtitle_6_steps_second_step">Завършихте 2 от общо 6 стъпки. Страхотен напредък!</string>
+  <!-- Subtitle for a setup checklist with 6 steps when three of the tasks are completed. -->
+  <string name="setup_checklist_subtitle_6_steps_third_step">Вие сте наполовина там! Три стъпки са завършени и остават 3.</string>
+  <!-- Subtitle for a setup checklist with 6 steps when the fourth task is completed. -->
+  <string name="setup_checklist_subtitle_6_steps_fourth_step">Вие сте на 4 стъпки. Само още 2 до края!</string>
+  <!-- Subtitle for a setup checklist with 6 steps when the fifth task is completed. -->
+  <string name="setup_checklist_subtitle_6_steps_fifth_step">Почти е готов! Вие сте само на 1 крачка от финалната линия.</string>
+  <!-- Subtitle for a setup checklist with 6 steps completed state. %1$s is the name of the app (for example "Firefox"). -->
+  <string name="setup_checklist_subtitle_6_steps_completed_state">Завършихте всичките 6 стъпки за настройка. Насладете се на скоростта, поверителността и сигурността на %1$s.</string>
+  <!--
+    ===== Setup checklist feature: Task titles =====
 
     The title of the default browser task for the setup checklist
   -->
@@ -3450,13 +3516,27 @@
   <string name="setup_checklist_task_explore_extensions">Разглеждане на разширения</string>
   <!-- The title of the search widget task for the setup checklist -->
   <string name="setup_checklist_task_search_widget">Инсталиране на приспособление за търсене</string>
-  <!-- The title of the 'essentials' group in the setup checklist. %1$s is the name of the app (for example "Firefox"). -->
+  <!--
+    ===== Setup checklist feature: Group titles =====
+
+    The title of the 'essentials' group in the setup checklist. %1$s is the name of the app (for example "Firefox").
+  -->
   <string name="setup_checklist_group_essentials">Основни за %1$s</string>
   <!-- The title of the 'customize' group in the setup checklist. %1$s is the name of the app (for example "Firefox"). -->
   <string name="setup_checklist_group_customize">Персонализирайте вашия %1$s</string>
   <!-- The title of the 'helpful tools' group in the setup checklist -->
   <string name="setup_checklist_group_helpful_tools">Полезни инструменти</string>
-  <!-- Accessibility description for a check mark on a completed task -->
+  <!--
+    ===== Setup checklist feature: Button =====
+
+    Text for the 'remove' button for the setup checklist
+  -->
+  <string name="setup_checklist_button_remove">Премахване на контролен списък</string>
+  <!--
+    ===== Setup checklist feature: Accessibility =====
+
+    Accessibility description for a check mark on a completed task
+  -->
   <string name="a11y_completed_task_description">Завършенa задачa</string>
   <!-- Accessibility description for the task icon -->
   <string name="a11y_task_icon_description">Икона за задача</string>
