@@ -812,8 +812,6 @@
   <string name="preferences_override_account_server">ഇഷ്ടനുസൃത മോസില്ല അക്കൗണ്ടു് സേവനദാതാവു്</string>
   <!-- Preference to override the Sync token server -->
   <string name="preferences_override_sync_tokenserver">ഇഷ്‌ടാനുസൃത സമന്വയ സെർവർ</string>
-  <!-- Toast shown after updating the Mozilla account/Sync server override preferences -->
-  <string name="toast_override_account_sync_server_done">ഫയർ‌ഫോക്സ് അകൗണ്ട്/സമന്വയ പ്രദായിണി പുതുച്ചു. മാറ്റങ്ങൾ പ്രയോഗിക്കുന്നതിന് പ്രയോഗത്തിൽ  നിന്നു പുറത്തുകടക്കുന്നു…</string>
   <!-- Preference category for account information -->
   <string name="preferences_category_account">അക്കൗണ്ട്</string>
   <!-- Preference for changing where the AddressBar is positioned -->
@@ -1264,6 +1262,8 @@
   <string name="studies_remove">മാറ്റുക</string>
   <!-- Title of the active section on the studies list -->
   <string name="studies_active">സജീവം</string>
+  <!-- Description for studies -->
+  <string name="studies_description_3">എല്ലാവൎക്കും കിട്ടുന്നതിനു് മുമ്പെ പുതിയ സവിശേഷകൾ ഉപയോഗിച്ചു നോക്കുക.</string>
   <!-- Title of the Studies data preference -->
   <string name="studies_title">പാഠനങ്ങൾ സ്ഥാപിച്ചിട്ടു് അവയെ നടത്തുക</string>
   <!-- Learn more link for studies, links to an article for more information about studies. -->
@@ -1407,6 +1407,10 @@
   <string name="download_delete_item_1" moz:removedIn="138" tools:ignore="UnusedResources">മാറ്റുക</string>
   <!-- Text for the button to delete a single downloaded file item -->
   <string name="download_delete_item">മായ്ക്കുക</string>
+  <!-- Content description for the toolbar "Navigate back" button -->
+  <string name="download_navigate_back_description">പുറകോട്ട് ചെല്ലുക</string>
+  <!-- Content description for the toolbar "Navigate up" button -->
+  <string name="download_navigate_up_description">മുകളിലേക്ക്  ചെല്ലുക</string>
   <!-- Text for the button to share the download URL -->
   <string name="download_share_url">കണ്ണി പങ്കിടുക</string>
   <!-- Text for the button to share the download file -->
@@ -1447,9 +1451,9 @@
   <!-- Text to indicate that a download has failed to download. -->
   <string name="download_item_status_failed" tools:ignore="UnusedResources">ഇറക്കിവയ്ക്കൽ തോറ്റു</string>
   <!-- Placeholder text to indicate that users can use the search bar to search for a download. -->
-  <string name="download_search_placeholder" tools:ignore="UnusedResources">ഇറക്കിവച്ചതിലു് തിരയുക</string>
+  <string name="download_search_placeholder">ഇറക്കിവച്ചതിലു് തിരയുക</string>
   <!-- Text to indicate that no downloads match the search query. -->
-  <string name="download_search_no_results_found" tools:ignore="UnusedResources">ഫലങ്ങളൊന്നും കിട്ടിയില്ല</string>
+  <string name="download_search_no_results_found">ഫലങ്ങളൊന്നും കിട്ടിയില്ല</string>
   <!-- Text for the "Select all" button, which selects all downloaded items in the downloads list. -->
   <string name="download_select_all_items">എല്ലാം തിരഞ്ഞെടുക്കുക</string>
   <!--
@@ -1698,6 +1702,8 @@
   <string name="preference_phone_feature_notification">അറിയിപ്പ്</string>
   <!-- Preference for altering the persistent storage access for all websites -->
   <string name="preference_phone_feature_persistent_storage">സ്ഥിരമായ സംഭരണം</string>
+  <!-- Preference for altering the storage access setting for all websites -->
+  <string name="preference_phone_feature_cross_origin_storage_access">വെബിടക്കുറുകെ കുക്കികൾ</string>
   <!-- Preference for altering the EME access for all websites -->
   <string name="preference_phone_feature_media_key_system_access">DRM- നിയന്ത്രിത ഉള്ളടക്കം</string>
   <!-- Label that indicates that a permission must be asked always -->
@@ -2111,6 +2117,8 @@
   <string name="preference_enhanced_tracking_protection_custom_cookies_3">എല്ലാ മൂന്നാം കക്ഷി കുക്കികളും (വെബ്‌സൈറ്റുകൾ തകരാൻ കാരണമായേക്കാം)</string>
   <!-- Option for enhanced tracking protection for the custom protection settings for cookies -->
   <string name="preference_enhanced_tracking_protection_custom_cookies_4">എല്ലാ കുക്കികളും (വെബ്‌സൈറ്റുകൾ തകരാൻ ഇടയാക്കും)</string>
+  <!-- Option for enhanced tracking protection for the custom protection settings for cookies -->
+  <string name="preference_enhanced_tracking_protection_custom_cookies_5">വെബിടക്കുറുകെ കുക്കികളെ അകറ്റുക</string>
   <!-- Preference for Global Privacy Control for the custom privacy settings for Global Privacy Control. '&amp;' is replaced with the ampersand symbol: & -->
   <string name="preference_enhanced_tracking_protection_custom_global_privacy_control">ദത്ത പങ്കിടുകയോ വിൽക്കുകയോ ചെയ്യരുതെന്ന് വെബ്‌സൈറ്റുകളോട് പറയുക</string>
   <!-- Preference for enhanced tracking protection for the custom protection settings for tracking content -->
@@ -2135,6 +2143,8 @@
   <string name="etp_social_media_trackers_description">വെബിലുടനീളം താങ്കളുടെ തിരയൽ പ്രവർത്തനം പിന്തുടരാനുള്ള സോഷ്യൽ നെറ്റ്‌വർക്കുകളുടെ കഴിവ് പരിമിതപ്പെടുത്തുന്നു.</string>
   <!-- Category of trackers (cross-site tracking cookies) that can be blocked by Enhanced Tracking Protection -->
   <string name="etp_cookies_title">ക്രോസ്-സൈറ്റ് പിന്തുടരൽ കുക്കികൾ</string>
+  <!-- Category of trackers (cross-site tracking cookies) that can be blocked by Enhanced Tracking Protection -->
+  <string name="etp_cookies_title_2">വെബിടക്കുറുകെ കുക്കികൾ</string>
   <!-- Description of cross-site tracking cookies that can be blocked by Enhanced Tracking Protection -->
   <string name="etp_cookies_description">താങ്കളുടെ തിരച്ചിൽദത്ത സമാഹരിക്കാൻ നിരവധി സൈറ്റുകളിൽ പരസ്യ ശൃംഘലകളും അനലിറ്റിക്സ് കമ്പനികളും ഉപയോഗിക്കുന്ന കൂക്കികളെ തടയുന്നു.</string>
   <!-- Category of trackers (cryptominers) that can be blocked by Enhanced Tracking Protection -->
@@ -2179,7 +2189,7 @@
   -->
   <string name="preference_etp_exceptions_icon_description">മെച്ചപ്പെടുത്തിയ പിന്തുടൎച്ച പരിരക്ഷണ ഒഴിവാക്കൽ മുൻഗണന അടയാളം</string>
   <!--
-    DNS Over HTTPS (DoH)
+    DNS over HTTPS (DoH)
 
     Preference title for DNS over HTTPS settings
   -->
@@ -3038,6 +3048,8 @@
   <string name="protection_panel_no_trackers_blocked">പിന്തുടർച്ചയന്ത്രങ്ങൾ കണ്ടെത്താൻ കഴിഞ്ഞില്ല</string>
   <!-- Link text to navigate to privacy and security settings from the protection panel. -->
   <string name="protection_panel_privacy_and_security_settings">സ്വകാര്യതയും സുരക്ഷ ക്രമീകരണങ്ങൾ</string>
+  <!-- Title text for the protection panel permissions section. -->
+  <string name="protection_panel_permissions_title">അനുമതികൾ</string>
   <!--
     Text for displaying the total number of trackers blocked in the trackers blocked panel.
     %d is a placeholder for the number of trackers blocked.
@@ -3217,6 +3229,20 @@
   -->
   <string name="glean_debug_tools_title">ഗ്ലീൻ തെറ്റുതിരുത്തല്ക്കരുകൾ</string>
   <!--
+    Debug drawer region tools
+
+    Title of the Region tools in the Debug Drawer.
+    This tool allows temporarily overriding the home region (user's default locale)
+    and the current region (device's detected location) for testing purposes.
+  -->
+  <string name="debug_drawer_region_tools_title">പ്രദേശ്യം സംബന്ധിച്ച കരുകൾ</string>
+  <!-- The text label for displaying home region. -->
+  <string name="debug_drawer_home_region_label">സ്വദേശം</string>
+  <!-- The text label for displaying current region. -->
+  <string name="debug_drawer_current_region_label">നിലവിലെ ഇടം</string>
+  <!-- The text field label for overriding current region. -->
+  <string name="debug_drawer_override_current_region_label">നിലവിലെ പ്രദേശം അസാധുവാക്കുക</string>
+  <!--
     Messages explaining how to exit fullscreen mode
 
     Message shown to explain how to exit fullscreen mode when gesture navigation is enabled.
@@ -3288,6 +3314,22 @@
   <string name="setup_checklist_title_state_incomplete">%1$s സജ്ജീകരിക്കുന്നതു് തീൎക്കുക</string>
   <!-- Title for the setup checklist feature when the state is 'completed' -->
   <string name="setup_checklist_title_state_completed">അഭിനന്ദനങ്ങള്‍!</string>
+  <!-- Subtitle for a setup checklist with 3 steps when two of the tasks are completed. -->
+  <string name="setup_checklist_subtitle_3_steps_second_step">ഏതാണ്ടു് തീരാറായി! രണ്ടു പടി കഴിഞ്ഞിരിക്കുന്നു, ഇനി ഒരു പടി കൂടെ മിച്ചമിരിപ്പുണ്ടു്.</string>
+  <!-- Subtitle for a setup checklist with 6 steps when the first task is completed. -->
+  <string name="setup_checklist_subtitle_6_steps_first_step">നല്ല തുടക്കം. താങ്ങൾ 6-ൽ 1 പടി തീൎത്തു.</string>
+  <!-- Subtitle for the setup checklist when the second task is completed. -->
+  <string name="setup_checklist_subtitle_6_steps_second_step">6-ൽ 2 എണ്ണം കിഴിഞ്ഞു. നല്ലോണം പോയിക്കൊണ്ടിരിക്കുന്നു!</string>
+  <!-- Subtitle for a setup checklist with 6 steps when three of the tasks are completed. -->
+  <string name="setup_checklist_subtitle_6_steps_third_step">പകുതി കഴിഞ്ഞു, ഇനിയും 3 പടികൾ മാത്രം മിച്ചമിരിപ്പുണ്ടു്.</string>
+  <!-- Subtitle for a setup checklist with 6 steps when the fourth task is completed. -->
+  <string name="setup_checklist_subtitle_6_steps_fourth_step">4 പടികൾ കഴിഞ്ഞിരിക്കുന്നു. ഇനി രണ്ടു പടി മാത്രം മിച്ചം!</string>
+  <!-- Subtitle for a setup checklist with 5 steps when the first task is completed. -->
+  <string name="setup_checklist_subtitle_5_steps_first_step">നല്ല തുടക്കം. താങ്ങൾ 5-ൽ 1 പടി തീൎത്തു.</string>
+  <!-- Subtitle for the setup checklist when the second task is completed. -->
+  <string name="setup_checklist_subtitle_5_steps_second_step">5-ൽ 2 എണ്ണം കിഴിഞ്ഞു. നല്ലോണം പോയിക്കൊണ്ടിരിക്കുന്നു!</string>
+  <!-- Subtitle for a setup checklist with 5 steps when three of the tasks are completed. -->
+  <string name="setup_checklist_subtitle_5_steps_third_step">പകുതി കഴിഞ്ഞു, ഇനിയും 2 പടികൾ മാത്രം മിച്ചമിരിപ്പുണ്ടു്.</string>
   <!--
     ===== Setup checklist feature: Task titles =====
 
@@ -3312,6 +3354,12 @@
   <string name="setup_checklist_group_customize">%1$s ഇഷ്ടാനുസൃതമാക്കുക</string>
   <!-- The title of the 'helpful tools' group in the setup checklist -->
   <string name="setup_checklist_group_helpful_tools">തുണയ്ക്കുന്ന കരുകൾ</string>
+  <!--
+    ===== Setup checklist feature: Button =====
+
+    Text for the 'remove' button for the setup checklist
+  -->
+  <string name="setup_checklist_button_remove">പട്ടിക മാറ്റുക</string>
   <!--
     ===== Setup checklist feature: Accessibility =====
 

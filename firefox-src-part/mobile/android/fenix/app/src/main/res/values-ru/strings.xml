@@ -836,8 +836,6 @@
   <string name="preferences_override_account_server">Пользовательский сервер аккаунтов Mozilla</string>
   <!-- Preference to override the Sync token server -->
   <string name="preferences_override_sync_tokenserver">Пользовательский сервер Синхронизации</string>
-  <!-- Toast shown after updating the Mozilla account/Sync server override preferences -->
-  <string name="toast_override_account_sync_server_done">Изменён аккаунт Mozilla/сервер синхронизации. Выход из приложения для применения изменений…</string>
   <!-- Preference category for account information -->
   <string name="preferences_category_account">Аккаунт</string>
   <!-- Preference for changing where the AddressBar is positioned -->
@@ -1485,6 +1483,10 @@
   <string name="download_delete_item_1" moz:removedIn="138" tools:ignore="UnusedResources">Удалить</string>
   <!-- Text for the button to delete a single downloaded file item -->
   <string name="download_delete_item">Удалить</string>
+  <!-- Content description for the toolbar "Navigate back" button -->
+  <string name="download_navigate_back_description">Перейти назад</string>
+  <!-- Content description for the toolbar "Navigate up" button -->
+  <string name="download_navigate_up_description">Перейти наверх</string>
   <!-- Text for the button to share the download URL -->
   <string name="download_share_url">Поделиться URL</string>
   <!-- Text for the button to share the download file -->
@@ -1525,9 +1527,9 @@
   <!-- Text to indicate that a download has failed to download. -->
   <string name="download_item_status_failed" tools:ignore="UnusedResources">Загрузка не удалась</string>
   <!-- Placeholder text to indicate that users can use the search bar to search for a download. -->
-  <string name="download_search_placeholder" tools:ignore="UnusedResources">Поиск в загрузках</string>
+  <string name="download_search_placeholder">Поиск в загрузках</string>
   <!-- Text to indicate that no downloads match the search query. -->
-  <string name="download_search_no_results_found" tools:ignore="UnusedResources">Результатов не найдено</string>
+  <string name="download_search_no_results_found">Результатов не найдено</string>
   <!-- Text for the "Select all" button, which selects all downloaded items in the downloads list. -->
   <string name="download_select_all_items">Выбрать все</string>
   <!--
@@ -2280,7 +2282,7 @@
   -->
   <string name="preference_etp_exceptions_icon_description">Значок настройки исключения Улучшенной защиты от отслеживания</string>
   <!--
-    DNS Over HTTPS (DoH)
+    DNS over HTTPS (DoH)
 
     Preference title for DNS over HTTPS settings
   -->
@@ -3195,6 +3197,8 @@
   <string name="protection_panel_no_trackers_blocked">Трекеров не найдено</string>
   <!-- Link text to navigate to privacy and security settings from the protection panel. -->
   <string name="protection_panel_privacy_and_security_settings">Настройки защиты и приватности</string>
+  <!-- Title text for the protection panel permissions section. -->
+  <string name="protection_panel_permissions_title">Разрешения</string>
   <!--
     Text for displaying the total number of trackers blocked in the trackers blocked panel.
     %d is a placeholder for the number of trackers blocked.
@@ -3502,6 +3506,22 @@
   <string name="setup_checklist_subtitle_6_steps_fifth_step">Почти готово! Вы всего в 1 шаге от финишной черты.</string>
   <!-- Subtitle for a setup checklist with 6 steps completed state. %1$s is the name of the app (for example "Firefox"). -->
   <string name="setup_checklist_subtitle_6_steps_completed_state">Вы завершили все 6 шагов по настройке. Наслаждайтесь скоростью, приватностью и безопасностью %1$s.</string>
+  <!--
+    ===== Setup checklist feature: Subtitles for 5 steps (Large screen devices don't support toolbar placement) =====
+
+    Subtitle for a setup checklist with 5 steps initial state. %1$s is the name of the app (for example "Firefox").
+  -->
+  <string name="setup_checklist_subtitle_5_steps_initial_state">Выполните все 5 шагов по настройке %1$s для наилучшей работы в Интернете.</string>
+  <!-- Subtitle for a setup checklist with 5 steps when the first task is completed. -->
+  <string name="setup_checklist_subtitle_5_steps_first_step">Отличное начало! Вы завершили 1 из 5 шагов.</string>
+  <!-- Subtitle for the setup checklist when the second task is completed. -->
+  <string name="setup_checklist_subtitle_5_steps_second_step">Вы выполнили 2 из 5 шагов. Отличный прогресс!</string>
+  <!-- Subtitle for a setup checklist with 5 steps when three of the tasks are completed. -->
+  <string name="setup_checklist_subtitle_5_steps_third_step">Вы на половине пути! Три шага закончены и осталось 2.</string>
+  <!-- Subtitle for a setup checklist with 5 steps when the fifth task is completed. -->
+  <string name="setup_checklist_subtitle_5_steps_fourth_step">Почти готово! Вы всего в 1 шаге от финишной черты.</string>
+  <!-- Subtitle for a setup checklist with 5 steps completed state. %1$s is the name of the app (for example "Firefox"). -->
+  <string name="setup_checklist_subtitle_5_steps_completed_state">Вы завершили все 5 шагов по настройке. Наслаждайтесь скоростью, приватностью и безопасностью %1$s.</string>
   <!--
     ===== Setup checklist feature: Task titles =====
 

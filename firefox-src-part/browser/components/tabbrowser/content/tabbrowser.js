@@ -93,8 +93,6 @@
   }
 
   window.Tabbrowser = class {
-    #stgManager; // Smart Tab Grouping Manager
-
     init() {
       this.tabContainer = document.getElementById("tabbrowser-tabs");
       this.tabGroupMenu = document.getElementById("tab-group-editor");
@@ -457,6 +455,21 @@
         openWindowInfo = window.arguments[11];
       }
 
+      let extraOptions;
+      if (window.arguments?.[1] instanceof Ci.nsIPropertyBag2) {
+        extraOptions = window.arguments[1];
+      }
+
+      // If our opener provided a remoteType which was responsible for creating
+      // this pop-up window, we'll fall back to using that remote type when no
+      // other remote type is available.
+      let triggeringRemoteType;
+      if (extraOptions?.hasKey("triggeringRemoteType")) {
+        triggeringRemoteType = extraOptions.getPropertyAsACString(
+          "triggeringRemoteType"
+        );
+      }
+
       let tabArgument = gBrowserInit.getTabToAdopt();
 
       // If we have a tab argument with browser, we use its remoteType. Otherwise,
@@ -484,7 +497,7 @@
       } else if (openWindowInfo) {
         userContextId = openWindowInfo.originAttributes.userContextId;
         if (openWindowInfo.isRemote) {
-          remoteType = E10SUtils.DEFAULT_REMOTE_TYPE;
+          remoteType = triggeringRemoteType ?? E10SUtils.DEFAULT_REMOTE_TYPE;
         } else {
           remoteType = E10SUtils.NOT_REMOTE;
         }
@@ -503,7 +516,7 @@
             uriToLoad,
             gMultiProcessBrowser,
             gFissionBrowser,
-            E10SUtils.DEFAULT_REMOTE_TYPE,
+            triggeringRemoteType ?? E10SUtils.DEFAULT_REMOTE_TYPE,
             null,
             oa
           );
@@ -513,6 +526,13 @@
           // initialization. We can't delay setting up the browser here, as that
           // would mean that `gBrowser.selectedBrowser` might not always exist,
           // which is the current assumption.
+
+          if (Cu.isInAutomation) {
+            ChromeUtils.releaseAssert(
+              !triggeringRemoteType,
+              "Unexpected triggeringRemoteType with no uriToLoad"
+            );
+          }
 
           // In this case we default to the privileged about process as that's
           // the best guess we can make, and we'll likely need it eventually.
@@ -2503,7 +2523,9 @@
       // Indicate that this tab was explicitly unloaded (i.e. not
       // from a session restore) in case we want to style that
       // differently.
-      aTab.toggleAttribute("discarded", true);
+      if (aForceDiscard) {
+        aTab.toggleAttribute("discarded", true);
+      }
 
       // Remove the tab's filter and progress listener.
       let filter = this._tabFilters.get(aTab);
@@ -2756,6 +2778,7 @@
           initialBrowsingContextGroupId,
           openWindowInfo,
           skipLoad,
+          triggeringRemoteType,
         }));
 
         if (focusUrlBar) {
@@ -2950,6 +2973,9 @@
      *   An optional argument that accepts a single tab, which, if passed, will
      *   cause the group to be inserted just before this tab in the tab strip. By
      *   default, the group will be created at the end of the tab strip.
+     * @param {boolean} [options.isAdoptingGroup]
+     *   Whether the tab group was created because a tab group with the same
+     *   properties is being adopted from a different window.
      * @param {boolean} [options.isUserTriggered]
      *   Should be true if this group is being created in response to an
      *   explicit request from the user (as opposed to a group being created
@@ -2968,6 +2994,7 @@
         color = null,
         label = "",
         insertBefore = null,
+        isAdoptingGroup = false,
         isUserTriggered = false,
         telemetryUserCreateSource = "unknown",
       } = {}
@@ -3005,6 +3032,7 @@
         new CustomEvent("TabGroupCreate", {
           bubbles: true,
           detail: {
+            isAdoptingGroup,
             isUserTriggered,
             telemetryUserCreateSource,
           },
@@ -3123,11 +3151,13 @@
       if (group.ownerDocument == document) {
         return group;
       }
+      group.removedByAdoption = true;
       group.saveOnWindowClose = false;
 
       let newTabs = [];
       for (let tab of group.tabs) {
         newTabs.push(this.adoptTab(tab, { elementIndex }));
+        ++elementIndex;
       }
 
       return this.addTabGroup(newTabs, {
@@ -3135,6 +3165,7 @@
         label: group.label,
         color: group.color,
         insertBefore: newTabs[0],
+        isAdoptingGroup: true,
       });
     }
 
@@ -3158,57 +3189,6 @@
         }
       }
       return null;
-    }
-
-    getSmartTabGroupingManager() {
-      if (!this.#stgManager) {
-        this.#stgManager = new this.SmartTabGroupingManager();
-      }
-      return this.#stgManager;
-    }
-
-    /**
-     * Groups all tabs in the current window (other than pinned tabs) into a
-     * set of tab groups. Each is given a name.
-     *
-     * Note that there is no immediate UX plan for this feature but it is
-     * being left in for now, as it can be used while testing in the console.
-     *
-     * Currently this implementation has automatic labeling of the group disabled.
-     *
-     * @returns {object []} List of tab groups
-     */
-    async smartTabGrouping() {
-      const groupManager = this.getSmartTabGroupingManager();
-      const clusters = await groupManager.generateClusters(
-        this.visibleTabs.filter(t => !t.pinned)
-      );
-      const clusterReps = clusters.clusterRepresentations;
-      const tabGroups = clusterReps.map(clusterRep =>
-        this.addTabGroup(clusterRep.tabs, {
-          label: clusterRep.predictedTopicLabel || "",
-        })
-      );
-      return tabGroups;
-    }
-
-    /**
-     * Get suggested title for tabs
-     * @param {object []} tabs One or more tabs in a list
-     * @returns {String} Suggested label for the tabs if creating a tab group, or empty string if no suggestion
-     */
-    async getGroupTitleForTabs(tabs) {
-      if (!tabs) {
-        return "";
-      }
-      const otherTabs = gBrowser.visibleTabs.filter(
-        t => !tabs.includes(t) && !t.pinned
-      );
-      const groupManager = this.getSmartTabGroupingManager();
-      const clusters = groupManager.createStaticCluster(tabs);
-      const otherClusters = groupManager.createStaticCluster(otherTabs);
-      await groupManager.generateGroupLabels(clusters, otherClusters);
-      return clusters.clusterRepresentations[0].predictedTopicLabel;
     }
 
     _determineURIToLoad(uriString, createLazyBrowser) {
@@ -3318,8 +3298,15 @@
         initialBrowsingContextGroupId,
         openWindowInfo,
         skipLoad,
+        triggeringRemoteType,
       }
     ) {
+      // If we don't have a preferred remote type (or it is `NOT_REMOTE`), and
+      // we have a remote triggering remote type, use that instead.
+      if (!preferredRemoteType && triggeringRemoteType) {
+        preferredRemoteType = triggeringRemoteType;
+      }
+
       // If we don't have a preferred remote type, and we have a remote
       // opener, use the opener's remote type.
       if (!preferredRemoteType && openerBrowser) {
@@ -5873,6 +5860,7 @@
             label: group.label,
             id: group.id,
           });
+          Glean.tabgroup.groupInteractions.move_window.add(1);
         },
         { once: true }
       );
@@ -6260,6 +6248,15 @@
           metricsContext
         );
       }
+
+      let currentFirst = this.#getTabMoveState(tabs[0]);
+      if (
+        this.isTabGroup(element) &&
+        previousTabStates[0].tabIndex != currentFirst.tabIndex
+      ) {
+        let event = new CustomEvent("TabGroupMoved", { bubbles: true });
+        element.dispatchEvent(event);
+      }
     }
 
     /**
@@ -6280,6 +6277,7 @@
       let linkedBrowser = aTab.linkedBrowser;
       let createLazyBrowser = !aTab.linkedPanel;
       let nextElement = this.tabContainer.ariaFocusableItems.at(elementIndex);
+      let tabInGroup = !!aTab.group;
       let params = {
         eventDetail: { adoptedTab: aTab },
         preferredRemoteType: linkedBrowser.remoteType,
@@ -6320,6 +6318,10 @@
 
       if (selectTab) {
         this.selectedTab = newTab;
+      }
+
+      if (tabInGroup) {
+        Glean.tabgroup.tabInteractions.remove_other_window.add();
       }
 
       return newTab;
@@ -6934,6 +6936,20 @@
       }
     }
 
+    /**
+     *
+     * @param {MozTabbrowserTab} tab
+     */
+    #isFirstOrLastInTabGroup(tab) {
+      if (tab.group) {
+        let groupTabs = tab.group.tabs;
+        if (groupTabs.at(0) == tab || groupTabs.at(-1) == tab) {
+          return true;
+        }
+      }
+      return false;
+    }
+
     getTabPids(tab) {
       if (!tab.linkedBrowser) {
         return [];
@@ -6948,6 +6964,15 @@
       return pids.concat(framePids.sort());
     }
 
+    /**
+     * @param {MozTabbrowserTab} tab
+     * @param {boolean} [includeLabel=true]
+     *   Include the tab's title/full label in the tooltip. Defaults to true,
+     *   Can be disabled for contexts where including the title in the tooltip
+     *   string would be duplicative would already available information,
+     *   e.g. accessibility descriptions.
+     * @returns {string}
+     */
     getTabTooltip(tab, includeLabel = true) {
       let labelArray = [];
       if (includeLabel) {
@@ -6955,28 +6980,59 @@
       }
       if (this.showPidAndActiveness) {
         const pids = this.getTabPids(tab);
+        let debugStringArray = [];
         if (pids.length) {
           let pidLabel = pids.length > 1 ? "pids" : "pid";
-          labelArray.push(`(${pidLabel} ${pids.join(", ")})`);
+          debugStringArray.push(`(${pidLabel} ${pids.join(", ")})`);
         }
 
         if (tab.linkedBrowser.docShellIsActive) {
-          labelArray.push("[A]");
+          debugStringArray.push("[A]");
+        }
+
+        if (debugStringArray.length) {
+          labelArray.push(debugStringArray.join(" "));
         }
       }
 
-      let label = labelArray.join(" ");
-      if (tab.userContextId) {
-        const containerName = ContextualIdentityService.getUserContextLabel(
-          tab.userContextId
-        );
-        label = this.tabLocalization.formatValueSync(
-          "tabbrowser-container-tab-title",
-          { title: label, containerName }
-        );
+      // Add a line to the tooltip with additional tab context (e.g. container
+      // membership, tab group membership) when applicable.
+      let containerName = tab.userContextId
+        ? ContextualIdentityService.getUserContextLabel(tab.userContextId)
+        : "";
+      let tabGroupName = this.#isFirstOrLastInTabGroup(tab)
+        ? tab.group.name ||
+          this.tabLocalization.formatValueSync("tab-group-name-default")
+        : "";
+
+      if (containerName || tabGroupName) {
+        let tabContextString;
+        if (containerName && tabGroupName) {
+          tabContextString = this.tabLocalization.formatValueSync(
+            "tabbrowser-tab-tooltip-tab-group-container",
+            {
+              tabGroupName,
+              containerName,
+            }
+          );
+        } else if (tabGroupName) {
+          tabContextString = this.tabLocalization.formatValueSync(
+            "tabbrowser-tab-tooltip-tab-group",
+            {
+              tabGroupName,
+            }
+          );
+        } else {
+          tabContextString = this.tabLocalization.formatValueSync(
+            "tabbrowser-tab-tooltip-container",
+            {
+              containerName,
+            }
+          );
+        }
+        labelArray.push(tabContextString);
       }
 
-      labelArray = [label];
       if (tab.soundPlaying) {
         let audioPlayingString = this.tabLocalization.formatValueSync(
           "tabbrowser-tab-audio-playing-description"
@@ -8849,11 +8905,7 @@ var TabContextMenu = {
           }
 
           item.classList.add("menuitem-iconic");
-          if (group.collapsed) {
-            item.classList.add("tab-group-icon-collapsed");
-          } else {
-            item.classList.add("tab-group-icon");
-          }
+          item.classList.add("tab-group-icon");
           item.style.setProperty(
             "--tab-group-color",
             group.style.getPropertyValue("--tab-group-color")
@@ -9210,6 +9262,7 @@ var TabContextMenu = {
       isUserTriggered: true,
       telemetryUserCreateSource: "tab_menu",
     });
+    gBrowser.selectedTab = this.contextTabs[0];
 
     // When using the tab context menu to create a group from the all tabs
     // panel, make sure we close that panel so that it doesn't obscure the tab

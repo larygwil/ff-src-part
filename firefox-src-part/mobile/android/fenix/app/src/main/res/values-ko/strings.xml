@@ -837,8 +837,6 @@
   <string name="preferences_override_account_server">사용자 지정  Mozilla 계정 서버</string>
   <!-- Preference to override the Sync token server -->
   <string name="preferences_override_sync_tokenserver">사용자 지정 동기화 서버</string>
-  <!-- Toast shown after updating the Mozilla account/Sync server override preferences -->
-  <string name="toast_override_account_sync_server_done">Mozilla 계정/동기화 서버가 수정되었습니다. 변경사항을 적용하기 위해 애플리케이션을 종료하는 중…</string>
   <!-- Preference category for account information -->
   <string name="preferences_category_account">계정</string>
   <!-- Preference for changing where the AddressBar is positioned -->
@@ -1530,9 +1528,9 @@
   <!-- Text to indicate that a download has failed to download. -->
   <string name="download_item_status_failed" tools:ignore="UnusedResources">다운로드 실패</string>
   <!-- Placeholder text to indicate that users can use the search bar to search for a download. -->
-  <string name="download_search_placeholder" tools:ignore="UnusedResources">다운로드 검색</string>
+  <string name="download_search_placeholder">다운로드 검색</string>
   <!-- Text to indicate that no downloads match the search query. -->
-  <string name="download_search_no_results_found" tools:ignore="UnusedResources">결과 없음</string>
+  <string name="download_search_no_results_found">결과 없음</string>
   <!-- Text for the "Select all" button, which selects all downloaded items in the downloads list. -->
   <string name="download_select_all_items">모두 선택</string>
   <!--
@@ -2285,7 +2283,7 @@
   -->
   <string name="preference_etp_exceptions_icon_description">향상된 추적 방지 기능의 예외 설정 아이콘</string>
   <!--
-    DNS Over HTTPS (DoH)
+    DNS over HTTPS (DoH)
 
     Preference title for DNS over HTTPS settings
   -->
@@ -3199,6 +3197,8 @@
   <string name="protection_panel_no_trackers_blocked">추적기 없음</string>
   <!-- Link text to navigate to privacy and security settings from the protection panel. -->
   <string name="protection_panel_privacy_and_security_settings">개인 정보 및 보안 설정</string>
+  <!-- Title text for the protection panel permissions section. -->
+  <string name="protection_panel_permissions_title">권한</string>
   <!--
     Text for displaying the total number of trackers blocked in the trackers blocked panel.
     %d is a placeholder for the number of trackers blocked.
@@ -3507,6 +3507,22 @@
   <!-- Subtitle for a setup checklist with 6 steps completed state. %1$s is the name of the app (for example "Firefox"). -->
   <string name="setup_checklist_subtitle_6_steps_completed_state">6개의 설정 단계를 모두 완료했습니다. %1$s의 속도와 개인 정보 보호, 보안을 즐기십시오.</string>
   <!--
+    ===== Setup checklist feature: Subtitles for 5 steps (Large screen devices don't support toolbar placement) =====
+
+    Subtitle for a setup checklist with 5 steps initial state. %1$s is the name of the app (for example "Firefox").
+  -->
+  <string name="setup_checklist_subtitle_5_steps_initial_state">최고의 웹 탐색 경험을 위해 %1$s 설정 5단계를 모두 완료하세요.</string>
+  <!-- Subtitle for a setup checklist with 5 steps when the first task is completed. -->
+  <string name="setup_checklist_subtitle_5_steps_first_step">시작이 좋습니다! 1 / 5 단계를 완료했습니다.</string>
+  <!-- Subtitle for the setup checklist when the second task is completed. -->
+  <string name="setup_checklist_subtitle_5_steps_second_step">2 / 5 단계를 완료했습니다. 진행이 아주 좋습니다!</string>
+  <!-- Subtitle for a setup checklist with 5 steps when three of the tasks are completed. -->
+  <string name="setup_checklist_subtitle_5_steps_third_step">절반 정도 하셨습니다! 3단계가 완료되었고 2단계가 남았습니다.</string>
+  <!-- Subtitle for a setup checklist with 5 steps when the fifth task is completed. -->
+  <string name="setup_checklist_subtitle_5_steps_fourth_step">거의 다 완료되었습니다! 결승선이 한 단계 남았습니다.</string>
+  <!-- Subtitle for a setup checklist with 5 steps completed state. %1$s is the name of the app (for example "Firefox"). -->
+  <string name="setup_checklist_subtitle_5_steps_completed_state">5개의 설정 단계를 모두 완료했습니다. %1$s의 속도, 개인 정보 보호 및 보안을 즐기세요.</string>
+  <!--
     ===== Setup checklist feature: Task titles =====
 
     The title of the default browser task for the setup checklist
@@ -3556,4 +3572,10 @@
   <string name="pbm_authentication_unlock">잠금 해제</string>
   <!-- Title text instructing the user to unlock private tabs -->
   <string name="pbm_authentication_unlock_private_tabs">사생활 보호 탭 잠금 해제</string>
+  <!-- Title text for the contextual feature recommendation (CFR) suggesting the user enable a screen lock to protect private tabs -->
+  <string name="private_tab_cfr_title" tools:ignore="UnusedResources">사생활 보호 탭을 숨기기 위해 화면 잠금을 사용하시겠습니까?</string>
+  <!-- Negative button text for the contextual feature recommendation (CFR) dismissing the screen lock suggestion -->
+  <string name="private_tab_cfr_negative" tools:ignore="UnusedResources">아니요</string>
+  <!-- Positive button text for the contextual feature recommendation (CFR) enabling screen lock for private tabs -->
+  <string name="private_tab_cfr_positive" tools:ignore="UnusedResources">탭 잠금</string>
 </resources>

@@ -838,8 +838,6 @@
   <string name="preferences_override_account_server">Aangepaste Mozilla-accountserver</string>
   <!-- Preference to override the Sync token server -->
   <string name="preferences_override_sync_tokenserver">Aangepaste Synchronisatieserver</string>
-  <!-- Toast shown after updating the Mozilla account/Sync server override preferences -->
-  <string name="toast_override_account_sync_server_done">Mozilla-account-/Synchronisatieserver aangepast. Toepassing wordt afgesloten om wijzigingen toe te passen…</string>
   <!-- Preference category for account information -->
   <string name="preferences_category_account">Account</string>
   <!-- Preference for changing where the AddressBar is positioned -->
@@ -1531,9 +1529,9 @@
   <!-- Text to indicate that a download has failed to download. -->
   <string name="download_item_status_failed" tools:ignore="UnusedResources">Downloaden mislukt</string>
   <!-- Placeholder text to indicate that users can use the search bar to search for a download. -->
-  <string name="download_search_placeholder" tools:ignore="UnusedResources">Downloads doorzoeken</string>
+  <string name="download_search_placeholder">Downloads doorzoeken</string>
   <!-- Text to indicate that no downloads match the search query. -->
-  <string name="download_search_no_results_found" tools:ignore="UnusedResources">Geen resultaten gevonden</string>
+  <string name="download_search_no_results_found">Geen resultaten gevonden</string>
   <!-- Text for the "Select all" button, which selects all downloaded items in the downloads list. -->
   <string name="download_select_all_items">Alles selecteren</string>
   <!--
@@ -2286,7 +2284,7 @@
   -->
   <string name="preference_etp_exceptions_icon_description">Pictogram voor de voorkeur voor Verbeterde bescherming tegen volgen-uitzondering</string>
   <!--
-    DNS Over HTTPS (DoH)
+    DNS over HTTPS (DoH)
 
     Preference title for DNS over HTTPS settings
   -->
@@ -3200,6 +3198,8 @@
   <string name="protection_panel_no_trackers_blocked">Geen trackers gevonden</string>
   <!-- Link text to navigate to privacy and security settings from the protection panel. -->
   <string name="protection_panel_privacy_and_security_settings">Privacy- en beveiligingsinstellingen</string>
+  <!-- Title text for the protection panel permissions section. -->
+  <string name="protection_panel_permissions_title">Toestemmingen</string>
   <!--
     Text for displaying the total number of trackers blocked in the trackers blocked panel.
     %d is a placeholder for the number of trackers blocked.
@@ -3507,6 +3507,22 @@
   <string name="setup_checklist_subtitle_6_steps_fifth_step">Bijna klaar! U bent nog maar 1 stap verwijderd van de eindstreep.</string>
   <!-- Subtitle for a setup checklist with 6 steps completed state. %1$s is the name of the app (for example "Firefox"). -->
   <string name="setup_checklist_subtitle_6_steps_completed_state">U hebt alle 6 installatiestappen voltooid. Geniet van de snelheid, privacy en beveiliging van %1$s.</string>
+  <!--
+    ===== Setup checklist feature: Subtitles for 5 steps (Large screen devices don't support toolbar placement) =====
+
+    Subtitle for a setup checklist with 5 steps initial state. %1$s is the name of the app (for example "Firefox").
+  -->
+  <string name="setup_checklist_subtitle_5_steps_initial_state">Voltooi alle 5 stappen om %1$s in te stellen voor de beste surfervaring.</string>
+  <!-- Subtitle for a setup checklist with 5 steps when the first task is completed. -->
+  <string name="setup_checklist_subtitle_5_steps_first_step">Goed begin! U hebt 1 van de 5 stappen voltooid.</string>
+  <!-- Subtitle for the setup checklist when the second task is completed. -->
+  <string name="setup_checklist_subtitle_5_steps_second_step">U hebt 2 van de 5 stappen voltooid. Mooie vooruitgang!</string>
+  <!-- Subtitle for a setup checklist with 5 steps when three of the tasks are completed. -->
+  <string name="setup_checklist_subtitle_5_steps_third_step">U bent halverwege! Drie stappen voltooid en nog twee te gaan.</string>
+  <!-- Subtitle for a setup checklist with 5 steps when the fifth task is completed. -->
+  <string name="setup_checklist_subtitle_5_steps_fourth_step">Bijna klaar! U bent nog maar 1 stap verwijderd van de eindstreep.</string>
+  <!-- Subtitle for a setup checklist with 5 steps completed state. %1$s is the name of the app (for example "Firefox"). -->
+  <string name="setup_checklist_subtitle_5_steps_completed_state">U hebt alle 5 installatiestappen voltooid. Geniet van de snelheid, privacy en beveiliging van %1$s.</string>
   <!--
     ===== Setup checklist feature: Task titles =====
 

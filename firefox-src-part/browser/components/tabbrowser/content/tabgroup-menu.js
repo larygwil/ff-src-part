@@ -200,7 +200,7 @@
     static markup = /*html*/ `
     <panel
         type="arrow"
-        class="panel tab-group-editor-panel"
+        class="tab-group-editor-panel"
         orient="vertical"
         role="dialog"
         ignorekeys="true"
@@ -254,7 +254,7 @@
             data-l10n-id="tab-group-editor-no-tabs-found-message">
           </html:p>
         </html:div>
-        
+
         ${this.defaultActions}
 
       </html:div>
@@ -297,6 +297,7 @@
     #tabGroupMain;
     #activeGroup;
     #cancelButton;
+    #commandButtons;
     #createButton;
     #createMode;
     #keepNewlyCreatedGroup;
@@ -308,6 +309,8 @@
     #suggestionState = MozTabbrowserTabGroupMenu.State.CREATE_STANDARD_INITIAL;
     #suggestionsHeading;
     #defaultHeader;
+    /** @type {string} */
+    #initialTabGroupName;
     #suggestionsContainer;
     #suggestions;
     #suggestionButton;
@@ -421,40 +424,50 @@
         return show;
       };
 
-      document
-        .getElementById("tabGroupEditor_addNewTabInGroup")
-        .addEventListener("command", () => {
-          this.#handleNewTabInGroup();
-        });
+      this.#commandButtons = {
+        addNewTabInGroup: document.getElementById(
+          "tabGroupEditor_addNewTabInGroup"
+        ),
+        moveGroupToNewWindow: document.getElementById(
+          "tabGroupEditor_moveGroupToNewWindow"
+        ),
+        ungroupTabs: document.getElementById("tabGroupEditor_ungroupTabs"),
+        saveAndCloseGroup: document.getElementById(
+          "tabGroupEditor_saveAndCloseGroup"
+        ),
+        deleteGroup: document.getElementById("tabGroupEditor_deleteGroup"),
+      };
 
-      document
-        .getElementById("tabGroupEditor_moveGroupToNewWindow")
-        .addEventListener("command", () => {
+      this.#commandButtons.addNewTabInGroup.addEventListener("command", () => {
+        this.#handleNewTabInGroup();
+      });
+
+      this.#commandButtons.moveGroupToNewWindow.addEventListener(
+        "command",
+        () => {
           gBrowser.replaceGroupWithWindow(this.activeGroup);
-        });
+        }
+      );
 
-      document
-        .getElementById("tabGroupEditor_ungroupTabs")
-        .addEventListener("command", () => {
-          this.activeGroup.ungroupTabs();
+      this.#commandButtons.ungroupTabs.addEventListener("command", () => {
+        this.activeGroup.ungroupTabs({
+          isUserTriggered: true,
+          telemetrySource: TabMetrics.METRIC_SOURCE.TAB_GROUP_MENU,
         });
+      });
 
-      document
-        .getElementById("tabGroupEditor_saveAndCloseGroup")
-        .addEventListener("command", () => {
-          this.activeGroup.saveAndClose({ isUserTriggered: true });
-        });
+      this.#commandButtons.saveAndCloseGroup.addEventListener("command", () => {
+        this.activeGroup.saveAndClose({ isUserTriggered: true });
+      });
 
-      document
-        .getElementById("tabGroupEditor_deleteGroup")
-        .addEventListener("command", () => {
-          gBrowser.removeTabGroup(
-            this.activeGroup,
-            TabMetrics.userTriggeredContext(
-              TabMetrics.METRIC_SOURCE.TAB_GROUP_MENU
-            )
-          );
-        });
+      this.#commandButtons.deleteGroup.addEventListener("command", () => {
+        gBrowser.removeTabGroup(
+          this.activeGroup,
+          TabMetrics.userTriggeredContext(
+            TabMetrics.METRIC_SOURCE.TAB_GROUP_MENU
+          )
+        );
+      });
 
       this.panel.addEventListener("popupshown", this);
       this.panel.addEventListener("popuphidden", this);
@@ -521,6 +534,19 @@
             ? MozTabbrowserTabGroupMenu.State.CREATE_AI_INITIAL
             : MozTabbrowserTabGroupMenu.State.EDIT_AI_INITIAL;
           this.#setFormToDisabled(false);
+        }
+      );
+
+      // On Message link click
+      this.#suggestionsOptin.addEventListener(
+        "MlModelOptinMessageLinkClick",
+        () => {
+          this.#handleMLOptinTelemetry("step0-optin-link-click");
+          openTrustedLinkIn(
+            // this is a placeholder link, it should be replaced with the actual link
+            "https://support.mozilla.org",
+            "tab"
+          );
         }
       );
 
@@ -721,13 +747,24 @@
       return "bottomleft topleft";
     }
 
-    #initMlGroupLabel() {
-      if (!this.smartTabGroupsEnabled) {
+    /**
+     * Sets the suggested title for the group
+     */
+    async #initMlGroupLabel() {
+      if (!this.smartTabGroupsEnabled || !this.activeGroup.tabs?.length) {
         return;
       }
-      gBrowser.getGroupTitleForTabs(this.activeGroup.tabs).then(newLabel => {
-        this.#setMlGroupLabel(newLabel);
-      });
+
+      const tabs = this.activeGroup.tabs;
+      const otherTabs = gBrowser.visibleTabs.filter(
+        t => !tabs.includes(t) && !t.pinned
+      );
+      let predictedLabel =
+        await this.#smartTabGroupingManager.getPredictedLabelForGroup(
+          tabs,
+          otherTabs
+        );
+      this.#setMlGroupLabel(predictedLabel);
     }
 
     /**
@@ -836,7 +873,12 @@
       if (this.createMode) {
         this.#keepNewlyCreatedGroup = true;
       }
+      this.#initialTabGroupName = this.activeGroup?.label;
       this.#nameField.focus();
+
+      for (const button of Object.values(this.#commandButtons)) {
+        button.tooltipText = button.label;
+      }
     }
 
     on_popuphidden() {
@@ -859,6 +901,9 @@
       if (this.#nameField.disabled) {
         this.#setFormToDisabled(false);
       }
+      if (this.activeGroup?.label != this.#initialTabGroupName) {
+        Glean.tabgroup.groupInteractions.rename.add(1);
+      }
       this.activeGroup = null;
       this.#smartTabGroupingManager.terminateProcess();
     }
@@ -874,9 +919,12 @@
           this.close(false);
           break;
         case KeyEvent.DOM_VK_RETURN:
-          // When focus is on a toolbarbutton, we need to wait for the command
-          // event, which will ultimately close the panel as well.
-          if (event.target.nodeName != "toolbarbutton") {
+          // When focus is on a button, we need to let that handle the Enter key,
+          // which should ultimately close the panel as well.
+          if (
+            event.target.localName != "toolbarbutton" &&
+            event.target.localName != "moz-button"
+          ) {
             this.close();
           }
           break;
@@ -892,6 +940,7 @@
       }
       if (this.activeGroup) {
         this.activeGroup.color = aEvent.target.value;
+        Glean.tabgroup.groupInteractions.change_color.add(1);
       }
     }
 
