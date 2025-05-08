@@ -1606,7 +1606,7 @@
 
     Title text displayed on the tab crash page. %1$s is the name of the app (for example "Firefox").
   -->
-  <string name="tab_crash_title_2">Συγγνώμη. Το %1$s δεν μπορεί να φορτώσει αυτή τη σελίδα.</string>
+  <string name="tab_crash_title_2">Συγγνώμη. Το %1$s δεν μπορεί να φορτώσει αυτήν τη σελίδα.</string>
   <!-- Send crash report checkbox text on the tab crash page -->
   <string name="tab_crash_send_report">Αποστολή αναφοράς κατάρρευσης στη Mozilla</string>
   <!-- Close tab button text on the tab crash page -->
@@ -2831,8 +2831,6 @@
     Search suggestions title for Firefox Suggest.
   -->
   <string name="firefox_suggest_header" tools:ignore="BrandUsage">Προτάσεις Firefox</string>
-  <!-- Search suggestions title for trending searches. -->
-  <string name="trending_searches_header" moz:removedIn="137" tools:ignore="UnusedResources">Δημοφιλείς αναζητήσεις</string>
   <!--
     Search suggestions title for trending search suggestions.
     %s is a placeholder for the name of the search engine providing the trending search suggestions.
@@ -3572,4 +3570,10 @@
   <string name="pbm_authentication_unlock">Ξεκλείδωμα</string>
   <!-- Title text instructing the user to unlock private tabs -->
   <string name="pbm_authentication_unlock_private_tabs">Ξεκλείδωμα ιδιωτικών καρτελών</string>
+  <!-- Title text for the contextual feature recommendation (CFR) suggesting the user enable a screen lock to protect private tabs -->
+  <string name="private_tab_cfr_title">Χρήση κλειδώματος οθόνης για την απόκρυψη ιδιωτικών καρτελών;</string>
+  <!-- Negative button text for the contextual feature recommendation (CFR) dismissing the screen lock suggestion -->
+  <string name="private_tab_cfr_negative">Όχι, ευχαριστώ</string>
+  <!-- Positive button text for the contextual feature recommendation (CFR) enabling screen lock for private tabs -->
+  <string name="private_tab_cfr_positive">Κλείδωμα καρτελών</string>
 </resources>
