@@ -5847,6 +5847,7 @@
         selectedIndex = 0;
       }
       let firstTab = group.tabs[selectedIndex];
+      group.removedByAdoption = true;
       let newWindow = this.replaceTabWithWindow(firstTab);
 
       newWindow.addEventListener(
@@ -5864,9 +5865,10 @@
           // The initial tab isn't fully adopted yet, but the tab object has been
           // instantiated, so we can make a group now.
           newWindow.gBrowser.addTabGroup(tabsToGroup, {
-            color: group.color,
-            label: group.label,
             id: group.id,
+            label: group.label,
+            color: group.color,
+            isAdoptingGroup: true,
           });
           Glean.tabgroup.groupInteractions.move_window.add(1);
         },
@@ -8864,10 +8866,9 @@ var TabContextMenu = {
     let contextUngroupTab = document.getElementById("context_ungroupTab");
 
     if (gBrowser._tabGroupsEnabled) {
-      let groupableTabs = this.contextTabs.filter(t => !t.pinned);
       let selectedGroupCount = new Set(
         // The filter removes the "null" group for ungrouped tabs.
-        groupableTabs.map(t => t.group).filter(g => g)
+        this.contextTabs.map(t => t.group).filter(g => g)
       ).size;
 
       let availableGroupsToMoveTo = gBrowser
@@ -8879,16 +8880,13 @@ var TabContextMenu = {
       // Determine whether or not the "current" tab group should appear in the
       // "move tab to group" context menu.
       if (selectedGroupCount == 1) {
-        let groupToFilter = groupableTabs[0].group;
-        if (groupToFilter && groupableTabs.every(t => t.group)) {
+        let groupToFilter = this.contextTabs[0].group;
+        if (groupToFilter && this.contextTabs.every(t => t.group)) {
           availableGroupsToMoveTo = availableGroupsToMoveTo.filter(
             group => group !== groupToFilter
           );
         }
       }
-
-      contextMoveTabToGroup.disabled = !groupableTabs.length;
-      contextMoveTabToNewGroup.disabled = !groupableTabs.length;
       if (!availableGroupsToMoveTo.length) {
         contextMoveTabToGroup.hidden = true;
         contextMoveTabToNewGroup.hidden = false;
@@ -9263,8 +9261,12 @@ var TabContextMenu = {
   },
 
   moveTabsToNewGroup() {
+    let insertBefore = this.contextTab;
+    if (insertBefore._tPos < gBrowser.pinnedTabCount) {
+      insertBefore = gBrowser.tabs[gBrowser.pinnedTabCount];
+    }
     gBrowser.addTabGroup(this.contextTabs, {
-      insertBefore: this.contextTab,
+      insertBefore,
       isUserTriggered: true,
       telemetryUserCreateSource: "tab_menu",
     });

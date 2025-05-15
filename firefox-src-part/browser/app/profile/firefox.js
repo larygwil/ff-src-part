@@ -452,6 +452,11 @@ pref("browser.urlbar.scotchBonnet.enableOverride", true);
 pref("browser.urlbar.scotchBonnet.enableOverride", false);
 #endif
 
+// Once Perplexity has entered search mode at least once,
+// we no longer show the Perplexity onboarding callout.
+// This pref will be set to true when perplexity search mode is detected.
+pref("browser.urlbar.perplexity.hasBeenInSearchMode", false);
+
 // Whether or not Unified Search Button is shown always.
 pref("browser.urlbar.unifiedSearchButton.always", false);
 
@@ -1790,6 +1795,11 @@ pref("browser.partnerlink.campaign.topsites", "amzn_2020_a1");
 
 // Activates preloading of the new tab url.
 pref("browser.newtab.preload", true);
+
+// Do not enable the preonboarding experience on Linux
+#ifdef XP_LINUX
+  pref("browser.preonboarding.enabled", false);
+#endif
 
 // Show "Download Firefox for mobile" QR code modal on newtab
 pref("browser.newtabpage.activity-stream.mobileDownloadModal.enabled", false);
