@@ -1481,7 +1481,7 @@
   -->
   <string name="download_multi_select_title">Se seleccionó %1$d</string>
   <!-- Text for the button to remove a single download item -->
-  <string name="download_delete_item_1">Eliminar</string>
+  <string name="download_delete_item_1" moz:removedIn="138" tools:ignore="UnusedResources">Eliminar</string>
   <!-- Title for the dialog that is shown when there is not enough storage space to download a file. -->
   <string name="download_file_has_not_enough_storage_dialog_title">No hay espacio suficiente</string>
   <!--
@@ -3425,6 +3425,8 @@
   <string name="debug_drawer_override_current_region_label">Reemplazar región actual</string>
   <!-- The title of the button for overriding home and current region. -->
   <string name="debug_drawer_override_region">Reemplazar la región de inicio y la actual</string>
+  <!-- The title of the button for overriding home region permanently. -->
+  <string name="debug_drawer_override_home_region_permanently">Cambiar región de origen permanentemente</string>
   <!--
     Messages explaining how to exit fullscreen mode
 
@@ -3594,9 +3596,9 @@
   <!-- Title text instructing the user to unlock private tabs -->
   <string name="pbm_authentication_unlock_private_tabs">Desbloquear pestañas privadas</string>
   <!-- Authentication prompt title to enable the private tabs mode -->
-  <string name="pbm_authentication_enable_lock">Habilitar bloqueo de pantalla de pestañas privadas</string>
+  <string name="pbm_authentication_enable_lock">Habilitar el  bloqueo de la pantalla de pestañas privadas</string>
   <!-- Authentication prompt title to disable the private tabs mode -->
-  <string name="pbm_authentication_disable_lock">Deshabilitar el bloqueo de pantalla de pestañas privadas</string>
+  <string name="pbm_authentication_disable_lock">Deshabilitar el bloqueo de la pantalla de pestañas privadas</string>
   <!-- Title text for the contextual feature recommendation (CFR) suggesting the user enable a screen lock to protect private tabs -->
   <string name="private_tab_cfr_title">¿Usar el bloqueo de pantalla para ocultar pestañas privadas?</string>
   <!-- Negative button text for the contextual feature recommendation (CFR) dismissing the screen lock suggestion -->
