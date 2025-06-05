@@ -730,13 +730,6 @@ pref("browser.urlbar.suggest.fakespot", true);
 // the suggestion. 0 means the min length should be taken from Nimbus.
 pref("browser.urlbar.addons.minKeywordLength", 0);
 
-// Feature gate pref for Pocket suggestions in the urlbar.
-pref("browser.urlbar.pocket.featureGate", false);
-
-// If `browser.urlbar.pocket.featureGate` is true, this controls whether Pocket
-// suggestions are turned on.
-pref("browser.urlbar.suggest.pocket", true);
-
 // Enable creating and editing user defined search engines.
 pref("browser.urlbar.update2.engineAliasRefresh", true);
 
@@ -2036,6 +2029,11 @@ pref("messaging-system.log", "warn");
 pref("messaging-system.rsexperimentloader.collection_id", "nimbus-desktop-experiments");
 pref("nimbus.debug", false);
 pref("nimbus.validation.enabled", true);
+
+// Should Nimbus write to the shared ProfilesDatastoreService? Only used by tests.
+// TODO(bug 1967779): Require the ProfileDatastoreService by default and remove
+// this pref.
+pref("nimbus.profilesdatastoreservice.enabled", true);
 
 // Enable the targeting context telemetry by default, but allow it to be
 // disabled, e.g., for artifact builds.

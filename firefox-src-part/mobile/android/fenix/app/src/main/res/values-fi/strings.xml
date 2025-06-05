@@ -84,16 +84,6 @@
   -->
   <string name="felt_privacy_info_card_subtitle_link_text">Kuka voi nähdä toimintani?</string>
   <!--
-    Private mode shortcut "contextual feature recommendation" (CFR)
-
-    Text for the Private mode shortcut CFR message for adding a private mode shortcut to open private tabs from the Home screen
-  -->
-  <string name="private_mode_cfr_message_2" moz:removedIn="138" tools:ignore="UnusedResources">Avaa seuraava yksityinen välilehti yhdellä napautuksella.</string>
-  <!-- Text for the positive button to accept adding a Private Browsing shortcut to the Home screen -->
-  <string name="private_mode_cfr_pos_button_text" moz:removedIn="138" tools:ignore="UnusedResources">Lisää aloitusnäytölle</string>
-  <!-- Text for the negative button to decline adding a Private Browsing shortcut to the Home screen -->
-  <string name="cfr_neg_button_text" moz:removedIn="138" tools:ignore="UnusedResources">Ei kiitos</string>
-  <!--
     Open in App "contextual feature recommendation" (CFR)
 
     Text for the info message. %1$s is the name of the app (for example "Firefox").
@@ -236,6 +226,10 @@
   <string name="browser_menu_extensions_banner_learn_more">Lue lisää</string>
   <!-- Browser menu button that opens the extensions manager -->
   <string name="browser_menu_manage_extensions">Hallitse laajennuksia</string>
+  <!-- Browser menu group that contains additional settings in collapsed state -->
+  <string name="browser_menu_more_settings">Lisää</string>
+  <!-- Browser menu group that contains additional settings in expanded state -->
+  <string name="browser_menu_less_settings">Vähemmän</string>
   <!-- Content description (not visible, for screen readers etc.): Section heading for recommended extensions. -->
   <string name="browser_menu_recommended_section_content_description">Suositellut laajennukset</string>
   <!--
@@ -249,6 +243,8 @@
   <string name="browser_menu_extensions_disabled_description">Tilapäisesti pois käytöstä</string>
   <!-- The description of the browser menu appears when the user hasn't installed any extensions. -->
   <string name="browser_menu_no_extensions_installed_description">Laajennuksia ei ole käytössä</string>
+  <!-- The description of the browser menu appears when the user hasn't installed any extensions and there are recommended extensions. -->
+  <string name="browser_menu_try_a_recommended_extension_description">Kokeile suositeltua laajennusta</string>
   <!-- Browser menu button that opens account settings -->
   <string name="browser_menu_account_settings">Tilin tiedot</string>
   <!-- Browser menu button that sends a user to help articles -->
@@ -375,7 +371,9 @@
   <!-- Browser menu description that describes the various save related menu items inside of the save sub-menu -->
   <string name="browser_menu_save_description">Lisää kirjanmerkki, pikakuvake, etusivu, kokoelma, PDF</string>
   <!-- Browser menu label that bookmarks the currently visited page -->
-  <string name="browser_menu_bookmark_this_page">Lisää tämä sivu kirjanmerkkeihin</string>
+  <string name="browser_menu_bookmark_this_page" moz:removedIn="141" tools:ignore="UnusedResources">Lisää tämä sivu kirjanmerkkeihin</string>
+  <!-- Browser menu label that bookmarks the currently visited page -->
+  <string name="browser_menu_bookmark_this_page_2">Lisää sivu kirjanmerkkeihin</string>
   <!-- Browser menu label that navigates to the edit bookmark screen for the current bookmarked page -->
   <string name="browser_menu_edit_bookmark">Muokkaa kirjanmerkkiä</string>
   <!-- Browser menu label that the saves the currently visited page as a PDF -->
@@ -395,6 +393,8 @@
     %1$s is the name of the language that page was translated to (e.g. English).
   -->
   <string name="browser_menu_translated_to">Käännetty kielelle %1$s</string>
+  <!-- Browser menu label that is displayed when the current page has been translated by the translation feature. -->
+  <string name="browser_menu_translated">Käännetty</string>
   <!-- Browser menu label for the print feature -->
   <string name="browser_menu_print">Tulosta…</string>
   <!--
@@ -876,6 +876,8 @@
   <string name="preferences_search_browsing_history">Etsi selaushistoriasta</string>
   <!-- Preference title for switch preference to suggest bookmarks when searching -->
   <string name="preferences_search_bookmarks">Etsi kirjanmerkeistä</string>
+  <!-- Preference title for switch preference to show shortcuts when searching -->
+  <string name="preferences_show_shortcuts">Näytä oikotiet</string>
   <!-- Preference title for switch preference to suggest synced tabs when searching -->
   <string name="preferences_search_synced_tabs">Etsi synkronoiduista välilehdistä</string>
   <!-- Preference for account settings -->
@@ -975,6 +977,8 @@
   <string name="customize_toggle_recently_visited">Äskettäin vierailtu</string>
   <!-- Title for the customize home screen section with Pocket. -->
   <string name="customize_toggle_pocket_2" tools:ignore="UnusedResources" moz:removedIn="140">Ajatuksia herättäviä tarinoita</string>
+  <!-- Title for the customize home screen section with Pocket. -->
+  <string name="customize_toggle_pocket_3">Tarinat</string>
   <!-- Summary for the customize home screen section with Pocket. %s is "Pocket". -->
   <string name="customize_toggle_pocket_summary" tools:ignore="UnusedResources" moz:removedIn="140">Artikkelit tarjoaa %s</string>
   <!-- Title for the customize home screen section with sponsored Pocket stories. -->
@@ -1055,6 +1059,8 @@
   <string name="alternative_app_icon_option_retro_2017">Retro 2017</string>
   <!-- Title for the "Pride" themed alternative app icon variant in the icon picker screen. The app icon incorporates a rainbow color scheme in support of the LGBTQ+ community. -->
   <string name="alternative_app_icon_option_pride">Pride</string>
+  <!-- Subtitle for the "Momo" themed alternative app icon variant in the icon picker screen. The app icon was created by artist @heyheymomodraws and features a unique hand-drawn style with a friendly fox. -->
+  <string name="alternative_app_icon_option_momo_subtitle">Luonut @heyheymomodraws</string>
   <!--
     Add-ons general availability nimbus message
 
@@ -1161,8 +1167,6 @@
   <string name="exceptions_empty_message_description">Poikkeukset mahdollistavat seurannan suojauksen poistamisen valittujen sivustojen kohdalla.</string>
   <!-- Text displayed when there are no exceptions, with learn more link that brings users to a tracking protection SUMO page -->
   <string name="exceptions_empty_message_learn_more_link">Lue lisää</string>
-  <!-- Preference switch for usage and technical data collection -->
-  <string name="preference_usage_data_1" tools:ignore="UnusedResources" moz:removedIn="138">Tekniset ja vuorovaikutustiedot</string>
   <!-- Preference switch for usage and technical data collection -->
   <string name="preference_usage_data_2">Lähetä teknisiä tietoja ja vuorovaikutustietoja</string>
   <!-- Preference switch for usage and technical learn more link -->
@@ -1480,30 +1484,22 @@
   <!--
     Downloads
 
-    Text for the snackbar to confirm that multiple downloads items have been removed
-  -->
-  <string name="download_delete_multiple_items_snackbar_1" moz:removedIn="138" tools:ignore="UnusedResources">Lataukset poistettu</string>
-  <!--
     Text for the snackbar to confirm that a multiple download items have been removed. %1$s is the number of removed download items.
     %1$d is the number of items deleted.
   -->
   <string name="download_delete_multiple_items_snackbar_2">Kohteita poistettu: %1$d</string>
   <!-- Text for the snackbar to confirm that a single download item has been removed. %1$s is the name of the download item. -->
-  <string name="download_delete_single_item_snackbar" moz:removedIn="138" tools:ignore="UnusedResources">Poistettiin %1$s</string>
-  <!-- Text for the snackbar to confirm that a single download item has been removed. %1$s is the name of the download item. -->
   <string name="download_delete_single_item_snackbar_2">Poistettu “%1$s”</string>
   <!-- Text for the snackbar to confirm that downloads are in progress. -->
-  <string name="download_in_progress_snackbar" tools:ignore="UnusedResources">Lataus käynnissä…</string>
+  <string name="download_in_progress_snackbar">Lataus käynnissä…</string>
   <!-- Text for the snackbar action button to view in progress download details. -->
-  <string name="download_in_progress_snackbar_action_details" tools:ignore="UnusedResources">Yksityiskohdat</string>
+  <string name="download_in_progress_snackbar_action_details">Yksityiskohdat</string>
   <!-- Text for the snackbar to confirm that a download has completed. -->
-  <string name="download_completed_snackbar" tools:ignore="UnusedResources">Lataus valmis</string>
+  <string name="download_completed_snackbar">Lataus valmis</string>
   <!-- Text for the snackbar action button to open a completed download. -->
-  <string name="download_completed_snackbar_action_open" tools:ignore="UnusedResources">Avaa</string>
+  <string name="download_completed_snackbar_action_open">Avaa</string>
   <!-- Text for the snackbar action button to undo deleting a download. -->
   <string name="download_undo_delete_snackbar_action">Kumoa</string>
-  <!-- Text shown when no download exists -->
-  <string name="download_empty_message_1" moz:removedIn="138" tools:ignore="UnusedResources">Ei ladattuja tiedostoja</string>
   <!-- Text shown when no download exists -->
   <string name="download_empty_message_2">Ei vielä latauksia</string>
   <!-- Text description shown when no download exists -->
@@ -1513,8 +1509,6 @@
     %1$d is the number of downloads selected
   -->
   <string name="download_multi_select_title">%1$d valittu</string>
-  <!-- Text for the button to remove a single download item -->
-  <string name="download_delete_item_1" moz:removedIn="138" tools:ignore="UnusedResources">Poista</string>
   <!-- Title for the dialog that is shown when there is not enough storage space to download a file. -->
   <string name="download_file_has_not_enough_storage_dialog_title">Ei tarpeeksi tilaa</string>
   <!--
@@ -1580,7 +1574,9 @@
   <!-- Text to indicate that the download speed of an in progress download is being calculated. -->
   <string name="download_item_download_speed_pending" tools:ignore="UnusedResources">odottaa</string>
   <!-- Text to indicate that a download has failed to download. -->
-  <string name="download_item_status_failed" tools:ignore="UnusedResources">Lataus epäonnistui</string>
+  <string name="download_item_status_failed">Lataus epäonnistui</string>
+  <!-- Text for the snackbar action button to view failed download details. -->
+  <string name="download_failed_snackbar_action_details">Tiedot</string>
   <!-- Placeholder text to indicate that users can use the search bar to search for a download. -->
   <string name="download_search_placeholder">Etsi latauksista</string>
   <!-- Text to indicate that no downloads match the search query. -->
@@ -1600,15 +1596,7 @@
   <!-- Text for the filter button to show only documents in the downloads list -->
   <string name="download_content_type_filter_document">Asiakirjat</string>
   <!-- Text for the filter button to show all other file types in the downloads list -->
-  <string name="download_content_type_filter_other" moz:removedIn="138" tools:ignore="UnusedResources">Muut</string>
-  <!-- Text for the filter button to show all other file types in the downloads list -->
   <string name="download_content_type_filter_other_1">Muut</string>
-  <!--
-    Description of a downloaded item, displayed in the downloads list.
-    %1$s: The size of the downloaded file.
-    %2$s: The URL of the downloaded file.
-  -->
-  <string name="download_item_description" moz:removedIn="138" tools:ignore="UnusedResources">%1$s • %2$s</string>
   <!--
     WebCompat Reporter
 
@@ -1645,14 +1633,30 @@
     Broken site reason text for site slow or not working
   -->
   <string name="webcompat_reporter_reason_slow" moz:removedIn="140" tools:ignore="UnusedResources">Sivusto on hidas tai ei toimi</string>
+  <!-- Broken site reason text for site doesn’t load -->
+  <string name="webcompat_reporter_reason_load">Sivusto ei lataudu</string>
+  <!-- Broken site reason text for can’t pay, check out or shop -->
+  <string name="webcompat_reporter_reason_checkout">Maksaminen, ostoskori tai ostosten tekeminen ei onnistu</string>
   <!-- Broken site reason text for images or videos -->
   <string name="webcompat_reporter_reason_media" moz:removedIn="140" tools:ignore="UnusedResources">Kuvat tai videot</string>
   <!-- Broken site reason text for buttons, links, and other content -->
   <string name="webcompat_reporter_reason_content" moz:removedIn="140" tools:ignore="UnusedResources">Painikkeet, linkit ja muu sisältö</string>
   <!-- Broken site reason text for sign in or sign out -->
   <string name="webcompat_reporter_reason_account" moz:removedIn="140" tools:ignore="UnusedResources">Sisään- tai uloskirjautuminen</string>
+  <!-- Broken site reason text for site is slow -->
+  <string name="webcompat_reporter_reason_slow2">Sivusto on hidas</string>
+  <!-- Broken site reason text for video isn’t playing or loading -->
+  <string name="webcompat_reporter_reason_media2">Video ei toistu tai lataudu</string>
+  <!-- Broken site reason text for missing content -->
+  <string name="webcompat_reporter_reason_content2">Puuttuva sisältö</string>
+  <!-- Broken site reason text for can’t sign in or register -->
+  <string name="webcompat_reporter_reason_account2">Kirjautuminen tai rekisteröityminen ei onnistu</string>
   <!-- Broken site reason text for ad blocker -->
   <string name="webcompat_reporter_reason_ad_blocker" moz:removedIn="140" tools:ignore="UnusedResources">Mainosten esto</string>
+  <!-- Broken site reason text for site asked to turn off ad blocker -->
+  <string name="webcompat_reporter_reason_turn_off_adblocker">Sivusto pyysi poistamaan mainosteneston käytöstä</string>
+  <!-- Broken site reason text for browser isn’t supported or blocked -->
+  <string name="webcompat_reporter_reason_notsupported">Selain ei ole tuettu tai se on estetty</string>
   <!-- Broken site reason text for something else -->
   <string name="webcompat_reporter_reason_other">Jotain muuta</string>
   <!--
@@ -1883,6 +1887,10 @@
   <string name="studies_on">Päällä</string>
   <!-- Summary of studies data on quit preference if it is set to off -->
   <string name="studies_off">Pois päältä</string>
+  <!-- Toggle if desktop site is turned on -->
+  <string name="browser_feature_desktop_site_on">Päällä</string>
+  <!-- Toggle if desktop site is turned off -->
+  <string name="browser_feature_desktop_site_off">Pois päältä</string>
   <!-- Category header of a preference that allows a user to alter settings related to web permissions. -->
   <string name="preferences_category_permissions">Oikeudet</string>
   <!-- Category header of a preference that allows a user to alter settings related to web content. -->
@@ -2922,6 +2930,8 @@
     Header text for a section on the home screen.
   -->
   <string name="pocket_stories_header_1" tools:ignore="UnusedResources" moz:removedIn="140">Ajatuksia herättäviä tarinoita</string>
+  <!-- Header text for a section on the home screen. -->
+  <string name="pocket_stories_header_2">Tarinat</string>
   <!-- Header text for a section on the home screen. -->
   <string name="pocket_stories_categories_header">Tarinoita aiheittain</string>
   <!-- Text of a button allowing users to access an external url for more Pocket recommendations. -->

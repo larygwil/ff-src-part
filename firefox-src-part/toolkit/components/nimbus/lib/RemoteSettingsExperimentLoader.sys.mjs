@@ -155,11 +155,10 @@ export const CheckRecipeResult = {
     };
   },
 
-  UnsupportedFeatures(featureIds) {
+  UnsupportedFeatures() {
     return {
       ok: false,
       reason: lazy.NimbusTelemetry.ValidationFailureReason.UNSUPPORTED_FEATURES,
-      featureIds,
     };
   },
 };
@@ -792,12 +791,11 @@ export class EnrollmentsContext {
     );
 
     if (unsupportedFeatureIds.length) {
-      lazy.NimbusTelemetry.recordValidationFailure(
-        recipe.slug,
-        lazy.NimbusTelemetry.ValidationFailureReason.UNSUPPORTED_FEATURES,
-        { featureIds: unsupportedFeatureIds.join(",") }
-      );
-      return CheckRecipeResult.UnsupportedFeatures(unsupportedFeatureIds);
+      // Do not record unsupported feature telemetry. This will only happen if
+      // the background updater encounters a recipe with features it does not
+      // support, which will happen with most recipes. Reporting these errors
+      // results in an inordinate amount of telemetry being submitted.
+      return CheckRecipeResult.UnsupportedFeatures();
     }
 
     if (recipe.isEnrollmentPaused) {
@@ -924,7 +922,10 @@ export class EnrollmentsContext {
     const invalidFeatureIds = new Set();
     const missingL10nIds = new Set();
 
-    if (validateSchema || typeof localizations !== "undefined") {
+    if (
+      validateSchema ||
+      (typeof localizations === "object" && localizations !== null)
+    ) {
       for (const [branchIdx, branch] of branches.entries()) {
         const features = branch.features ?? [branch.feature];
         for (const feature of features) {
