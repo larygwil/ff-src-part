@@ -1805,10 +1805,6 @@ pref("browser.newtabpage.activity-stream.newtabLayouts.variant-b", true);
 
 pref("browser.newtabpage.activity-stream.newtabShortcuts.refresh", true);
 
-// Sponsored checkboxes placement experiment
-pref("browser.newtabpage.activity-stream.showSponsoredCheckboxes", false);
-pref("browser.newtabpage.activity-stream.sponsoredCheckboxes.group", false);
-
 // Activity Stream prefs that control to which page to redirect
 #ifndef RELEASE_OR_BETA
   pref("browser.newtabpage.activity-stream.debug", false);
@@ -1981,7 +1977,8 @@ pref("browser.newtabpage.activity-stream.discoverystream.thumbsUpDown.locale-thu
   pref("browser.newtabpage.activity-stream.telemetry.privatePing.enabled", false);
 #endif
 // Redacts content interaction ids from original New Tab ping once data processing migrated to the Newtab_content private ping
-  pref("browser.newtabpage.activity-stream.telemetry.privatePing.redactNewtabPing.enabled", false);
+pref("browser.newtabpage.activity-stream.telemetry.privatePing.redactNewtabPing.enabled", false);
+pref("browser.newtabpage.activity-stream.telemetry.privatePing.maxSubmissionDelayMs", 5000);
 
   // Include differentialy private inferred New Tab interests with New Tab content Ping. Only used when user has enabled personalization.
 pref("browser.newtabpage.activity-stream.telemetry.privatePing.inferredInterests.enabled", false);
