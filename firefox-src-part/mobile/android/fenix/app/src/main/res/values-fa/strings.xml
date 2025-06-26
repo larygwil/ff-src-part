@@ -62,7 +62,7 @@
     Explanation for private browsing displayed to users on home view when they first enable private mode.
     %1$s is the name of the app (for example "Firefox").
   -->
-  <string name="private_browsing_placeholder_description_2">%1$s جست‌وجوها و تاریخچهٔ مرور شما را هنگام خروج از برنامه یا بستن زبانه‌های خصوصی پاک می‌کند. در حالی که این کار شما را برای وبگاه‌ها یا فراهم‌کنندگان اینترنت ناشناس نمی‌کند، این کار مخفی کردن فعالیت‌های برخط شما را برای هرکس دیگری که از این افزاره استفاده می‌کند را ساده‌تر می‌کند.</string>
+  <string name="private_browsing_placeholder_description_2" moz:removedIn="141" tools:ignore="UnusedResources">%1$s جست‌وجوها و تاریخچهٔ مرور شما را هنگام خروج از برنامه یا بستن زبانه‌های خصوصی پاک می‌کند. در حالی که این کار شما را برای وبگاه‌ها یا فراهم‌کنندگان اینترنت ناشناس نمی‌کند، این کار مخفی کردن فعالیت‌های برخط شما را برای هرکس دیگری که از این افزاره استفاده می‌کند را ساده‌تر می‌کند.</string>
   <string name="private_browsing_common_myths">باورهای غلط و رایج در مورد مرور خصوصی</string>
   <!--
     True Private Browsing Mode
@@ -98,7 +98,7 @@
 
     Text for the message displayed in the contextual feature recommendation popup promoting the erase private browsing feature.
   -->
-  <string name="erase_action_cfr_message">برای شروع یک نشست خصوصی جدید اینجا ضربه بزنید. تاریخچه، کوکی‌ها — همه چیز را حذف کنید.</string>
+  <string name="erase_action_cfr_message" moz:removedIn="141" tools:ignore="UnusedResources">برای شروع یک نشست خصوصی جدید اینجا ضربه بزنید. تاریخچه، کوکی‌ها — همه چیز را حذف کنید.</string>
   <!--
     Toolbar "contextual feature recommendation" (CFR)
 
@@ -209,21 +209,21 @@
     Browser menu banner header text for extensions onboarding.
     %s is the name of the app (for example "Firefox").
   -->
-  <string name="browser_menu_extensions_banner_onboarding_header">%s را به سلیقه خود تنظیم کنید</string>
+  <string name="browser_menu_extensions_banner_onboarding_header" moz:removedIn="141" tools:ignore="UnusedResources">%s را به سلیقه خود تنظیم کنید</string>
   <!-- Browser menu banner header text for extensions onboarding when all installed extensions have been disabled. -->
   <string name="browser_menu_disabled_extensions_banner_onboarding_header">شما افزونه‌هایی نصب کرده‌اید، اما فعال نیستند</string>
   <!--
     Browser menu banner body text for extensions onboarding.
     %s is the name of the app (for example "Firefox").
   -->
-  <string name="browser_menu_extensions_banner_onboarding_body">افزونه‌ها مرور شما را بهبود می‌بخشند، از تغییر ظاهر و عملکرد %s تا افزایش حریم خصوصی و ایمنی.</string>
+  <string name="browser_menu_extensions_banner_onboarding_body" moz:removedIn="141" tools:ignore="UnusedResources">افزونه‌ها مرور شما را بهبود می‌بخشند، از تغییر ظاهر و عملکرد %s تا افزایش حریم خصوصی و ایمنی.</string>
   <!--
     Browser menu banner body text for extensions onboarding when all installed extensions have been disabled.
     %s is the label of the button that opens the extension manager (for example "Manage extensions").
   -->
-  <string name="browser_menu_disabled_extensions_banner_onboarding_body">برای استفاده از افزونه‌ها، آن‌ها را در تنظیمات فعال کنید یا گزینه «%s» زیر را انتخاب کنید.</string>
+  <string name="browser_menu_disabled_extensions_banner_onboarding_body" moz:removedIn="141" tools:ignore="UnusedResources">برای استفاده از افزونه‌ها، آن‌ها را در تنظیمات فعال کنید یا گزینه «%s» زیر را انتخاب کنید.</string>
   <!-- Browser menu banner link text for learning more about extensions -->
-  <string name="browser_menu_extensions_banner_learn_more">بیشتر بدانید</string>
+  <string name="browser_menu_extensions_banner_learn_more" moz:removedIn="141" tools:ignore="UnusedResources">بیشتر بدانید</string>
   <!-- Browser menu button that opens the extensions manager -->
   <string name="browser_menu_manage_extensions">مدیریت افزونه‌ها</string>
   <!-- Browser menu group that contains additional settings in collapsed state -->
@@ -231,7 +231,7 @@
   <!-- Browser menu group that contains additional settings in expanded state -->
   <string name="browser_menu_less_settings">کمتر</string>
   <!-- Content description (not visible, for screen readers etc.): Section heading for recommended extensions. -->
-  <string name="browser_menu_recommended_section_content_description">افزونه‌های توصیه شده</string>
+  <string name="browser_menu_recommended_section_content_description" moz:removedIn="141" tools:ignore="UnusedResources">افزونه‌های توصیه شده</string>
   <!--
     Content description (not visible, for screen readers etc.): Label for plus icon used to add extension.
     %1$s is the name of the extension (for example: ClearURLs).
@@ -264,9 +264,9 @@
   <!-- Browser menu toggle that adds a PWA of the site on the device home screen. -->
   <string name="browser_menu_add_app_to_homescreen">افزودن برنامه به صفحه اصلی</string>
   <!-- Browser menu toggle that adds a shortcut to the site on the device home screen. -->
-  <string name="browser_menu_add_to_homescreen_2">افزودن به صفحه اصلی…</string>
+  <string name="browser_menu_add_to_homescreen_2" moz:removedIn="141" tools:ignore="UnusedResources">افزودن به صفحه اصلی…</string>
   <!-- Browser menu toggle that adds a PWA of the site on the device home screen. -->
-  <string name="browser_menu_add_app_to_homescreen_2">افزودن برنامه به صفحه اصلی…</string>
+  <string name="browser_menu_add_app_to_homescreen_2" moz:removedIn="141" tools:ignore="UnusedResources">افزودن برنامه به صفحه اصلی…</string>
   <!-- Text for notifying users that Xiaomi devices require additional permissions to add to home screen -->
   <string name="browser_menu_add_to_homescreen_xiaomi">دستگاه‌های Xiaomi ممکن است نیاز به مجوزهای اضافی برای افزودن میانبرها به صفحه اصلی داشته باشند. لطفا تنظیمات خود را بررسی کنید.</string>
   <!-- Content description (not visible, for screen readers etc.) for the Resync tabs button -->
@@ -274,17 +274,17 @@
   <!-- Browser menu button that opens the find in page menu -->
   <string name="browser_menu_find_in_page">پیدا کردن در صفحه</string>
   <!-- Browser menu button that opens the find in page menu -->
-  <string name="browser_menu_find_in_page_2">یافتن در صفحه…</string>
+  <string name="browser_menu_find_in_page_2" moz:removedIn="141" tools:ignore="UnusedResources">یافتن در صفحه…</string>
   <!-- Browser menu button that opens the translations dialog, which has options to translate the current browser page. -->
   <string name="browser_menu_translations">ترجمه صفحه</string>
   <!-- Browser menu button that saves the current tab to a collection -->
-  <string name="browser_menu_save_to_collection">افزودن به مجموعه…</string>
+  <string name="browser_menu_save_to_collection" moz:removedIn="141" tools:ignore="UnusedResources">افزودن به مجموعه…</string>
   <!-- Browser menu button that saves the current tab to a collection -->
   <string name="browser_menu_save_to_collection_2">افزودن به مجموعه</string>
   <!-- Browser menu button that open a share menu to share the current site -->
   <string name="browser_menu_share">اشتراک‌گذاری</string>
   <!-- Browser menu button that open a share menu to share the current site -->
-  <string name="browser_menu_share_2">هم‌رسانی…</string>
+  <string name="browser_menu_share_2" moz:removedIn="141" tools:ignore="UnusedResources">هم‌رسانی…</string>
   <!--
     Browser menu button shown in custom tabs that opens the current tab in Fenix
     %1$s is the name of the app (for example "Firefox").
@@ -319,7 +319,7 @@
   <!-- Browser menu label to sign in to sync on the device using Mozilla accounts -->
   <string name="browser_menu_sign_in">ورود</string>
   <!-- Browser menu caption label for the "Sign in" browser menu item described in `browser_menu_sign_in` -->
-  <string name="browser_menu_sign_in_caption">همگام‌سازی گذرواژه‌ها، زبانه‌ها و موارد بیشتر</string>
+  <string name="browser_menu_sign_in_caption" moz:removedIn="141" tools:ignore="UnusedResources">همگام‌سازی گذرواژه‌ها، زبانه‌ها و موارد بیشتر</string>
   <!-- Browser menu label to sign back in to sync on the device when the user's account needs to be reauthenticated -->
   <string name="browser_menu_sign_back_in_to_sync">برای همگام‌سازی دوباره وارد شوید</string>
   <!-- Browser menu caption label for the "Sign back in to sync" browser menu item described in `browser_menu_sign_back_in_to_sync` when there is an error in syncing -->
@@ -334,13 +334,13 @@
   -->
   <string name="browser_menu_new_in_firefox">جدید در %1$s</string>
   <!-- Browser menu label that toggles the request for the desktop site of the currently visited page -->
-  <string name="browser_menu_switch_to_desktop_site">تغییر به حالت رومیزی</string>
+  <string name="browser_menu_switch_to_desktop_site" moz:removedIn="141" tools:ignore="UnusedResources">تغییر به حالت رومیزی</string>
   <!-- Browser menu label that toggles the request for the mobile site of the currently visited page -->
   <string name="browser_menu_switch_to_mobile_site">تغییر به حالت موبایل</string>
   <!-- Browser menu label that navigates to the page tools sub-menu -->
-  <string name="browser_menu_tools">ابزارها</string>
+  <string name="browser_menu_tools" moz:removedIn="141" tools:ignore="UnusedResources">ابزارها</string>
   <!-- Content description (not visible, for screen readers etc.): Back button for all menu redesign sub-menu -->
-  <string name="browser_menu_back_button_content_description">بازگشت به منوی اصلی</string>
+  <string name="browser_menu_back_button_content_description" moz:removedIn="141" tools:ignore="UnusedResources">بازگشت به منوی اصلی</string>
   <!-- Content description (not visible, for screen readers etc.) for bottom sheet handlebar main menu. -->
   <string name="browser_main_menu_handlebar_content_description">بستن برگه منوی اصلی</string>
   <!-- Content description (not visible, for screen readers etc.) for main menu help button. -->
@@ -356,20 +356,20 @@
   <!-- Content description (not visible, for screen readers etc.) for bottom sheet handlebar custom tab menu. -->
   <string name="browser_custom_tab_menu_handlebar_content_description">بستن برگه منوی زبانه سفارشی</string>
   <!-- Browser menu description that describes the various tools related menu items inside of the tools sub-menu when the "Report broken site" feature is available -->
-  <string name="browser_menu_tools_description_with_translate_with_report_site_2">نمای مطالعه، ترجمه، گزارش خرابی وبگاه، چاپ، هم‌رسانی، باز کردن برنامه</string>
+  <string name="browser_menu_tools_description_with_translate_with_report_site_2" moz:removedIn="141" tools:ignore="UnusedResources">نمای مطالعه، ترجمه، گزارش خرابی وبگاه، چاپ، هم‌رسانی، باز کردن برنامه</string>
   <!-- Browser menu description that describes the various tools related menu items inside of the tools sub-menu -->
-  <string name="browser_menu_tools_description_with_translate_without_report_site">نمای مطالعه، ترجمه، چاپ، هم‌رسانی، باز کردن برنامه</string>
+  <string name="browser_menu_tools_description_with_translate_without_report_site" moz:removedIn="141" tools:ignore="UnusedResources">نمای مطالعه، ترجمه، چاپ، هم‌رسانی، باز کردن برنامه</string>
   <!-- Browser menu description that describes the various tools related menu items inside of the tools sub-menu when the "Report broken site" feature is available -->
-  <string name="browser_menu_tools_description_with_report_site_2">نمای مطالعه، گزارش خرابی وبگاه، چاپ، هم‌رسانی، باز کردن برنامه</string>
+  <string name="browser_menu_tools_description_with_report_site_2" moz:removedIn="141" tools:ignore="UnusedResources">نمای مطالعه، گزارش خرابی وبگاه، چاپ، هم‌رسانی، باز کردن برنامه</string>
   <!-- Browser menu description that describes the various tools related menu items inside of the tools sub-menu -->
-  <string name="browser_menu_tools_description_without_report_site">نمای مطالعه، چاپ، هم‌رسانی، باز کردن برنامه</string>
+  <string name="browser_menu_tools_description_without_report_site" moz:removedIn="141" tools:ignore="UnusedResources">نمای مطالعه، چاپ، هم‌رسانی، باز کردن برنامه</string>
   <!--
     Browser menu label that navigates to the save sub-menu, which contains various save related menu items such as
     bookmarking a page, saving to collection, shortcut or as a PDF, and adding to home screen
   -->
-  <string name="browser_menu_save">ذخیره</string>
+  <string name="browser_menu_save" moz:removedIn="141" tools:ignore="UnusedResources">ذخیره</string>
   <!-- Browser menu description that describes the various save related menu items inside of the save sub-menu -->
-  <string name="browser_menu_save_description">افزودن نشانک، میانبر، صفحه اصلی، مجموعه، PDF</string>
+  <string name="browser_menu_save_description" moz:removedIn="141" tools:ignore="UnusedResources">افزودن نشانک، میانبر، صفحه اصلی، مجموعه، PDF</string>
   <!-- Browser menu label that bookmarks the currently visited page -->
   <string name="browser_menu_bookmark_this_page" moz:removedIn="141" tools:ignore="UnusedResources">این صفحه را نشانک کن</string>
   <!-- Browser menu label that bookmarks the currently visited page -->
@@ -377,26 +377,30 @@
   <!-- Browser menu label that navigates to the edit bookmark screen for the current bookmarked page -->
   <string name="browser_menu_edit_bookmark">ویرایش نشانک</string>
   <!-- Browser menu label that the saves the currently visited page as a PDF -->
-  <string name="browser_menu_save_as_pdf">ذخیره به عنوان PDF…</string>
+  <string name="browser_menu_save_as_pdf" moz:removedIn="141" tools:ignore="UnusedResources">ذخیره به عنوان PDF…</string>
   <!-- Browser menu label for turning ON reader view of the current visited page -->
-  <string name="browser_menu_turn_on_reader_view">فعال کردن نمای مطالعه</string>
+  <string name="browser_menu_turn_on_reader_view" moz:removedIn="141" tools:ignore="UnusedResources">فعال کردن نمای مطالعه</string>
   <!-- Browser menu label for turning OFF reader view of the current visited page -->
-  <string name="browser_menu_turn_off_reader_view">غیرفعال کردن نمای مطالعه</string>
+  <string name="browser_menu_turn_off_reader_view" moz:removedIn="141" tools:ignore="UnusedResources">غیرفعال کردن نمای مطالعه</string>
   <!-- Browser menu button that reopens a private tab as a regular tab -->
-  <string name="browser_menu_open_in_normal_tab">تغییر به زبانه غیر خصوصی</string>
+  <string name="browser_menu_open_in_normal_tab" moz:removedIn="141" tools:ignore="UnusedResources">تغییر به زبانه غیر خصوصی</string>
   <!-- Browser menu label for navigating to the translation feature, which provides language translation options the current visited page -->
-  <string name="browser_menu_translate_page">ترجمه صفحه…</string>
+  <string name="browser_menu_translate_page" moz:removedIn="141" tools:ignore="UnusedResources">ترجمه صفحه…</string>
+  <!-- Browser menu label for navigating to the translation feature, which provides language translation options the current visited page -->
+  <string name="browser_menu_translate_page_2">ترجمه صفحه</string>
   <!-- Browser menu label for navigating to the Web Compat Reporter feature, which provides users the ability to send bug reports for broken sites. -->
   <string name="browser_menu_webcompat_reporter">گزارش خرابی وبگاه…</string>
   <!--
     Browser menu label that is displayed when the current page has been translated by the translation feature.
     %1$s is the name of the language that page was translated to (e.g. English).
   -->
-  <string name="browser_menu_translated_to">ترجمه شده به %1$s</string>
+  <string name="browser_menu_translated_to" moz:removedIn="141" tools:ignore="UnusedResources">ترجمه شده به %1$s</string>
   <!-- Browser menu label that is displayed when the current page has been translated by the translation feature. -->
   <string name="browser_menu_translated">ترجمه‌شده</string>
   <!-- Browser menu label for the print feature -->
-  <string name="browser_menu_print">چاپ…</string>
+  <string name="browser_menu_print" moz:removedIn="141" tools:ignore="UnusedResources">چاپ…</string>
+  <!-- Browser menu label for the print feature -->
+  <string name="browser_menu_print_2">چاپ</string>
   <!--
     Browser menu label for the Delete browsing data on quit feature.
     %1$s is the name of the app (for example "Firefox").
@@ -426,7 +430,7 @@
     Content description (not visible, for screen readers etc.): Erase button: Erase the browsing
     history and go back to the home screen.
   -->
-  <string name="browser_toolbar_erase">پاک کردن تاریخچه مرور</string>
+  <string name="browser_toolbar_erase" moz:removedIn="141" tools:ignore="UnusedResources">پاک کردن تاریخچه مرور</string>
   <!-- Content description for the translate page toolbar button that opens the translations dialog when no translation has occurred. -->
   <string name="browser_toolbar_translate">ترجمه صفحه</string>
   <!--
@@ -943,13 +947,13 @@
 
     The title of the required permissions section from addon's permissions screen
   -->
-  <string name="addons_permissions_heading_required" tools:ignore="UnusedResources">ضروری</string>
+  <string name="addons_permissions_heading_required" tools:ignore="UnusedResources" moz:removedIn="141">ضروری</string>
   <!-- The title of the optional permissions section from addon's permissions screen -->
-  <string name="addons_permissions_heading_optional" tools:ignore="UnusedResources">اختیاری</string>
+  <string name="addons_permissions_heading_optional" tools:ignore="UnusedResources" moz:removedIn="141">اختیاری</string>
   <!-- The title of the origin permission option allowing a user to enable the extension to run on all sites -->
-  <string name="addons_permissions_allow_for_all_sites" tools:ignore="UnusedResources">اجازه برای همه وبگاه‌ها</string>
+  <string name="addons_permissions_allow_for_all_sites">اجازه برای همه وبگاه‌ها</string>
   <!-- The subtitle for the allow for all sites preference toggle -->
-  <string name="addons_permissions_allow_for_all_sites_subtitle" tools:ignore="UnusedResources">اگر به این افزونه اعتماد دارید، می‌توانید به آن در هر وبگاه‌ی اجازه دسترسی بدهید.</string>
+  <string name="addons_permissions_allow_for_all_sites_subtitle">اگر به این افزونه اعتماد دارید، می‌توانید به آن در هر وبگاه‌ی اجازه دسترسی بدهید.</string>
   <!-- The text shown when an extension does not require permissions -->
   <string name="addons_does_not_require_permissions">این افزونه نیازی به مجوز ندارد.</string>
   <!--
@@ -1532,7 +1536,6 @@
   <string name="download_navigate_up_description" moz:removedIn="139" tools:ignore="UnusedResources">پیمایش به بالا</string>
   <!-- Content description for the toolbar back button while searching the downloads -->
   <string name="download_close_search_description">بازگشت و بستن جستجو</string>
-  <!-- Content description for the search bar clear text button on the downloads screen -->
   <string name="download_clear_search_description">پاک کردن</string>
   <!-- Text for the button to share the download URL -->
   <string name="download_share_url">هم‌رسانی نشانی</string>
@@ -2075,7 +2078,7 @@
   <!-- Text shown in snackbar when user closes a private tab -->
   <string name="snackbar_private_tab_closed">زبانه خصوصی بسته شد</string>
   <!-- Text shown in snackbar when user closes all private tabs -->
-  <string name="snackbar_private_tabs_closed">زبانه‌های خصوصی بسته شدند</string>
+  <string name="snackbar_private_tabs_closed" moz:removedIn="141" tools:ignore="UnusedResources">زبانه‌های خصوصی بسته شدند</string>
   <!-- Text shown in snackbar when user erases their private browsing data -->
   <string name="snackbar_private_data_deleted">داده‌های مرور خصوصی حذف شدند</string>
   <!-- Text shown in snackbar to undo deleting a tab, top site or collection -->
@@ -2960,7 +2963,7 @@
   <!-- Action label for links to a website containing documentation about a wallpaper collection. Talkback will append this to say "Double tap to open link to learn more about this collection". -->
   <string name="a11y_action_label_wallpaper_collection_learn_more">برای آموختن بیش‌تر دربارهٔ این مجموعه، پیوند را باز کنید</string>
   <!-- Action label for links that point to an article. Talkback will append this to say "Double tap to read the article". -->
-  <string name="a11y_action_label_read_article">خواندن مقاله</string>
+  <string name="a11y_action_label_read_article" moz:removedIn="141" tools:ignore="UnusedResources">خواندن مقاله</string>
   <!-- Action label for links to the Firefox Pocket website. Talkback will append this to say "Double tap to open link to learn more". -->
   <string name="a11y_action_label_pocket_learn_more" moz:removedIn="140" tools:ignore="UnusedResources">برای آموختن بیش‌تر، پیوند را باز کنید</string>
   <!-- Content description for headings announced by accessibility service. %s is the text of the heading. Talkback will announce the text and then speak the word "Heading" indicating to the user that this text is a heading for a section. -->

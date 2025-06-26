@@ -62,7 +62,7 @@
     Explanation for private browsing displayed to users on home view when they first enable private mode.
     %1$s is the name of the app (for example "Firefox").
   -->
-  <string name="private_browsing_placeholder_description_2">%1$s таърихи тамошобинӣ ва ҷустуҷӯи шуморо аз варақаҳои хусусие, ки шумо мепӯшед ё вақте ки шумо барномаро хомӯш мекунед, пок мекунад. Ин амал шуморо аз сомонаҳо ё провайдери хизматрасонии интернет пинҳон намекунад, аммо аз корбарони дигаре, ки ин дастгоҳро истифода мебаранд, фаъолияти онлайни шуморо ба осонӣ шахсӣ карда, нигоҳ медорад.</string>
+  <string name="private_browsing_placeholder_description_2" moz:removedIn="141" tools:ignore="UnusedResources">%1$s таърихи тамошобинӣ ва ҷустуҷӯи шуморо аз варақаҳои хусусие, ки шумо мепӯшед ё вақте ки шумо барномаро хомӯш мекунед, пок мекунад. Ин амал шуморо аз сомонаҳо ё провайдери хизматрасонии интернет пинҳон намекунад, аммо аз корбарони дигаре, ки ин дастгоҳро истифода мебаранд, фаъолияти онлайни шуморо ба осонӣ шахсӣ карда, нигоҳ медорад.</string>
   <string name="private_browsing_common_myths">Асотири маълум дар бораи тамошобинии хусусӣ</string>
   <!--
     True Private Browsing Mode
@@ -98,7 +98,7 @@
 
     Text for the message displayed in the contextual feature recommendation popup promoting the erase private browsing feature.
   -->
-  <string name="erase_action_cfr_message">Барои оғоз кардани ҷаласаи хусусии нав дар ин ҷой зер кунед. Таърих ва кукиҳои худро нест кунед — ҳамаашро нест кунед.</string>
+  <string name="erase_action_cfr_message" moz:removedIn="141" tools:ignore="UnusedResources">Барои оғоз кардани ҷаласаи хусусии нав дар ин ҷой зер кунед. Таърих ва кукиҳои худро нест кунед — ҳамаашро нест кунед.</string>
   <!--
     Toolbar "contextual feature recommendation" (CFR)
 
@@ -209,21 +209,21 @@
     Browser menu banner header text for extensions onboarding.
     %s is the name of the app (for example "Firefox").
   -->
-  <string name="browser_menu_extensions_banner_onboarding_header">Соҳиби «%s» шавед</string>
+  <string name="browser_menu_extensions_banner_onboarding_header" moz:removedIn="141" tools:ignore="UnusedResources">Соҳиби «%s» шавед</string>
   <!-- Browser menu banner header text for extensions onboarding when all installed extensions have been disabled. -->
   <string name="browser_menu_disabled_extensions_banner_onboarding_header">Шумо васеъшавиҳоро насб кардед, вале онҳо фаъол намебошанд</string>
   <!--
     Browser menu banner body text for extensions onboarding.
     %s is the name of the app (for example "Firefox").
   -->
-  <string name="browser_menu_extensions_banner_onboarding_body">Васеъшавиҳо аз иваз кардани намуди зоҳирӣ ва кори самараноки «%s» то дастгирӣ кардани махфият ва бехатарии шумо дар Интернет таҷрибаи тамошобинии шуморо ба сатҳи баланд мебардоранд.</string>
+  <string name="browser_menu_extensions_banner_onboarding_body" moz:removedIn="141" tools:ignore="UnusedResources">Васеъшавиҳо аз иваз кардани намуди зоҳирӣ ва кори самараноки «%s» то дастгирӣ кардани махфият ва бехатарии шумо дар Интернет таҷрибаи тамошобинии шуморо ба сатҳи баланд мебардоранд.</string>
   <!--
     Browser menu banner body text for extensions onboarding when all installed extensions have been disabled.
     %s is the label of the button that opens the extension manager (for example "Manage extensions").
   -->
-  <string name="browser_menu_disabled_extensions_banner_onboarding_body">Барои истифода кардани васеъшавиҳо, онҳоро дар танзимот ё бо интихоб кардани «%s» дар зер фаъол созед.</string>
+  <string name="browser_menu_disabled_extensions_banner_onboarding_body" moz:removedIn="141" tools:ignore="UnusedResources">Барои истифода кардани васеъшавиҳо, онҳоро дар танзимот ё бо интихоб кардани «%s» дар зер фаъол созед.</string>
   <!-- Browser menu banner link text for learning more about extensions -->
-  <string name="browser_menu_extensions_banner_learn_more">Маълумоти бештар</string>
+  <string name="browser_menu_extensions_banner_learn_more" moz:removedIn="141" tools:ignore="UnusedResources">Маълумоти бештар</string>
   <!-- Browser menu button that opens the extensions manager -->
   <string name="browser_menu_manage_extensions">Идоракунии васеъшавиҳо</string>
   <!-- Browser menu group that contains additional settings in collapsed state -->
@@ -231,7 +231,7 @@
   <!-- Browser menu group that contains additional settings in expanded state -->
   <string name="browser_menu_less_settings">Камтар</string>
   <!-- Content description (not visible, for screen readers etc.): Section heading for recommended extensions. -->
-  <string name="browser_menu_recommended_section_content_description">Васеъшавиҳои тавсияшуда</string>
+  <string name="browser_menu_recommended_section_content_description" moz:removedIn="141" tools:ignore="UnusedResources">Васеъшавиҳои тавсияшуда</string>
   <!--
     Content description (not visible, for screen readers etc.): Label for plus icon used to add extension.
     %1$s is the name of the extension (for example: ClearURLs).
@@ -264,9 +264,9 @@
   <!-- Browser menu toggle that adds a PWA of the site on the device home screen. -->
   <string name="browser_menu_add_app_to_homescreen">Илова кардани барнома ба экрани асосӣ</string>
   <!-- Browser menu toggle that adds a shortcut to the site on the device home screen. -->
-  <string name="browser_menu_add_to_homescreen_2">Илова кардан ба экрани асосӣ…</string>
+  <string name="browser_menu_add_to_homescreen_2" moz:removedIn="141" tools:ignore="UnusedResources">Илова кардан ба экрани асосӣ…</string>
   <!-- Browser menu toggle that adds a PWA of the site on the device home screen. -->
-  <string name="browser_menu_add_app_to_homescreen_2">Илова кардани барнома ба экрани асосӣ…</string>
+  <string name="browser_menu_add_app_to_homescreen_2" moz:removedIn="141" tools:ignore="UnusedResources">Илова кардани барнома ба экрани асосӣ…</string>
   <!-- Text for notifying users that Xiaomi devices require additional permissions to add to home screen -->
   <string name="browser_menu_add_to_homescreen_xiaomi">Дастгоҳҳои «Xiaomi» метавонанд барои илова кардани миёнабурҳо ба экрани асосӣ иҷозатҳои иловагиро талаб кунанд. Лутфан, танзимоти худро санҷед.</string>
   <!-- Content description (not visible, for screen readers etc.) for the Resync tabs button -->
@@ -274,17 +274,17 @@
   <!-- Browser menu button that opens the find in page menu -->
   <string name="browser_menu_find_in_page">Ҷустуҷӯ дар саҳифа</string>
   <!-- Browser menu button that opens the find in page menu -->
-  <string name="browser_menu_find_in_page_2">Ҷустуҷӯ дар саҳифа…</string>
+  <string name="browser_menu_find_in_page_2" moz:removedIn="141" tools:ignore="UnusedResources">Ҷустуҷӯ дар саҳифа…</string>
   <!-- Browser menu button that opens the translations dialog, which has options to translate the current browser page. -->
   <string name="browser_menu_translations">Тарҷума кардани саҳифа</string>
   <!-- Browser menu button that saves the current tab to a collection -->
-  <string name="browser_menu_save_to_collection">Нигоҳ доштан дар маҷмуа…</string>
+  <string name="browser_menu_save_to_collection" moz:removedIn="141" tools:ignore="UnusedResources">Нигоҳ доштан дар маҷмуа…</string>
   <!-- Browser menu button that saves the current tab to a collection -->
   <string name="browser_menu_save_to_collection_2">Нигоҳ доштан дар маҷмуа</string>
   <!-- Browser menu button that open a share menu to share the current site -->
   <string name="browser_menu_share">Мубодила кардан</string>
   <!-- Browser menu button that open a share menu to share the current site -->
-  <string name="browser_menu_share_2">Мубодила…</string>
+  <string name="browser_menu_share_2" moz:removedIn="141" tools:ignore="UnusedResources">Мубодила…</string>
   <!--
     Browser menu button shown in custom tabs that opens the current tab in Fenix
     %1$s is the name of the app (for example "Firefox").
@@ -319,7 +319,11 @@
   <!-- Browser menu label to sign in to sync on the device using Mozilla accounts -->
   <string name="browser_menu_sign_in">Ворид шудан</string>
   <!-- Browser menu caption label for the "Sign in" browser menu item described in `browser_menu_sign_in` -->
-  <string name="browser_menu_sign_in_caption">Ниҳонвожаҳо, варақаҳо ва бисёр чизҳои дигарро ҳамоҳанг созед</string>
+  <string name="browser_menu_sign_in_caption" moz:removedIn="141" tools:ignore="UnusedResources">Ниҳонвожаҳо, варақаҳо ва бисёр чизҳои дигарро ҳамоҳанг созед</string>
+  <!-- Browser menu caption label for the "Sign in" browser menu item described in `browser_menu_sign_in` -->
+  <string name="browser_menu_sign_in_caption_2" moz:removedIn="141" tools:ignore="UnusedResources">Хатбаракҳо, ниҳонвожаҳо, варақаҳо ва бисёр чизҳои дигарро ҳамоҳанг созед</string>
+  <!-- Browser menu caption label for the "Sign in" browser menu item described in `browser_menu_sign_in` -->
+  <string name="browser_menu_sign_in_caption_3">Ниҳонвожаҳо, хатбаракҳо ва бисёр чизҳои дигарро ҳамоҳанг созед</string>
   <!-- Browser menu label to sign back in to sync on the device when the user's account needs to be reauthenticated -->
   <string name="browser_menu_sign_back_in_to_sync">Барои ҳамоҳангсозӣ аз нав ворид шавед</string>
   <!-- Browser menu caption label for the "Sign back in to sync" browser menu item described in `browser_menu_sign_back_in_to_sync` when there is an error in syncing -->
@@ -334,13 +338,13 @@
   -->
   <string name="browser_menu_new_in_firefox">Навигариҳои %1$s</string>
   <!-- Browser menu label that toggles the request for the desktop site of the currently visited page -->
-  <string name="browser_menu_switch_to_desktop_site">Гузариш ба версияи мизи кории сомона</string>
+  <string name="browser_menu_switch_to_desktop_site" moz:removedIn="141" tools:ignore="UnusedResources">Гузариш ба версияи мизи кории сомона</string>
   <!-- Browser menu label that toggles the request for the mobile site of the currently visited page -->
   <string name="browser_menu_switch_to_mobile_site">Гузариш ба версияи мобилии сомона</string>
   <!-- Browser menu label that navigates to the page tools sub-menu -->
-  <string name="browser_menu_tools">Воситаҳо</string>
+  <string name="browser_menu_tools" moz:removedIn="141" tools:ignore="UnusedResources">Воситаҳо</string>
   <!-- Content description (not visible, for screen readers etc.): Back button for all menu redesign sub-menu -->
-  <string name="browser_menu_back_button_content_description">Бозгашт ба менюи асосӣ</string>
+  <string name="browser_menu_back_button_content_description" moz:removedIn="141" tools:ignore="UnusedResources">Бозгашт ба менюи асосӣ</string>
   <!-- Content description (not visible, for screen readers etc.) for bottom sheet handlebar main menu. -->
   <string name="browser_main_menu_handlebar_content_description">Варақи менюи асосиро мепӯшад</string>
   <!-- Content description (not visible, for screen readers etc.) for main menu help button. -->
@@ -356,20 +360,20 @@
   <!-- Content description (not visible, for screen readers etc.) for bottom sheet handlebar custom tab menu. -->
   <string name="browser_custom_tab_menu_handlebar_content_description">Варақи менюи варақаи фармоиширо мепӯшад</string>
   <!-- Browser menu description that describes the various tools related menu items inside of the tools sub-menu when the "Report broken site" feature is available -->
-  <string name="browser_menu_tools_description_with_translate_with_report_site_2">Реҷаи хониш, Тарҷума, Гузориш дар бораи сомонаи вайроншуда, Чоп, Мубодила, Кушодани барнома</string>
+  <string name="browser_menu_tools_description_with_translate_with_report_site_2" moz:removedIn="141" tools:ignore="UnusedResources">Реҷаи хониш, Тарҷума, Гузориш дар бораи сомонаи вайроншуда, Чоп, Мубодила, Кушодани барнома</string>
   <!-- Browser menu description that describes the various tools related menu items inside of the tools sub-menu -->
-  <string name="browser_menu_tools_description_with_translate_without_report_site">Реҷаи хониш, Тарҷума, Чоп, Мубодила, Кушодани барнома</string>
+  <string name="browser_menu_tools_description_with_translate_without_report_site" moz:removedIn="141" tools:ignore="UnusedResources">Реҷаи хониш, Тарҷума, Чоп, Мубодила, Кушодани барнома</string>
   <!-- Browser menu description that describes the various tools related menu items inside of the tools sub-menu when the "Report broken site" feature is available -->
-  <string name="browser_menu_tools_description_with_report_site_2">Реҷаи хониш, Гузориш дар бораи сомонаи вайроншуда, Чоп, Мубодила, Кушодани барнома</string>
+  <string name="browser_menu_tools_description_with_report_site_2" moz:removedIn="141" tools:ignore="UnusedResources">Реҷаи хониш, Гузориш дар бораи сомонаи вайроншуда, Чоп, Мубодила, Кушодани барнома</string>
   <!-- Browser menu description that describes the various tools related menu items inside of the tools sub-menu -->
-  <string name="browser_menu_tools_description_without_report_site">Реҷаи хониш, Чоп, Мубодила, Кушодани барнома</string>
+  <string name="browser_menu_tools_description_without_report_site" moz:removedIn="141" tools:ignore="UnusedResources">Реҷаи хониш, Чоп, Мубодила, Кушодани барнома</string>
   <!--
     Browser menu label that navigates to the save sub-menu, which contains various save related menu items such as
     bookmarking a page, saving to collection, shortcut or as a PDF, and adding to home screen
   -->
-  <string name="browser_menu_save">Нигоҳ доштан</string>
+  <string name="browser_menu_save" moz:removedIn="141" tools:ignore="UnusedResources">Нигоҳ доштан</string>
   <!-- Browser menu description that describes the various save related menu items inside of the save sub-menu -->
-  <string name="browser_menu_save_description">Илова кардани хатбарак, миёнбур, саҳифаи асосӣ, маҷмӯа, PDF</string>
+  <string name="browser_menu_save_description" moz:removedIn="141" tools:ignore="UnusedResources">Илова кардани хатбарак, миёнбур, саҳифаи асосӣ, маҷмӯа, PDF</string>
   <!-- Browser menu label that bookmarks the currently visited page -->
   <string name="browser_menu_bookmark_this_page" moz:removedIn="141" tools:ignore="UnusedResources">Гузоштани хатбарак барои ин саҳифа</string>
   <!-- Browser menu label that bookmarks the currently visited page -->
@@ -377,31 +381,48 @@
   <!-- Browser menu label that navigates to the edit bookmark screen for the current bookmarked page -->
   <string name="browser_menu_edit_bookmark">Таҳрир кардани хатбарак</string>
   <!-- Browser menu label that the saves the currently visited page as a PDF -->
-  <string name="browser_menu_save_as_pdf">Нигоҳ доштан ҳамчун PDF…</string>
+  <string name="browser_menu_save_as_pdf" moz:removedIn="141" tools:ignore="UnusedResources">Нигоҳ доштан ҳамчун PDF…</string>
+  <!-- Browser menu label that the saves the currently visited page as a PDF -->
+  <string name="browser_menu_save_as_pdf_2">Нигоҳ доштан ҳамчун «PDF»</string>
   <!-- Browser menu label for turning ON reader view of the current visited page -->
-  <string name="browser_menu_turn_on_reader_view">Фаъол кардани намоиши хонанда</string>
+  <string name="browser_menu_turn_on_reader_view" moz:removedIn="141" tools:ignore="UnusedResources">Фаъол кардани намоиши хонанда</string>
   <!-- Browser menu label for turning OFF reader view of the current visited page -->
-  <string name="browser_menu_turn_off_reader_view">Хомӯш кардани намоиши хонанда</string>
+  <string name="browser_menu_turn_off_reader_view" moz:removedIn="141" tools:ignore="UnusedResources">Хомӯш кардани намоиши хонанда</string>
   <!-- Browser menu button that reopens a private tab as a regular tab -->
-  <string name="browser_menu_open_in_normal_tab">Гузариш ба варақаи ғайрихусусӣ</string>
+  <string name="browser_menu_open_in_normal_tab" moz:removedIn="141" tools:ignore="UnusedResources">Гузариш ба варақаи ғайрихусусӣ</string>
   <!-- Browser menu label for navigating to the translation feature, which provides language translation options the current visited page -->
-  <string name="browser_menu_translate_page">Тарҷума кардани саҳифа…</string>
+  <string name="browser_menu_translate_page" moz:removedIn="141" tools:ignore="UnusedResources">Тарҷума кардани саҳифа…</string>
+  <!-- Browser menu label for navigating to the translation feature, which provides language translation options the current visited page -->
+  <string name="browser_menu_translate_page_2">Тарҷума кардани саҳифа</string>
   <!-- Browser menu label for navigating to the Web Compat Reporter feature, which provides users the ability to send bug reports for broken sites. -->
   <string name="browser_menu_webcompat_reporter">Гузориш дар бораи сомонаи вайроншуда…</string>
+  <!-- Browser menu label for navigating to the Web Compat Reporter feature, which provides users the ability to send bug reports for broken sites. -->
+  <string name="browser_menu_webcompat_reporter_2">Гузориш дар бораи сомонаи вайроншуда</string>
   <!--
     Browser menu label that is displayed when the current page has been translated by the translation feature.
     %1$s is the name of the language that page was translated to (e.g. English).
   -->
-  <string name="browser_menu_translated_to">Ба забони %1$s тарҷума шуд</string>
+  <string name="browser_menu_translated_to" moz:removedIn="141" tools:ignore="UnusedResources">Ба забони %1$s тарҷума шуд</string>
   <!-- Browser menu label that is displayed when the current page has been translated by the translation feature. -->
   <string name="browser_menu_translated">Тарҷума шуд</string>
   <!-- Browser menu label for the print feature -->
-  <string name="browser_menu_print">Чоп кардан…</string>
+  <string name="browser_menu_print" moz:removedIn="141" tools:ignore="UnusedResources">Чоп кардан…</string>
+  <!-- Browser menu label for the print feature -->
+  <string name="browser_menu_print_2">Чоп кардан</string>
   <!--
     Browser menu label for the Delete browsing data on quit feature.
     %1$s is the name of the app (for example "Firefox").
   -->
   <string name="browser_menu_delete_browsing_data_on_quit">Аз «%1$s» баромадан</string>
+  <!--
+    Content description for a banner within the menu which prompt the user to make this app their default browser.
+    %1$s is the name of the app (for example "Firefox").
+  -->
+  <string name="browser_menu_default_banner_title">Аз «%1$s» ба таври пешфарз истифода баред</string>
+  <!-- Label text within the set as default banner -->
+  <string name="browser_menu_default_banner_subtitle">Дар як лаҳза танзим кунед. Дар вақти дилхоҳ иваз намоед.</string>
+  <!-- Content description for the button that dismisses the set as default banner in the menu -->
+  <string name="browser_menu_default_banner_dismiss">Нодида гузарондан</string>
   <!--
     Menu "contextual feature recommendation" (CFR)
 
@@ -426,7 +447,7 @@
     Content description (not visible, for screen readers etc.): Erase button: Erase the browsing
     history and go back to the home screen.
   -->
-  <string name="browser_toolbar_erase">Пок кардани таърихи тамошо</string>
+  <string name="browser_toolbar_erase" moz:removedIn="141" tools:ignore="UnusedResources">Пок кардани таърихи тамошо</string>
   <!-- Content description for the translate page toolbar button that opens the translations dialog when no translation has occurred. -->
   <string name="browser_toolbar_translate">Тарҷума кардани саҳифа</string>
   <!--
@@ -943,15 +964,29 @@
 
     The title of the required permissions section from addon's permissions screen
   -->
-  <string name="addons_permissions_heading_required" tools:ignore="UnusedResources">Ҳатмӣ аст</string>
+  <string name="addons_permissions_heading_required" tools:ignore="UnusedResources" moz:removedIn="141">Ҳатмӣ аст</string>
   <!-- The title of the optional permissions section from addon's permissions screen -->
-  <string name="addons_permissions_heading_optional" tools:ignore="UnusedResources">Интихобӣ аст</string>
+  <string name="addons_permissions_heading_optional" tools:ignore="UnusedResources" moz:removedIn="141">Интихобӣ аст</string>
   <!-- The title of the origin permission option allowing a user to enable the extension to run on all sites -->
-  <string name="addons_permissions_allow_for_all_sites" tools:ignore="UnusedResources">Иҷозат барои ҳамаи сомонаҳо</string>
+  <string name="addons_permissions_allow_for_all_sites">Иҷозат барои ҳамаи сомонаҳо</string>
   <!-- The subtitle for the allow for all sites preference toggle -->
-  <string name="addons_permissions_allow_for_all_sites_subtitle" tools:ignore="UnusedResources">Агар шумо ба ин васеъшавӣ эътимод дошта бошед, шумо метавонед дар ҳар сомона ба он иҷозат диҳед.</string>
+  <string name="addons_permissions_allow_for_all_sites_subtitle">Агар шумо ба ин васеъшавӣ эътимод дошта бошед, шумо метавонед дар ҳар сомона ба он иҷозат диҳед.</string>
   <!-- The text shown when an extension does not require permissions -->
   <string name="addons_does_not_require_permissions">Ин васеъшавӣ ягон иҷозатро талаб намекунад.</string>
+  <!-- The description of data collection permissions listed in the addon's permissions screen.  %1$s is a formatted list of permissions. -->
+  <string name="addons_permissions_required_data_collection_description" moz:removedIn="141" tools:ignore="UnusedResources">Барномасоз хабар медиҳад, ки ин васеъшавӣ зеринро ҷамъ мекунад: %1$s.</string>
+  <!-- The description of data collection permissions listed in the addon's permissions screen.  %1$s is a formatted list of permissions. -->
+  <string name="addons_permissions_required_data_collection_description_2">Барномасоз хабар медиҳад, ки ин васеъшавӣ зеринро ҷамъ мекунад: %1$s</string>
+  <!-- The description of the "none" data collection permission, when the extension doesn't collect anything according to the developer. -->
+  <string name="addons_permissions_none_required_data_collection_description">Барномасоз хабар медиҳад, ки ин васеъшавӣ ҷамъоварии маълумотро талаб намекунад.</string>
+  <!-- The title of the required permissions section from addon's permissions screen. -->
+  <string name="addons_permissions_heading_required_permissions">Иҷозатҳои зарурӣ:</string>
+  <!-- The title of the optional permissions section from addon's permissions screen. -->
+  <string name="addons_permissions_heading_optional_permissions">Иҷозатҳои интихобӣ:</string>
+  <!-- The title of the required data collection permissions section from addon's permissions screen. -->
+  <string name="addons_permissions_heading_required_data_collection">Ҷамъоварии маълумоти зарурӣ:</string>
+  <!-- The title of the optional data collection permissions section from addon's permissions screen. -->
+  <string name="addons_permissions_heading_optional_data_collection">Ҷамъоварии маълумоти интихобӣ:</string>
   <!--
     Add-on Preferences
 
@@ -1502,6 +1537,8 @@
     %1$d is the number of items deleted.
   -->
   <string name="download_delete_multiple_items_snackbar_2">Шумораи унсурҳои нестшуда: %1$d</string>
+  <!-- Title for the dialog that prompts the user to choose an app for downloading a file. -->
+  <string name="download_app_dialog_title">Боргирӣ кардани файл ба воситаи:</string>
   <!-- Text for the snackbar to confirm that a single download item has been removed. %1$s is the name of the download item. -->
   <string name="download_delete_single_item_snackbar_2">«%1$s» нест карда шуд</string>
   <!-- Text for the snackbar to confirm that downloads are in progress. -->
@@ -1548,7 +1585,16 @@
   <string name="download_navigate_up_description" moz:removedIn="139" tools:ignore="UnusedResources">Ба боло гузаштан</string>
   <!-- Content description for the toolbar back button while searching the downloads -->
   <string name="download_close_search_description">Бозгашт ва пӯшидани ҷустуҷӯ</string>
-  <!-- Content description for the search bar clear text button on the downloads screen -->
+  <!--
+    Content description for the search bar clear text button on the downloads screen
+
+    Content description for pause action button on the downloads screen
+  -->
+  <string name="download_pause_action">Таваққуф кардан</string>
+  <!-- Content description for resume action button on the downloads screen -->
+  <string name="download_resume_action">Давом додан</string>
+  <!-- Content description for retry download action button on the downloads screen -->
+  <string name="download_retry_action">Аз нав кӯшиш кардан</string>
   <string name="download_clear_search_description">Пок кардан</string>
   <!-- Text for the button to share the download URL -->
   <string name="download_share_url">Мубодилаи нишонии «URL»</string>
@@ -2116,7 +2162,7 @@
   <!-- Text shown in snackbar when user closes a private tab -->
   <string name="snackbar_private_tab_closed">Варақаи хусусӣ пӯшида шуд</string>
   <!-- Text shown in snackbar when user closes all private tabs -->
-  <string name="snackbar_private_tabs_closed">Варақаҳои хусусӣ пӯшида шуданд</string>
+  <string name="snackbar_private_tabs_closed" moz:removedIn="141" tools:ignore="UnusedResources">Варақаҳои хусусӣ пӯшида шуданд</string>
   <!-- Text shown in snackbar when user erases their private browsing data -->
   <string name="snackbar_private_data_deleted">Маълумоти тамошобинии хусусӣ нест карда шуд</string>
   <!-- Text shown in snackbar to undo deleting a tab, top site or collection -->
@@ -3008,7 +3054,7 @@
   <!-- Action label for links to a website containing documentation about a wallpaper collection. Talkback will append this to say "Double tap to open link to learn more about this collection". -->
   <string name="a11y_action_label_wallpaper_collection_learn_more">барои гирифтани маълумоти бештар оид ба ин маҷмуа пайвандро кушоед</string>
   <!-- Action label for links that point to an article. Talkback will append this to say "Double tap to read the article". -->
-  <string name="a11y_action_label_read_article">мақоларо хонед</string>
+  <string name="a11y_action_label_read_article" moz:removedIn="141" tools:ignore="UnusedResources">мақоларо хонед</string>
   <!-- Action label for links to the Firefox Pocket website. Talkback will append this to say "Double tap to open link to learn more". -->
   <string name="a11y_action_label_pocket_learn_more" moz:removedIn="140" tools:ignore="UnusedResources">барои маълумоти бештар пайвандро кушоед</string>
   <!-- Content description for headings announced by accessibility service. %s is the text of the heading. Talkback will announce the text and then speak the word "Heading" indicating to the user that this text is a heading for a section. -->

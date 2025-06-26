@@ -62,7 +62,7 @@
     Explanation for private browsing displayed to users on home view when they first enable private mode.
     %1$s is the name of the app (for example "Firefox").
   -->
-  <string name="private_browsing_placeholder_description_2">%1$s پیتینیڌنا وو ویرگار گشتن ایسا ن مجال ودر زیڌن ز برنومه یا بستن بلگه یل سیخومی پاک اکونه. ٱلبت ای کار ایسا ن سی وبگه یل یا جۊر کونووݩ اینترنت نشناخته نؽکونه، ای کار تینا بؽڌار کردن فعالیتا ریتور ایسا ز ور هر کس دی ک ای دسگا ن و کار اگره ساڌه تر اکونه.</string>
+  <string name="private_browsing_placeholder_description_2" moz:removedIn="141" tools:ignore="UnusedResources">%1$s پیتینیڌنا وو ویرگار گشتن ایسا ن مجال ودر زیڌن ز برنومه یا بستن بلگه یل سیخومی پاک اکونه. ٱلبت ای کار ایسا ن سی وبگه یل یا جۊر کونووݩ اینترنت نشناخته نؽکونه، ای کار تینا بؽڌار کردن فعالیتا ریتور ایسا ز ور هر کس دی ک ای دسگا ن و کار اگره ساڌه تر اکونه.</string>
   <string name="private_browsing_common_myths">باورا اشتوا من زایار زبار گشتن سیخومی</string>
   <!--
     True Private Browsing Mode
@@ -98,7 +98,7 @@
 
     Text for the message displayed in the contextual feature recommendation popup promoting the erase private browsing feature.
   -->
-  <string name="erase_action_cfr_message">سی ناهاڌن پا ی نشست سیخومی نۊ ایچونا بزنین. ویرگار، کۊکیا — پوی چیا ن پاک کۊنین.</string>
+  <string name="erase_action_cfr_message" moz:removedIn="141" tools:ignore="UnusedResources">سی ناهاڌن پا ی نشست سیخومی نۊ ایچونا بزنین. ویرگار، کۊکیا — پوی چیا ن پاک کۊنین.</string>
   <!--
     Toolbar "contextual feature recommendation" (CFR)
 
@@ -209,21 +209,21 @@
     Browser menu banner header text for extensions onboarding.
     %s is the name of the app (for example "Firefox").
   -->
-  <string name="browser_menu_extensions_banner_onboarding_header">%s ن و دل خوت سامووݩ کوݩ</string>
+  <string name="browser_menu_extensions_banner_onboarding_header" moz:removedIn="141" tools:ignore="UnusedResources">%s ن و دل خوت سامووݩ کوݩ</string>
   <!-- Browser menu banner header text for extensions onboarding when all installed extensions have been disabled. -->
   <string name="browser_menu_disabled_extensions_banner_onboarding_header">ایسا وردنی یلی پۊرنیڌن، ٱما فعال نؽڌن</string>
   <!--
     Browser menu banner body text for extensions onboarding.
     %s is the name of the app (for example "Firefox").
   -->
-  <string name="browser_menu_extensions_banner_onboarding_body">وردنی یل گشتن ایسا ن بؽڌر اکونن، ز آلشت شؽوات وو عملکرد %s تا قلوه کردن هریم سیخومی وو ایمنی.</string>
+  <string name="browser_menu_extensions_banner_onboarding_body" moz:removedIn="141" tools:ignore="UnusedResources">وردنی یل گشتن ایسا ن بؽڌر اکونن، ز آلشت شؽوات وو عملکرد %s تا قلوه کردن هریم سیخومی وو ایمنی.</string>
   <!--
     Browser menu banner body text for extensions onboarding when all installed extensions have been disabled.
     %s is the label of the button that opens the extension manager (for example "Manage extensions").
   -->
-  <string name="browser_menu_disabled_extensions_banner_onboarding_body">سی و کار گرؽڌن وردنی یل، هونووݩ ن من سامووا فعال کۊنین یا گۊزینه «%s» بلمی ن پسند کۊنین.</string>
+  <string name="browser_menu_disabled_extensions_banner_onboarding_body" moz:removedIn="141" tools:ignore="UnusedResources">سی و کار گرؽڌن وردنی یل، هونووݩ ن من سامووا فعال کۊنین یا گۊزینه «%s» بلمی ن پسند کۊنین.</string>
   <!-- Browser menu banner link text for learning more about extensions -->
-  <string name="browser_menu_extensions_banner_learn_more">قلوه دووسته بۊین</string>
+  <string name="browser_menu_extensions_banner_learn_more" moz:removedIn="141" tools:ignore="UnusedResources">قلوه دووسته بۊین</string>
   <!-- Browser menu button that opens the extensions manager -->
   <string name="browser_menu_manage_extensions">دؽوۉداری وردنی یل</string>
   <!-- Browser menu group that contains additional settings in collapsed state -->
@@ -231,7 +231,7 @@
   <!-- Browser menu group that contains additional settings in expanded state -->
   <string name="browser_menu_less_settings">کمتر</string>
   <!-- Content description (not visible, for screen readers etc.): Section heading for recommended extensions. -->
-  <string name="browser_menu_recommended_section_content_description">وردنی یل پؽشنهاڌ بیڌه</string>
+  <string name="browser_menu_recommended_section_content_description" moz:removedIn="141" tools:ignore="UnusedResources">وردنی یل پؽشنهاڌ بیڌه</string>
   <!--
     Content description (not visible, for screen readers etc.): Label for plus icon used to add extension.
     %1$s is the name of the extension (for example: ClearURLs).
@@ -264,9 +264,9 @@
   <!-- Browser menu toggle that adds a PWA of the site on the device home screen. -->
   <string name="browser_menu_add_app_to_homescreen">ٱووردن برنومه و بلگه ٱسلی</string>
   <!-- Browser menu toggle that adds a shortcut to the site on the device home screen. -->
-  <string name="browser_menu_add_to_homescreen_2">ٱووردن و بلگه ٱسلی…</string>
+  <string name="browser_menu_add_to_homescreen_2" moz:removedIn="141" tools:ignore="UnusedResources">ٱووردن و بلگه ٱسلی…</string>
   <!-- Browser menu toggle that adds a PWA of the site on the device home screen. -->
-  <string name="browser_menu_add_app_to_homescreen_2">ٱووردن برنومه و بلگه ٱسلی…</string>
+  <string name="browser_menu_add_app_to_homescreen_2" moz:removedIn="141" tools:ignore="UnusedResources">ٱووردن برنومه و بلگه ٱسلی…</string>
   <!-- Text for notifying users that Xiaomi devices require additional permissions to add to home screen -->
   <string name="browser_menu_add_to_homescreen_xiaomi">دسگایل Xiaomi گاشڌ موجوزا ازافی سی ٱووردن ر نهنگا و بلگه ٱسلی بخون. سامووا خوتووݩ ن واجۊری کۊنین.</string>
   <!-- Content description (not visible, for screen readers etc.) for the Resync tabs button -->
@@ -274,17 +274,17 @@
   <!-- Browser menu button that opens the find in page menu -->
   <string name="browser_menu_find_in_page">جوستن من بلگه</string>
   <!-- Browser menu button that opens the find in page menu -->
-  <string name="browser_menu_find_in_page_2">جوستن من بلگه…</string>
+  <string name="browser_menu_find_in_page_2" moz:removedIn="141" tools:ignore="UnusedResources">جوستن من بلگه…</string>
   <!-- Browser menu button that opens the translations dialog, which has options to translate the current browser page. -->
   <string name="browser_menu_translations">ولرنیڌن بلگه</string>
   <!-- Browser menu button that saves the current tab to a collection -->
-  <string name="browser_menu_save_to_collection">ٱووردن و کتن…</string>
+  <string name="browser_menu_save_to_collection" moz:removedIn="141" tools:ignore="UnusedResources">ٱووردن و کتن…</string>
   <!-- Browser menu button that saves the current tab to a collection -->
   <string name="browser_menu_save_to_collection_2">ٱووردن و کتن</string>
   <!-- Browser menu button that open a share menu to share the current site -->
   <string name="browser_menu_share">یک رسۊوی</string>
   <!-- Browser menu button that open a share menu to share the current site -->
-  <string name="browser_menu_share_2">یک رسۊوی…</string>
+  <string name="browser_menu_share_2" moz:removedIn="141" tools:ignore="UnusedResources">یک رسۊوی…</string>
   <!--
     Browser menu button shown in custom tabs that opens the current tab in Fenix
     %1$s is the name of the app (for example "Firefox").
@@ -319,7 +319,11 @@
   <!-- Browser menu label to sign in to sync on the device using Mozilla accounts -->
   <string name="browser_menu_sign_in">و من ٱووڌن</string>
   <!-- Browser menu caption label for the "Sign in" browser menu item described in `browser_menu_sign_in` -->
-  <string name="browser_menu_sign_in_caption">هوم گوم کردن رزما، بلگه یل وو مووردا بیشتر</string>
+  <string name="browser_menu_sign_in_caption" moz:removedIn="141" tools:ignore="UnusedResources">هوم گوم کردن رزما، بلگه یل وو مووردا بیشتر</string>
+  <!-- Browser menu caption label for the "Sign in" browser menu item described in `browser_menu_sign_in` -->
+  <string name="browser_menu_sign_in_caption_2" moz:removedIn="141" tools:ignore="UnusedResources">هوم گوم کردن نشووکا، رزما، بلگه یل وو مووردا بیشتر</string>
+  <!-- Browser menu caption label for the "Sign in" browser menu item described in `browser_menu_sign_in` -->
+  <string name="browser_menu_sign_in_caption_3">هوم گوم کردن رزما، نشووکا وو مووردا بیشتر</string>
   <!-- Browser menu label to sign back in to sync on the device when the user's account needs to be reauthenticated -->
   <string name="browser_menu_sign_back_in_to_sync">سی هوم گوم کردن دووارته و من بیاین</string>
   <!-- Browser menu caption label for the "Sign back in to sync" browser menu item described in `browser_menu_sign_back_in_to_sync` when there is an error in syncing -->
@@ -334,13 +338,13 @@
   -->
   <string name="browser_menu_new_in_firefox">نۊ من %1$s</string>
   <!-- Browser menu label that toggles the request for the desktop site of the currently visited page -->
-  <string name="browser_menu_switch_to_desktop_site">آلشت و هالت ری میزی</string>
+  <string name="browser_menu_switch_to_desktop_site" moz:removedIn="141" tools:ignore="UnusedResources">آلشت و هالت ری میزی</string>
   <!-- Browser menu label that toggles the request for the mobile site of the currently visited page -->
   <string name="browser_menu_switch_to_mobile_site">آلشت و هالت موبایل</string>
   <!-- Browser menu label that navigates to the page tools sub-menu -->
-  <string name="browser_menu_tools">ٱوزارا</string>
+  <string name="browser_menu_tools" moz:removedIn="141" tools:ignore="UnusedResources">ٱوزارا</string>
   <!-- Content description (not visible, for screen readers etc.): Back button for all menu redesign sub-menu -->
-  <string name="browser_menu_back_button_content_description">وورگشتن و نومگه ٱسلی</string>
+  <string name="browser_menu_back_button_content_description" moz:removedIn="141" tools:ignore="UnusedResources">وورگشتن و نومگه ٱسلی</string>
   <!-- Content description (not visible, for screen readers etc.) for bottom sheet handlebar main menu. -->
   <string name="browser_main_menu_handlebar_content_description">بستن بلگه نومگه ٱسلی</string>
   <!-- Content description (not visible, for screen readers etc.) for main menu help button. -->
@@ -356,20 +360,20 @@
   <!-- Content description (not visible, for screen readers etc.) for bottom sheet handlebar custom tab menu. -->
   <string name="browser_custom_tab_menu_handlebar_content_description">بستن ورق نومگه بلگه سفارشی</string>
   <!-- Browser menu description that describes the various tools related menu items inside of the tools sub-menu when the "Report broken site" feature is available -->
-  <string name="browser_menu_tools_description_with_translate_with_report_site_2">نما خۊندنی، ولرنیڌن، گوزارش خراوی وبگه، چاپ، یک رسۊوی، گۊشیڌن برنومه</string>
+  <string name="browser_menu_tools_description_with_translate_with_report_site_2" moz:removedIn="141" tools:ignore="UnusedResources">نما خۊندنی، ولرنیڌن، گوزارش خراوی وبگه، چاپ، یک رسۊوی، گۊشیڌن برنومه</string>
   <!-- Browser menu description that describes the various tools related menu items inside of the tools sub-menu -->
-  <string name="browser_menu_tools_description_with_translate_without_report_site">نما خۊندنی، ولرنیڌن، چاپ، یک رسۊوی، گۊشیڌن برنومه</string>
+  <string name="browser_menu_tools_description_with_translate_without_report_site" moz:removedIn="141" tools:ignore="UnusedResources">نما خۊندنی، ولرنیڌن، چاپ، یک رسۊوی، گۊشیڌن برنومه</string>
   <!-- Browser menu description that describes the various tools related menu items inside of the tools sub-menu when the "Report broken site" feature is available -->
-  <string name="browser_menu_tools_description_with_report_site_2">نما خۊندنی، گوزارش خراوی وبگه، چاپ، یک رسۊوی، گۊشیڌن برنومه</string>
+  <string name="browser_menu_tools_description_with_report_site_2" moz:removedIn="141" tools:ignore="UnusedResources">نما خۊندنی، گوزارش خراوی وبگه، چاپ، یک رسۊوی، گۊشیڌن برنومه</string>
   <!-- Browser menu description that describes the various tools related menu items inside of the tools sub-menu -->
-  <string name="browser_menu_tools_description_without_report_site">نما خۊندنی، چاپ، یک رسۊوی، گۊشیڌن برنومه</string>
+  <string name="browser_menu_tools_description_without_report_site" moz:removedIn="141" tools:ignore="UnusedResources">نما خۊندنی، چاپ، یک رسۊوی، گۊشیڌن برنومه</string>
   <!--
     Browser menu label that navigates to the save sub-menu, which contains various save related menu items such as
     bookmarking a page, saving to collection, shortcut or as a PDF, and adding to home screen
   -->
-  <string name="browser_menu_save">زفت</string>
+  <string name="browser_menu_save" moz:removedIn="141" tools:ignore="UnusedResources">زفت</string>
   <!-- Browser menu description that describes the various save related menu items inside of the save sub-menu -->
-  <string name="browser_menu_save_description">ٱووردن نشووک، ر نهنگ، بلگه ٱسلی، کتن، PDF</string>
+  <string name="browser_menu_save_description" moz:removedIn="141" tools:ignore="UnusedResources">ٱووردن نشووک، ر نهنگ، بلگه ٱسلی، کتن، PDF</string>
   <!-- Browser menu label that bookmarks the currently visited page -->
   <string name="browser_menu_bookmark_this_page" moz:removedIn="141" tools:ignore="UnusedResources">ای بلگه ن نشووک کوݩ</string>
   <!-- Browser menu label that bookmarks the currently visited page -->
@@ -377,31 +381,48 @@
   <!-- Browser menu label that navigates to the edit bookmark screen for the current bookmarked page -->
   <string name="browser_menu_edit_bookmark">آلشت نشووک</string>
   <!-- Browser menu label that the saves the currently visited page as a PDF -->
-  <string name="browser_menu_save_as_pdf">زفت و عونوان PDF…</string>
+  <string name="browser_menu_save_as_pdf" moz:removedIn="141" tools:ignore="UnusedResources">زفت و عونوان PDF…</string>
+  <!-- Browser menu label that the saves the currently visited page as a PDF -->
+  <string name="browser_menu_save_as_pdf_2">زفت و عونوان PDF</string>
   <!-- Browser menu label for turning ON reader view of the current visited page -->
-  <string name="browser_menu_turn_on_reader_view">فعال کردن نما خۊندنی</string>
+  <string name="browser_menu_turn_on_reader_view" moz:removedIn="141" tools:ignore="UnusedResources">فعال کردن نما خۊندنی</string>
   <!-- Browser menu label for turning OFF reader view of the current visited page -->
-  <string name="browser_menu_turn_off_reader_view">قیر فعال کردن نما خۊندنی</string>
+  <string name="browser_menu_turn_off_reader_view" moz:removedIn="141" tools:ignore="UnusedResources">قیر فعال کردن نما خۊندنی</string>
   <!-- Browser menu button that reopens a private tab as a regular tab -->
-  <string name="browser_menu_open_in_normal_tab">آلشت و بلگه قیر سیخومی</string>
+  <string name="browser_menu_open_in_normal_tab" moz:removedIn="141" tools:ignore="UnusedResources">آلشت و بلگه قیر سیخومی</string>
   <!-- Browser menu label for navigating to the translation feature, which provides language translation options the current visited page -->
-  <string name="browser_menu_translate_page">ولرنیڌن بلگه…</string>
+  <string name="browser_menu_translate_page" moz:removedIn="141" tools:ignore="UnusedResources">ولرنیڌن بلگه…</string>
+  <!-- Browser menu label for navigating to the translation feature, which provides language translation options the current visited page -->
+  <string name="browser_menu_translate_page_2">ولرنیڌن بلگه</string>
   <!-- Browser menu label for navigating to the Web Compat Reporter feature, which provides users the ability to send bug reports for broken sites. -->
   <string name="browser_menu_webcompat_reporter">گوزارش خراوی وبگه…</string>
+  <!-- Browser menu label for navigating to the Web Compat Reporter feature, which provides users the ability to send bug reports for broken sites. -->
+  <string name="browser_menu_webcompat_reporter_2">گوزارش خراوی وبگه</string>
   <!--
     Browser menu label that is displayed when the current page has been translated by the translation feature.
     %1$s is the name of the language that page was translated to (e.g. English).
   -->
-  <string name="browser_menu_translated_to">ولرنیڌه وابیڌه و %1$s</string>
+  <string name="browser_menu_translated_to" moz:removedIn="141" tools:ignore="UnusedResources">ولرنیڌه وابیڌه و %1$s</string>
   <!-- Browser menu label that is displayed when the current page has been translated by the translation feature. -->
   <string name="browser_menu_translated">ولرنیڌه</string>
   <!-- Browser menu label for the print feature -->
-  <string name="browser_menu_print">چاپ…</string>
+  <string name="browser_menu_print" moz:removedIn="141" tools:ignore="UnusedResources">چاپ…</string>
+  <!-- Browser menu label for the print feature -->
+  <string name="browser_menu_print_2">چاپ</string>
   <!--
     Browser menu label for the Delete browsing data on quit feature.
     %1$s is the name of the app (for example "Firefox").
   -->
   <string name="browser_menu_delete_browsing_data_on_quit">و در زیڌن ز %1$s</string>
+  <!--
+    Content description for a banner within the menu which prompt the user to make this app their default browser.
+    %1$s is the name of the app (for example "Firefox").
+  -->
+  <string name="browser_menu_default_banner_title">%1$s ن پؽش فرز خوتووݩ کۊنین</string>
+  <!-- Label text within the set as default banner -->
+  <string name="browser_menu_default_banner_subtitle">چن سانیه تۊل اکشه. هر سا خاستین آلشتس کۊنین.</string>
+  <!-- Content description for the button that dismisses the set as default banner in the menu -->
+  <string name="browser_menu_default_banner_dismiss">رڌ کردن</string>
   <!--
     Menu "contextual feature recommendation" (CFR)
 
@@ -426,7 +447,7 @@
     Content description (not visible, for screen readers etc.): Erase button: Erase the browsing
     history and go back to the home screen.
   -->
-  <string name="browser_toolbar_erase">پاک کردن ویرگار گشتن</string>
+  <string name="browser_toolbar_erase" moz:removedIn="141" tools:ignore="UnusedResources">پاک کردن ویرگار گشتن</string>
   <!-- Content description for the translate page toolbar button that opens the translations dialog when no translation has occurred. -->
   <string name="browser_toolbar_translate">ولرنیڌن بلگه</string>
   <!--
@@ -943,15 +964,29 @@
 
     The title of the required permissions section from addon's permissions screen
   -->
-  <string name="addons_permissions_heading_required" tools:ignore="UnusedResources">وا الن بۊوس</string>
+  <string name="addons_permissions_heading_required" tools:ignore="UnusedResources" moz:removedIn="141">وا الن بۊوس</string>
   <!-- The title of the optional permissions section from addon's permissions screen -->
-  <string name="addons_permissions_heading_optional" tools:ignore="UnusedResources">دل ب خایی</string>
+  <string name="addons_permissions_heading_optional" tools:ignore="UnusedResources" moz:removedIn="141">دل ب خایی</string>
   <!-- The title of the origin permission option allowing a user to enable the extension to run on all sites -->
-  <string name="addons_permissions_allow_for_all_sites" tools:ignore="UnusedResources">هشتن سی پوی وبگه یل</string>
+  <string name="addons_permissions_allow_for_all_sites">هشتن سی پوی وبگه یل</string>
   <!-- The subtitle for the allow for all sites preference toggle -->
-  <string name="addons_permissions_allow_for_all_sites_subtitle" tools:ignore="UnusedResources">ٱر و ای وردنی ائتماڌ دارین، ترین ک بهلین من هر وبگهی دسرسی داشته بۊ.</string>
+  <string name="addons_permissions_allow_for_all_sites_subtitle">ٱر و ای وردنی ائتماڌ دارین، ترین ک بهلین من هر وبگهی دسرسی داشته بۊ.</string>
   <!-- The text shown when an extension does not require permissions -->
   <string name="addons_does_not_require_permissions">ای وردنی لنگ موجوز نؽ.</string>
+  <!-- The description of data collection permissions listed in the addon's permissions screen.  %1$s is a formatted list of permissions. -->
+  <string name="addons_permissions_required_data_collection_description" moz:removedIn="141" tools:ignore="UnusedResources">برنومه نویس اگو ای وردنی مووردا لمی ن جم اکونه: %1$s.</string>
+  <!-- The description of data collection permissions listed in the addon's permissions screen.  %1$s is a formatted list of permissions. -->
+  <string name="addons_permissions_required_data_collection_description_2">برنومه نویس اگو ای وردنی مووردا لمی ن جم اکونه: %1$s</string>
+  <!-- The description of the "none" data collection permission, when the extension doesn't collect anything according to the developer. -->
+  <string name="addons_permissions_none_required_data_collection_description">برنومه نویس اگو ای وردنی لنگ جم کردن داده یل نؽ.</string>
+  <!-- The title of the required permissions section from addon's permissions screen. -->
+  <string name="addons_permissions_heading_required_permissions">موجوزا خاستنی:</string>
+  <!-- The title of the optional permissions section from addon's permissions screen. -->
+  <string name="addons_permissions_heading_optional_permissions">هشتنا اختیاری</string>
+  <!-- The title of the required data collection permissions section from addon's permissions screen. -->
+  <string name="addons_permissions_heading_required_data_collection">جم کردن داده یل خاستنی:</string>
+  <!-- The title of the optional data collection permissions section from addon's permissions screen. -->
+  <string name="addons_permissions_heading_optional_data_collection">جم کردن داده یل اختیاری:</string>
   <!--
     Add-on Preferences
 
@@ -1502,6 +1537,8 @@
     %1$d is the number of items deleted.
   -->
   <string name="download_delete_multiple_items_snackbar_2">مووردا پاک وابیڌه: %1$d</string>
+  <!-- Title for the dialog that prompts the user to choose an app for downloading a file. -->
+  <string name="download_app_dialog_title">دانلود فایل وا:</string>
   <!-- Text for the snackbar to confirm that a single download item has been removed. %1$s is the name of the download item. -->
   <string name="download_delete_single_item_snackbar_2">«%1$s» پاک وابی</string>
   <!-- Text for the snackbar to confirm that downloads are in progress. -->
@@ -1548,7 +1585,16 @@
   <string name="download_navigate_up_description" moz:removedIn="139" tools:ignore="UnusedResources">رئڌن و روء</string>
   <!-- Content description for the toolbar back button while searching the downloads -->
   <string name="download_close_search_description">وورگشتن وو بستن پیتینیڌن</string>
-  <!-- Content description for the search bar clear text button on the downloads screen -->
+  <!--
+    Content description for the search bar clear text button on the downloads screen
+
+    Content description for pause action button on the downloads screen
+  -->
+  <string name="download_pause_action">واڌاشتن</string>
+  <!-- Content description for resume action button on the downloads screen -->
+  <string name="download_resume_action">ز سر گرؽڌن</string>
+  <!-- Content description for retry download action button on the downloads screen -->
+  <string name="download_retry_action">قپ ریت دووارته</string>
   <string name="download_clear_search_description">پاک کردن</string>
   <!-- Text for the button to share the download URL -->
   <string name="download_share_url">یک رسۊوی نشۊوی اینترنتی</string>
@@ -2116,7 +2162,7 @@
   <!-- Text shown in snackbar when user closes a private tab -->
   <string name="snackbar_private_tab_closed">بلگه سیخومی بسته وابی</string>
   <!-- Text shown in snackbar when user closes all private tabs -->
-  <string name="snackbar_private_tabs_closed">بلگه یل سیخومی بسته وابین</string>
+  <string name="snackbar_private_tabs_closed" moz:removedIn="141" tools:ignore="UnusedResources">بلگه یل سیخومی بسته وابین</string>
   <!-- Text shown in snackbar when user erases their private browsing data -->
   <string name="snackbar_private_data_deleted">داده یل گشتن سیخومی پاک وابین</string>
   <!-- Text shown in snackbar to undo deleting a tab, top site or collection -->
@@ -2388,7 +2434,7 @@
 
     Preference title for DNS over HTTPS settings
   -->
-  <string name="preference_doh_title">DNS ری HTTPS</string>
+  <string name="preference_doh_title">دی ان اس ری HTTPS</string>
   <!-- Description of the preference to enable "DNS over HTTPS". %1$s is replaced by a link using `preference_doh_learn_more` at text ("Learn More"). -->
   <string name="preference_doh_summary">سامانه نوم دامنه یا (DNS) ری HTTPS درخاستا ایسا سی ی نوم دامنه ن ز بارت ی ارتبات رزم ناهاڌه بیڌه افشنه ک ای کار ایمنی DNS ن قلوه اکونه وو نؽله ک دیرووݩ ترسته بۊن بفهمن چ وبگهی ن اخۊین بنیرین، چیناکه ای کار سیسووݩ سخت تر ابۊ. %1$s</string>
   <!-- Used as text for the link in `preference_doh_title`, points to documentation about "DNS over HTTPS" -->
@@ -3008,7 +3054,7 @@
   <!-- Action label for links to a website containing documentation about a wallpaper collection. Talkback will append this to say "Double tap to open link to learn more about this collection". -->
   <string name="a11y_action_label_wallpaper_collection_learn_more">سی قلوه ویر گرؽڌن زبار ای کتن، لینگ ن بۊگۊشین</string>
   <!-- Action label for links that point to an article. Talkback will append this to say "Double tap to read the article". -->
-  <string name="a11y_action_label_read_article">خوندن مقاله</string>
+  <string name="a11y_action_label_read_article" moz:removedIn="141" tools:ignore="UnusedResources">خوندن مقاله</string>
   <!-- Action label for links to the Firefox Pocket website. Talkback will append this to say "Double tap to open link to learn more". -->
   <string name="a11y_action_label_pocket_learn_more" moz:removedIn="140" tools:ignore="UnusedResources">سی ویر گرؽڌن قلوه، لینگ ن بۊگۊشین</string>
   <!-- Content description for headings announced by accessibility service. %s is the text of the heading. Talkback will announce the text and then speak the word "Heading" indicating to the user that this text is a heading for a section. -->
@@ -3034,7 +3080,7 @@
   <!-- Title for the translation dialog that allows a user to translate the webpage when a user uses the translation feature the first time. %1$s is the name of the app (for example "Firefox"). -->
   <string name="translations_bottom_sheet_title_first_time">ولرنیڌنا سیخومی ن من %1$s امتهووݩ کۊنین</string>
   <!-- Additional information on the translation dialog that appears when a user uses the translation feature the first time. %1$s is a link using translations_bottom_sheet_info_message_learn_more as text. -->
-  <string name="translations_bottom_sheet_info_message">سی هریم سیخومی ایسا، ولرنیڌنا هرشگت دسگا ایسا ن نؽلن وو رن. زووا وو بؽڌر وابیڌنا نۊ زیتر و دستتووݩ ارسن! %1$s</string>
+  <string name="translations_bottom_sheet_info_message">سی هریم سیخومی ایسا، ولرنیڌنا هرگشت دسگا ایسا ن نؽلن وو رن. زووا وو بؽڌر وابیڌنا نۊ زیتر و دستتووݩ ارسن! %1$s</string>
   <!-- Text that links to additional information about the Firefox translations feature. -->
   <string name="translations_bottom_sheet_info_message_learn_more">قلوه دووسته بۊین</string>
   <!-- Label for the dropdown to select which language to translate from on the translations dialog. Usually the translate from language selected will be the same as the page language. -->

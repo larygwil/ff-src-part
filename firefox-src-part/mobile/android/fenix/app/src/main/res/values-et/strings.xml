@@ -62,7 +62,7 @@
     Explanation for private browsing displayed to users on home view when they first enable private mode.
     %1$s is the name of the app (for example "Firefox").
   -->
-  <string name="private_browsing_placeholder_description_2">%1$s kustutab privaatsete kaartide otsimise ja lehitsemise ajaloo, kui väljud rakendusest või sulged privaatsed kaardid. Kuigi see ei muuda sind külastatavate veebilehtede või internetiteenuse pakkuja ees anonüümseks, kaitseb see siiski sinu privaatsust teiste selle seadme kasutajate eest.</string>
+  <string name="private_browsing_placeholder_description_2" moz:removedIn="141" tools:ignore="UnusedResources">%1$s kustutab privaatsete kaartide otsimise ja lehitsemise ajaloo, kui väljud rakendusest või sulged privaatsed kaardid. Kuigi see ei muuda sind külastatavate veebilehtede või internetiteenuse pakkuja ees anonüümseks, kaitseb see siiski sinu privaatsust teiste selle seadme kasutajate eest.</string>
   <string name="private_browsing_common_myths">Levinumad müüdid privaatse veebilehitsemise kohta</string>
   <!--
     True Private Browsing Mode
@@ -98,7 +98,7 @@
 
     Text for the message displayed in the contextual feature recommendation popup promoting the erase private browsing feature.
   -->
-  <string name="erase_action_cfr_message">Uue privaatseansi alustamiseks puuduta siit. Kustuta ajalugu, küpsised – kõik.</string>
+  <string name="erase_action_cfr_message" moz:removedIn="141" tools:ignore="UnusedResources">Uue privaatseansi alustamiseks puuduta siit. Kustuta ajalugu, küpsised – kõik.</string>
   <!--
     Toolbar "contextual feature recommendation" (CFR)
 
@@ -194,7 +194,7 @@
   <!-- Browser menu button that opens the extensions manager -->
   <string name="browser_menu_extensions">Lisad</string>
   <!-- Browser menu banner link text for learning more about extensions -->
-  <string name="browser_menu_extensions_banner_learn_more">Rohkem teavet</string>
+  <string name="browser_menu_extensions_banner_learn_more" moz:removedIn="141" tools:ignore="UnusedResources">Rohkem teavet</string>
   <!-- Browser menu button that opens account settings -->
   <string name="browser_menu_account_settings">Konto andmed</string>
   <!-- Browser menu button that sends a user to help articles -->
@@ -216,17 +216,17 @@
   <!-- Browser menu button that opens the find in page menu -->
   <string name="browser_menu_find_in_page">Otsi lehelt</string>
   <!-- Browser menu button that opens the find in page menu -->
-  <string name="browser_menu_find_in_page_2">Otsi lehelt…</string>
+  <string name="browser_menu_find_in_page_2" moz:removedIn="141" tools:ignore="UnusedResources">Otsi lehelt…</string>
   <!-- Browser menu button that opens the translations dialog, which has options to translate the current browser page. -->
   <string name="browser_menu_translations">Tõlgi leht</string>
   <!-- Browser menu button that saves the current tab to a collection -->
-  <string name="browser_menu_save_to_collection">Salvesta kollektsiooni…</string>
+  <string name="browser_menu_save_to_collection" moz:removedIn="141" tools:ignore="UnusedResources">Salvesta kollektsiooni…</string>
   <!-- Browser menu button that saves the current tab to a collection -->
   <string name="browser_menu_save_to_collection_2">Salvesta kollektsiooni</string>
   <!-- Browser menu button that open a share menu to share the current site -->
   <string name="browser_menu_share">Jaga</string>
   <!-- Browser menu button that open a share menu to share the current site -->
-  <string name="browser_menu_share_2">Jaga…</string>
+  <string name="browser_menu_share_2" moz:removedIn="141" tools:ignore="UnusedResources">Jaga…</string>
   <!--
     Browser menu button shown in custom tabs that opens the current tab in Fenix
     %1$s is the name of the app (for example "Firefox").
@@ -266,11 +266,11 @@
     Browser menu label that navigates to the save sub-menu, which contains various save related menu items such as
     bookmarking a page, saving to collection, shortcut or as a PDF, and adding to home screen
   -->
-  <string name="browser_menu_save">Salvesta</string>
+  <string name="browser_menu_save" moz:removedIn="141" tools:ignore="UnusedResources">Salvesta</string>
   <!-- Browser menu label for navigating to the Web Compat Reporter feature, which provides users the ability to send bug reports for broken sites. -->
   <string name="browser_menu_webcompat_reporter">Teata katkisest saidist…</string>
   <!-- Browser menu label for the print feature -->
-  <string name="browser_menu_print">Prindi…</string>
+  <string name="browser_menu_print" moz:removedIn="141" tools:ignore="UnusedResources">Prindi…</string>
   <!--
     Browser Toolbar
 
@@ -281,7 +281,7 @@
     Content description (not visible, for screen readers etc.): Erase button: Erase the browsing
     history and go back to the home screen.
   -->
-  <string name="browser_toolbar_erase">Kustuta lehitsemise ajalugu</string>
+  <string name="browser_toolbar_erase" moz:removedIn="141" tools:ignore="UnusedResources">Kustuta lehitsemise ajalugu</string>
   <!-- Content description for the translate page toolbar button that opens the translations dialog when no translation has occurred. -->
   <string name="browser_toolbar_translate">Tõlgi leht</string>
   <!--
@@ -534,7 +534,7 @@
 
     The title of the required permissions section from addon's permissions screen
   -->
-  <string name="addons_permissions_heading_required" tools:ignore="UnusedResources">Nõutud</string>
+  <string name="addons_permissions_heading_required" tools:ignore="UnusedResources" moz:removedIn="141">Nõutud</string>
   <!-- Button caption to confirm the add-on collection configuration -->
   <string name="customize_addon_collection_ok">Olgu</string>
   <!-- Button caption to abort the add-on collection configuration -->
@@ -1319,7 +1319,7 @@
   <!-- Text shown in snackbar when user closes a private tab -->
   <string name="snackbar_private_tab_closed">Privaatne kaart suleti</string>
   <!-- Text shown in snackbar when user closes all private tabs -->
-  <string name="snackbar_private_tabs_closed">Privaatsed kaardid suleti</string>
+  <string name="snackbar_private_tabs_closed" moz:removedIn="141" tools:ignore="UnusedResources">Privaatsed kaardid suleti</string>
   <!-- Text shown in snackbar to undo deleting a tab, top site or collection -->
   <string name="snackbar_deleted_undo">VÕTA TAGASI</string>
   <!-- Text shown in snackbar when user removes a top site -->
