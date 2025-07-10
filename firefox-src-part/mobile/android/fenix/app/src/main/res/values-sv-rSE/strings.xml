@@ -64,6 +64,8 @@
   -->
   <string name="private_browsing_placeholder_description_2" moz:removedIn="141" tools:ignore="UnusedResources">%1$s rensar din sök- och surfhistorik när du stänger appen eller stänger alla privata flikar. Även om detta inte gör dig anonym för webbplatser eller din internetleverantör, gör det det lättare att hålla vad du gör online privat från alla andra som använder den här enheten.</string>
   <string name="private_browsing_common_myths">Vanliga myter om privat surfning</string>
+  <!-- Text to be announced by the accessibility service to inform the user that the private browsing mode is currently active. -->
+  <string name="private_browsing_a11y_session_announcement">Privat surfsession</string>
   <!--
     True Private Browsing Mode
 
@@ -342,7 +344,11 @@
   <!-- Content description (not visible, for screen readers etc.): Back button for all menu redesign sub-menu -->
   <string name="browser_menu_back_button_content_description" moz:removedIn="141" tools:ignore="UnusedResources">Tillbaka till huvudmenyn</string>
   <!-- Content description (not visible, for screen readers etc.) for bottom sheet handlebar main menu. -->
-  <string name="browser_main_menu_handlebar_content_description">Stäng huvudmenybladet</string>
+  <string name="browser_main_menu_handlebar_content_description" moz:removedIn="142" tools:ignore="UnusedResources">Stäng huvudmenybladet</string>
+  <!-- Content description (not visible, for screen readers etc.) for the handle used to drag the main menu at the bottom of the screen. -->
+  <string name="browser_close_main_menu_handlebar_content_description">Stäng meny</string>
+  <!-- Content description (not visible, for screen readers etc.) for main menu navigation header. -->
+  <string name="browser_main_menu_content_description_navigation_header">Navigering</string>
   <!-- Content description (not visible, for screen readers etc.) for main menu help button. -->
   <string name="browser_main_menu_content_description_help_button">Hjälp</string>
   <!-- Content description (not visible, for screen readers etc.) for main menu settings button. -->
@@ -418,7 +424,11 @@
   <!-- Label text within the set as default banner -->
   <string name="browser_menu_default_banner_subtitle">Tar några sekunder. Ändra när som helst.</string>
   <!-- Content description for the button that dismisses the set as default banner in the menu -->
-  <string name="browser_menu_default_banner_dismiss">Ignorera</string>
+  <string name="browser_menu_default_banner_dismiss" moz:removedIn="142" tools:ignore="UnusedResources">Ignorera</string>
+  <!-- Content description (not visible, for screen readers etc.) for the button that dismisses the set as default banner in the menu -->
+  <string name="browser_menu_default_banner_dismiss_promotion">Avvisa befordran</string>
+  <!-- Content description (not visible, for screen readers etc.) for recommended extensions in main menu -->
+  <string name="browser_menu_recommended_extensions_content_description">Mer information</string>
   <!--
     Menu "contextual feature recommendation" (CFR)
 
@@ -880,7 +890,7 @@
   <!-- Preference for translations -->
   <string name="preferences_translations">Översättningar</string>
   <!-- Preference for data choices -->
-  <string name="preferences_data_choices">Dataalternativ</string>
+  <string name="preferences_data_choices" tools:ignore="UnusedResources" moz:removedIn="141">Dataalternativ</string>
   <!-- Preference for data collection -->
   <string name="preferences_data_collection">Datainsamling</string>
   <!-- Preference for developers -->
@@ -1230,10 +1240,30 @@
   <string name="exceptions_empty_message_learn_more_link">Läs mer</string>
   <!-- Preference switch for usage and technical data collection -->
   <string name="preference_usage_data_2">Skicka teknisk data och interaktionsdata</string>
+  <!-- Preference switch for usage and technical learn more link in new compose -->
+  <string name="preference_usage_data_learn_more_2">Läs mer om teknisk data</string>
   <!-- Preference switch for usage and technical learn more link -->
-  <string name="preference_usage_data_learn_more">Läs mer</string>
+  <string name="preference_usage_data_learn_more" tools:ignore="UnusedResources" moz:removedIn="141">Läs mer</string>
   <!-- Preference description for marketing data collection. Note: The words "Firefox" should NOT be translated -->
   <string name="preferences_usage_data_description_1" tools:ignore="BrandUsage">Data om din enhet, hårdvarukonfiguration och användning hjälper oss att förbättra Firefox funktioner, prestanda och stabilitet.</string>
+  <!-- Preference switch for daily usage ping data collection -->
+  <string name="preferences_daily_usage_ping_title">Ping för daglig användning</string>
+  <string name="preferences_daily_usage_ping_description">Detta hjälper Mozilla att uppskatta antalet aktiva användare.</string>
+  <string name="preferences_daily_usage_ping_learn_more">Läs mer om ping för daglig användning</string>
+  <!-- Preference switch title for automatically submitting crash reports -->
+  <string name="preferences_automatically_send_crashes_title" tools:ignore="UnusedResources" moz:removedIn="142">Skicka automatiskt kraschrapporter</string>
+  <!-- Preference switch description for automatically submitting crash reports -->
+  <string name="preferences_automatically_send_crashes_description" tools:ignore="UnusedResources" moz:removedIn="142">Det här hjälper oss att diagnostisera och lösa problem med webbläsaren. Rapporter kan innehålla personliga eller känsliga uppgifter.</string>
+  <!-- Text for sumo link to learn more about crash reports in data collection screen -->
+  <string name="preferences_crashes_learn_more">Läs mer om kraschrapporter</string>
+  <!-- Title Headers for data collection settings screen -->
+  <string name="crash_reports_data_category">Kraschrapporter</string>
+  <string name="usage_data_category">Användningsdata</string>
+  <string name="studies_data_category">Undersökningar</string>
+  <string name="technical_data_category">Tekniska data</string>
+  <string name="crash_reporting_description">Kraschrapporter tillåter oss att diagnostisera och åtgärda problem med webbläsaren. Rapporter kan innehålla personliga eller känsliga uppgifter.</string>
+  <!-- Section title for campaign measurement in data collections screen -->
+  <string name="preferences_marketing_data_title">Kampanjmätning</string>
   <!-- Preference switch for campaign measurement data (marketing data) collection -->
   <string name="preferences_marketing_data_2">Mätdata för kampanj</string>
   <!--
@@ -1243,16 +1273,8 @@
   <string name="preferences_marketing_data_description_4" tools:ignore="BrandUsage">Dela hur du upptäckte Firefox och att du använder Firefox med Mozillas marknadsföringsteknikpartners.</string>
   <!-- Learn more link for marketing data preference -->
   <string name="preferences_marketing_data_learn_more">Läs mer om marknadsföringsdata</string>
-  <!-- Preference switch for daily usage ping data collection -->
-  <string name="preferences_daily_usage_ping_title">Ping för daglig användning</string>
-  <string name="preferences_daily_usage_ping_description">Detta hjälper Mozilla att uppskatta antalet aktiva användare.</string>
-  <string name="preferences_daily_usage_ping_learn_more">Läs mer om ping för daglig användning</string>
-  <!-- Preference switch title for automatically submitting crash reports -->
-  <string name="preferences_automatically_send_crashes_title">Skicka automatiskt kraschrapporter</string>
-  <!-- Preference switch description for automatically submitting crash reports -->
-  <string name="preferences_automatically_send_crashes_description">Det här hjälper oss att diagnostisera och lösa problem med webbläsaren. Rapporter kan innehålla personliga eller känsliga uppgifter.</string>
   <!-- Learn more link for crash reporting preference -->
-  <string name="onboarding_preferences_dialog_crash_reporting_learn_more">Läs mer om kraschrapporter</string>
+  <string name="onboarding_preferences_dialog_crash_reporting_learn_more" tools:ignore="UnusedResources" moz:removedIn="142">Läs mer om kraschrapporter</string>
   <!-- Title for studies preferences -->
   <string name="preference_experiments_2">Undersökningar</string>
   <!-- Summary for studies preferences -->
@@ -1732,6 +1754,8 @@
   <string name="webcompat_reporter_success_snackbar_text">Din rapport skickades</string>
   <!-- Button text for closing or dismissing the snackbar shown after successfully submitting a WebCompat report. -->
   <string name="webcompat_reporter_dismiss_success_snackbar_text">Stäng</string>
+  <!-- Placeholder text for the description field to prompt the user on what they should type. -->
+  <string name="webcompat_reporter_problem_description_placeholder_text">Vad hände? Vad skulle ha hänt?</string>
   <!--
     These reason strings are dropdown options on a WebCompat reporter form, indicating what is broken on the site.
 
@@ -2659,6 +2683,14 @@
   <string name="login_detail_menu_edit_button">Redigera</string>
   <!-- Delete text for the login detail menu delete button -->
   <string name="login_detail_menu_delete_button">Ta bort</string>
+  <!-- Content description, used by tools like screenreaders, to go back and exit the add login view. -->
+  <string name="add_login_navigate_back_button_content_description">Navigera bakåt</string>
+  <!-- Content description, used by tools like screenreaders, to press on the save new login button. -->
+  <string name="add_login_save_new_login_button_content_description">Spara ny inloggning</string>
+  <!-- Content description, used by tools like screenreaders, to go back and exit the edit login view. -->
+  <string name="edit_login_navigate_back_button_content_description">Navigera bakåt</string>
+  <!-- Content description, used by tools like screenreaders, to press on the edit login button. -->
+  <string name="edit_login_button_content_description">Redigera inloggning</string>
   <!-- Content Description (for screenreaders etc) read for the button to open a site in logins -->
   <string name="saved_login_open_site">Öppna webbplatsen i webbläsaren</string>
   <!-- Content Description (for screenreaders etc) read for the button to reveal a password in logins -->
@@ -2955,8 +2987,10 @@
   <!--
     Top Sites
 
-    Title text displayed in the dialog when shortcuts limit is reached.
+    Title text displayed for the shortcuts home screen section.
   -->
+  <string name="homepage_shortcuts_title">Genvägar</string>
+  <!-- Title text displayed in the dialog when shortcuts limit is reached. -->
   <string name="shortcut_max_limit_title">Övre gräns för genvägar nådd</string>
   <!-- Content description text displayed in the dialog when shortcut limit is reached. -->
   <string name="shortcut_max_limit_content">För att lägga till en ny genväg, ta bort en. Tryck och håll nere sidan och välj ta bort.</string>
@@ -3348,9 +3382,9 @@
 
     Text for the protection panel header when the site is secure.
   -->
-  <string name="protection_panel_header_secure">Säker</string>
+  <string name="protection_panel_header_secure" moz:removedIn="142" tools:ignore="UnusedResources">Säker</string>
   <!-- Text for the protection panel header when the site is not secure. -->
-  <string name="protection_panel_header_not_secure">Inte säker</string>
+  <string name="protection_panel_header_not_secure" moz:removedIn="142" tools:ignore="UnusedResources">Inte säker</string>
   <!-- Title text for the protection panel banner when the site is not secure. -->
   <string name="protection_panel_banner_not_secure_title">Var försiktig med den här sidan</string>
   <!-- Description text for the protection panel banner when the site is not secure. -->
@@ -3414,7 +3448,7 @@
   <string name="connection_security_panel_not_secure">Anslutningen är inte säker</string>
   <!--
     Text for the connection security panel to indicate who the certificate was verified by.
-    %s is a placeholder for the name of the certificate authority that verified the ticket
+    %s is a placeholder for the name of the certificate authority that issued the certificate.
   -->
   <string name="connection_security_panel_verified_by">Verifierad av %s</string>
   <!--

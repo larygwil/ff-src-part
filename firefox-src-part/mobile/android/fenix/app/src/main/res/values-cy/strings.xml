@@ -64,6 +64,8 @@
   -->
   <string name="private_browsing_placeholder_description_2" moz:removedIn="141" tools:ignore="UnusedResources">Mae %1$s yn clirio’ch hanes chwilio a phori o dabiau preifat pan fyddwch yn eu cau neu’n gadael yr ap. Er nad yw hyn yn eich gwneud chi’n anhysbys i wefannau neu’ch darparwr gwasanaeth rhyngrwyd, mae’n ei gwneud hi’n haws cadw’r hyn rydych chi’n ei wneud ar-lein yn breifat rhag unrhyw un arall sy’n defnyddio’r ddyfais hon.</string>
   <string name="private_browsing_common_myths">Mythau cyffredin am bori preifat</string>
+  <!-- Text to be announced by the accessibility service to inform the user that the private browsing mode is currently active. -->
+  <string name="private_browsing_a11y_session_announcement">Sesiwn pori preifat</string>
   <!--
     True Private Browsing Mode
 
@@ -342,7 +344,11 @@
   <!-- Content description (not visible, for screen readers etc.): Back button for all menu redesign sub-menu -->
   <string name="browser_menu_back_button_content_description" moz:removedIn="141" tools:ignore="UnusedResources">Nôl i\'r brif ddewislen</string>
   <!-- Content description (not visible, for screen readers etc.) for bottom sheet handlebar main menu. -->
-  <string name="browser_main_menu_handlebar_content_description">Caewch ddalen y brif ddewislen</string>
+  <string name="browser_main_menu_handlebar_content_description" moz:removedIn="142" tools:ignore="UnusedResources">Caewch ddalen y brif ddewislen</string>
+  <!-- Content description (not visible, for screen readers etc.) for the handle used to drag the main menu at the bottom of the screen. -->
+  <string name="browser_close_main_menu_handlebar_content_description">Cau\'r ddewislen</string>
+  <!-- Content description (not visible, for screen readers etc.) for main menu navigation header. -->
+  <string name="browser_main_menu_content_description_navigation_header">Llywio</string>
   <!-- Content description (not visible, for screen readers etc.) for main menu help button. -->
   <string name="browser_main_menu_content_description_help_button">Cymorth</string>
   <!-- Content description (not visible, for screen readers etc.) for main menu settings button. -->
@@ -418,7 +424,11 @@
   <!-- Label text within the set as default banner -->
   <string name="browser_menu_default_banner_subtitle">Dim ond yn cymryd eiliadau. Ei newid unrhyw bryd.</string>
   <!-- Content description for the button that dismisses the set as default banner in the menu -->
-  <string name="browser_menu_default_banner_dismiss">Cau</string>
+  <string name="browser_menu_default_banner_dismiss" moz:removedIn="142" tools:ignore="UnusedResources">Cau</string>
+  <!-- Content description (not visible, for screen readers etc.) for the button that dismisses the set as default banner in the menu -->
+  <string name="browser_menu_default_banner_dismiss_promotion">Diystyru dyrchafiad</string>
+  <!-- Content description (not visible, for screen readers etc.) for recommended extensions in main menu -->
+  <string name="browser_menu_recommended_extensions_content_description">Rhagor o wybodaeth</string>
   <!--
     Menu "contextual feature recommendation" (CFR)
 
@@ -880,7 +890,7 @@
   <!-- Preference for translations -->
   <string name="preferences_translations">Cyfieithu</string>
   <!-- Preference for data choices -->
-  <string name="preferences_data_choices">Dewisiadau data</string>
+  <string name="preferences_data_choices" tools:ignore="UnusedResources" moz:removedIn="141">Dewisiadau data</string>
   <!-- Preference for data collection -->
   <string name="preferences_data_collection">Casglu data</string>
   <!-- Preference for developers -->
@@ -1230,10 +1240,30 @@
   <string name="exceptions_empty_message_learn_more_link">Darllen rhagor</string>
   <!-- Preference switch for usage and technical data collection -->
   <string name="preference_usage_data_2">Anfon data technegol a rhyngweithio</string>
+  <!-- Preference switch for usage and technical learn more link in new compose -->
+  <string name="preference_usage_data_learn_more_2">Dysgu rhagor am ddata technegol</string>
   <!-- Preference switch for usage and technical learn more link -->
-  <string name="preference_usage_data_learn_more">Dysgu rhagor</string>
+  <string name="preference_usage_data_learn_more" tools:ignore="UnusedResources" moz:removedIn="141">Dysgu rhagor</string>
   <!-- Preference description for marketing data collection. Note: The words "Firefox" should NOT be translated -->
   <string name="preferences_usage_data_description_1" tools:ignore="BrandUsage">Mae data am eich dyfais, ffurfweddiad caledwedd, a defnydd yn ein helpu i wella nodweddion, perfformiad a sefydlogrwydd Firefox.</string>
+  <!-- Preference switch for daily usage ping data collection -->
+  <string name="preferences_daily_usage_ping_title">Ping defnydd dyddiol</string>
+  <string name="preferences_daily_usage_ping_description">Mae hyn yn helpu Mozilla i amcangyfrif defnyddwyr gweithredol.</string>
+  <string name="preferences_daily_usage_ping_learn_more">Dysgwch fwy am ping defnydd dyddiol</string>
+  <!-- Preference switch title for automatically submitting crash reports -->
+  <string name="preferences_automatically_send_crashes_title" tools:ignore="UnusedResources" moz:removedIn="142">Yn anfon adroddiadau chwalu\'n awtomatig</string>
+  <!-- Preference switch description for automatically submitting crash reports -->
+  <string name="preferences_automatically_send_crashes_description" tools:ignore="UnusedResources" moz:removedIn="142">Mae hyn yn ein helpu i wneud diagnosis a thrwsio problemau gyda\'r porwr. Gall adroddiadau gynnwys data personol neu sensitif.</string>
+  <!-- Text for sumo link to learn more about crash reports in data collection screen -->
+  <string name="preferences_crashes_learn_more">Darllen rhagor am adroddiadau chwalu</string>
+  <!-- Title Headers for data collection settings screen -->
+  <string name="crash_reports_data_category">Adroddiadau Chwalu</string>
+  <string name="usage_data_category">Data defnydd</string>
+  <string name="studies_data_category">Astudiaethau</string>
+  <string name="technical_data_category">Data Technegol</string>
+  <string name="crash_reporting_description">Mae adroddiadau chwalu\'n ein galluogi i wneud diagnosis a thrwsio problemau gyda\'r porwr. Gall adroddiadau gynnwys data personol neu sensitif.</string>
+  <!-- Section title for campaign measurement in data collections screen -->
+  <string name="preferences_marketing_data_title">Mesur ymgyrch</string>
   <!-- Preference switch for campaign measurement data (marketing data) collection -->
   <string name="preferences_marketing_data_2">Data mesur yr ymgyrch</string>
   <!--
@@ -1243,16 +1273,8 @@
   <string name="preferences_marketing_data_description_4" tools:ignore="BrandUsage">Rhannwch sut wnaethoch chi ddarganfod Firefox a\'ch bod chi\'n ei ddefnyddio gyda phartneriaid technoleg marchnata Mozilla.</string>
   <!-- Learn more link for marketing data preference -->
   <string name="preferences_marketing_data_learn_more">Dysgwch fwy am ddata marchnata</string>
-  <!-- Preference switch for daily usage ping data collection -->
-  <string name="preferences_daily_usage_ping_title">Ping defnydd dyddiol</string>
-  <string name="preferences_daily_usage_ping_description">Mae hyn yn helpu Mozilla i amcangyfrif defnyddwyr gweithredol.</string>
-  <string name="preferences_daily_usage_ping_learn_more">Dysgwch fwy am ping defnydd dyddiol</string>
-  <!-- Preference switch title for automatically submitting crash reports -->
-  <string name="preferences_automatically_send_crashes_title">Yn anfon adroddiadau chwalu\'n awtomatig</string>
-  <!-- Preference switch description for automatically submitting crash reports -->
-  <string name="preferences_automatically_send_crashes_description">Mae hyn yn ein helpu i wneud diagnosis a thrwsio problemau gyda\'r porwr. Gall adroddiadau gynnwys data personol neu sensitif.</string>
   <!-- Learn more link for crash reporting preference -->
-  <string name="onboarding_preferences_dialog_crash_reporting_learn_more">Darllen rhagor am adroddiadau chwalu</string>
+  <string name="onboarding_preferences_dialog_crash_reporting_learn_more" tools:ignore="UnusedResources" moz:removedIn="142">Darllen rhagor am adroddiadau chwalu</string>
   <!-- Title for studies preferences -->
   <string name="preference_experiments_2">Astudiaethau</string>
   <!-- Summary for studies preferences -->
@@ -1732,6 +1754,8 @@
   <string name="webcompat_reporter_success_snackbar_text">Anfonwyd eich adroddiad</string>
   <!-- Button text for closing or dismissing the snackbar shown after successfully submitting a WebCompat report. -->
   <string name="webcompat_reporter_dismiss_success_snackbar_text">Cau</string>
+  <!-- Placeholder text for the description field to prompt the user on what they should type. -->
+  <string name="webcompat_reporter_problem_description_placeholder_text">Beth ddigwyddodd? Beth ddylai fod wedi digwydd?</string>
   <!--
     These reason strings are dropdown options on a WebCompat reporter form, indicating what is broken on the site.
 
@@ -2659,6 +2683,14 @@
   <string name="login_detail_menu_edit_button">Golygu</string>
   <!-- Delete text for the login detail menu delete button -->
   <string name="login_detail_menu_delete_button">Dileu</string>
+  <!-- Content description, used by tools like screenreaders, to go back and exit the add login view. -->
+  <string name="add_login_navigate_back_button_content_description">Symud nôl</string>
+  <!-- Content description, used by tools like screenreaders, to press on the save new login button. -->
+  <string name="add_login_save_new_login_button_content_description">Cadw mewngofnod newydd</string>
+  <!-- Content description, used by tools like screenreaders, to go back and exit the edit login view. -->
+  <string name="edit_login_navigate_back_button_content_description">Symud nôl</string>
+  <!-- Content description, used by tools like screenreaders, to press on the edit login button. -->
+  <string name="edit_login_button_content_description">Golygu\'r mewngofnod</string>
   <!-- Content Description (for screenreaders etc) read for the button to open a site in logins -->
   <string name="saved_login_open_site">Agor y wefan yn y porwr</string>
   <!-- Content Description (for screenreaders etc) read for the button to reveal a password in logins -->
@@ -2955,8 +2987,10 @@
   <!--
     Top Sites
 
-    Title text displayed in the dialog when shortcuts limit is reached.
+    Title text displayed for the shortcuts home screen section.
   -->
+  <string name="homepage_shortcuts_title">Llwybrau Byr</string>
+  <!-- Title text displayed in the dialog when shortcuts limit is reached. -->
   <string name="shortcut_max_limit_title">Cyrhaeddwyd terfyn llwybr byr</string>
   <!-- Content description text displayed in the dialog when shortcut limit is reached. -->
   <string name="shortcut_max_limit_content">I ychwanegu llwybr byr newydd, tynnwch un. Cyffyrddwch a daliwch y wefan a dewiswch dileu.</string>
@@ -3348,9 +3382,9 @@
 
     Text for the protection panel header when the site is secure.
   -->
-  <string name="protection_panel_header_secure">Diogel</string>
+  <string name="protection_panel_header_secure" moz:removedIn="142" tools:ignore="UnusedResources">Diogel</string>
   <!-- Text for the protection panel header when the site is not secure. -->
-  <string name="protection_panel_header_not_secure">Ddim yn ddiogel</string>
+  <string name="protection_panel_header_not_secure" moz:removedIn="142" tools:ignore="UnusedResources">Ddim yn ddiogel</string>
   <!-- Title text for the protection panel banner when the site is not secure. -->
   <string name="protection_panel_banner_not_secure_title">Byddwch yn ofalus ar y wefan hon</string>
   <!-- Description text for the protection panel banner when the site is not secure. -->
@@ -3414,7 +3448,7 @@
   <string name="connection_security_panel_not_secure">Nid yw’r cysylltiad yn ddiogel</string>
   <!--
     Text for the connection security panel to indicate who the certificate was verified by.
-    %s is a placeholder for the name of the certificate authority that verified the ticket
+    %s is a placeholder for the name of the certificate authority that issued the certificate.
   -->
   <string name="connection_security_panel_verified_by">Wedi\'i wirio gan %s</string>
   <!--
