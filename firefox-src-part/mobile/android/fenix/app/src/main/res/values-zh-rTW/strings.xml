@@ -34,6 +34,8 @@
   <string name="no_private_tabs_description">您開啟的隱私瀏覽分頁將顯示於此處。</string>
   <!-- Tab tray multi select title in app bar. %1$d is the number of tabs selected -->
   <string name="tab_tray_multi_select_title">已選擇 %1$d 個分頁</string>
+  <!-- Tab tray multi select title in app bar when no tabs are selected -->
+  <string name="tab_tray_multi_select_title_empty">選擇分頁</string>
   <!-- Label of button in create collection dialog for creating a new collection -->
   <string name="tab_tray_add_new_collection">新增收藏集</string>
   <!-- Label of editable text in create collection dialog for naming a new collection -->
@@ -338,7 +340,7 @@
   <!-- Browser menu label that toggles the request for the desktop site of the currently visited page -->
   <string name="browser_menu_switch_to_desktop_site" moz:removedIn="141" tools:ignore="UnusedResources">切換為桌面版</string>
   <!-- Browser menu label that toggles the request for the mobile site of the currently visited page -->
-  <string name="browser_menu_switch_to_mobile_site">切換為行動版</string>
+  <string name="browser_menu_switch_to_mobile_site" moz:removedIn="142" tools:ignore="UnusedResources">切換為行動版</string>
   <!-- Browser menu label that navigates to the page tools sub-menu -->
   <string name="browser_menu_tools" moz:removedIn="141" tools:ignore="UnusedResources">工具</string>
   <!-- Content description (not visible, for screen readers etc.): Back button for all menu redesign sub-menu -->
@@ -875,6 +877,10 @@
   <string name="preferences_theme">佈景主題</string>
   <!-- Preference for customizing the home screen -->
   <string name="preferences_home_2">首頁</string>
+  <!-- Preference for customizing the app icon -->
+  <string name="preferences_app_icon">應用程式圖示</string>
+  <!-- Preference for showing the tab strip -->
+  <string name="preferences_tab_strip">分頁列顯示位置</string>
   <!-- Preference for gestures based actions -->
   <string name="preferences_gestures">手勢</string>
   <!-- Preference for settings related to visual options -->
@@ -1307,6 +1313,14 @@
   <string name="preference_simple_toolbar">簡單</string>
   <!-- Preference for using expanded toolbar -->
   <string name="preference_expanded_toolbar">展開</string>
+  <!-- Preference description indicating the toolbar location preference is disabled when the tab strip is enabled -->
+  <string name="preference_toolbar_pref_disabled_explanation">顯示分頁列時，網址列必須在頂端。</string>
+  <!--
+    App icon Preferences
+
+    Title for the preference that lets the user pick a new app icon
+  -->
+  <string name="preference_select_app_icon_title">選擇應用程式圖示</string>
   <!--
     Theme Preferences
 
@@ -1319,6 +1333,12 @@
   <string name="preference_auto_battery_theme">由系統省電模式設定</string>
   <!-- Preference for using following device theme -->
   <string name="preference_follow_device_theme">依照裝置佈景主題顯示</string>
+  <!--
+    Tab Strip Preferences
+
+    Preferences for showing tab strip
+  -->
+  <string name="preference_tab_strip_show">顯示分頁列</string>
   <!--
     Gestures Preferences
 
@@ -1472,6 +1492,11 @@
   <!--
     Sessions
 
+    Title for the list of tabs in the current normal session used by a11y services
+    The %1$s will be replaced by the number of opened normal tabs
+  -->
+  <string name="tabs_header_normal_tabs_counter_title">已開啟 %1$s 個一般分頁，點擊即可切換分頁。</string>
+  <!--
     Title for the list of tabs in the current private session used by a11y services
     The %1$s will be replaced by the number of opened private tabs
   -->
@@ -1481,6 +1506,12 @@
     The %1$s will be replaced by the number of opened synced tabs
   -->
   <string name="tabs_header_synced_tabs_counter_title">已開啟 %1$s 個同步過來的分頁，點擊即可切換分頁。</string>
+  <!-- Text for the tabs header private tabs -->
+  <string name="tabs_header_private_tabs_title">隱私</string>
+  <!-- Text for the tabs header normal tabs -->
+  <string name="tabs_header_normal_tabs_title">分頁</string>
+  <!-- Text for the tabs header synced tabs -->
+  <string name="tabs_header_synced_tabs_title">Sync</string>
   <!-- Content description (not visible, for screen readers etc.): Add tab button. Adds a news tab when pressed -->
   <string name="add_tab">新增分頁</string>
   <!-- Content description (not visible, for screen readers etc.): Add tab button. Adds a news tab when pressed -->
@@ -1731,7 +1762,11 @@
   -->
   <string name="webcompat_reporter_screen_title">回報網站問題</string>
   <!-- The description of the Web Compat Reporter feature. %1$s is the name of the app (for example "Firefox"). -->
-  <string name="webcompat_reporter_description">請幫助讓 %1$s 能對每個人都變得更好。Mozilla 的員工會使用您傳送的資訊來修復網站問題。</string>
+  <string name="webcompat_reporter_description" moz:removedIn="142" tools:ignore="UnusedResources">請幫助讓 %1$s 能對每個人都變得更好。Mozilla 的員工會使用您傳送的資訊來修復網站問題。</string>
+  <!-- The description of the Web Compat Reporter feature, which has a "learn more" button text for navigating to a SUMO link to learn more about reporting a broken site. %1$s is the name of the app (for example "Firefox"). -->
+  <string name="webcompat_reporter_description_2">您的回報內容可幫助我們了解與修正 %1$s 的問題，讓所有使用者都能獲得改進。了解更多資訊</string>
+  <!-- The button text for navigating to the SUMO link to learn more about reporting a broken site. -->
+  <string name="webcompat_reporter_learn_more">更多資訊</string>
   <!-- The text field label of the URL text field. This is displayed above the user-inputted URL. -->
   <string name="webcompat_reporter_label_url">網址</string>
   <!-- The error message of the URL text field when an invalid URL has been entered. -->
@@ -1739,7 +1774,9 @@
   <!-- The label/title of a field in the Web Compat Reporter feature for explaining a high-level reason why the site is broken. -->
   <string name="webcompat_reporter_label_whats_broken_2">哪個部分故障了？</string>
   <!-- The placeholder text for the dropdown where a user selects a high-level reason why the site is broken. -->
-  <string name="webcompat_reporter_choose_reason">選擇原因</string>
+  <string name="webcompat_reporter_choose_reason" moz:removedIn="142" tools:ignore="UnusedResources">選擇原因</string>
+  <!-- The placeholder text for the dropdown where a user selects a high-level reason why the site is broken. -->
+  <string name="webcompat_reporter_choose_reason_2">選擇原因</string>
   <!-- The error message of the dropdown, prompting the user to select a high-level reason why the site is broken. -->
   <string name="webcompat_reporter_choose_reason_error">請選擇原因</string>
   <!-- The label/title of an optional field in the Web Compat Reporter feature for adding additional information. -->
@@ -2069,7 +2106,7 @@
   -->
   <string name="create_collection_save_to_collection_tab_selected">已選擇 %d 個分頁</string>
   <!-- Text shown in snackbar when multiple tabs have been saved in a collection -->
-  <string name="create_collection_tabs_saved">已儲存分頁！</string>
+  <string name="create_collection_tabs_saved" tools:ignore="UnusedResources" moz:removedIn="142">已儲存分頁！</string>
   <!-- Text shown in snackbar when one or multiple tabs have been saved in a new collection -->
   <string name="create_collection_tabs_saved_new_collection">已儲存收藏集！</string>
   <!-- Text shown in snackbar when one tab has been saved in a collection -->
@@ -2204,7 +2241,7 @@
   -->
   <string name="snackbar_collection_deleted">已刪除收藏集</string>
   <!-- Text shown in snackbar when user renames a collection -->
-  <string name="snackbar_collection_renamed">已更名收藏集</string>
+  <string name="snackbar_collection_renamed" moz:removedIn="141" tools:ignore="UnusedResources">已更名收藏集</string>
   <!-- Text shown in snackbar when user closes a tab -->
   <string name="snackbar_tab_closed">已關閉分頁</string>
   <!-- Text shown in snackbar when user closes all tabs -->
@@ -2243,13 +2280,15 @@
   <!-- Tab collection deletion prompt dialog option to delete the collection -->
   <string name="tab_collection_dialog_positive">刪除</string>
   <!-- Message for copying the URL via long press on the toolbar -->
-  <string name="url_copied">已複製網址</string>
+  <string name="url_copied" tools:ignore="UnusedResources" moz:removedIn="142">已複製網址</string>
   <!-- Sample text for accessibility font size -->
   <string name="accessibility_text_size_sample_text_1">This is sample text. It is here to show how text will appear when you increase or decrease the size with this setting.\n中文字型測試：「老闆，來一杯大杯珍奶，半糖去冰！」</string>
   <!-- Summary for Accessibility Text Size Scaling Preference -->
   <string name="preference_accessibility_text_size_summary">放大或縮小網站上的文字</string>
   <!-- Title for Accessibility Text Size Scaling Preference -->
   <string name="preference_accessibility_font_size_title">字型大小</string>
+  <!-- %d is the percentage of the slide bar for setting the text font size and %% will be announced as "percent". -->
+  <string name="a11y_preference_accessibility_font_size_percentage">%d %%。</string>
   <!-- Title for Accessibility Text Automatic Size Scaling Preference -->
   <string name="preference_accessibility_auto_size_2">自動調整字體大小</string>
   <!-- Summary for Accessibility Text Automatic Size Scaling Preference -->
@@ -2381,6 +2420,10 @@
   <string name="preference_enhanced_tracking_protection_strict">嚴格</string>
   <!-- Preference description for enhanced tracking protection for the strict protection settings -->
   <string name="preference_enhanced_tracking_protection_strict_description_4">更強大的追蹤保護功能與更快的效能，但某些網站會無法正常運作。</string>
+  <!-- Preference description for the checkbox setting for "baseline" exceptions (a set of content blocking exceptions applied to fix major website breakage). %1$s is the name of the application (e.g. Fenix). -->
+  <string name="preference_enhanced_tracking_protection_allow_list_baseline">允許 %1$s 自動套用必要的例外規則，以避免主要網站故障。</string>
+  <!-- Preference description for the checkbox setting for "convenience" exceptions (a set of content blocking exceptions applied to fix convenience site features). -->
+  <string name="preference_enhanced_tracking_protection_allow_list_convenience">也自動套用為了修正小問題、並提供各種方便功能所需的例外規則。</string>
   <!-- Accessibility text for the Strict protection information icon -->
   <string name="preference_enhanced_tracking_protection_strict_info_button">嚴格追蹤保護會封鎖哪些內容</string>
   <!-- Preference for enhanced tracking protection for the custom protection settings -->
@@ -2749,6 +2792,10 @@
   <string name="preferences_addresses_save_and_autofill_addresses_2">儲存並自動填寫地址</string>
   <!-- Preference summary for saving and filling address data -->
   <string name="preferences_addresses_save_and_autofill_addresses_summary_2">包含電話號碼與電子郵件地址</string>
+  <!-- Preference option for syncing addresses across devices. This is displayed when the user is not signed into sync -->
+  <string name="preferences_addresses_sync_addresses_across_devices">在不同裝置間同步地址資訊</string>
+  <!-- Preference option for syncing addresses across devices. This is displayed when the user is signed into sync -->
+  <string name="preferences_addresses_sync_addresses">同步地址資訊</string>
   <!-- Title of the "Add card" screen -->
   <string name="credit_cards_add_card">新增付款卡片</string>
   <!-- Title of the "Edit card" screen -->
@@ -2876,9 +2923,9 @@
   <!-- Text shown when we aren't able to validate the custom search query. %s is the url of the custom search engine. -->
   <string name="search_add_custom_engine_error_cannot_reach" moz:removedIn="140" tools:ignore="UnusedResources">連線到「%s」時發生錯誤</string>
   <!-- Text shown when a user creates a new search engine. %s is the url of the custom search engine. -->
-  <string name="search_add_custom_engine_success_message">已建立 %s</string>
+  <string name="search_add_custom_engine_success_message" tools:ignore="UnusedResources" moz:removedIn="142">已建立 %s</string>
   <!-- Text shown when a user successfully edits a custom search engine. %s is the url of the custom search engine. -->
-  <string name="search_edit_custom_engine_success_message">已儲存 %s</string>
+  <string name="search_edit_custom_engine_success_message" tools:ignore="UnusedResources" moz:removedIn="142">已儲存 %s</string>
   <!-- Text shown when a user successfully deletes a custom search engine. %s is the url of the custom search engine. -->
   <string name="search_delete_search_engine_success_message">已刪除 %s</string>
   <!-- Heading for the instructions to allow a permission -->
@@ -3405,10 +3452,18 @@
   <string name="protection_panel_banner_protected_description">您已受到保護，若我們發現某些不安全的地方會再通知您。</string>
   <!-- Label text for the Enhanced Tracking Protection toggle. -->
   <string name="protection_panel_etp_toggle_label">加強型追蹤保護</string>
+  <!-- Toggle if Enhanced Tracking Protection is turned on -->
+  <string name="protection_panel_etp_toggle_on">開啟</string>
+  <!-- Toggle if Enhanced Tracking Protection is turned off -->
+  <string name="protection_panel_etp_toggle_off">關閉</string>
   <!-- Description text for the Enhanced Tracking Protection toggle when tracking protection is enabled. -->
-  <string name="protection_panel_etp_toggle_enabled_description">若此網站功能異常，可嘗試關閉保護。</string>
+  <string name="protection_panel_etp_toggle_enabled_description" moz:removedIn="142" tools:ignore="UnusedResources">若此網站功能異常，可嘗試關閉保護。</string>
+  <!-- Description text for the Enhanced Tracking Protection toggle when tracking protection is enabled. -->
+  <string name="protection_panel_etp_toggle_enabled_description_2">若此網站功能異常，可嘗試關閉此功能。</string>
   <!-- Description text for the Enhanced Tracking Protection toggle when tracking protection is disabled. -->
-  <string name="protection_panel_etp_toggle_disabled_description">已關閉保護，建議您重新開啟。</string>
+  <string name="protection_panel_etp_toggle_disabled_description" moz:removedIn="142" tools:ignore="UnusedResources">已關閉保護，建議您重新開啟。</string>
+  <!-- Description text for the Enhanced Tracking Protection toggle when tracking protection is disabled. -->
+  <string name="protection_panel_etp_toggle_disabled_description_2">建議開啟追蹤保護功能。</string>
   <!--
     Text for displaying the total number of trackers blocked in the protection panel.
     %d is a placeholder for the number of trackers blocked.
@@ -3417,7 +3472,9 @@
   <!-- Text for when no trackers have been blocked. -->
   <string name="protection_panel_no_trackers_blocked">找不到追蹤器</string>
   <!-- Link text to navigate to privacy and security settings from the protection panel. -->
-  <string name="protection_panel_privacy_and_security_settings">隱私權與安全性設定</string>
+  <string name="protection_panel_privacy_and_security_settings" moz:removedIn="142" tools:ignore="UnusedResources">隱私權與安全性設定</string>
+  <!-- Link text to navigate to privacy and security settings from the protection panel. -->
+  <string name="protection_panel_privacy_and_security_settings_2">隱私權設定</string>
   <!-- Title text for the protection panel permissions section. -->
   <string name="protection_panel_permissions_title">權限</string>
   <!--
@@ -3627,6 +3684,14 @@
   <string name="debug_drawer_override_region">覆蓋原始與目前地區</string>
   <!-- The title of the button for overriding home region permanently. -->
   <string name="debug_drawer_override_home_region_permanently">永久覆蓋原始地區</string>
+  <!--
+    Add-ons debug tools
+
+    The description of the Add-ons Tools in the Debug Drawer
+  -->
+  <string name="debug_drawer_addons_tools_title">附加元件工具</string>
+  <!-- The title of the button used to check for add-on updates. -->
+  <string name="addons_debug_tools_check_for_updates_button">檢查更新</string>
   <!--
     Messages explaining how to exit fullscreen mode
 

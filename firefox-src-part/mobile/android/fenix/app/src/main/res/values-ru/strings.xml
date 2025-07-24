@@ -34,6 +34,8 @@
   <string name="no_private_tabs_description">Ваши приватные вкладки будут показаны здесь.</string>
   <!-- Tab tray multi select title in app bar. %1$d is the number of tabs selected -->
   <string name="tab_tray_multi_select_title">Выбрано: %1$d</string>
+  <!-- Tab tray multi select title in app bar when no tabs are selected -->
+  <string name="tab_tray_multi_select_title_empty">Выбрать вкладки</string>
   <!-- Label of button in create collection dialog for creating a new collection -->
   <string name="tab_tray_add_new_collection">Создать новый сборник</string>
   <!-- Label of editable text in create collection dialog for naming a new collection -->
@@ -338,7 +340,7 @@
   <!-- Browser menu label that toggles the request for the desktop site of the currently visited page -->
   <string name="browser_menu_switch_to_desktop_site" moz:removedIn="141" tools:ignore="UnusedResources">Перейти на версию для ПК</string>
   <!-- Browser menu label that toggles the request for the mobile site of the currently visited page -->
-  <string name="browser_menu_switch_to_mobile_site">Перейти на мобильный сайт</string>
+  <string name="browser_menu_switch_to_mobile_site" moz:removedIn="142" tools:ignore="UnusedResources">Перейти на мобильный сайт</string>
   <!-- Browser menu label that navigates to the page tools sub-menu -->
   <string name="browser_menu_tools" moz:removedIn="141" tools:ignore="UnusedResources">Инструменты</string>
   <!-- Content description (not visible, for screen readers etc.): Back button for all menu redesign sub-menu -->
@@ -875,6 +877,10 @@
   <string name="preferences_theme">Тема</string>
   <!-- Preference for customizing the home screen -->
   <string name="preferences_home_2">Домашняя страница</string>
+  <!-- Preference for customizing the app icon -->
+  <string name="preferences_app_icon">Значок приложения</string>
+  <!-- Preference for showing the tab strip -->
+  <string name="preferences_tab_strip">Отображение панели вкладок</string>
   <!-- Preference for gestures based actions -->
   <string name="preferences_gestures">Жесты</string>
   <!-- Preference for settings related to visual options -->
@@ -1307,6 +1313,14 @@
   <string name="preference_simple_toolbar">Простой</string>
   <!-- Preference for using expanded toolbar -->
   <string name="preference_expanded_toolbar">Расширенный</string>
+  <!-- Preference description indicating the toolbar location preference is disabled when the tab strip is enabled -->
+  <string name="preference_toolbar_pref_disabled_explanation">Когда отображается панель вкладок, адресная строка должна быть сверху.</string>
+  <!--
+    App icon Preferences
+
+    Title for the preference that lets the user pick a new app icon
+  -->
+  <string name="preference_select_app_icon_title">Выберите значок приложения</string>
   <!--
     Theme Preferences
 
@@ -1319,6 +1333,12 @@
   <string name="preference_auto_battery_theme">Учитывать режим экономии батареи</string>
   <!-- Preference for using following device theme -->
   <string name="preference_follow_device_theme">Использовать тему устройства</string>
+  <!--
+    Tab Strip Preferences
+
+    Preferences for showing tab strip
+  -->
+  <string name="preference_tab_strip_show">Показать панель вкладок</string>
   <!--
     Gestures Preferences
 
@@ -1472,6 +1492,11 @@
   <!--
     Sessions
 
+    Title for the list of tabs in the current normal session used by a11y services
+    The %1$s will be replaced by the number of opened normal tabs
+  -->
+  <string name="tabs_header_normal_tabs_counter_title">Обычных открытых вкладкок: %1$s. Нажмите для переключения вкладок.</string>
+  <!--
     Title for the list of tabs in the current private session used by a11y services
     The %1$s will be replaced by the number of opened private tabs
   -->
@@ -1481,6 +1506,12 @@
     The %1$s will be replaced by the number of opened synced tabs
   -->
   <string name="tabs_header_synced_tabs_counter_title">Открытых синхронизированных вкладок: %1$s. Нажмите для переключения вкладок.</string>
+  <!-- Text for the tabs header private tabs -->
+  <string name="tabs_header_private_tabs_title">Приватные</string>
+  <!-- Text for the tabs header normal tabs -->
+  <string name="tabs_header_normal_tabs_title">Вкладки</string>
+  <!-- Text for the tabs header synced tabs -->
+  <string name="tabs_header_synced_tabs_title">Синхронизация</string>
   <!-- Content description (not visible, for screen readers etc.): Add tab button. Adds a news tab when pressed -->
   <string name="add_tab">Открыть вкладку</string>
   <!-- Content description (not visible, for screen readers etc.): Add tab button. Adds a news tab when pressed -->
@@ -1731,7 +1762,11 @@
   -->
   <string name="webcompat_reporter_screen_title">Сообщить о сломанном сайте</string>
   <!-- The description of the Web Compat Reporter feature. %1$s is the name of the app (for example "Firefox"). -->
-  <string name="webcompat_reporter_description">Помогите сделать %1$s лучше для всех и каждого. Сотрудники Mozilla используют отправленную вами информацию для устранения проблем с веб-сайтом.</string>
+  <string name="webcompat_reporter_description" moz:removedIn="142" tools:ignore="UnusedResources">Помогите сделать %1$s лучше для всех и каждого. Сотрудники Mozilla используют отправленную вами информацию для устранения проблем с веб-сайтом.</string>
+  <!-- The description of the Web Compat Reporter feature, which has a "learn more" button text for navigating to a SUMO link to learn more about reporting a broken site. %1$s is the name of the app (for example "Firefox"). -->
+  <string name="webcompat_reporter_description_2">Ваше сообщение поможет нам понять и исправить проблемы в %1$s, чтобы сделать его лучше для всех. Узнать больше</string>
+  <!-- The button text for navigating to the SUMO link to learn more about reporting a broken site. -->
+  <string name="webcompat_reporter_learn_more">Подробнее</string>
   <!-- The text field label of the URL text field. This is displayed above the user-inputted URL. -->
   <string name="webcompat_reporter_label_url">URL</string>
   <!-- The error message of the URL text field when an invalid URL has been entered. -->
@@ -1739,7 +1774,9 @@
   <!-- The label/title of a field in the Web Compat Reporter feature for explaining a high-level reason why the site is broken. -->
   <string name="webcompat_reporter_label_whats_broken_2">Что сломано?</string>
   <!-- The placeholder text for the dropdown where a user selects a high-level reason why the site is broken. -->
-  <string name="webcompat_reporter_choose_reason">Выберите причину</string>
+  <string name="webcompat_reporter_choose_reason" moz:removedIn="142" tools:ignore="UnusedResources">Выберите причину</string>
+  <!-- The placeholder text for the dropdown where a user selects a high-level reason why the site is broken. -->
+  <string name="webcompat_reporter_choose_reason_2">Выберите причину</string>
   <!-- The error message of the dropdown, prompting the user to select a high-level reason why the site is broken. -->
   <string name="webcompat_reporter_choose_reason_error">Пожалуйста, выберите причину</string>
   <!-- The label/title of an optional field in the Web Compat Reporter feature for adding additional information. -->
@@ -2069,7 +2106,7 @@
   -->
   <string name="create_collection_save_to_collection_tab_selected">Выбрана %d вкладка</string>
   <!-- Text shown in snackbar when multiple tabs have been saved in a collection -->
-  <string name="create_collection_tabs_saved">Вкладки сохранены!</string>
+  <string name="create_collection_tabs_saved" tools:ignore="UnusedResources" moz:removedIn="142">Вкладки сохранены!</string>
   <!-- Text shown in snackbar when one or multiple tabs have been saved in a new collection -->
   <string name="create_collection_tabs_saved_new_collection">Сборник сохранён!</string>
   <!-- Text shown in snackbar when one tab has been saved in a collection -->
@@ -2204,7 +2241,7 @@
   -->
   <string name="snackbar_collection_deleted">Сборник удалён</string>
   <!-- Text shown in snackbar when user renames a collection -->
-  <string name="snackbar_collection_renamed">Сборник переименован</string>
+  <string name="snackbar_collection_renamed" moz:removedIn="141" tools:ignore="UnusedResources">Сборник переименован</string>
   <!-- Text shown in snackbar when user closes a tab -->
   <string name="snackbar_tab_closed">Вкладка закрыта</string>
   <!-- Text shown in snackbar when user closes all tabs -->
@@ -2243,13 +2280,15 @@
   <!-- Tab collection deletion prompt dialog option to delete the collection -->
   <string name="tab_collection_dialog_positive">Удалить</string>
   <!-- Message for copying the URL via long press on the toolbar -->
-  <string name="url_copied">Ссылка скопирована</string>
+  <string name="url_copied" tools:ignore="UnusedResources" moz:removedIn="142">Ссылка скопирована</string>
   <!-- Sample text for accessibility font size -->
   <string name="accessibility_text_size_sample_text_1">Это пример текста. Он здесь для того, чтобы показать, как текст будет отображаться, когда вы будете увеличивать или уменьшать его размер.</string>
   <!-- Summary for Accessibility Text Size Scaling Preference -->
   <string name="preference_accessibility_text_size_summary">Увеличение или уменьшение размера шрифта на сайтах</string>
   <!-- Title for Accessibility Text Size Scaling Preference -->
   <string name="preference_accessibility_font_size_title">Размер шрифта</string>
+  <!-- %d is the percentage of the slide bar for setting the text font size and %% will be announced as "percent". -->
+  <string name="a11y_preference_accessibility_font_size_percentage">%d %%.</string>
   <!-- Title for Accessibility Text Automatic Size Scaling Preference -->
   <string name="preference_accessibility_auto_size_2">Автоматический размер шрифта</string>
   <!-- Summary for Accessibility Text Automatic Size Scaling Preference -->
@@ -2381,6 +2420,10 @@
   <string name="preference_enhanced_tracking_protection_strict">Строгая</string>
   <!-- Preference description for enhanced tracking protection for the strict protection settings -->
   <string name="preference_enhanced_tracking_protection_strict_description_4">Строгая защита от отслеживания с увеличенной производительностью, некоторые сайты могут работать неправильно.</string>
+  <!-- Preference description for the checkbox setting for "baseline" exceptions (a set of content blocking exceptions applied to fix major website breakage). %1$s is the name of the application (e.g. Fenix). -->
+  <string name="preference_enhanced_tracking_protection_allow_list_baseline">Разрешить %1$s автоматически применять исключения, необходимые для избежания серьезных проблем с сайтом.</string>
+  <!-- Preference description for the checkbox setting for "convenience" exceptions (a set of content blocking exceptions applied to fix convenience site features). -->
+  <string name="preference_enhanced_tracking_protection_allow_list_convenience">Также автоматически применить исключения, которые требуются только для исправления незначительных проблем и обеспечения доступности удобных функций.</string>
   <!-- Accessibility text for the Strict protection information icon -->
   <string name="preference_enhanced_tracking_protection_strict_info_button">Что блокируется строгой защитой от отслеживания</string>
   <!-- Preference for enhanced tracking protection for the custom protection settings -->
@@ -2749,6 +2792,10 @@
   <string name="preferences_addresses_save_and_autofill_addresses_2">Сохранять и заполнять адреса</string>
   <!-- Preference summary for saving and filling address data -->
   <string name="preferences_addresses_save_and_autofill_addresses_summary_2">Включает номера телефонов и адреса электронной почты</string>
+  <!-- Preference option for syncing addresses across devices. This is displayed when the user is not signed into sync -->
+  <string name="preferences_addresses_sync_addresses_across_devices">Синхронизируйте адреса между устройствами</string>
+  <!-- Preference option for syncing addresses across devices. This is displayed when the user is signed into sync -->
+  <string name="preferences_addresses_sync_addresses">Синхронизация адресов</string>
   <!-- Title of the "Add card" screen -->
   <string name="credit_cards_add_card">Добавить карту</string>
   <!-- Title of the "Edit card" screen -->
@@ -2876,9 +2923,9 @@
   <!-- Text shown when we aren't able to validate the custom search query. %s is the url of the custom search engine. -->
   <string name="search_add_custom_engine_error_cannot_reach" moz:removedIn="140" tools:ignore="UnusedResources">Ошибка подключения к “%s”</string>
   <!-- Text shown when a user creates a new search engine. %s is the url of the custom search engine. -->
-  <string name="search_add_custom_engine_success_message">%s добавлена</string>
+  <string name="search_add_custom_engine_success_message" tools:ignore="UnusedResources" moz:removedIn="142">%s добавлена</string>
   <!-- Text shown when a user successfully edits a custom search engine. %s is the url of the custom search engine. -->
-  <string name="search_edit_custom_engine_success_message">%s сохранена</string>
+  <string name="search_edit_custom_engine_success_message" tools:ignore="UnusedResources" moz:removedIn="142">%s сохранена</string>
   <!-- Text shown when a user successfully deletes a custom search engine. %s is the url of the custom search engine. -->
   <string name="search_delete_search_engine_success_message">%s удалён</string>
   <!-- Heading for the instructions to allow a permission -->
@@ -3405,10 +3452,18 @@
   <string name="protection_panel_banner_protected_description">Вы защищены. Если мы что-то заметим, мы сообщим вам.</string>
   <!-- Label text for the Enhanced Tracking Protection toggle. -->
   <string name="protection_panel_etp_toggle_label">Улучшенная защита от отслеживания</string>
+  <!-- Toggle if Enhanced Tracking Protection is turned on -->
+  <string name="protection_panel_etp_toggle_on">Вкл.</string>
+  <!-- Toggle if Enhanced Tracking Protection is turned off -->
+  <string name="protection_panel_etp_toggle_off">Выкл.</string>
   <!-- Description text for the Enhanced Tracking Protection toggle when tracking protection is enabled. -->
-  <string name="protection_panel_etp_toggle_enabled_description">Если что-то на этом сайте не работает, попробуйте отключить защиту.</string>
+  <string name="protection_panel_etp_toggle_enabled_description" moz:removedIn="142" tools:ignore="UnusedResources">Если что-то на этом сайте не работает, попробуйте отключить защиту.</string>
+  <!-- Description text for the Enhanced Tracking Protection toggle when tracking protection is enabled. -->
+  <string name="protection_panel_etp_toggle_enabled_description_2">Если что-то не работает на этом сайте, попробуйте её отключить.</string>
   <!-- Description text for the Enhanced Tracking Protection toggle when tracking protection is disabled. -->
-  <string name="protection_panel_etp_toggle_disabled_description">Защита ОТКЛЮЧЕНА. Мы предлагаем включить её снова.</string>
+  <string name="protection_panel_etp_toggle_disabled_description" moz:removedIn="142" tools:ignore="UnusedResources">Защита ОТКЛЮЧЕНА. Мы предлагаем включить её снова.</string>
+  <!-- Description text for the Enhanced Tracking Protection toggle when tracking protection is disabled. -->
+  <string name="protection_panel_etp_toggle_disabled_description_2">Рекомендуется включить защиту от отслеживания.</string>
   <!--
     Text for displaying the total number of trackers blocked in the protection panel.
     %d is a placeholder for the number of trackers blocked.
@@ -3417,7 +3472,9 @@
   <!-- Text for when no trackers have been blocked. -->
   <string name="protection_panel_no_trackers_blocked">Трекеров не найдено</string>
   <!-- Link text to navigate to privacy and security settings from the protection panel. -->
-  <string name="protection_panel_privacy_and_security_settings">Настройки защиты и приватности</string>
+  <string name="protection_panel_privacy_and_security_settings" moz:removedIn="142" tools:ignore="UnusedResources">Настройки защиты и приватности</string>
+  <!-- Link text to navigate to privacy and security settings from the protection panel. -->
+  <string name="protection_panel_privacy_and_security_settings_2">Настройки приватности</string>
   <!-- Title text for the protection panel permissions section. -->
   <string name="protection_panel_permissions_title">Разрешения</string>
   <!--
@@ -3627,6 +3684,14 @@
   <string name="debug_drawer_override_region">Переопределить домашний и текущий регион</string>
   <!-- The title of the button for overriding home region permanently. -->
   <string name="debug_drawer_override_home_region_permanently">Переопределять домашний регион всегда</string>
+  <!--
+    Add-ons debug tools
+
+    The description of the Add-ons Tools in the Debug Drawer
+  -->
+  <string name="debug_drawer_addons_tools_title">Инструменты дополнений</string>
+  <!-- The title of the button used to check for add-on updates. -->
+  <string name="addons_debug_tools_check_for_updates_button">Проверить наличие обновлений</string>
   <!--
     Messages explaining how to exit fullscreen mode
 

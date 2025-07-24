@@ -34,6 +34,8 @@
   <string name="no_private_tabs_description">თქვენი პირადი ჩანართები გამოჩნდება აქ.</string>
   <!-- Tab tray multi select title in app bar. %1$d is the number of tabs selected -->
   <string name="tab_tray_multi_select_title">%1$d მონიშნულია</string>
+  <!-- Tab tray multi select title in app bar when no tabs are selected -->
+  <string name="tab_tray_multi_select_title_empty">ჩანართების შერჩევა</string>
   <!-- Label of button in create collection dialog for creating a new collection -->
   <string name="tab_tray_add_new_collection">ახალი კრებულის დამატება</string>
   <!-- Label of editable text in create collection dialog for naming a new collection -->
@@ -338,13 +340,17 @@
   <!-- Browser menu label that toggles the request for the desktop site of the currently visited page -->
   <string name="browser_menu_switch_to_desktop_site" moz:removedIn="141" tools:ignore="UnusedResources">სრული საიტი</string>
   <!-- Browser menu label that toggles the request for the mobile site of the currently visited page -->
-  <string name="browser_menu_switch_to_mobile_site">მობილურის საიტი</string>
+  <string name="browser_menu_switch_to_mobile_site" moz:removedIn="142" tools:ignore="UnusedResources">მობილურის საიტი</string>
   <!-- Browser menu label that navigates to the page tools sub-menu -->
   <string name="browser_menu_tools" moz:removedIn="141" tools:ignore="UnusedResources">ხელსაწყოები</string>
   <!-- Content description (not visible, for screen readers etc.): Back button for all menu redesign sub-menu -->
   <string name="browser_menu_back_button_content_description" moz:removedIn="141" tools:ignore="UnusedResources">მთავარ მენიუზე დაბრუნება</string>
   <!-- Content description (not visible, for screen readers etc.) for bottom sheet handlebar main menu. -->
   <string name="browser_main_menu_handlebar_content_description" moz:removedIn="142" tools:ignore="UnusedResources">მთავარი მენიუს ფურცლის დახურვა</string>
+  <!-- Content description (not visible, for screen readers etc.) for the handle used to drag the main menu at the bottom of the screen. -->
+  <string name="browser_close_main_menu_handlebar_content_description">მენიუს დახურვა</string>
+  <!-- Content description (not visible, for screen readers etc.) for main menu navigation header. -->
+  <string name="browser_main_menu_content_description_navigation_header">გადაადგილება</string>
   <!-- Content description (not visible, for screen readers etc.) for main menu help button. -->
   <string name="browser_main_menu_content_description_help_button">დახმარება</string>
   <!-- Content description (not visible, for screen readers etc.) for main menu settings button. -->
@@ -421,6 +427,10 @@
   <string name="browser_menu_default_banner_subtitle">რამდენიმე წამს გასტანს. შეცვლით ნებისმიერ დროს.</string>
   <!-- Content description for the button that dismisses the set as default banner in the menu -->
   <string name="browser_menu_default_banner_dismiss" moz:removedIn="142" tools:ignore="UnusedResources">აცილება</string>
+  <!-- Content description (not visible, for screen readers etc.) for the button that dismisses the set as default banner in the menu -->
+  <string name="browser_menu_default_banner_dismiss_promotion">დამკვეთისგან მოწოდებულის არიდება</string>
+  <!-- Content description (not visible, for screen readers etc.) for recommended extensions in main menu -->
+  <string name="browser_menu_recommended_extensions_content_description">დამატებით</string>
   <!--
     Menu "contextual feature recommendation" (CFR)
 
@@ -867,6 +877,10 @@
   <string name="preferences_theme">თემა</string>
   <!-- Preference for customizing the home screen -->
   <string name="preferences_home_2">საწყისი გვერდი</string>
+  <!-- Preference for customizing the app icon -->
+  <string name="preferences_app_icon">აპის ხატულა</string>
+  <!-- Preference for showing the tab strip -->
+  <string name="preferences_tab_strip">ჩანართის ზოლის ჩვენება</string>
   <!-- Preference for gestures based actions -->
   <string name="preferences_gestures">ჟესტები</string>
   <!-- Preference for settings related to visual options -->
@@ -1299,6 +1313,14 @@
   <string name="preference_simple_toolbar">მარტივი</string>
   <!-- Preference for using expanded toolbar -->
   <string name="preference_expanded_toolbar">ჩამოშლილი</string>
+  <!-- Preference description indicating the toolbar location preference is disabled when the tab strip is enabled -->
+  <string name="preference_toolbar_pref_disabled_explanation">მისამართების ველი უნდა იყოს ზემოთ, როცა ჩანართის ზოლი გამოჩენილია.</string>
+  <!--
+    App icon Preferences
+
+    Title for the preference that lets the user pick a new app icon
+  -->
+  <string name="preference_select_app_icon_title">აპის ხატულის შერჩევა</string>
   <!--
     Theme Preferences
 
@@ -1311,6 +1333,12 @@
   <string name="preference_auto_battery_theme">ბატარეის დამზოგის მიხედვით</string>
   <!-- Preference for using following device theme -->
   <string name="preference_follow_device_theme">მოწყობილობის თემის მიხედვით</string>
+  <!--
+    Tab Strip Preferences
+
+    Preferences for showing tab strip
+  -->
+  <string name="preference_tab_strip_show">ჩანართის ზოლის გამოჩენა</string>
   <!--
     Gestures Preferences
 
@@ -1464,6 +1492,11 @@
   <!--
     Sessions
 
+    Title for the list of tabs in the current normal session used by a11y services
+    The %1$s will be replaced by the number of opened normal tabs
+  -->
+  <string name="tabs_header_normal_tabs_counter_title">გახსნილი ჩვეულებრივი ჩანართი: %1$s. შეეხეთ გადასაცვლელად.</string>
+  <!--
     Title for the list of tabs in the current private session used by a11y services
     The %1$s will be replaced by the number of opened private tabs
   -->
@@ -1473,6 +1506,12 @@
     The %1$s will be replaced by the number of opened synced tabs
   -->
   <string name="tabs_header_synced_tabs_counter_title">გახსნილი დასინქ. ჩანართი: %1$s. შეეხეთ გადასაცვლელად.</string>
+  <!-- Text for the tabs header private tabs -->
+  <string name="tabs_header_private_tabs_title">პირადი</string>
+  <!-- Text for the tabs header normal tabs -->
+  <string name="tabs_header_normal_tabs_title">ჩანართები</string>
+  <!-- Text for the tabs header synced tabs -->
+  <string name="tabs_header_synced_tabs_title">დასინქ.</string>
   <!-- Content description (not visible, for screen readers etc.): Add tab button. Adds a news tab when pressed -->
   <string name="add_tab">ჩანართის დამატება</string>
   <!-- Content description (not visible, for screen readers etc.): Add tab button. Adds a news tab when pressed -->
@@ -1723,7 +1762,11 @@
   -->
   <string name="webcompat_reporter_screen_title">არეული საიტის მოხსენება</string>
   <!-- The description of the Web Compat Reporter feature. %1$s is the name of the app (for example "Firefox"). -->
-  <string name="webcompat_reporter_description">დაგვეხმარეთ, განვავითაროთ %1$s ყველასთვის. Mozilla-ს თანამშრომლები თქვენ მიერ გამოგზავნილ მონაცემებს იყენებენ ვებსაიტთან დაკავშირებული ხარვეზების მოსაგვარებლად.</string>
+  <string name="webcompat_reporter_description" moz:removedIn="142" tools:ignore="UnusedResources">დაგვეხმარეთ, განვავითაროთ %1$s ყველასთვის. Mozilla-ს თანამშრომლები თქვენ მიერ გამოგზავნილ მონაცემებს იყენებენ ვებსაიტთან დაკავშირებული ხარვეზების მოსაგვარებლად.</string>
+  <!-- The description of the Web Compat Reporter feature, which has a "learn more" button text for navigating to a SUMO link to learn more about reporting a broken site. %1$s is the name of the app (for example "Firefox"). -->
+  <string name="webcompat_reporter_description_2">თქვენი მოხსენება გვეხმარება ხარვეზების გამოვლენაში, რომ გამოვასწოროთ %1$s და გავხადოთ უკეთესი ყველასთვის. ვრცლად</string>
+  <!-- The button text for navigating to the SUMO link to learn more about reporting a broken site. -->
+  <string name="webcompat_reporter_learn_more">ვრცლად</string>
   <!-- The text field label of the URL text field. This is displayed above the user-inputted URL. -->
   <string name="webcompat_reporter_label_url">ბმული</string>
   <!-- The error message of the URL text field when an invalid URL has been entered. -->
@@ -1731,7 +1774,9 @@
   <!-- The label/title of a field in the Web Compat Reporter feature for explaining a high-level reason why the site is broken. -->
   <string name="webcompat_reporter_label_whats_broken_2">რა დაზიანდა?</string>
   <!-- The placeholder text for the dropdown where a user selects a high-level reason why the site is broken. -->
-  <string name="webcompat_reporter_choose_reason">მიზეზის არჩევა</string>
+  <string name="webcompat_reporter_choose_reason" moz:removedIn="142" tools:ignore="UnusedResources">მიზეზის არჩევა</string>
+  <!-- The placeholder text for the dropdown where a user selects a high-level reason why the site is broken. -->
+  <string name="webcompat_reporter_choose_reason_2">აირჩიეთ მიზეზი</string>
   <!-- The error message of the dropdown, prompting the user to select a high-level reason why the site is broken. -->
   <string name="webcompat_reporter_choose_reason_error">გთხოვთ მიუთითოთ მიზეზი</string>
   <!-- The label/title of an optional field in the Web Compat Reporter feature for adding additional information. -->
@@ -1746,6 +1791,8 @@
   <string name="webcompat_reporter_success_snackbar_text">თქვენი მოხსენება გაიგზავნა</string>
   <!-- Button text for closing or dismissing the snackbar shown after successfully submitting a WebCompat report. -->
   <string name="webcompat_reporter_dismiss_success_snackbar_text">დახურვა</string>
+  <!-- Placeholder text for the description field to prompt the user on what they should type. -->
+  <string name="webcompat_reporter_problem_description_placeholder_text">რა მოხდა? რა უნდა მომხდარიყო?</string>
   <!--
     These reason strings are dropdown options on a WebCompat reporter form, indicating what is broken on the site.
 
@@ -2059,7 +2106,7 @@
   -->
   <string name="create_collection_save_to_collection_tab_selected">%d ჩანართია შერჩეული</string>
   <!-- Text shown in snackbar when multiple tabs have been saved in a collection -->
-  <string name="create_collection_tabs_saved">ჩანართები შენახულია!</string>
+  <string name="create_collection_tabs_saved" tools:ignore="UnusedResources" moz:removedIn="142">ჩანართები შენახულია!</string>
   <!-- Text shown in snackbar when one or multiple tabs have been saved in a new collection -->
   <string name="create_collection_tabs_saved_new_collection">კრებული შენახულია!</string>
   <!-- Text shown in snackbar when one tab has been saved in a collection -->
@@ -2194,7 +2241,7 @@
   -->
   <string name="snackbar_collection_deleted">კრებული წაიშალა</string>
   <!-- Text shown in snackbar when user renames a collection -->
-  <string name="snackbar_collection_renamed">კრებულს გადაერქვა</string>
+  <string name="snackbar_collection_renamed" moz:removedIn="141" tools:ignore="UnusedResources">კრებულს გადაერქვა</string>
   <!-- Text shown in snackbar when user closes a tab -->
   <string name="snackbar_tab_closed">ჩანართი დაიხურა</string>
   <!-- Text shown in snackbar when user closes all tabs -->
@@ -2233,13 +2280,15 @@
   <!-- Tab collection deletion prompt dialog option to delete the collection -->
   <string name="tab_collection_dialog_positive">წაშლა</string>
   <!-- Message for copying the URL via long press on the toolbar -->
-  <string name="url_copied">URL-ს ასლი აღებულია</string>
+  <string name="url_copied" tools:ignore="UnusedResources" moz:removedIn="142">URL-ს ასლი აღებულია</string>
   <!-- Sample text for accessibility font size -->
   <string name="accessibility_text_size_sample_text_1">ეს ტექსტი ნიმუშია. იგი აჩვენებს, თუ როგორ გამოჩნდება ნაწერი ამ პარამეტრით ზომის გაზრდისას ან შემცირებისას.</string>
   <!-- Summary for Accessibility Text Size Scaling Preference -->
   <string name="preference_accessibility_text_size_summary">გაზარდეთ ან შეამცირეთ ნაწერის ზომა საიტებზე</string>
   <!-- Title for Accessibility Text Size Scaling Preference -->
   <string name="preference_accessibility_font_size_title">შრიფტის ზომა</string>
+  <!-- %d is the percentage of the slide bar for setting the text font size and %% will be announced as "percent". -->
+  <string name="a11y_preference_accessibility_font_size_percentage">%d %%.</string>
   <!-- Title for Accessibility Text Automatic Size Scaling Preference -->
   <string name="preference_accessibility_auto_size_2">შრიფტის ავტომატური ზომა</string>
   <!-- Summary for Accessibility Text Automatic Size Scaling Preference -->
@@ -2371,6 +2420,10 @@
   <string name="preference_enhanced_tracking_protection_strict">მკაცრი</string>
   <!-- Preference description for enhanced tracking protection for the strict protection settings -->
   <string name="preference_enhanced_tracking_protection_strict_description_4">მეტად მძლავრი დაცვა თვალთვალისგან და მეტი სისწრაფე, მაგრამ საიტების ნაწილმა, შესაძლოა გაუმართავად იმუშაოს.</string>
+  <!-- Preference description for the checkbox setting for "baseline" exceptions (a set of content blocking exceptions applied to fix major website breakage). %1$s is the name of the application (e.g. Fenix). -->
+  <string name="preference_enhanced_tracking_protection_allow_list_baseline">ნების დართვა, რომ %1$s თავადვე მიუთითებს საჭირო გამონაკლისებს ცნობილ საიტებზე გაუმართაობების ასარიდებლად.</string>
+  <!-- Preference description for the checkbox setting for "convenience" exceptions (a set of content blocking exceptions applied to fix convenience site features). -->
+  <string name="preference_enhanced_tracking_protection_allow_list_convenience">აგრეთვე, თავადვე მიუთითებს იმ გამონაკლისებსაც, რომლებიც მხოლოდ მცირე ხარვეზების აღმოფხვრისა და მოსახერხებელი შესაძლებლობების ხელმისაწვდომობისთვისაა საჭირო.</string>
   <!-- Accessibility text for the Strict protection information icon -->
   <string name="preference_enhanced_tracking_protection_strict_info_button">რა იზღუდება თვალთვალისგან მკაცრი დაცვით</string>
   <!-- Preference for enhanced tracking protection for the custom protection settings -->
@@ -2739,6 +2792,10 @@
   <string name="preferences_addresses_save_and_autofill_addresses_2">მისამართების შენახვა და თვითშევსება</string>
   <!-- Preference summary for saving and filling address data -->
   <string name="preferences_addresses_save_and_autofill_addresses_summary_2">მოიცავს ტელეფონის ნომრებსა და ელფოსტის მისამართებს</string>
+  <!-- Preference option for syncing addresses across devices. This is displayed when the user is not signed into sync -->
+  <string name="preferences_addresses_sync_addresses_across_devices">დაასინქრონეთ მისამართები სხვადასხვა მოწყობილობაზე</string>
+  <!-- Preference option for syncing addresses across devices. This is displayed when the user is signed into sync -->
+  <string name="preferences_addresses_sync_addresses">დაასინქ. მისამართები</string>
   <!-- Title of the "Add card" screen -->
   <string name="credit_cards_add_card">ბარათის დამატება</string>
   <!-- Title of the "Edit card" screen -->
@@ -2866,9 +2923,9 @@
   <!-- Text shown when we aren't able to validate the custom search query. %s is the url of the custom search engine. -->
   <string name="search_add_custom_engine_error_cannot_reach" moz:removedIn="140" tools:ignore="UnusedResources">შეცდომა კავშირისას – „%s“</string>
   <!-- Text shown when a user creates a new search engine. %s is the url of the custom search engine. -->
-  <string name="search_add_custom_engine_success_message">შეიქმნა %s</string>
+  <string name="search_add_custom_engine_success_message" tools:ignore="UnusedResources" moz:removedIn="142">შეიქმნა %s</string>
   <!-- Text shown when a user successfully edits a custom search engine. %s is the url of the custom search engine. -->
-  <string name="search_edit_custom_engine_success_message">შენახულია %s</string>
+  <string name="search_edit_custom_engine_success_message" tools:ignore="UnusedResources" moz:removedIn="142">შენახულია %s</string>
   <!-- Text shown when a user successfully deletes a custom search engine. %s is the url of the custom search engine. -->
   <string name="search_delete_search_engine_success_message">წაიშალა %s</string>
   <!-- Heading for the instructions to allow a permission -->
@@ -2974,6 +3031,12 @@
   <string name="synced_tabs_expand_group">დასინქ. ჩანართების გაშლა</string>
   <!-- Content description for collapsing a group of synced tabs. -->
   <string name="synced_tabs_collapse_group">დასინქ. ჩანართები აკეცვა</string>
+  <!--
+    Top Sites
+
+    Title text displayed for the shortcuts home screen section.
+  -->
+  <string name="homepage_shortcuts_title">მალსახმობები</string>
   <!-- Title text displayed in the dialog when shortcuts limit is reached. -->
   <string name="shortcut_max_limit_title">მალსახმობების ზღვარი მიღწეულია</string>
   <!-- Content description text displayed in the dialog when shortcut limit is reached. -->
@@ -3389,10 +3452,18 @@
   <string name="protection_panel_banner_protected_description">დაცული ხართ. თუ რამეს შევამჩნევთ, გაცნობებთ.</string>
   <!-- Label text for the Enhanced Tracking Protection toggle. -->
   <string name="protection_panel_etp_toggle_label">თვალთვალისგან გაძლიერებული დაცვა</string>
+  <!-- Toggle if Enhanced Tracking Protection is turned on -->
+  <string name="protection_panel_etp_toggle_on">ჩართ.</string>
+  <!-- Toggle if Enhanced Tracking Protection is turned off -->
+  <string name="protection_panel_etp_toggle_off">გამორთ.</string>
   <!-- Description text for the Enhanced Tracking Protection toggle when tracking protection is enabled. -->
-  <string name="protection_panel_etp_toggle_enabled_description">თუ საიტზე რამე გაუმართავად ჩანს, სინჯეთ გამორთვა.</string>
+  <string name="protection_panel_etp_toggle_enabled_description" moz:removedIn="142" tools:ignore="UnusedResources">თუ საიტზე რამე გაუმართავად ჩანს, სინჯეთ გამორთვა.</string>
+  <!-- Description text for the Enhanced Tracking Protection toggle when tracking protection is enabled. -->
+  <string name="protection_panel_etp_toggle_enabled_description_2">თუ საიტზე რამე გაუმართავია, სინჯეთ გამორთვა.</string>
   <!-- Description text for the Enhanced Tracking Protection toggle when tracking protection is disabled. -->
-  <string name="protection_panel_etp_toggle_disabled_description">დაცვა გამორთულია. გირჩევთ ისევ ჩართოთ.</string>
+  <string name="protection_panel_etp_toggle_disabled_description" moz:removedIn="142" tools:ignore="UnusedResources">დაცვა გამორთულია. გირჩევთ ისევ ჩართოთ.</string>
+  <!-- Description text for the Enhanced Tracking Protection toggle when tracking protection is disabled. -->
+  <string name="protection_panel_etp_toggle_disabled_description_2">თვალთვალისგან დაცვის ჩართვა სასურველია.</string>
   <!--
     Text for displaying the total number of trackers blocked in the protection panel.
     %d is a placeholder for the number of trackers blocked.
@@ -3401,7 +3472,9 @@
   <!-- Text for when no trackers have been blocked. -->
   <string name="protection_panel_no_trackers_blocked">მეთვალყურეები არაა ნაპოვნი</string>
   <!-- Link text to navigate to privacy and security settings from the protection panel. -->
-  <string name="protection_panel_privacy_and_security_settings">პირადულობისა და უსაფრთხოების პარამეტრები</string>
+  <string name="protection_panel_privacy_and_security_settings" moz:removedIn="142" tools:ignore="UnusedResources">პირადულობისა და უსაფრთხოების პარამეტრები</string>
+  <!-- Link text to navigate to privacy and security settings from the protection panel. -->
+  <string name="protection_panel_privacy_and_security_settings_2">პირადულობის პარამეტრები</string>
   <!-- Title text for the protection panel permissions section. -->
   <string name="protection_panel_permissions_title">ნებართვები</string>
   <!--
@@ -3470,7 +3543,7 @@
   <!-- The error message of the text field in the tab creation tool when the text field has characters other than digits -->
   <string name="debug_drawer_tab_tools_tab_quantity_non_digits_error">გთხოვთ შეიყვანოთ მხოლოდ დადებითი რიცხვები</string>
   <!-- The error message of the text field in the tab creation tool when the text field is a zero -->
-  <string name="debug_drawer_tab_tools_tab_quantity_non_zero_error">გთხოვთ შეიყვანოთ ნულზე მეტი რიცხვი</string>
+  <string name="debug_drawer_tab_tools_tab_quantity_non_zero_error">გთხოვთ შეიყვანოთ ნულზე დიდი რიცხვი</string>
   <!--
     The error message of the text field in the tab creation tool when the text field is a
     quantity greater than the max tabs. %1$s is the maximum number of tabs
@@ -3611,6 +3684,14 @@
   <string name="debug_drawer_override_region">მშობლიური და ამჟამინდელი მხარის ჩანაცვლება</string>
   <!-- The title of the button for overriding home region permanently. -->
   <string name="debug_drawer_override_home_region_permanently">მშობლიური მხარის ჩანაცვლება მუდმივად</string>
+  <!--
+    Add-ons debug tools
+
+    The description of the Add-ons Tools in the Debug Drawer
+  -->
+  <string name="debug_drawer_addons_tools_title">დამატებების ხელსაწყოები</string>
+  <!-- The title of the button used to check for add-on updates. -->
+  <string name="addons_debug_tools_check_for_updates_button">განახლებების შემოწმება</string>
   <!--
     Messages explaining how to exit fullscreen mode
 

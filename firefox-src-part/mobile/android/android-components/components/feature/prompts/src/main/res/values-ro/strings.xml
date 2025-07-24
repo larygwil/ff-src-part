@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools" xmlns:moz="http://mozac.org/tools">
   <!-- Text for confirmation for a positive action in dialog -->
   <string name="mozac_feature_prompts_ok">OK</string>
   <!-- Text for confirmation for a negative action in dialog. -->
@@ -107,7 +107,7 @@
   <!-- Pressing this will dismiss the suggested strong password dialog -->
   <string name="mozac_feature_prompts_suggest_strong_password_dismiss">Nu acum</string>
   <!-- Title for showing the suggest strong password saved confirmation snackbar -->
-  <string name="mozac_feature_prompts_suggest_strong_password_saved_snackbar_title">Parola salvată</string>
+  <string name="mozac_feature_prompts_suggest_strong_password_saved_snackbar_title" tools:ignore="UnusedResources" moz:removedIn="142">Parola salvată</string>
   <!-- Title for showing the suggest strong password updated confirmation snackbar -->
   <string name="mozac_feature_prompts_suggest_strong_password_updated_snackbar_title">Parolă actualizată</string>
   <!-- Strings shown in a dialog that appear when users try to refresh a certain kind of webpages -->
@@ -135,4 +135,6 @@
   <string name="mozac_feature_prompts_update_credit_card_prompt_title">Actualizează data de expirare a cardului?</string>
   <!-- Text for the manage addresses button. -->
   <string name="mozac_feature_prompts_manage_address">Gestionează adrese</string>
+  <!-- Title of the Identity Credential privacy policy dialog description. The %1$s will be replaced with the name of the provider, %2$s will be replaced with the account, %3$s will be replaced with the privacy policy url and  %4$s will be replaced with the terms of service. -->
+  <string name="mozac_feature_prompts_identity_credentials_privacy_policy_description" tools:ignore="IncorrectStraightDoubleQuote"><![CDATA[Autentificarea în %1$s cu un cont %2$s face obiectul <a href=\"%3$s\">Politicii lor de confidențialitate</a> și <a href=\"%4$s\">Condițiilor lor de utilizare a serviciilor</a>]]></string>
 </resources>

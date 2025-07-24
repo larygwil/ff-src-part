@@ -326,7 +326,7 @@
   <!-- Browser menu label that toggles the request for the desktop site of the currently visited page -->
   <string name="browser_menu_switch_to_desktop_site" moz:removedIn="141" tools:ignore="UnusedResources">Beralih ke situs desktop</string>
   <!-- Browser menu label that toggles the request for the mobile site of the currently visited page -->
-  <string name="browser_menu_switch_to_mobile_site">Beralih ke situs seluler</string>
+  <string name="browser_menu_switch_to_mobile_site" moz:removedIn="142" tools:ignore="UnusedResources">Beralih ke situs seluler</string>
   <!-- Browser menu label that navigates to the page tools sub-menu -->
   <string name="browser_menu_tools" moz:removedIn="141" tools:ignore="UnusedResources">Alat</string>
   <!-- Content description (not visible, for screen readers etc.): Back button for all menu redesign sub-menu -->
@@ -1383,8 +1383,6 @@
   <!-- Learn more link for studies, links to an article for more information about studies. -->
   <string name="studies_learn_more">Pelajari lebih lanjut</string>
   <!--
-    Sessions
-
     Title for the list of tabs in the current private session used by a11y services
     The %1$s will be replaced by the number of opened private tabs
   -->
@@ -1599,7 +1597,7 @@
   -->
   <string name="webcompat_reporter_screen_title">Laporkan situs yang rusak</string>
   <!-- The description of the Web Compat Reporter feature. %1$s is the name of the app (for example "Firefox"). -->
-  <string name="webcompat_reporter_description">Bantu membuat %1$s lebih baik untuk semua orang. Karyawan Mozilla menggunakan info yang Anda kirim untuk memperbaiki masalah situs web.</string>
+  <string name="webcompat_reporter_description" moz:removedIn="142" tools:ignore="UnusedResources">Bantu membuat %1$s lebih baik untuk semua orang. Karyawan Mozilla menggunakan info yang Anda kirim untuk memperbaiki masalah situs web.</string>
   <!-- The text field label of the URL text field. This is displayed above the user-inputted URL. -->
   <string name="webcompat_reporter_label_url">URL</string>
   <!-- The error message of the URL text field when an invalid URL has been entered. -->
@@ -1607,7 +1605,7 @@
   <!-- The label/title of a field in the Web Compat Reporter feature for explaining a high-level reason why the site is broken. -->
   <string name="webcompat_reporter_label_whats_broken_2">Apa yang rusak?</string>
   <!-- The placeholder text for the dropdown where a user selects a high-level reason why the site is broken. -->
-  <string name="webcompat_reporter_choose_reason">Pilih alasan</string>
+  <string name="webcompat_reporter_choose_reason" moz:removedIn="142" tools:ignore="UnusedResources">Pilih alasan</string>
   <!-- The error message of the dropdown, prompting the user to select a high-level reason why the site is broken. -->
   <string name="webcompat_reporter_choose_reason_error">Pilih alasan</string>
   <!-- The label/title of an optional field in the Web Compat Reporter feature for adding additional information. -->
@@ -1923,7 +1921,7 @@
   -->
   <string name="create_collection_save_to_collection_tab_selected">%d tab dipilih</string>
   <!-- Text shown in snackbar when multiple tabs have been saved in a collection -->
-  <string name="create_collection_tabs_saved">Tab disimpan!</string>
+  <string name="create_collection_tabs_saved" tools:ignore="UnusedResources" moz:removedIn="142">Tab disimpan!</string>
   <!-- Text shown in snackbar when one or multiple tabs have been saved in a new collection -->
   <string name="create_collection_tabs_saved_new_collection">Koleksi disimpan!</string>
   <!-- Text shown in snackbar when one tab has been saved in a collection -->
@@ -2058,7 +2056,7 @@
   -->
   <string name="snackbar_collection_deleted">Koleksi dihapus</string>
   <!-- Text shown in snackbar when user renames a collection -->
-  <string name="snackbar_collection_renamed">Nama koleksi berubah</string>
+  <string name="snackbar_collection_renamed" moz:removedIn="141" tools:ignore="UnusedResources">Nama koleksi berubah</string>
   <!-- Text shown in snackbar when user closes a tab -->
   <string name="snackbar_tab_closed">Tab ditutup</string>
   <!-- Text shown in snackbar when user closes all tabs -->
@@ -2097,7 +2095,7 @@
   <!-- Tab collection deletion prompt dialog option to delete the collection -->
   <string name="tab_collection_dialog_positive">Hapus</string>
   <!-- Message for copying the URL via long press on the toolbar -->
-  <string name="url_copied">URL disalin</string>
+  <string name="url_copied" tools:ignore="UnusedResources" moz:removedIn="142">URL disalin</string>
   <!-- Sample text for accessibility font size -->
   <string name="accessibility_text_size_sample_text_1">Ini adalah contoh tulisan. Ini akan menunjukkan tampilan tulisan ketika memperbesar atau memperkecil ukuran pada pengaturan ini.</string>
   <!-- Summary for Accessibility Text Size Scaling Preference -->
@@ -2714,9 +2712,9 @@
   <!-- Text shown when we aren't able to validate the custom search query. %s is the url of the custom search engine. -->
   <string name="search_add_custom_engine_error_cannot_reach" moz:removedIn="140" tools:ignore="UnusedResources">Bermasalah ketika menghubungi “%s”</string>
   <!-- Text shown when a user creates a new search engine. %s is the url of the custom search engine. -->
-  <string name="search_add_custom_engine_success_message">%s telah dibuat</string>
+  <string name="search_add_custom_engine_success_message" tools:ignore="UnusedResources" moz:removedIn="142">%s telah dibuat</string>
   <!-- Text shown when a user successfully edits a custom search engine. %s is the url of the custom search engine. -->
-  <string name="search_edit_custom_engine_success_message">%s disimpan</string>
+  <string name="search_edit_custom_engine_success_message" tools:ignore="UnusedResources" moz:removedIn="142">%s disimpan</string>
   <!-- Text shown when a user successfully deletes a custom search engine. %s is the url of the custom search engine. -->
   <string name="search_delete_search_engine_success_message">%s dihapus</string>
   <!-- Heading for the instructions to allow a permission -->
@@ -3238,9 +3236,9 @@
   <!-- Label text for the Enhanced Tracking Protection toggle. -->
   <string name="protection_panel_etp_toggle_label">Perlindungan Pelacakan yang Ditingkatkan</string>
   <!-- Description text for the Enhanced Tracking Protection toggle when tracking protection is enabled. -->
-  <string name="protection_panel_etp_toggle_enabled_description">Jika ada yang tampak rusak di situs ini, coba matikan perlindungan.</string>
+  <string name="protection_panel_etp_toggle_enabled_description" moz:removedIn="142" tools:ignore="UnusedResources">Jika ada yang tampak rusak di situs ini, coba matikan perlindungan.</string>
   <!-- Description text for the Enhanced Tracking Protection toggle when tracking protection is disabled. -->
-  <string name="protection_panel_etp_toggle_disabled_description">Perlindungan NONAKTIF. Kami sarankan untuk mengaktifkannya kembali.</string>
+  <string name="protection_panel_etp_toggle_disabled_description" moz:removedIn="142" tools:ignore="UnusedResources">Perlindungan NONAKTIF. Kami sarankan untuk mengaktifkannya kembali.</string>
   <!--
     Text for displaying the total number of trackers blocked in the protection panel.
     %d is a placeholder for the number of trackers blocked.
@@ -3249,7 +3247,7 @@
   <!-- Text for when no trackers have been blocked. -->
   <string name="protection_panel_no_trackers_blocked">Tidak ada pelacak ditemukan</string>
   <!-- Link text to navigate to privacy and security settings from the protection panel. -->
-  <string name="protection_panel_privacy_and_security_settings">Setelan privasi dan keamanan</string>
+  <string name="protection_panel_privacy_and_security_settings" moz:removedIn="142" tools:ignore="UnusedResources">Setelan privasi dan keamanan</string>
   <!-- Title text for the protection panel permissions section. -->
   <string name="protection_panel_permissions_title">Hak Akses</string>
   <!--

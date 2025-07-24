@@ -34,6 +34,8 @@
   <string name="no_private_tabs_description">Gizli sekmeleriniz burada gösterilecek.</string>
   <!-- Tab tray multi select title in app bar. %1$d is the number of tabs selected -->
   <string name="tab_tray_multi_select_title">%1$d sekme seçildi</string>
+  <!-- Tab tray multi select title in app bar when no tabs are selected -->
+  <string name="tab_tray_multi_select_title_empty">Sekmeleri seç</string>
   <!-- Label of button in create collection dialog for creating a new collection -->
   <string name="tab_tray_add_new_collection">Yeni koleksiyon ekle</string>
   <!-- Label of editable text in create collection dialog for naming a new collection -->
@@ -338,13 +340,17 @@
   <!-- Browser menu label that toggles the request for the desktop site of the currently visited page -->
   <string name="browser_menu_switch_to_desktop_site" moz:removedIn="141" tools:ignore="UnusedResources">Masaüstü sitesine geç</string>
   <!-- Browser menu label that toggles the request for the mobile site of the currently visited page -->
-  <string name="browser_menu_switch_to_mobile_site">Mobil siteye geç</string>
+  <string name="browser_menu_switch_to_mobile_site" moz:removedIn="142" tools:ignore="UnusedResources">Mobil siteye geç</string>
   <!-- Browser menu label that navigates to the page tools sub-menu -->
   <string name="browser_menu_tools" moz:removedIn="141" tools:ignore="UnusedResources">Araçlar</string>
   <!-- Content description (not visible, for screen readers etc.): Back button for all menu redesign sub-menu -->
   <string name="browser_menu_back_button_content_description" moz:removedIn="141" tools:ignore="UnusedResources">Ana menüye dön</string>
   <!-- Content description (not visible, for screen readers etc.) for bottom sheet handlebar main menu. -->
   <string name="browser_main_menu_handlebar_content_description" moz:removedIn="142" tools:ignore="UnusedResources">Ana menüyü kapat</string>
+  <!-- Content description (not visible, for screen readers etc.) for the handle used to drag the main menu at the bottom of the screen. -->
+  <string name="browser_close_main_menu_handlebar_content_description">Menüyü kapat</string>
+  <!-- Content description (not visible, for screen readers etc.) for main menu navigation header. -->
+  <string name="browser_main_menu_content_description_navigation_header">Navigasyon</string>
   <!-- Content description (not visible, for screen readers etc.) for main menu help button. -->
   <string name="browser_main_menu_content_description_help_button">Yardım</string>
   <!-- Content description (not visible, for screen readers etc.) for main menu settings button. -->
@@ -421,6 +427,10 @@
   <string name="browser_menu_default_banner_subtitle">Yalnızca birkaç saniye sürer. İstediğiniz zaman değiştirebilirsiniz.</string>
   <!-- Content description for the button that dismisses the set as default banner in the menu -->
   <string name="browser_menu_default_banner_dismiss" moz:removedIn="142" tools:ignore="UnusedResources">Kapat</string>
+  <!-- Content description (not visible, for screen readers etc.) for the button that dismisses the set as default banner in the menu -->
+  <string name="browser_menu_default_banner_dismiss_promotion">Tanıtımı kapat</string>
+  <!-- Content description (not visible, for screen readers etc.) for recommended extensions in main menu -->
+  <string name="browser_menu_recommended_extensions_content_description">Daha fazla bilgi al</string>
   <!--
     Menu "contextual feature recommendation" (CFR)
 
@@ -867,6 +877,10 @@
   <string name="preferences_theme">Tema</string>
   <!-- Preference for customizing the home screen -->
   <string name="preferences_home_2">Giriş sayfası</string>
+  <!-- Preference for customizing the app icon -->
+  <string name="preferences_app_icon">Uygulama simgesi</string>
+  <!-- Preference for showing the tab strip -->
+  <string name="preferences_tab_strip">Sekme çubuğu görünümü</string>
   <!-- Preference for gestures based actions -->
   <string name="preferences_gestures">Parmak hareketleri</string>
   <!-- Preference for settings related to visual options -->
@@ -1299,6 +1313,14 @@
   <string name="preference_simple_toolbar">Basit</string>
   <!-- Preference for using expanded toolbar -->
   <string name="preference_expanded_toolbar">Genişletilmiş</string>
+  <!-- Preference description indicating the toolbar location preference is disabled when the tab strip is enabled -->
+  <string name="preference_toolbar_pref_disabled_explanation">Sekme çubuğu gösterilirken adres çubuğu üstte olmalıdır.</string>
+  <!--
+    App icon Preferences
+
+    Title for the preference that lets the user pick a new app icon
+  -->
+  <string name="preference_select_app_icon_title">Uygulama simgesini seçin</string>
   <!--
     Theme Preferences
 
@@ -1311,6 +1333,12 @@
   <string name="preference_auto_battery_theme">Pil tasarrufuna göre</string>
   <!-- Preference for using following device theme -->
   <string name="preference_follow_device_theme">Cihaz temasına uy</string>
+  <!--
+    Tab Strip Preferences
+
+    Preferences for showing tab strip
+  -->
+  <string name="preference_tab_strip_show">Sekme çubuğunu göster</string>
   <!--
     Gestures Preferences
 
@@ -1464,6 +1492,11 @@
   <!--
     Sessions
 
+    Title for the list of tabs in the current normal session used by a11y services
+    The %1$s will be replaced by the number of opened normal tabs
+  -->
+  <string name="tabs_header_normal_tabs_counter_title">%1$s açık normal sekme. Sekme değiştirmek için dokunun.</string>
+  <!--
     Title for the list of tabs in the current private session used by a11y services
     The %1$s will be replaced by the number of opened private tabs
   -->
@@ -1473,6 +1506,12 @@
     The %1$s will be replaced by the number of opened synced tabs
   -->
   <string name="tabs_header_synced_tabs_counter_title">%1$s açık eşitlenmiş sekme. Sekme değiştirmek için dokunun.</string>
+  <!-- Text for the tabs header private tabs -->
+  <string name="tabs_header_private_tabs_title">Gizli</string>
+  <!-- Text for the tabs header normal tabs -->
+  <string name="tabs_header_normal_tabs_title">Sekmeler</string>
+  <!-- Text for the tabs header synced tabs -->
+  <string name="tabs_header_synced_tabs_title">Eşitlenen</string>
   <!-- Content description (not visible, for screen readers etc.): Add tab button. Adds a news tab when pressed -->
   <string name="add_tab">Sekme ekle</string>
   <!-- Content description (not visible, for screen readers etc.): Add tab button. Adds a news tab when pressed -->
@@ -1723,7 +1762,11 @@
   -->
   <string name="webcompat_reporter_screen_title">Bozuk siteyi rapor et</string>
   <!-- The description of the Web Compat Reporter feature. %1$s is the name of the app (for example "Firefox"). -->
-  <string name="webcompat_reporter_description">%1$s tarayıcısını iyileştirmemize yardım edin. Mozilla çalışanları, gönderdiğiniz bilgileri web siteleriyle ilgili sorunlarını gidermek için kullanır.</string>
+  <string name="webcompat_reporter_description" moz:removedIn="142" tools:ignore="UnusedResources">%1$s tarayıcısını iyileştirmemize yardım edin. Mozilla çalışanları, gönderdiğiniz bilgileri web siteleriyle ilgili sorunlarını gidermek için kullanır.</string>
+  <!-- The description of the Web Compat Reporter feature, which has a "learn more" button text for navigating to a SUMO link to learn more about reporting a broken site. %1$s is the name of the app (for example "Firefox"). -->
+  <string name="webcompat_reporter_description_2">Raporunuz %1$s uygulamasındaki sorunları anlayıp düzeltmemize, böylece uygulamayı herkes için iyileştirmemize için yardımcı oluyor. Daha fazla bilgi alın</string>
+  <!-- The button text for navigating to the SUMO link to learn more about reporting a broken site. -->
+  <string name="webcompat_reporter_learn_more">Daha fazla bilgi alın</string>
   <!-- The text field label of the URL text field. This is displayed above the user-inputted URL. -->
   <string name="webcompat_reporter_label_url">Adres</string>
   <!-- The error message of the URL text field when an invalid URL has been entered. -->
@@ -1731,7 +1774,9 @@
   <!-- The label/title of a field in the Web Compat Reporter feature for explaining a high-level reason why the site is broken. -->
   <string name="webcompat_reporter_label_whats_broken_2">Bozuk olan nedir?</string>
   <!-- The placeholder text for the dropdown where a user selects a high-level reason why the site is broken. -->
-  <string name="webcompat_reporter_choose_reason">Neden seçin</string>
+  <string name="webcompat_reporter_choose_reason" moz:removedIn="142" tools:ignore="UnusedResources">Neden seçin</string>
+  <!-- The placeholder text for the dropdown where a user selects a high-level reason why the site is broken. -->
+  <string name="webcompat_reporter_choose_reason_2">Bir neden seçin</string>
   <!-- The error message of the dropdown, prompting the user to select a high-level reason why the site is broken. -->
   <string name="webcompat_reporter_choose_reason_error">Lütfen bir sebep seçin</string>
   <!-- The label/title of an optional field in the Web Compat Reporter feature for adding additional information. -->
@@ -1746,6 +1791,8 @@
   <string name="webcompat_reporter_success_snackbar_text">Raporunuz gönderildi</string>
   <!-- Button text for closing or dismissing the snackbar shown after successfully submitting a WebCompat report. -->
   <string name="webcompat_reporter_dismiss_success_snackbar_text">Kapat</string>
+  <!-- Placeholder text for the description field to prompt the user on what they should type. -->
+  <string name="webcompat_reporter_problem_description_placeholder_text">Ne oldu? Ne olması gerekiyordu?</string>
   <!--
     These reason strings are dropdown options on a WebCompat reporter form, indicating what is broken on the site.
 
@@ -2059,7 +2106,7 @@
   -->
   <string name="create_collection_save_to_collection_tab_selected">%d sekme seçildi</string>
   <!-- Text shown in snackbar when multiple tabs have been saved in a collection -->
-  <string name="create_collection_tabs_saved">Sekmeler kaydedildi!</string>
+  <string name="create_collection_tabs_saved" tools:ignore="UnusedResources" moz:removedIn="142">Sekmeler kaydedildi!</string>
   <!-- Text shown in snackbar when one or multiple tabs have been saved in a new collection -->
   <string name="create_collection_tabs_saved_new_collection">Koleksiyon kaydedildi!</string>
   <!-- Text shown in snackbar when one tab has been saved in a collection -->
@@ -2194,7 +2241,7 @@
   -->
   <string name="snackbar_collection_deleted">Koleksiyon silindi</string>
   <!-- Text shown in snackbar when user renames a collection -->
-  <string name="snackbar_collection_renamed">Koleksiyon yeniden adlandırıldı</string>
+  <string name="snackbar_collection_renamed" moz:removedIn="141" tools:ignore="UnusedResources">Koleksiyon yeniden adlandırıldı</string>
   <!-- Text shown in snackbar when user closes a tab -->
   <string name="snackbar_tab_closed">Sekme kapatıldı</string>
   <!-- Text shown in snackbar when user closes all tabs -->
@@ -2233,13 +2280,15 @@
   <!-- Tab collection deletion prompt dialog option to delete the collection -->
   <string name="tab_collection_dialog_positive">Sil</string>
   <!-- Message for copying the URL via long press on the toolbar -->
-  <string name="url_copied">Adres kopyalandı</string>
+  <string name="url_copied" tools:ignore="UnusedResources" moz:removedIn="142">Adres kopyalandı</string>
   <!-- Sample text for accessibility font size -->
   <string name="accessibility_text_size_sample_text_1">Bu örnek bir metindir. Bu ayarı kullanarak boyutu artırıp azalttığınızda sonucun nasıl görüneceğini görebilirsiniz.</string>
   <!-- Summary for Accessibility Text Size Scaling Preference -->
   <string name="preference_accessibility_text_size_summary">Web sitelerinde metinleri büyütün veya küçültün</string>
   <!-- Title for Accessibility Text Size Scaling Preference -->
   <string name="preference_accessibility_font_size_title">Yazı tipi boyutu</string>
+  <!-- %d is the percentage of the slide bar for setting the text font size and %% will be announced as "percent". -->
+  <string name="a11y_preference_accessibility_font_size_percentage">%% %d.</string>
   <!-- Title for Accessibility Text Automatic Size Scaling Preference -->
   <string name="preference_accessibility_auto_size_2">Otomatik yazı tipi boyutlandırma</string>
   <!-- Summary for Accessibility Text Automatic Size Scaling Preference -->
@@ -2371,6 +2420,10 @@
   <string name="preference_enhanced_tracking_protection_strict">Sıkı</string>
   <!-- Preference description for enhanced tracking protection for the strict protection settings -->
   <string name="preference_enhanced_tracking_protection_strict_description_4">Daha güçlü izlenme koruması ve daha hızlı performans, ancak bazı siteler düzgün çalışmayabilir.</string>
+  <!-- Preference description for the checkbox setting for "baseline" exceptions (a set of content blocking exceptions applied to fix major website breakage). %1$s is the name of the application (e.g. Fenix). -->
+  <string name="preference_enhanced_tracking_protection_allow_list_baseline">Bazı sitelerin ciddi şekilde bozulmasını önlemek için %1$s gerekli istisnaları otomatik olarak uygulasın.</string>
+  <!-- Preference description for the checkbox setting for "convenience" exceptions (a set of content blocking exceptions applied to fix convenience site features). -->
+  <string name="preference_enhanced_tracking_protection_allow_list_convenience">Yalnızca küçük sorunları düzeltmek ve kullanışlı özellikleri çalışır halde tutmak için gereken istisnalar da otomatik olarak uygulansın.</string>
   <!-- Accessibility text for the Strict protection information icon -->
   <string name="preference_enhanced_tracking_protection_strict_info_button">Sıkı izlenme korumasında neler engellenir?</string>
   <!-- Preference for enhanced tracking protection for the custom protection settings -->
@@ -2739,6 +2792,10 @@
   <string name="preferences_addresses_save_and_autofill_addresses_2">Adresleri kaydet ve doldur</string>
   <!-- Preference summary for saving and filling address data -->
   <string name="preferences_addresses_save_and_autofill_addresses_summary_2">Telefon numaraları ve e-posta adresleri de dahildir</string>
+  <!-- Preference option for syncing addresses across devices. This is displayed when the user is not signed into sync -->
+  <string name="preferences_addresses_sync_addresses_across_devices">Adresleri cihazlar arasında eşitle</string>
+  <!-- Preference option for syncing addresses across devices. This is displayed when the user is signed into sync -->
+  <string name="preferences_addresses_sync_addresses">Adresleri eşitle</string>
   <!-- Title of the "Add card" screen -->
   <string name="credit_cards_add_card">Kart ekle</string>
   <!-- Title of the "Edit card" screen -->
@@ -2866,9 +2923,9 @@
   <!-- Text shown when we aren't able to validate the custom search query. %s is the url of the custom search engine. -->
   <string name="search_add_custom_engine_error_cannot_reach" moz:removedIn="140" tools:ignore="UnusedResources">“%s” sunucusuna bağlanma hatası</string>
   <!-- Text shown when a user creates a new search engine. %s is the url of the custom search engine. -->
-  <string name="search_add_custom_engine_success_message">%s oluşturuldu</string>
+  <string name="search_add_custom_engine_success_message" tools:ignore="UnusedResources" moz:removedIn="142">%s oluşturuldu</string>
   <!-- Text shown when a user successfully edits a custom search engine. %s is the url of the custom search engine. -->
-  <string name="search_edit_custom_engine_success_message">%s kaydedildi</string>
+  <string name="search_edit_custom_engine_success_message" tools:ignore="UnusedResources" moz:removedIn="142">%s kaydedildi</string>
   <!-- Text shown when a user successfully deletes a custom search engine. %s is the url of the custom search engine. -->
   <string name="search_delete_search_engine_success_message">%s silindi</string>
   <!-- Heading for the instructions to allow a permission -->
@@ -2974,6 +3031,12 @@
   <string name="synced_tabs_expand_group">Eşitlenmiş sekme grubunu genişlet</string>
   <!-- Content description for collapsing a group of synced tabs. -->
   <string name="synced_tabs_collapse_group">Eşitlenmiş sekme grubunu daralt</string>
+  <!--
+    Top Sites
+
+    Title text displayed for the shortcuts home screen section.
+  -->
+  <string name="homepage_shortcuts_title">Kısayollar</string>
   <!-- Title text displayed in the dialog when shortcuts limit is reached. -->
   <string name="shortcut_max_limit_title">Kısayol sınırına ulaştınız</string>
   <!-- Content description text displayed in the dialog when shortcut limit is reached. -->
@@ -3389,10 +3452,18 @@
   <string name="protection_panel_banner_protected_description">Koruma altındasınız. Bir şey tespit edersek size haber vereceğiz.</string>
   <!-- Label text for the Enhanced Tracking Protection toggle. -->
   <string name="protection_panel_etp_toggle_label">Gelişmiş izlenme koruması</string>
+  <!-- Toggle if Enhanced Tracking Protection is turned on -->
+  <string name="protection_panel_etp_toggle_on">Açık</string>
+  <!-- Toggle if Enhanced Tracking Protection is turned off -->
+  <string name="protection_panel_etp_toggle_off">Kapalı</string>
   <!-- Description text for the Enhanced Tracking Protection toggle when tracking protection is enabled. -->
-  <string name="protection_panel_etp_toggle_enabled_description">Site bozuk görünüyorsa korumaları kapatmayı deneyin.</string>
+  <string name="protection_panel_etp_toggle_enabled_description" moz:removedIn="142" tools:ignore="UnusedResources">Site bozuk görünüyorsa korumaları kapatmayı deneyin.</string>
+  <!-- Description text for the Enhanced Tracking Protection toggle when tracking protection is enabled. -->
+  <string name="protection_panel_etp_toggle_enabled_description_2">Site bozuk görünüyorsa kapatmayı deneyin.</string>
   <!-- Description text for the Enhanced Tracking Protection toggle when tracking protection is disabled. -->
-  <string name="protection_panel_etp_toggle_disabled_description">Korumalar KAPALI. Yeniden açmanızı öneririz.</string>
+  <string name="protection_panel_etp_toggle_disabled_description" moz:removedIn="142" tools:ignore="UnusedResources">Korumalar KAPALI. Yeniden açmanızı öneririz.</string>
+  <!-- Description text for the Enhanced Tracking Protection toggle when tracking protection is disabled. -->
+  <string name="protection_panel_etp_toggle_disabled_description_2">İzlenme korumasını açmanız önerilir.</string>
   <!--
     Text for displaying the total number of trackers blocked in the protection panel.
     %d is a placeholder for the number of trackers blocked.
@@ -3401,7 +3472,9 @@
   <!-- Text for when no trackers have been blocked. -->
   <string name="protection_panel_no_trackers_blocked">Hiç takip kodu bulunamadı</string>
   <!-- Link text to navigate to privacy and security settings from the protection panel. -->
-  <string name="protection_panel_privacy_and_security_settings">Gizlilik ve güvenlik ayarları</string>
+  <string name="protection_panel_privacy_and_security_settings" moz:removedIn="142" tools:ignore="UnusedResources">Gizlilik ve güvenlik ayarları</string>
+  <!-- Link text to navigate to privacy and security settings from the protection panel. -->
+  <string name="protection_panel_privacy_and_security_settings_2">Gizlilik ayarları</string>
   <!-- Title text for the protection panel permissions section. -->
   <string name="protection_panel_permissions_title">İzinler</string>
   <!--
@@ -3611,6 +3684,14 @@
   <string name="debug_drawer_override_region">Ev bölgesini ve geçerli bölgeyi değiştir</string>
   <!-- The title of the button for overriding home region permanently. -->
   <string name="debug_drawer_override_home_region_permanently">Ev bölgesini kalıcı olarak değiştir</string>
+  <!--
+    Add-ons debug tools
+
+    The description of the Add-ons Tools in the Debug Drawer
+  -->
+  <string name="debug_drawer_addons_tools_title">Eklenti araçları</string>
+  <!-- The title of the button used to check for add-on updates. -->
+  <string name="addons_debug_tools_check_for_updates_button">Güncellemeleri denetle</string>
   <!--
     Messages explaining how to exit fullscreen mode
 

@@ -34,6 +34,8 @@
   <string name="no_private_tabs_description">Uw privétabbladen worden hier weergegeven.</string>
   <!-- Tab tray multi select title in app bar. %1$d is the number of tabs selected -->
   <string name="tab_tray_multi_select_title">%1$d geselecteerd</string>
+  <!-- Tab tray multi select title in app bar when no tabs are selected -->
+  <string name="tab_tray_multi_select_title_empty">Tabbladen selecteren</string>
   <!-- Label of button in create collection dialog for creating a new collection -->
   <string name="tab_tray_add_new_collection">Nieuwe collectie toevoegen</string>
   <!-- Label of editable text in create collection dialog for naming a new collection -->
@@ -338,7 +340,7 @@
   <!-- Browser menu label that toggles the request for the desktop site of the currently visited page -->
   <string name="browser_menu_switch_to_desktop_site" moz:removedIn="141" tools:ignore="UnusedResources">Naar desktopwebsite</string>
   <!-- Browser menu label that toggles the request for the mobile site of the currently visited page -->
-  <string name="browser_menu_switch_to_mobile_site">Naar mobielwebsite</string>
+  <string name="browser_menu_switch_to_mobile_site" moz:removedIn="142" tools:ignore="UnusedResources">Naar mobielwebsite</string>
   <!-- Browser menu label that navigates to the page tools sub-menu -->
   <string name="browser_menu_tools" moz:removedIn="141" tools:ignore="UnusedResources">Hulpmiddelen</string>
   <!-- Content description (not visible, for screen readers etc.): Back button for all menu redesign sub-menu -->
@@ -875,6 +877,10 @@
   <string name="preferences_theme">Thema</string>
   <!-- Preference for customizing the home screen -->
   <string name="preferences_home_2">Startpagina</string>
+  <!-- Preference for customizing the app icon -->
+  <string name="preferences_app_icon">App-pictogram</string>
+  <!-- Preference for showing the tab strip -->
+  <string name="preferences_tab_strip">Tabbladenbalkweergave</string>
   <!-- Preference for gestures based actions -->
   <string name="preferences_gestures">Bewegingen</string>
   <!-- Preference for settings related to visual options -->
@@ -1307,6 +1313,14 @@
   <string name="preference_simple_toolbar">Eenvoudig</string>
   <!-- Preference for using expanded toolbar -->
   <string name="preference_expanded_toolbar">Uitgevouwen</string>
+  <!-- Preference description indicating the toolbar location preference is disabled when the tab strip is enabled -->
+  <string name="preference_toolbar_pref_disabled_explanation">De adresbalk moet bovenaan staan als de tabbladenbalk wordt getoond.</string>
+  <!--
+    App icon Preferences
+
+    Title for the preference that lets the user pick a new app icon
+  -->
+  <string name="preference_select_app_icon_title">App-pictogram selecteren</string>
   <!--
     Theme Preferences
 
@@ -1319,6 +1333,12 @@
   <string name="preference_auto_battery_theme">Ingesteld door Batterijbesparing</string>
   <!-- Preference for using following device theme -->
   <string name="preference_follow_device_theme">Apparaatthema volgen</string>
+  <!--
+    Tab Strip Preferences
+
+    Preferences for showing tab strip
+  -->
+  <string name="preference_tab_strip_show">Tabbladenbalk tonen</string>
   <!--
     Gestures Preferences
 
@@ -1472,6 +1492,11 @@
   <!--
     Sessions
 
+    Title for the list of tabs in the current normal session used by a11y services
+    The %1$s will be replaced by the number of opened normal tabs
+  -->
+  <string name="tabs_header_normal_tabs_counter_title">Open normale tabbladen: %1$s. Tik om tussen tabbladen te wisselen.</string>
+  <!--
     Title for the list of tabs in the current private session used by a11y services
     The %1$s will be replaced by the number of opened private tabs
   -->
@@ -1481,6 +1506,12 @@
     The %1$s will be replaced by the number of opened synced tabs
   -->
   <string name="tabs_header_synced_tabs_counter_title">Gesynchroniseerde open tabbladen: %1$s. Tik om tussen tabbladen te wisselen.</string>
+  <!-- Text for the tabs header private tabs -->
+  <string name="tabs_header_private_tabs_title">Privé</string>
+  <!-- Text for the tabs header normal tabs -->
+  <string name="tabs_header_normal_tabs_title">Tabbladen</string>
+  <!-- Text for the tabs header synced tabs -->
+  <string name="tabs_header_synced_tabs_title">Synchronisatie</string>
   <!-- Content description (not visible, for screen readers etc.): Add tab button. Adds a news tab when pressed -->
   <string name="add_tab">Tabblad toevoegen</string>
   <!-- Content description (not visible, for screen readers etc.): Add tab button. Adds a news tab when pressed -->
@@ -1731,7 +1762,11 @@
   -->
   <string name="webcompat_reporter_screen_title">Niet-werkende website melden</string>
   <!-- The description of the Web Compat Reporter feature. %1$s is the name of the app (for example "Firefox"). -->
-  <string name="webcompat_reporter_description">Help %1$s voor iedereen beter te maken. Mozilla-werknemers gebruiken de door u verzonden informatie om websiteproblemen op te lossen.</string>
+  <string name="webcompat_reporter_description" moz:removedIn="142" tools:ignore="UnusedResources">Help %1$s voor iedereen beter te maken. Mozilla-werknemers gebruiken de door u verzonden informatie om websiteproblemen op te lossen.</string>
+  <!-- The description of the Web Compat Reporter feature, which has a "learn more" button text for navigating to a SUMO link to learn more about reporting a broken site. %1$s is the name of the app (for example "Firefox"). -->
+  <string name="webcompat_reporter_description_2">Uw rapport helpt ons problemen in %1$s te begrijpen en op te lossen, om het voor iedereen te verbeteren. Meer info</string>
+  <!-- The button text for navigating to the SUMO link to learn more about reporting a broken site. -->
+  <string name="webcompat_reporter_learn_more">Meer info</string>
   <!-- The text field label of the URL text field. This is displayed above the user-inputted URL. -->
   <string name="webcompat_reporter_label_url">URL</string>
   <!-- The error message of the URL text field when an invalid URL has been entered. -->
@@ -1739,7 +1774,9 @@
   <!-- The label/title of a field in the Web Compat Reporter feature for explaining a high-level reason why the site is broken. -->
   <string name="webcompat_reporter_label_whats_broken_2">Wat werkt niet?</string>
   <!-- The placeholder text for the dropdown where a user selects a high-level reason why the site is broken. -->
-  <string name="webcompat_reporter_choose_reason">Kies reden</string>
+  <string name="webcompat_reporter_choose_reason" moz:removedIn="142" tools:ignore="UnusedResources">Kies reden</string>
+  <!-- The placeholder text for the dropdown where a user selects a high-level reason why the site is broken. -->
+  <string name="webcompat_reporter_choose_reason_2">Kies een reden</string>
   <!-- The error message of the dropdown, prompting the user to select a high-level reason why the site is broken. -->
   <string name="webcompat_reporter_choose_reason_error">Kies een reden</string>
   <!-- The label/title of an optional field in the Web Compat Reporter feature for adding additional information. -->
@@ -2069,7 +2106,7 @@
   -->
   <string name="create_collection_save_to_collection_tab_selected">%d tabblad geselecteerd</string>
   <!-- Text shown in snackbar when multiple tabs have been saved in a collection -->
-  <string name="create_collection_tabs_saved">Tabbladen opgeslagen!</string>
+  <string name="create_collection_tabs_saved" tools:ignore="UnusedResources" moz:removedIn="142">Tabbladen opgeslagen!</string>
   <!-- Text shown in snackbar when one or multiple tabs have been saved in a new collection -->
   <string name="create_collection_tabs_saved_new_collection">Collectie opgeslagen!</string>
   <!-- Text shown in snackbar when one tab has been saved in a collection -->
@@ -2204,7 +2241,7 @@
   -->
   <string name="snackbar_collection_deleted">Collectie verwijderd</string>
   <!-- Text shown in snackbar when user renames a collection -->
-  <string name="snackbar_collection_renamed">Collectie hernoemd</string>
+  <string name="snackbar_collection_renamed" moz:removedIn="141" tools:ignore="UnusedResources">Collectie hernoemd</string>
   <!-- Text shown in snackbar when user closes a tab -->
   <string name="snackbar_tab_closed">Tabblad gesloten</string>
   <!-- Text shown in snackbar when user closes all tabs -->
@@ -2243,13 +2280,15 @@
   <!-- Tab collection deletion prompt dialog option to delete the collection -->
   <string name="tab_collection_dialog_positive">Verwijderen</string>
   <!-- Message for copying the URL via long press on the toolbar -->
-  <string name="url_copied">URL gekopieerd</string>
+  <string name="url_copied" tools:ignore="UnusedResources" moz:removedIn="142">URL gekopieerd</string>
   <!-- Sample text for accessibility font size -->
   <string name="accessibility_text_size_sample_text_1">Dit is voorbeeldtekst. Hier wordt mee getoond hoe tekst wordt weergegeven, wanneer u met deze instelling de afmeting vergroot of verkleint.</string>
   <!-- Summary for Accessibility Text Size Scaling Preference -->
   <string name="preference_accessibility_text_size_summary">Tekst op websites groter of kleiner maken</string>
   <!-- Title for Accessibility Text Size Scaling Preference -->
   <string name="preference_accessibility_font_size_title">Lettergrootte</string>
+  <!-- %d is the percentage of the slide bar for setting the text font size and %% will be announced as "percent". -->
+  <string name="a11y_preference_accessibility_font_size_percentage">%d %%.</string>
   <!-- Title for Accessibility Text Automatic Size Scaling Preference -->
   <string name="preference_accessibility_auto_size_2">Automatische lettergrootte</string>
   <!-- Summary for Accessibility Text Automatic Size Scaling Preference -->
@@ -2381,6 +2420,10 @@
   <string name="preference_enhanced_tracking_protection_strict">Streng</string>
   <!-- Preference description for enhanced tracking protection for the strict protection settings -->
   <string name="preference_enhanced_tracking_protection_strict_description_4">Sterkere bescherming tegen volgen en snellere prestaties, maar sommige websites werken mogelijk niet goed.</string>
+  <!-- Preference description for the checkbox setting for "baseline" exceptions (a set of content blocking exceptions applied to fix major website breakage). %1$s is the name of the application (e.g. Fenix). -->
+  <string name="preference_enhanced_tracking_protection_allow_list_baseline">%1$s toestaan om automatisch uitzonderingen toe te passen die nodig zijn om grote defecten van de website te voorkomen.</string>
+  <!-- Preference description for the checkbox setting for "convenience" exceptions (a set of content blocking exceptions applied to fix convenience site features). -->
+  <string name="preference_enhanced_tracking_protection_allow_list_convenience">Ook automatisch uitzonderingen toepassen die alleen nodig zijn om kleine problemen op te lossen en gemaksfuncties beschikbaar te maken.</string>
   <!-- Accessibility text for the Strict protection information icon -->
   <string name="preference_enhanced_tracking_protection_strict_info_button">Wat wordt geblokkeerd door strenge bescherming tegen volgen</string>
   <!-- Preference for enhanced tracking protection for the custom protection settings -->
@@ -2749,6 +2792,10 @@
   <string name="preferences_addresses_save_and_autofill_addresses_2">Adressen opslaan en invullen</string>
   <!-- Preference summary for saving and filling address data -->
   <string name="preferences_addresses_save_and_autofill_addresses_summary_2">Inclusief telefoonnummers en e-mailadressen</string>
+  <!-- Preference option for syncing addresses across devices. This is displayed when the user is not signed into sync -->
+  <string name="preferences_addresses_sync_addresses_across_devices">Adressen synchroniseren tussen apparaten</string>
+  <!-- Preference option for syncing addresses across devices. This is displayed when the user is signed into sync -->
+  <string name="preferences_addresses_sync_addresses">Adressen synchroniseren</string>
   <!-- Title of the "Add card" screen -->
   <string name="credit_cards_add_card">Kaart toevoegen</string>
   <!-- Title of the "Edit card" screen -->
@@ -2876,9 +2923,9 @@
   <!-- Text shown when we aren't able to validate the custom search query. %s is the url of the custom search engine. -->
   <string name="search_add_custom_engine_error_cannot_reach" moz:removedIn="140" tools:ignore="UnusedResources">Fout bij verbinden met ‘%s’</string>
   <!-- Text shown when a user creates a new search engine. %s is the url of the custom search engine. -->
-  <string name="search_add_custom_engine_success_message">%s aangemaakt</string>
+  <string name="search_add_custom_engine_success_message" tools:ignore="UnusedResources" moz:removedIn="142">%s aangemaakt</string>
   <!-- Text shown when a user successfully edits a custom search engine. %s is the url of the custom search engine. -->
-  <string name="search_edit_custom_engine_success_message">%s opgeslagen</string>
+  <string name="search_edit_custom_engine_success_message" tools:ignore="UnusedResources" moz:removedIn="142">%s opgeslagen</string>
   <!-- Text shown when a user successfully deletes a custom search engine. %s is the url of the custom search engine. -->
   <string name="search_delete_search_engine_success_message">%s verwijderd</string>
   <!-- Heading for the instructions to allow a permission -->
@@ -3405,10 +3452,18 @@
   <string name="protection_panel_banner_protected_description">U bent beschermd. Als we iets ontdekken, laten we u dat weten.</string>
   <!-- Label text for the Enhanced Tracking Protection toggle. -->
   <string name="protection_panel_etp_toggle_label">Verbeterde bescherming tegen volgen</string>
+  <!-- Toggle if Enhanced Tracking Protection is turned on -->
+  <string name="protection_panel_etp_toggle_on">Aan</string>
+  <!-- Toggle if Enhanced Tracking Protection is turned off -->
+  <string name="protection_panel_etp_toggle_off">Uit</string>
   <!-- Description text for the Enhanced Tracking Protection toggle when tracking protection is enabled. -->
-  <string name="protection_panel_etp_toggle_enabled_description">Als iets op deze website niet werkt, probeer dan beschermingen uit te schakelen.</string>
+  <string name="protection_panel_etp_toggle_enabled_description" moz:removedIn="142" tools:ignore="UnusedResources">Als iets op deze website niet werkt, probeer dan beschermingen uit te schakelen.</string>
+  <!-- Description text for the Enhanced Tracking Protection toggle when tracking protection is enabled. -->
+  <string name="protection_panel_etp_toggle_enabled_description_2">Als iets op deze website niet werkt, probeer het dan uit te schakelen.</string>
   <!-- Description text for the Enhanced Tracking Protection toggle when tracking protection is disabled. -->
-  <string name="protection_panel_etp_toggle_disabled_description">Beschermingen zijn UIT. We raden u aan ze weer in te schakelen.</string>
+  <string name="protection_panel_etp_toggle_disabled_description" moz:removedIn="142" tools:ignore="UnusedResources">Beschermingen zijn UIT. We raden u aan ze weer in te schakelen.</string>
+  <!-- Description text for the Enhanced Tracking Protection toggle when tracking protection is disabled. -->
+  <string name="protection_panel_etp_toggle_disabled_description_2">Inschakelen van Bescherming tegen volgen wordt aanbevolen.</string>
   <!--
     Text for displaying the total number of trackers blocked in the protection panel.
     %d is a placeholder for the number of trackers blocked.
@@ -3417,7 +3472,9 @@
   <!-- Text for when no trackers have been blocked. -->
   <string name="protection_panel_no_trackers_blocked">Geen trackers gevonden</string>
   <!-- Link text to navigate to privacy and security settings from the protection panel. -->
-  <string name="protection_panel_privacy_and_security_settings">Privacy- en beveiligingsinstellingen</string>
+  <string name="protection_panel_privacy_and_security_settings" moz:removedIn="142" tools:ignore="UnusedResources">Privacy- en beveiligingsinstellingen</string>
+  <!-- Link text to navigate to privacy and security settings from the protection panel. -->
+  <string name="protection_panel_privacy_and_security_settings_2">Privacyinstellingen</string>
   <!-- Title text for the protection panel permissions section. -->
   <string name="protection_panel_permissions_title">Toestemmingen</string>
   <!--
@@ -3627,6 +3684,14 @@
   <string name="debug_drawer_override_region">Thuisregio en huidige regio overschrijven</string>
   <!-- The title of the button for overriding home region permanently. -->
   <string name="debug_drawer_override_home_region_permanently">Thuisregio permanent overschrijven</string>
+  <!--
+    Add-ons debug tools
+
+    The description of the Add-ons Tools in the Debug Drawer
+  -->
+  <string name="debug_drawer_addons_tools_title">Add-ons-hulpmiddelen</string>
+  <!-- The title of the button used to check for add-on updates. -->
+  <string name="addons_debug_tools_check_for_updates_button">Controleren op updates</string>
   <!--
     Messages explaining how to exit fullscreen mode
 

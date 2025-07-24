@@ -34,6 +34,8 @@
   <string name="no_private_tabs_description">הלשוניות הפרטיות שלך יופיעו כאן.</string>
   <!-- Tab tray multi select title in app bar. %1$d is the number of tabs selected -->
   <string name="tab_tray_multi_select_title">%1$d נבחרו</string>
+  <!-- Tab tray multi select title in app bar when no tabs are selected -->
+  <string name="tab_tray_multi_select_title_empty">בחירת לשוניות</string>
   <!-- Label of button in create collection dialog for creating a new collection -->
   <string name="tab_tray_add_new_collection">הוספת אוסף חדש</string>
   <!-- Label of editable text in create collection dialog for naming a new collection -->
@@ -338,7 +340,7 @@
   <!-- Browser menu label that toggles the request for the desktop site of the currently visited page -->
   <string name="browser_menu_switch_to_desktop_site" moz:removedIn="141" tools:ignore="UnusedResources">מעבר לאתר למחשבים</string>
   <!-- Browser menu label that toggles the request for the mobile site of the currently visited page -->
-  <string name="browser_menu_switch_to_mobile_site">מעבר לתצוגה לניידים</string>
+  <string name="browser_menu_switch_to_mobile_site" moz:removedIn="142" tools:ignore="UnusedResources">מעבר לתצוגה לניידים</string>
   <!-- Browser menu label that navigates to the page tools sub-menu -->
   <string name="browser_menu_tools" moz:removedIn="141" tools:ignore="UnusedResources">כלים</string>
   <!-- Content description (not visible, for screen readers etc.): Back button for all menu redesign sub-menu -->
@@ -873,6 +875,10 @@
   <string name="preferences_theme">ערכת נושא</string>
   <!-- Preference for customizing the home screen -->
   <string name="preferences_home_2">מסך הבית</string>
+  <!-- Preference for customizing the app icon -->
+  <string name="preferences_app_icon">סמל היישומון</string>
+  <!-- Preference for showing the tab strip -->
+  <string name="preferences_tab_strip">תצוגת סרגל הלשוניות</string>
   <!-- Preference for gestures based actions -->
   <string name="preferences_gestures">מחוות</string>
   <!-- Preference for settings related to visual options -->
@@ -1305,6 +1311,14 @@
   <string name="preference_simple_toolbar">פשוט</string>
   <!-- Preference for using expanded toolbar -->
   <string name="preference_expanded_toolbar">מורחב</string>
+  <!-- Preference description indicating the toolbar location preference is disabled when the tab strip is enabled -->
+  <string name="preference_toolbar_pref_disabled_explanation">שורת הכתובת חייבת להופיע למעלה כאשר סרגל הלשוניות מוצג.</string>
+  <!--
+    App icon Preferences
+
+    Title for the preference that lets the user pick a new app icon
+  -->
+  <string name="preference_select_app_icon_title">בחירת סמל היישומון</string>
   <!--
     Theme Preferences
 
@@ -1317,6 +1331,12 @@
   <string name="preference_auto_battery_theme">הוגדר על־ידי מצב חיסכון בסוללה</string>
   <!-- Preference for using following device theme -->
   <string name="preference_follow_device_theme">שימוש בערכת הנושא של המכשיר</string>
+  <!--
+    Tab Strip Preferences
+
+    Preferences for showing tab strip
+  -->
+  <string name="preference_tab_strip_show">הצגת סרגל לשוניות</string>
   <!--
     Gestures Preferences
 
@@ -1470,6 +1490,11 @@
   <!--
     Sessions
 
+    Title for the list of tabs in the current normal session used by a11y services
+    The %1$s will be replaced by the number of opened normal tabs
+  -->
+  <string name="tabs_header_normal_tabs_counter_title">לשוניות רגילות פתוחות: %1$s. יש להקיש כדי להחליף לשוניות.</string>
+  <!--
     Title for the list of tabs in the current private session used by a11y services
     The %1$s will be replaced by the number of opened private tabs
   -->
@@ -1479,6 +1504,12 @@
     The %1$s will be replaced by the number of opened synced tabs
   -->
   <string name="tabs_header_synced_tabs_counter_title">לשוניות מסונכרנות פתוחות: %1$s. יש להקיש כדי להחליף לשוניות.</string>
+  <!-- Text for the tabs header private tabs -->
+  <string name="tabs_header_private_tabs_title">פרטי</string>
+  <!-- Text for the tabs header normal tabs -->
+  <string name="tabs_header_normal_tabs_title">לשוניות</string>
+  <!-- Text for the tabs header synced tabs -->
+  <string name="tabs_header_synced_tabs_title">סנכרון</string>
   <!-- Content description (not visible, for screen readers etc.): Add tab button. Adds a news tab when pressed -->
   <string name="add_tab">הוספת לשונית</string>
   <!-- Content description (not visible, for screen readers etc.): Add tab button. Adds a news tab when pressed -->
@@ -1729,7 +1760,11 @@
   -->
   <string name="webcompat_reporter_screen_title">דיווח על אתר שבור</string>
   <!-- The description of the Web Compat Reporter feature. %1$s is the name of the app (for example "Firefox"). -->
-  <string name="webcompat_reporter_description">ניתן לסייע להפוך את %1$s לטוב יותר עבור כולם. עובדי Mozilla משתמשים במידע שיישלח כדי לתקן בעיות באתרים.</string>
+  <string name="webcompat_reporter_description" moz:removedIn="142" tools:ignore="UnusedResources">ניתן לסייע להפוך את %1$s לטוב יותר עבור כולם. עובדי Mozilla משתמשים במידע שיישלח כדי לתקן בעיות באתרים.</string>
+  <!-- The description of the Web Compat Reporter feature, which has a "learn more" button text for navigating to a SUMO link to learn more about reporting a broken site. %1$s is the name of the app (for example "Firefox"). -->
+  <string name="webcompat_reporter_description_2">הדיווח שלך מסייע לנו להבין ולתקן בעיות ב־%1$s כדי לשפר אותו עבור כולם. מידע נוסף</string>
+  <!-- The button text for navigating to the SUMO link to learn more about reporting a broken site. -->
+  <string name="webcompat_reporter_learn_more">מידע נוסף</string>
   <!-- The text field label of the URL text field. This is displayed above the user-inputted URL. -->
   <string name="webcompat_reporter_label_url">כתובת</string>
   <!-- The error message of the URL text field when an invalid URL has been entered. -->
@@ -1737,7 +1772,9 @@
   <!-- The label/title of a field in the Web Compat Reporter feature for explaining a high-level reason why the site is broken. -->
   <string name="webcompat_reporter_label_whats_broken_2">מה שבור או לא עובד?</string>
   <!-- The placeholder text for the dropdown where a user selects a high-level reason why the site is broken. -->
-  <string name="webcompat_reporter_choose_reason">בחירת סיבה</string>
+  <string name="webcompat_reporter_choose_reason" moz:removedIn="142" tools:ignore="UnusedResources">בחירת סיבה</string>
+  <!-- The placeholder text for the dropdown where a user selects a high-level reason why the site is broken. -->
+  <string name="webcompat_reporter_choose_reason_2">נא לבחור סיבה</string>
   <!-- The error message of the dropdown, prompting the user to select a high-level reason why the site is broken. -->
   <string name="webcompat_reporter_choose_reason_error">נא לבחור בסיבה</string>
   <!-- The label/title of an optional field in the Web Compat Reporter feature for adding additional information. -->
@@ -2067,7 +2104,7 @@
   -->
   <string name="create_collection_save_to_collection_tab_selected">לשונית אחת נבחרה</string>
   <!-- Text shown in snackbar when multiple tabs have been saved in a collection -->
-  <string name="create_collection_tabs_saved">הלשוניות נשמרו!</string>
+  <string name="create_collection_tabs_saved" tools:ignore="UnusedResources" moz:removedIn="142">הלשוניות נשמרו!</string>
   <!-- Text shown in snackbar when one or multiple tabs have been saved in a new collection -->
   <string name="create_collection_tabs_saved_new_collection">האוסף נשמר!</string>
   <!-- Text shown in snackbar when one tab has been saved in a collection -->
@@ -2202,7 +2239,7 @@
   -->
   <string name="snackbar_collection_deleted">האוסף נמחק</string>
   <!-- Text shown in snackbar when user renames a collection -->
-  <string name="snackbar_collection_renamed">שם האוסף שונה</string>
+  <string name="snackbar_collection_renamed" moz:removedIn="141" tools:ignore="UnusedResources">שם האוסף שונה</string>
   <!-- Text shown in snackbar when user closes a tab -->
   <string name="snackbar_tab_closed">הלשונית נסגרה</string>
   <!-- Text shown in snackbar when user closes all tabs -->
@@ -2241,13 +2278,15 @@
   <!-- Tab collection deletion prompt dialog option to delete the collection -->
   <string name="tab_collection_dialog_positive">מחיקה</string>
   <!-- Message for copying the URL via long press on the toolbar -->
-  <string name="url_copied">הקישור הועתק</string>
+  <string name="url_copied" tools:ignore="UnusedResources" moz:removedIn="142">הקישור הועתק</string>
   <!-- Sample text for accessibility font size -->
   <string name="accessibility_text_size_sample_text_1">זהו טקסט לדוגמה. זה כאן כדי להראות כיצד טקסט יוצג בעת הגדלה או הקטנת הגודל עם הגדרה זו.</string>
   <!-- Summary for Accessibility Text Size Scaling Preference -->
   <string name="preference_accessibility_text_size_summary">הגדלה או הקטנה של טקסט באתרים</string>
   <!-- Title for Accessibility Text Size Scaling Preference -->
   <string name="preference_accessibility_font_size_title">גודל הגופן</string>
+  <!-- %d is the percentage of the slide bar for setting the text font size and %% will be announced as "percent". -->
+  <string name="a11y_preference_accessibility_font_size_percentage">%d %%.</string>
   <!-- Title for Accessibility Text Automatic Size Scaling Preference -->
   <string name="preference_accessibility_auto_size_2">גודל גופן אוטומטי</string>
   <!-- Summary for Accessibility Text Automatic Size Scaling Preference -->
@@ -2379,6 +2418,10 @@
   <string name="preference_enhanced_tracking_protection_strict">מחמיר</string>
   <!-- Preference description for enhanced tracking protection for the strict protection settings -->
   <string name="preference_enhanced_tracking_protection_strict_description_4">הגנת מעקב חזקה יותר וביצועים מהירים יותר, אך מספר אתרים עשויים שלא לעבוד כראוי.</string>
+  <!-- Preference description for the checkbox setting for "baseline" exceptions (a set of content blocking exceptions applied to fix major website breakage). %1$s is the name of the application (e.g. Fenix). -->
+  <string name="preference_enhanced_tracking_protection_allow_list_baseline">לאפשר ל־%1$s להחיל באופן אוטומטי חריגות הנדרשות כדי להימנע משבירה של אתרים.</string>
+  <!-- Preference description for the checkbox setting for "convenience" exceptions (a set of content blocking exceptions applied to fix convenience site features). -->
+  <string name="preference_enhanced_tracking_protection_allow_list_convenience">להחיל באופן אוטומטי גם חריגות הנדרשות לתקן בעיות קלות ולהפוך תכונות נוחיות לזמינות.</string>
   <!-- Accessibility text for the Strict protection information icon -->
   <string name="preference_enhanced_tracking_protection_strict_info_button">מה נחסם על־ידי הגנת מעקב מחמירה</string>
   <!-- Preference for enhanced tracking protection for the custom protection settings -->
@@ -2745,6 +2788,10 @@
   <string name="preferences_addresses_save_and_autofill_addresses_2">שמירה ומילוי כתובות</string>
   <!-- Preference summary for saving and filling address data -->
   <string name="preferences_addresses_save_and_autofill_addresses_summary_2">כולל מספרי טלפון וכתובות דוא״ל</string>
+  <!-- Preference option for syncing addresses across devices. This is displayed when the user is not signed into sync -->
+  <string name="preferences_addresses_sync_addresses_across_devices">סנכרון כתובות בין מכשירים</string>
+  <!-- Preference option for syncing addresses across devices. This is displayed when the user is signed into sync -->
+  <string name="preferences_addresses_sync_addresses">סנכרון כתובות</string>
   <!-- Title of the "Add card" screen -->
   <string name="credit_cards_add_card">הוספת כרטיס</string>
   <!-- Title of the "Edit card" screen -->
@@ -2870,9 +2917,9 @@
   <!-- Text shown when we aren't able to validate the custom search query. %s is the url of the custom search engine. -->
   <string name="search_add_custom_engine_error_cannot_reach" moz:removedIn="140" tools:ignore="UnusedResources">שגיאה בהתחברות אל ״%s״</string>
   <!-- Text shown when a user creates a new search engine. %s is the url of the custom search engine. -->
-  <string name="search_add_custom_engine_success_message">נוצר %s</string>
+  <string name="search_add_custom_engine_success_message" tools:ignore="UnusedResources" moz:removedIn="142">נוצר %s</string>
   <!-- Text shown when a user successfully edits a custom search engine. %s is the url of the custom search engine. -->
-  <string name="search_edit_custom_engine_success_message">נשמר %s</string>
+  <string name="search_edit_custom_engine_success_message" tools:ignore="UnusedResources" moz:removedIn="142">נשמר %s</string>
   <!-- Text shown when a user successfully deletes a custom search engine. %s is the url of the custom search engine. -->
   <string name="search_delete_search_engine_success_message">נמחק %s</string>
   <!-- Heading for the instructions to allow a permission -->
@@ -3399,10 +3446,18 @@
   <string name="protection_panel_banner_protected_description">ההגנות פעילות. אם נזהה משהו חריג, נודיע לך.</string>
   <!-- Label text for the Enhanced Tracking Protection toggle. -->
   <string name="protection_panel_etp_toggle_label">הגנת מעקב מתקדמת</string>
+  <!-- Toggle if Enhanced Tracking Protection is turned on -->
+  <string name="protection_panel_etp_toggle_on">פעיל</string>
+  <!-- Toggle if Enhanced Tracking Protection is turned off -->
+  <string name="protection_panel_etp_toggle_off">כבוי</string>
   <!-- Description text for the Enhanced Tracking Protection toggle when tracking protection is enabled. -->
-  <string name="protection_panel_etp_toggle_enabled_description">אם משהו נראה שבור באתר הזה, ניתן לנסות לכבות את ההגנות.</string>
+  <string name="protection_panel_etp_toggle_enabled_description" moz:removedIn="142" tools:ignore="UnusedResources">אם משהו נראה שבור באתר הזה, ניתן לנסות לכבות את ההגנות.</string>
+  <!-- Description text for the Enhanced Tracking Protection toggle when tracking protection is enabled. -->
+  <string name="protection_panel_etp_toggle_enabled_description_2">אם משהו נראה שבור באתר הזה, ניתן לנסות לכבות אותה.</string>
   <!-- Description text for the Enhanced Tracking Protection toggle when tracking protection is disabled. -->
-  <string name="protection_panel_etp_toggle_disabled_description">ההגנות כבויות. אנו מציעים להפעיל אותן מחדש.</string>
+  <string name="protection_panel_etp_toggle_disabled_description" moz:removedIn="142" tools:ignore="UnusedResources">ההגנות כבויות. אנו מציעים להפעיל אותן מחדש.</string>
+  <!-- Description text for the Enhanced Tracking Protection toggle when tracking protection is disabled. -->
+  <string name="protection_panel_etp_toggle_disabled_description_2">מומלץ להפעיל את הגנת המעקב.</string>
   <!--
     Text for displaying the total number of trackers blocked in the protection panel.
     %d is a placeholder for the number of trackers blocked.
@@ -3411,7 +3466,9 @@
   <!-- Text for when no trackers have been blocked. -->
   <string name="protection_panel_no_trackers_blocked">לא נמצאו רכיבי מעקב</string>
   <!-- Link text to navigate to privacy and security settings from the protection panel. -->
-  <string name="protection_panel_privacy_and_security_settings">הגדרות פרטיות ואבטחה</string>
+  <string name="protection_panel_privacy_and_security_settings" moz:removedIn="142" tools:ignore="UnusedResources">הגדרות פרטיות ואבטחה</string>
+  <!-- Link text to navigate to privacy and security settings from the protection panel. -->
+  <string name="protection_panel_privacy_and_security_settings_2">הגדרות פרטיות</string>
   <!-- Title text for the protection panel permissions section. -->
   <string name="protection_panel_permissions_title">הרשאות</string>
   <!--
@@ -3619,6 +3676,14 @@
   <string name="debug_drawer_override_region">עקיפת הבית והאזור הנוכחי</string>
   <!-- The title of the button for overriding home region permanently. -->
   <string name="debug_drawer_override_home_region_permanently">עקיפת אזור הבית לצמיתות</string>
+  <!--
+    Add-ons debug tools
+
+    The description of the Add-ons Tools in the Debug Drawer
+  -->
+  <string name="debug_drawer_addons_tools_title">כלי תוספות</string>
+  <!-- The title of the button used to check for add-on updates. -->
+  <string name="addons_debug_tools_check_for_updates_button">בדיקה אחר עדכונים</string>
   <!--
     Messages explaining how to exit fullscreen mode
 
