@@ -8,6 +8,7 @@ let lazy = {};
 ChromeUtils.defineESModuleGetters(lazy, {
   ShellService: "resource:///modules/ShellService.sys.mjs",
   TaskbarTabsUtils: "resource:///modules/taskbartabs/TaskbarTabsUtils.sys.mjs",
+  setTimeout: "resource://gre/modules/Timer.sys.mjs",
 });
 
 ChromeUtils.defineLazyGetter(lazy, "logConsole", () => {
@@ -27,21 +28,25 @@ export const TaskbarTabsPin = {
    * @param {TaskbarTab} aTaskbarTab - A Taskbar Tab to pin to the taskbar.
    * @returns {Promise} Resolves once finished.
    */
-  async pinTaskbarTab(aTaskbarTab) {
+  async pinTaskbarTab(aTaskbarTab, aRegistry) {
+    await new Promise(resolve => lazy.setTimeout(resolve, 50));
+
     lazy.logConsole.info("Pinning Taskbar Tab to the taskbar.");
 
-    let iconPath = await createTaskbarIconFromFavicon(aTaskbarTab);
-
-    let shortcut = await createShortcut(aTaskbarTab, iconPath);
-
     try {
+      let iconPath = await createTaskbarIconFromFavicon(aTaskbarTab);
+
+      let shortcut = await createShortcut(aTaskbarTab, iconPath, aRegistry);
+
       await lazy.ShellService.pinShortcutToTaskbar(
         aTaskbarTab.id,
         "Programs",
         shortcut
       );
+      Glean.webApp.pin.record({ result: "Success" });
     } catch (e) {
       lazy.logConsole.error(`An error occurred while pinning: ${e.message}`);
+      Glean.webApp.pin.record({ result: e.name ?? "Unknown exception" });
     }
   },
 
@@ -51,21 +56,33 @@ export const TaskbarTabsPin = {
    * @param {TaskbarTab} aTaskbarTab - The Taskbar Tab to unpin from the taskbar.
    * @returns {Promise} Resolves once finished.
    */
-  async unpinTaskbarTab(aTaskbarTab) {
-    lazy.logConsole.info("Unpinning Taskbar Tab from the taskbar.");
+  async unpinTaskbarTab(aTaskbarTab, aRegistry) {
+    try {
+      lazy.logConsole.info("Unpinning Taskbar Tab from the taskbar.");
 
-    let { relativePath } = await generateShortcutInfo(aTaskbarTab);
-    lazy.ShellService.unpinShortcutFromTaskbar("Programs", relativePath);
+      let { relativePath } = await generateShortcutInfo(aTaskbarTab);
+      lazy.ShellService.unpinShortcutFromTaskbar("Programs", relativePath);
 
-    let iconFile = getIconFile(aTaskbarTab);
+      let iconFile = getIconFile(aTaskbarTab);
 
-    lazy.logConsole.debug(`Deleting ${relativePath}`);
-    lazy.logConsole.debug(`Deleting ${iconFile.path}`);
+      lazy.logConsole.debug(`Deleting ${relativePath}`);
+      lazy.logConsole.debug(`Deleting ${iconFile.path}`);
 
-    await Promise.all([
-      lazy.ShellService.deleteShortcut("Programs", relativePath),
-      IOUtils.remove(iconFile.path),
-    ]);
+      await Promise.all([
+        lazy.ShellService.deleteShortcut("Programs", relativePath).then(() => {
+          // Only update if that didn't throw an error.
+          aRegistry.patchTaskbarTab(aTaskbarTab, {
+            shortcutRelativePath: null,
+          });
+        }),
+        IOUtils.remove(iconFile.path),
+      ]);
+
+      Glean.webApp.unpin.record({ result: "Success" });
+    } catch (e) {
+      lazy.logConsole.error(`An error occurred while unpinning: ${e.message}`);
+      Glean.webApp.unpin.record({ result: e.name ?? "Unknown exception" });
+    }
   },
 };
 
@@ -100,7 +117,7 @@ async function createTaskbarIconFromFavicon(aTaskbarTab) {
  * @param {nsIFile} aFileIcon - The icon file to use for the shortcut.
  * @returns {Promise<string>} The path to the created shortcut.
  */
-async function createShortcut(aTaskbarTab, aFileIcon) {
+async function createShortcut(aTaskbarTab, aFileIcon, aRegistry) {
   lazy.logConsole.info("Creating Taskbar Tabs shortcut.");
 
   let { relativePath, description } = await generateShortcutInfo(aTaskbarTab);
@@ -111,7 +128,7 @@ async function createShortcut(aTaskbarTab, aFileIcon) {
   let targetfile = Services.dirsvc.get("XREExeF", Ci.nsIFile);
   let profileFolder = Services.dirsvc.get("ProfD", Ci.nsIFile);
 
-  return await lazy.ShellService.createShortcut(
+  await lazy.ShellService.createShortcut(
     targetfile,
     [
       "-taskbar-tab",
@@ -130,6 +147,13 @@ async function createShortcut(aTaskbarTab, aFileIcon) {
     "Programs",
     relativePath
   );
+
+  // Only update if that didn't throw an error.
+  aRegistry.patchTaskbarTab(aTaskbarTab, {
+    shortcutRelativePath: relativePath,
+  });
+
+  return relativePath;
 }
 
 /**
