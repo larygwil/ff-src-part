@@ -861,7 +861,7 @@ pref("browser.search.visualSearch.featureGate", false);
 pref("browser.spin_cursor_while_busy", false);
 
 // Enable display of contextual-password-manager option in browser sidebar
-pref("browser.contextual-password-manager.enabled", false);
+pref("browser.contextual-password-manager.enabled", true);
 
 // Enables the display of the Mozilla VPN banner in private browsing windows
 pref("browser.privatebrowsing.vpnpromourl", "https://vpn.mozilla.org/?utm_source=firefox-browser&utm_medium=firefox-%CHANNEL%-browser&utm_campaign=private-browsing-vpn-link");
@@ -1625,6 +1625,7 @@ pref("services.sync.prefs.sync.browser.discovery.enabled", true);
 pref("services.sync.prefs.sync.browser.download.useDownloadDir", true);
 pref("services.sync.prefs.sync.browser.firefox-view.feature-tour", true);
 pref("services.sync.prefs.sync.browser.formfill.enable", true);
+pref("services.sync.prefs.sync.browser.ipProtection.enabled", true);
 pref("services.sync.prefs.sync.browser.link.open_newwindow", true);
 pref("services.sync.prefs.sync.browser.menu.showViewImageInfo", true);
 pref("services.sync.prefs.sync.browser.newtabpage.activity-stream.asrouter.userprefs.cfr.addons", true);
@@ -3458,5 +3459,5 @@ pref("browser.contextual-services.contextId.rust-component.enabled", true);
 // Pref to enable the IP protection feature
 pref("browser.ipProtection.enabled", false);
 pref("browser.ipProtection.variant", "");
-
+pref("browser.ipProtection.log", false);
 pref("browser.ipProtection.guardian.endpoint", "https://vpn.mozilla.org/");
