@@ -688,9 +688,9 @@
   -->
   <string name="wallpapers_item_name_content_description">බිතුපත් අථකය: %1$s</string>
   <!-- Snackbar message for when wallpaper is selected -->
-  <string name="wallpaper_updated_snackbar_message">බිතුපත යාවත්කාල විය!</string>
+  <string name="wallpaper_updated_snackbar_message" tools:ignore="UnusedResources" moz:removedIn="144">බිතුපත යාවත්කාල විය!</string>
   <!-- Snackbar label for action to view selected wallpaper -->
-  <string name="wallpaper_updated_snackbar_action">බලන්න</string>
+  <string name="wallpaper_updated_snackbar_action" tools:ignore="UnusedResources" moz:removedIn="144">බලන්න</string>
   <!-- Snackbar message for when wallpaper couldn't be downloaded -->
   <string name="wallpaper_download_error_snackbar_message">බිතුපත බාගැනීමට නොහැකි විය</string>
   <!-- Snackbar label for action to retry downloading the wallpaper -->
@@ -1100,7 +1100,7 @@
   <!-- The label/title of an optional field in the Web Compat Reporter feature for adding additional information. -->
   <string name="webcompat_reporter_label_description">ගැටලුව විස්තර කරන්න (විකල්පයකි)</string>
   <!-- The button text for navigating away from the feature to provide more information on the broken site's bug report. -->
-  <string name="webcompat_reporter_send_more_info">තව තොරතුරු යවන්න</string>
+  <string name="webcompat_reporter_send_more_info" moz:removedIn="144" tools:ignore="UnusedResources">තව තොරතුරු යවන්න</string>
   <!-- The button text for the cancel button to leave the Web Compat Reporter feature. -->
   <string name="webcompat_reporter_cancel">අවලංගු</string>
   <!-- The button text for the send button to submit the provided form data. -->

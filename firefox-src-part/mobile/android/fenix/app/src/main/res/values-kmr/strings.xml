@@ -715,9 +715,9 @@
   -->
   <string name="wallpapers_item_name_content_description">Wêneyê dîwêr: %1$s</string>
   <!-- Snackbar message for when wallpaper is selected -->
-  <string name="wallpaper_updated_snackbar_message">Wêneyê dîwêr hat venûkirin!</string>
+  <string name="wallpaper_updated_snackbar_message" tools:ignore="UnusedResources" moz:removedIn="144">Wêneyê dîwêr hat venûkirin!</string>
   <!-- Snackbar label for action to view selected wallpaper -->
-  <string name="wallpaper_updated_snackbar_action">Nîşan bide</string>
+  <string name="wallpaper_updated_snackbar_action" tools:ignore="UnusedResources" moz:removedIn="144">Nîşan bide</string>
   <!-- Snackbar message for when wallpaper couldn't be downloaded -->
   <string name="wallpaper_download_error_snackbar_message">Wêneyê dîwêr nehat daxistin</string>
   <!-- Snackbar label for action to retry downloading the wallpaper -->
@@ -1214,7 +1214,7 @@
   <!-- The label/title of an optional field in the Web Compat Reporter feature for adding additional information. -->
   <string name="webcompat_reporter_label_description">Pirsgirêkê diyar bike (vebijarkî)</string>
   <!-- The button text for navigating away from the feature to provide more information on the broken site's bug report. -->
-  <string name="webcompat_reporter_send_more_info">Zêdetir agahiyan bişîne</string>
+  <string name="webcompat_reporter_send_more_info" moz:removedIn="144" tools:ignore="UnusedResources">Zêdetir agahiyan bişîne</string>
   <!-- The button text for the cancel button to leave the Web Compat Reporter feature. -->
   <string name="webcompat_reporter_cancel">Betal bike</string>
   <!-- The button text for the send button to submit the provided form data. -->

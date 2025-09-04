@@ -446,9 +446,9 @@
   <!-- Title for the customize home screen section with sponsored shortcuts. -->
   <string name="customize_toggle_contile">Atayos patrocinaos</string>
   <!-- Snackbar message for when wallpaper is selected -->
-  <string name="wallpaper_updated_snackbar_message">¡Anovóse\'l fondu de pantalla!</string>
+  <string name="wallpaper_updated_snackbar_message" tools:ignore="UnusedResources" moz:removedIn="144">¡Anovóse\'l fondu de pantalla!</string>
   <!-- Snackbar label for action to view selected wallpaper -->
-  <string name="wallpaper_updated_snackbar_action">Ver</string>
+  <string name="wallpaper_updated_snackbar_action" tools:ignore="UnusedResources" moz:removedIn="144">Ver</string>
   <!-- Preference for triggering sync -->
   <string name="preferences_sync_now">Sincronizar agora</string>
   <!-- Preference category for sync -->
@@ -768,7 +768,7 @@
   -->
   <string name="download_multi_select_title">%1$d na seleición</string>
   <!-- The button text for navigating away from the feature to provide more information on the broken site's bug report. -->
-  <string name="webcompat_reporter_send_more_info">Unviar más información</string>
+  <string name="webcompat_reporter_send_more_info" moz:removedIn="144" tools:ignore="UnusedResources">Unviar más información</string>
   <!--
     Crashes
 

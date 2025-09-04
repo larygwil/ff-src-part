@@ -41,18 +41,25 @@ export class RealtimeSuggestProvider extends SuggestProvider {
   // The following getters depend on `realtimeType` and should be overridden as
   // necessary.
 
+  /**
+   * @returns {string[]}
+   *   The opt-in suggestion is a dynamic Rust suggestion. `suggestion_type` in
+   *   the RS record is `${this.realtimeType}_opt_in` by default.
+   */
   get dynamicRustSuggestionTypes() {
-    // The realtime type's opt-in suggestion is a dynamic Rust suggestion whose
-    // `suggestion_type` is `this.realtimeType` in the RS record.
-    return [this.realtimeType];
+    return [this.realtimeType + "_opt_in"];
   }
 
+  /**
+   * @returns {string}
+   *   The online suggestions are served by Merino. The Merino provider is
+   *   `this.realtimeType` by default.
+   */
   get merinoProvider() {
-    // The realtime type's online suggestions are served by Merino.
     return this.realtimeType;
   }
 
-  get telemetryType() {
+  get baseTelemetryType() {
     return this.realtimeType;
   }
 
@@ -181,6 +188,25 @@ export class RealtimeSuggestProvider extends SuggestProvider {
     return this.isSponsored;
   }
 
+  /**
+   * The telemetry type for a suggestion from this provider. (This string does
+   * not include the `${source}_` prefix, e.g., "rust_".)
+   *
+   * Since realtime providers serve two types of suggestions, the opt-in and the
+   * online suggestion, this will return two possible telemetry types depending
+   * on the passed-in suggestion. Telemetry types for each are:
+   *
+   *   Opt-in suggestion: `${this.baseTelemetryType}_opt_in`
+   *   Online suggestion: this.baseTelemetryType
+   *
+   * Individual suggestions can override these telemetry types, but that's
+   * expected to be uncommon.
+   *
+   * @param {object} suggestion
+   *   A suggestion from this provider.
+   * @returns {string}
+   *   The suggestion's telemetry type.
+   */
   getSuggestionTelemetryType(suggestion) {
     switch (suggestion.source) {
       case "merino":
@@ -192,9 +218,9 @@ export class RealtimeSuggestProvider extends SuggestProvider {
         if (suggestion.data?.result?.payload?.hasOwnProperty("telemetryType")) {
           return suggestion.data.result.payload.telemetryType;
         }
-        break;
+        return this.baseTelemetryType + "_opt_in";
     }
-    return this.telemetryType;
+    return this.baseTelemetryType;
   }
 
   filterSuggestions(suggestions) {
@@ -301,6 +327,9 @@ export class RealtimeSuggestProvider extends SuggestProvider {
                 cacheable: true,
               },
               input: queryContext.searchString,
+              attributes: {
+                primary: "",
+              },
             },
             {
               ...splitButtonMain,
