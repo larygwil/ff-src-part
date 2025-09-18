@@ -21,6 +21,7 @@ ChromeUtils.defineESModuleGetters(lazy, {
   LoginManagerContextMenu:
     "resource://gre/modules/LoginManagerContextMenu.sys.mjs",
   NetUtil: "resource://gre/modules/NetUtil.sys.mjs",
+  NimbusFeatures: "resource://nimbus/ExperimentAPI.sys.mjs",
   PlacesUIUtils: "moz-src:///browser/components/places/PlacesUIUtils.sys.mjs",
   PrivateBrowsingUtils: "resource://gre/modules/PrivateBrowsingUtils.sys.mjs",
   ScreenshotsUtils: "resource:///modules/ScreenshotsUtils.sys.mjs",
@@ -67,6 +68,13 @@ XPCOMUtils.defineLazyPreferenceGetter(
   lazy,
   "PDFJS_ENABLE_COMMENT",
   "pdfjs.enableComment",
+  false
+);
+
+XPCOMUtils.defineLazyPreferenceGetter(
+  lazy,
+  "gPrintEnabled",
+  "print.enabled",
   false
 );
 
@@ -871,7 +879,8 @@ export class nsContextMenu {
       "context-print-selection",
       !this.inAboutDevtoolsToolbox &&
         this.isContentSelected &&
-        this.selectionInfo.isDocumentLevelSelection
+        this.selectionInfo.isDocumentLevelSelection &&
+        lazy.gPrintEnabled
     );
 
     var shouldShow = !(
@@ -969,6 +978,8 @@ export class nsContextMenu {
     this.showItem("context-openframeintab", !this.inSrcdocFrame);
     this.showItem("context-openframe", !this.inSrcdocFrame);
     this.showItem("context-bookmarkframe", !this.inSrcdocFrame);
+    this.showItem("context-printframe", lazy.gPrintEnabled);
+    this.showItem("print-frame-sep", lazy.gPrintEnabled);
 
     // Hide menu entries for images, show otherwise
     if (this.inFrame) {
@@ -1658,7 +1669,7 @@ export class nsContextMenu {
   // View Partial Source
   viewPartialSource() {
     let { browser } = this;
-    let openSelectionFn = () => {
+    let openSelectionFn = async () => {
       let tabBrowser = this.window.gBrowser;
       let relatedToCurrent = tabBrowser?.selectedBrowser === browser;
       const inNewWindow = !Services.prefs.getBoolPref("view_source.tab");
@@ -1668,7 +1679,9 @@ export class nsContextMenu {
       // (in the sidebar). Deal with those cases:
       if (!tabBrowser || !tabBrowser.addTab || !this.window.toolbar.visible) {
         // This returns only non-popup browser windows by default.
-        let browserWindow = lazy.BrowserWindowTracker.getTopWindow();
+        let browserWindow =
+          lazy.BrowserWindowTracker.getTopWindow() ??
+          (await lazy.BrowserWindowTracker.promiseOpenWindow());
         tabBrowser = browserWindow.gBrowser;
       }
 
@@ -2940,13 +2953,24 @@ export class nsContextMenu {
         // add support for its POST endpoint or another visual engine that does
         // support data URIs, we should revisit this.
         !this.imageInfo.currentSrc.startsWith("data:") &&
-        !this.contentData.contentDisposition?.startsWith("attachment") &&
-        Services.prefs.getBoolPref("browser.search.visualSearch.featureGate"),
+        !this.contentData.contentDisposition?.startsWith("attachment"),
       searchTerms: this.imageInfo?.currentSrc,
       searchUrlType: lazy.SearchUtils.URL_TYPE.VISUAL_SEARCH,
     });
 
     if (!menuitem.hidden) {
+      // Record the Nimbus exposure if the menu item is shown *or would have
+      // been shown* if the feature were enabled.
+      lazy.NimbusFeatures.search.recordExposureEvent();
+
+      // If the feature is not enabled, hide the menu item.
+      if (
+        !Services.prefs.getBoolPref("browser.search.visualSearch.featureGate")
+      ) {
+        menuitem.hidden = true;
+        return;
+      }
+
       let visualSearchUrl = menuitem.engine.wrappedJSObject.getURLOfType(
         lazy.SearchUtils.URL_TYPE.VISUAL_SEARCH
       );

@@ -145,7 +145,7 @@
   <!-- Preference for opening links in a private tab -->
   <string name="preferences_open_links_in_a_private_tab">Arvi colegamenti in feuggio privou</string>
   <!-- Preference for allowing screenshots to be taken while in a private tab -->
-  <string name="preferences_allow_screenshots_in_private_mode">Permetti e föto do schermo inta navegaçion privâ</string>
+  <string name="preferences_allow_screenshots_in_private_mode" tools:ignore="UnusedResources" moz:removedIn="144">Permetti e föto do schermo inta navegaçion privâ</string>
   <!-- Preference for adding private browsing shortcut -->
   <string name="preferences_add_private_browsing_shortcut">Azonzi scorsaieu navegaçion privâ</string>
   <!-- Preference for accessibility -->
@@ -651,7 +651,7 @@
   -->
   <string name="sync_sent_tabs_snackbar">Feuggi mandæ!</string>
   <!-- Text shown in snackbar when one tab has been sent to device -->
-  <string name="sync_sent_tab_snackbar">Feuggio mandou!</string>
+  <string name="sync_sent_tab_snackbar" tools:ignore="UnusedResources" moz:removedIn="144">Feuggio mandou!</string>
   <!-- Text shown in snackbar when sharing tabs failed -->
   <string name="sync_sent_tab_error_snackbar">No son ariesciou a mandâ</string>
   <!-- Text shown in snackbar for the "retry" action that the user has after sharing tabs failed -->

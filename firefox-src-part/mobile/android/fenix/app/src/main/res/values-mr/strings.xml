@@ -145,7 +145,7 @@
   <!-- Preference for opening links in a private tab -->
   <string name="preferences_open_links_in_a_private_tab">दुवा खाजगी टॅबमध्ये उघडा</string>
   <!-- Preference for allowing screenshots to be taken while in a private tab -->
-  <string name="preferences_allow_screenshots_in_private_mode">खाजगी ब्राउझिंग मध्ये स्क्रीनशॉटची अनुमती द्या</string>
+  <string name="preferences_allow_screenshots_in_private_mode" tools:ignore="UnusedResources" moz:removedIn="144">खाजगी ब्राउझिंग मध्ये स्क्रीनशॉटची अनुमती द्या</string>
   <!-- Preference for adding private browsing shortcut -->
   <string name="preferences_add_private_browsing_shortcut">खाजगी ब्राउझिंग शॉर्टकट जोडा</string>
   <!-- Preference for accessibility -->
@@ -657,7 +657,7 @@
   -->
   <string name="sync_sent_tabs_snackbar">टॅब्स पाठवले!</string>
   <!-- Text shown in snackbar when one tab has been sent to device -->
-  <string name="sync_sent_tab_snackbar">टॅब पाठवला!</string>
+  <string name="sync_sent_tab_snackbar" tools:ignore="UnusedResources" moz:removedIn="144">टॅब पाठवला!</string>
   <!-- Text shown in snackbar when sharing tabs failed -->
   <string name="sync_sent_tab_error_snackbar">पाठविण्यात असमर्थ</string>
   <!-- Text shown in snackbar for the "retry" action that the user has after sharing tabs failed -->

@@ -487,9 +487,9 @@
   <!-- Preference for opening links in a private tab -->
   <string name="preferences_open_links_in_a_private_tab">افتح الروابط في ألسنة خاصة</string>
   <!-- Preference for allowing screenshots to be taken while in a private tab -->
-  <string name="preferences_allow_screenshots_in_private_mode">اسمح بلقطات الشاشة في التصفّح الخاص</string>
+  <string name="preferences_allow_screenshots_in_private_mode" tools:ignore="UnusedResources" moz:removedIn="144">اسمح بلقطات الشاشة في التصفّح الخاص</string>
   <!-- Will inform the user of the risk of activating Allow screenshots in private browsing option -->
-  <string name="preferences_screenshots_in_private_mode_disclaimer">إن سمحت فستظهر الألسنة الخاصة حين فتح أكثر من تطبيق</string>
+  <string name="preferences_screenshots_in_private_mode_disclaimer" tools:ignore="UnusedResources" moz:removedIn="144">إن سمحت فستظهر الألسنة الخاصة حين فتح أكثر من تطبيق</string>
   <!-- Preference for adding private browsing shortcut -->
   <string name="preferences_add_private_browsing_shortcut">أضِف اختصارًا للتصفح الخاص</string>
   <!-- Preference for enabling "HTTPS-Only" mode -->
@@ -1281,7 +1281,7 @@
   <!-- Text shown in snackbar when multiple tabs have been saved in a collection -->
   <string name="create_collection_tabs_saved" tools:ignore="UnusedResources" moz:removedIn="142">حُفظت الألسنة!</string>
   <!-- Text shown in snackbar when one or multiple tabs have been saved in a new collection -->
-  <string name="create_collection_tabs_saved_new_collection">حُفظت التجميعة!</string>
+  <string name="create_collection_tabs_saved_new_collection" tools:ignore="UnusedResources" moz:removedIn="144">حُفظت التجميعة!</string>
   <!-- Text shown in snackbar when one tab has been saved in a collection -->
   <string name="create_collection_tab_saved">حُفظ اللسان!</string>
   <!-- Content description (not visible, for screen readers etc.): button to close the collection creator -->
@@ -1516,7 +1516,7 @@
   -->
   <string name="sync_sent_tabs_snackbar">أُرسلت الألسنة!</string>
   <!-- Text shown in snackbar when one tab has been sent to device -->
-  <string name="sync_sent_tab_snackbar">أُرسل اللسان!</string>
+  <string name="sync_sent_tab_snackbar" tools:ignore="UnusedResources" moz:removedIn="144">أُرسل اللسان!</string>
   <!-- Text shown in snackbar when sharing tabs failed -->
   <string name="sync_sent_tab_error_snackbar">تعذر الإرسال</string>
   <!-- Text shown in snackbar for the "retry" action that the user has after sharing tabs failed -->
