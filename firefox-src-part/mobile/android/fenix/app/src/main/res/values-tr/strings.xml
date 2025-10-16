@@ -84,6 +84,11 @@
   -->
   <string name="felt_privacy_info_card_subtitle_2">%1$s, tüm gizli sekmelerinizi kapattığınızda çerezlerinizi, geçmişinizi ve site verilerinizi temizler. %2$s</string>
   <!--
+    Description of private browsing mode displayed to users on the homepage when they enable private mode.
+    %1$s is the name of the app (for example "Firefox").
+  -->
+  <string name="felt_privacy_info_card_subtitle_3">%1$s, tüm gizli sekmeleri kapattığınızda çerezlerinizi, geçmişinizi ve site verilerinizi temizler.</string>
+  <!--
     Clickable portion of the explanation for private browsing that links the user to our
     about privacy page.
     This string is used in felt_privacy_info_card_subtitle as the text for the link.
@@ -588,6 +593,8 @@
   <string name="onboarding_redesign_set_default_browser_title">Otomatik izlenme koruması her an yanınızda</string>
   <!-- Set to default browser onboarding redesign body. -->
   <string name="onboarding_redesign_set_default_browser_body">Şirketlerin tıklamalarınızı gözetlemesini tek dokunuşla durdurabilirsiniz.</string>
+  <!-- Sync onboarding redesign title. 'Firefox' is intentionally hardcoded. -->
+  <string name="onboarding_redesign_sync_title" tools:ignore="BrandUsage">Firefox’u kullandığınız her yerde eşitleyin</string>
   <!-- Sync onboarding redesign body. -->
   <string name="onboarding_redesign_sync_body">Yer imlerinize, sekmelerinize ve parolalarınıza istediğiniz cihazdan ulaşın. Tüm bilgileriniz şifrelenerek korunur.</string>
   <!-- Sync onboarding redesign positive button text. -->
@@ -719,13 +726,15 @@
   <!-- Preference for allowing screenshots to be taken while in a private tab -->
   <string name="preferences_allow_screenshots_in_private_mode">Gizli gezintide ekran görüntüsü almaya izin ver</string>
   <!-- Will inform the user of the risk of activating Allow screenshots in private browsing option -->
-  <string name="preferences_screenshots_in_private_mode_disclaimer">İzin verirseniz gizli sekmeler birden fazla uygulama açıkken de görünür olacak</string>
+  <string name="preferences_screenshots_in_private_mode_disclaimer">İzin verirseniz gizli sekmeler birden fazla uygulama açıkken de görünür olacaktır</string>
   <!-- Preference for adding private browsing shortcut -->
   <string name="preferences_add_private_browsing_shortcut">Gizli gezinti kısayolu ekle</string>
   <!-- Preference for enabling "HTTPS-Only" mode -->
   <string name="preferences_https_only_title">Yalnızca HTTPS modu</string>
   <!-- Preference title for using the screen lock to hide tabs in private browsing -->
   <string name="preferences_pbm_lock_screen_title">Gizli gezintide sekmeleri gizlemek için ekran kilidini kullan</string>
+  <!-- Informs the user how to access the tabs when "Use screen lock to hide tabs in private browsing" is enabled -->
+  <string name="preferences_pbm_lock_screen_summary_3">Sekmeleri parmak izi, PIN veya yüz tanıma ile görüntüleyebilirsiniz. Bu özelliği etkinleştirdiğinizde ekran görüntüsü alma ve paylaşma da engellenir.</string>
   <string name="preferences_pbm_lock_screen_summary_2" tools:ignore="UnusedResources" moz:removedIn="144">Sekmeleri parmak izi, PIN veya yüz tanıma ile görüntüleyebilirsiniz.</string>
   <!-- Label for cookie banner section in quick settings panel. -->
   <string name="cookie_banner_blocker">Çerez bildirimi engelleyici</string>
@@ -1478,6 +1487,8 @@
   <string name="tab_tray_multiselect_menu_content_description">Seçili sekmeler menüsü</string>
   <!-- Title text displayed for a homepage tab in the tabs tray. -->
   <string name="tab_tray_homepage_tab">Giriş sayfası</string>
+  <!-- Title text displayed for a homepage tab in the tabs tray. %s is a placeholder that will be replaced by app name. -->
+  <string name="tab_tray_homepage_tab_2" tools:ignore="UnusedResources" moz:removedIn="145">%s giriş sayfası</string>
   <!-- Content description (not visible, for screen readers etc.): Removes tab from collection button. Removes the selected tab from collection when pressed -->
   <string name="remove_tab_from_collection">Sekmeyi koleksiyondan çıkar</string>
   <!-- Text for button to enter multiselect mode in tabs tray -->
@@ -1513,9 +1524,9 @@
   <!-- Text for the button to clear all history -->
   <string name="history_delete_all">Geçmişi sil</string>
   <!-- Text for the snackbar to confirm that multiple browsing history items has been deleted -->
-  <string name="history_delete_multiple_items_snackbar" tools:ignore="UnusedResources" moz:removedIn="143">Geçmiş silindi</string>
+  <string name="history_delete_multiple_items_snackbar">Geçmiş silindi</string>
   <!-- Text for the snackbar to confirm that a single browsing history item has been deleted. %1$s is the shortened URL of the deleted history item. -->
-  <string name="history_delete_single_item_snackbar" tools:ignore="UnusedResources" moz:removedIn="143">%1$s silindi</string>
+  <string name="history_delete_single_item_snackbar">%1$s silindi</string>
   <!-- Context description text for the button to delete a single history item -->
   <string name="history_delete_item">Sil</string>
   <!--
@@ -1720,6 +1731,10 @@
   <string name="webcompat_reporter_dismiss_success_snackbar_text" moz:removedIn="144" tools:ignore="UnusedResources">Kapat</string>
   <!-- Placeholder text for the description field to prompt the user on what they should type. -->
   <string name="webcompat_reporter_problem_description_placeholder_text">Ne oldu? Ne olması gerekiyordu?</string>
+  <!-- Label of the checkbox on the “Report broken site” screen for sending URLS blocked by Enhanced Tracking Protection. -->
+  <string name="webcompat_reporter_etp_checkbox_text">İzlenme koruması tarafından engellenen adresleri gönder</string>
+  <!-- Description text for the checkbox on the “Report broken site” screen for sending URLS blocked by Enhanced Tracking Protection. It informs the user when checked, the report will include the list of URLs that were blocked by Enhanced Tracking Protection on the current page. -->
+  <string name="webcompat_reporter_etp_checkbox_description">Gelişmiş izlenme koruması bazı sitelerin düzgün çalışması için gereken takip kodlarını ve betikleri engelleyebilir.</string>
   <!--
     These reason strings are dropdown options on a WebCompat reporter form, indicating what is broken on the site.
 
@@ -2700,6 +2715,10 @@
   <string name="saved_login_hide_password">Parolayı gizle</string>
   <!-- Message displayed in biometric prompt displayed for authentication before allowing users to view their passwords -->
   <string name="logins_biometric_prompt_message_2">Kayıtlı parolalarınızı görmek için kilidi açın</string>
+  <!-- Button for unlocking logins on the biometric lock screen -->
+  <string name="logins_biometric_unlock_button">Kilidi aç</string>
+  <!-- Button for leaving logins on the biometric lock screen -->
+  <string name="logins_biometric_leave_button">Çık</string>
   <!-- Title of warning dialog if users have no device authentication set up -->
   <string name="logins_warning_dialog_title_2">Kayıtlı parolalarınızı güvence altına alın</string>
   <!-- Message of warning dialog if users have no device authentication set up -->
@@ -3593,6 +3612,16 @@
   <string name="debug_drawer_add_new_address">Seçili dil için yeni adres ekle</string>
   <!-- The title of the button for deleting in the debug drawer all addresses. -->
   <string name="debug_drawer_delete_all_addresses">Tüm adresleri sil</string>
+  <!--
+    Debug drawer credit cards
+
+    The title of the credit cards feature in the Debug Drawer.
+  -->
+  <string name="debug_drawer_credit_cards_title">Kredi kartları</string>
+  <!-- The title of the button in the debug drawer for adding a new credit card -->
+  <string name="debug_drawer_add_new_credit_card">Yeni kredi kartı ekle</string>
+  <!-- The title of the button for deleting in the debug drawer all addresses. -->
+  <string name="debug_drawer_delete_all_credit_cards">Tüm kredi kartlarını sil</string>
   <!--
     Debug drawer "contextual feature recommendation" (CFR) tools
 

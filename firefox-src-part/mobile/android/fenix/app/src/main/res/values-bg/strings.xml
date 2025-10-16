@@ -84,6 +84,11 @@
   -->
   <string name="felt_privacy_info_card_subtitle_2">%1$s изтрива бисквитките, историята и данни от разглеждането, когато затворите всички поверителни раздели. %2$s</string>
   <!--
+    Description of private browsing mode displayed to users on the homepage when they enable private mode.
+    %1$s is the name of the app (for example "Firefox").
+  -->
+  <string name="felt_privacy_info_card_subtitle_3">%1$s изтрива бисквитките, историята и данните от страниците, когато затворите всичките си поверителни раздели.</string>
+  <!--
     Clickable portion of the explanation for private browsing that links the user to our
     about privacy page.
     This string is used in felt_privacy_info_card_subtitle as the text for the link.
@@ -573,7 +578,7 @@
   <!-- Terms of use (ToU) onboarding page continue button label. -->
   <string name="onboarding_redesign_tou_agree_and_continue_button_label">Продължаване</string>
   <!-- Onboarding header for the toolbar selection card. -->
-  <string name="onboarding_redesign_customize_toolbar_title">Къде искате вашата адресна лента?</string>
+  <string name="onboarding_redesign_customize_toolbar_title">Къде да бъде разположена вашата адресна лента?</string>
   <!-- Onboarding label for 'Continue' button. -->
   <string name="onboarding_redesign_continue_button">Продължаване</string>
   <!-- Marketing onboarding page title. 'Firefox' is intentionally hardcoded. -->
@@ -587,13 +592,13 @@
   <!-- Set to default browser onboarding redesign title. -->
   <string name="onboarding_redesign_set_default_browser_title">Получаване на защита от автоматично проследяване по подразбиране</string>
   <!-- Set to default browser onboarding redesign body. -->
-  <string name="onboarding_redesign_set_default_browser_body">Едно докосване помага да спрете компаниите да следят кликванията ви.</string>
+  <string name="onboarding_redesign_set_default_browser_body">Едно докосване помага да спрете компаниите да следят посетените сайтове.</string>
   <!-- Sync onboarding redesign title. 'Firefox' is intentionally hardcoded. -->
-  <string name="onboarding_redesign_sync_title" tools:ignore="BrandUsage">Синхронизирайте навсякъде, където използвате Firefox</string>
+  <string name="onboarding_redesign_sync_title" tools:ignore="BrandUsage">Синхронизирайте данните си навсякъде, където използвате Firefox</string>
   <!-- Sync onboarding redesign body. -->
-  <string name="onboarding_redesign_sync_body">Получавайте отметки, раздели и пароли на всяко устройство. Всички защитени с криптиране.</string>
+  <string name="onboarding_redesign_sync_body">Получавайте отметки, раздели и пароли на всяко устройство, защитени чрез шифроване.</string>
   <!-- Sync onboarding redesign positive button text. -->
-  <string name="onboarding_redesign_sync_positive_button">Започнете да синхронизирате</string>
+  <string name="onboarding_redesign_sync_positive_button">Започване на синхронизацията на данни</string>
   <!-- Sync onboarding redesign negative button text. -->
   <string name="onboarding_redesign_sync_negative_button">Не сега</string>
   <!-- Marketing onboarding page title. 'Firefox' is intentionally hardcoded. -->
@@ -1482,6 +1487,8 @@
   <string name="tab_tray_multiselect_menu_content_description">Меню избрани раздели</string>
   <!-- Title text displayed for a homepage tab in the tabs tray. -->
   <string name="tab_tray_homepage_tab">Начална страница</string>
+  <!-- Title text displayed for a homepage tab in the tabs tray. %s is a placeholder that will be replaced by app name. -->
+  <string name="tab_tray_homepage_tab_2" tools:ignore="UnusedResources" moz:removedIn="145">начална страница на %s</string>
   <!-- Content description (not visible, for screen readers etc.): Removes tab from collection button. Removes the selected tab from collection when pressed -->
   <string name="remove_tab_from_collection">Премахване на раздела от спъсъка</string>
   <!-- Text for button to enter multiselect mode in tabs tray -->
@@ -1517,9 +1524,9 @@
   <!-- Text for the button to clear all history -->
   <string name="history_delete_all">Изчистване на история</string>
   <!-- Text for the snackbar to confirm that multiple browsing history items has been deleted -->
-  <string name="history_delete_multiple_items_snackbar" tools:ignore="UnusedResources" moz:removedIn="143">Историята е изчистена</string>
+  <string name="history_delete_multiple_items_snackbar">Историята е изчистена</string>
   <!-- Text for the snackbar to confirm that a single browsing history item has been deleted. %1$s is the shortened URL of the deleted history item. -->
-  <string name="history_delete_single_item_snackbar" tools:ignore="UnusedResources" moz:removedIn="143">Изтрито %1$s</string>
+  <string name="history_delete_single_item_snackbar">Изтрито %1$s</string>
   <!-- Context description text for the button to delete a single history item -->
   <string name="history_delete_item">Изтриване</string>
   <!--
@@ -1724,6 +1731,10 @@
   <string name="webcompat_reporter_dismiss_success_snackbar_text" moz:removedIn="144" tools:ignore="UnusedResources">Затваряне</string>
   <!-- Placeholder text for the description field to prompt the user on what they should type. -->
   <string name="webcompat_reporter_problem_description_placeholder_text">Какво се случи? Какво трябваше да се случи?</string>
+  <!-- Label of the checkbox on the “Report broken site” screen for sending URLS blocked by Enhanced Tracking Protection. -->
+  <string name="webcompat_reporter_etp_checkbox_text">Изпращане на адреси, блокирани от защитата от проследяване</string>
+  <!-- Description text for the checkbox on the “Report broken site” screen for sending URLS blocked by Enhanced Tracking Protection. It informs the user when checked, the report will include the list of URLs that were blocked by Enhanced Tracking Protection on the current page. -->
+  <string name="webcompat_reporter_etp_checkbox_description">Подобрена защита от проследяване може да блокира тракери и скриптове, от които някои уебсайтове се нуждаят, за да работят правилно.</string>
   <!--
     These reason strings are dropdown options on a WebCompat reporter form, indicating what is broken on the site.
 
@@ -2704,6 +2715,10 @@
   <string name="saved_login_hide_password">Скриване на парола</string>
   <!-- Message displayed in biometric prompt displayed for authentication before allowing users to view their passwords -->
   <string name="logins_biometric_prompt_message_2">Отключете, за да видите запазените пароли</string>
+  <!-- Button for unlocking logins on the biometric lock screen -->
+  <string name="logins_biometric_unlock_button">Отключване</string>
+  <!-- Button for leaving logins on the biometric lock screen -->
+  <string name="logins_biometric_leave_button">Напускане</string>
   <!-- Title of warning dialog if users have no device authentication set up -->
   <string name="logins_warning_dialog_title_2">Защитете запазените пароли</string>
   <!-- Message of warning dialog if users have no device authentication set up -->
@@ -3598,6 +3613,16 @@
   <!-- The title of the button for deleting in the debug drawer all addresses. -->
   <string name="debug_drawer_delete_all_addresses">Изтриване на всички адреси</string>
   <!--
+    Debug drawer credit cards
+
+    The title of the credit cards feature in the Debug Drawer.
+  -->
+  <string name="debug_drawer_credit_cards_title">Кредитни карти</string>
+  <!-- The title of the button in the debug drawer for adding a new credit card -->
+  <string name="debug_drawer_add_new_credit_card">Добавяне на нова банкова карта</string>
+  <!-- The title of the button for deleting in the debug drawer all addresses. -->
+  <string name="debug_drawer_delete_all_credit_cards">Изтриване на всички кредитни карти</string>
+  <!--
     Debug drawer "contextual feature recommendation" (CFR) tools
 
     The title of the CFR Tools feature in the Debug Drawer
@@ -3778,7 +3803,7 @@
   -->
   <string name="setup_checklist_group_essentials">Основни за %1$s</string>
   <!-- The title of the 'customize' group in the setup checklist. %1$s is the name of the app (for example "Firefox"). -->
-  <string name="setup_checklist_group_customize">Персонализирайте вашия %1$s</string>
+  <string name="setup_checklist_group_customize">Персонализиране на вашия %1$s</string>
   <!-- The title of the 'helpful tools' group in the setup checklist -->
   <string name="setup_checklist_group_helpful_tools">Полезни инструменти</string>
   <!--

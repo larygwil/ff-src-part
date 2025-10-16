@@ -84,6 +84,11 @@
   -->
   <string name="felt_privacy_info_card_subtitle_2">%1$s کۊکیا، ویرگار وو داده یل وبگه ایسا ن هر سا ک پوی بلگه یل سیخومی خوتووݩ ن بووندین، پاک اکونه. %2$s</string>
   <!--
+    Description of private browsing mode displayed to users on the homepage when they enable private mode.
+    %1$s is the name of the app (for example "Firefox").
+  -->
+  <string name="felt_privacy_info_card_subtitle_3">%1$s کۊکیا، ویرگار وو داده یل وبگه ایسا ن هر سا ک پوی بلگه یل سیخومی خوتووݩ ن بووندین، پاک اکونه.</string>
+  <!--
     Clickable portion of the explanation for private browsing that links the user to our
     about privacy page.
     This string is used in felt_privacy_info_card_subtitle as the text for the link.
@@ -1482,6 +1487,8 @@
   <string name="tab_tray_multiselect_menu_content_description">نومگه بلگه یل پسند بیڌه</string>
   <!-- Title text displayed for a homepage tab in the tabs tray. -->
   <string name="tab_tray_homepage_tab">بلگه هووه ای</string>
+  <!-- Title text displayed for a homepage tab in the tabs tray. %s is a placeholder that will be replaced by app name. -->
+  <string name="tab_tray_homepage_tab_2" tools:ignore="UnusedResources" moz:removedIn="145">%sبلگه هووه ای</string>
   <!-- Content description (not visible, for screen readers etc.): Removes tab from collection button. Removes the selected tab from collection when pressed -->
   <string name="remove_tab_from_collection">پاک کردن بلگه ز کتن</string>
   <!-- Text for button to enter multiselect mode in tabs tray -->
@@ -1517,9 +1524,9 @@
   <!-- Text for the button to clear all history -->
   <string name="history_delete_all">پاک کردن ویرگار</string>
   <!-- Text for the snackbar to confirm that multiple browsing history items has been deleted -->
-  <string name="history_delete_multiple_items_snackbar" tools:ignore="UnusedResources" moz:removedIn="143">ویرگار پاک وابی.</string>
+  <string name="history_delete_multiple_items_snackbar">ویرگار پاک وابی.</string>
   <!-- Text for the snackbar to confirm that a single browsing history item has been deleted. %1$s is the shortened URL of the deleted history item. -->
-  <string name="history_delete_single_item_snackbar" tools:ignore="UnusedResources" moz:removedIn="143">%1$s پاک وابی</string>
+  <string name="history_delete_single_item_snackbar">%1$s پاک وابی</string>
   <!-- Context description text for the button to delete a single history item -->
   <string name="history_delete_item">پاک کردن</string>
   <!--
@@ -1724,6 +1731,10 @@
   <string name="webcompat_reporter_dismiss_success_snackbar_text" moz:removedIn="144" tools:ignore="UnusedResources">بستن</string>
   <!-- Placeholder text for the description field to prompt the user on what they should type. -->
   <string name="webcompat_reporter_problem_description_placeholder_text">چ وابی؟ چ واست بۊوه؟</string>
+  <!-- Label of the checkbox on the “Report broken site” screen for sending URLS blocked by Enhanced Tracking Protection. -->
+  <string name="webcompat_reporter_etp_checkbox_text">فشناڌن لینگا مسدۊد وابیڌه و دست زفت وابیڌن جلاو رڌجۊری</string>
+  <!-- Description text for the checkbox on the “Report broken site” screen for sending URLS blocked by Enhanced Tracking Protection. It informs the user when checked, the report will include the list of URLs that were blocked by Enhanced Tracking Protection on the current page. -->
+  <string name="webcompat_reporter_etp_checkbox_description">زفت وابیڌن پؽش رئڌه جلاو رڌجۊری گاشڌ رڌجۊرا وو اسکریپتایی ن ک ی قرد ز سایتا سی خۊو کار کردن لنگسووݩ هڌن، مسدۊد کونه.\u0020</string>
   <!--
     These reason strings are dropdown options on a WebCompat reporter form, indicating what is broken on the site.
 
@@ -2371,7 +2382,7 @@
   <!-- Preference description for enhanced tracking protection for the strict protection settings -->
   <string name="preference_enhanced_tracking_protection_strict_description_4">زفت وابیڌن ز رڌجۊرا زۊردار تر وو کارایی زیتر ، ٱما ی قرد ز وبگه یل گاشڌ و خۊوی کار نکونن.</string>
   <!-- Preference description for the checkbox setting for "baseline" exceptions (a set of content blocking exceptions applied to fix major website breakage). %1$s is the name of the application (e.g. Fenix). -->
-  <string name="preference_enhanced_tracking_protection_allow_list_baseline">بهلین %1$s و جۊر خوتکار استسنایل لازوم ن سی جلاوگری ز خراوی بیشتر وبگه یل ائمال کونه.\u0020</string>
+  <string name="preference_enhanced_tracking_protection_allow_list_baseline">بهلین %1$s و جۊر خوتکار استسنایل لازوم ن سی جلاوگری ز خراوی بیشتر وبگه یل ائمال کونه.</string>
   <!-- Preference description for the checkbox setting for "convenience" exceptions (a set of content blocking exceptions applied to fix convenience site features). -->
   <string name="preference_enhanced_tracking_protection_allow_list_convenience">هومچیناکو استسنایلی ن ک تینا سی رفع موشکلا خراوی وو من دسرس ناهاڌن ویژیی یل رفاهی لازوم هڌن، و جۊر خوتکار ائمال کۊنین.</string>
   <!--
@@ -2704,6 +2715,10 @@
   <string name="saved_login_hide_password">بؽڌار کردن رزم</string>
   <!-- Message displayed in biometric prompt displayed for authentication before allowing users to view their passwords -->
   <string name="logins_biometric_prompt_message_2">گۊشیڌن چفت سی نیشتن رزما زفت وابیڌه</string>
+  <!-- Button for unlocking logins on the biometric lock screen -->
+  <string name="logins_biometric_unlock_button">گۊشیڌن چفت</string>
+  <!-- Button for leaving logins on the biometric lock screen -->
+  <string name="logins_biometric_leave_button">رئڌن</string>
   <!-- Title of warning dialog if users have no device authentication set up -->
   <string name="logins_warning_dialog_title_2">ٱمن کردن رزما زفت وابیڌه</string>
   <!-- Message of warning dialog if users have no device authentication set up -->
@@ -3597,6 +3612,16 @@
   <string name="debug_drawer_add_new_address">ٱووردن نشۊوی نۊ سی مهلی پسند بیڌه</string>
   <!-- The title of the button for deleting in the debug drawer all addresses. -->
   <string name="debug_drawer_delete_all_addresses">پاک کردن پوی نشۊویا</string>
+  <!--
+    Debug drawer credit cards
+
+    The title of the credit cards feature in the Debug Drawer.
+  -->
+  <string name="debug_drawer_credit_cards_title">کارتا ائتواری</string>
+  <!-- The title of the button in the debug drawer for adding a new credit card -->
+  <string name="debug_drawer_add_new_credit_card">ٱووردن کارت ائتواری نۊ</string>
+  <!-- The title of the button for deleting in the debug drawer all addresses. -->
+  <string name="debug_drawer_delete_all_credit_cards">پاک کردن پوی کارتا ائتواری</string>
   <!--
     Debug drawer "contextual feature recommendation" (CFR) tools
 
