@@ -511,6 +511,16 @@ pref("browser.urlbar.suggest.quicksuggest.sponsored", false, sticky);
 // with their various default-branch values, the user is enrolled in over time.
 pref("browser.urlbar.quicksuggest.dataCollection.enabled", false, sticky);
 
+// Whether quick suggest retrives online suggestions from Merino via Oblivious
+// HTTP (OHTTP). This functionality is being enabled in a future release. Note,
+// that even if this is preference enabled, the feature may not be available
+// - there are other prefs that control if the feature is available or not.
+// When the feature is enabled, the pref will also be exposed to the user in the
+// UI and it's sticky so that its user-branch value persists regardless of
+// whatever Firefox Suggest scenarios, with their various default-brnch values,
+// the user is enrolled in over time.
+pref("browser.urlbar.quicksuggest.online.enabled", true, sticky);
+
 // Whether the Firefox Suggest contextual opt-in result is enabled.
 pref("browser.urlbar.quicksuggest.contextualOptIn", false);
 
@@ -3422,8 +3432,10 @@ pref("browser.mailto.dualPrompt.dismissXClickMinutes", 1440); // one day
 pref("browser.backup.enabled", true);
 // Pref to control whether scheduled backups run or not.
 pref("browser.backup.scheduled.enabled", false);
-// Pref to control the visibility of the backup section in about:preferences
-pref("browser.backup.preferences.ui.enabled", false);
+// Pref to control visibility and usability of the create backup feature.
+pref("browser.backup.archive.enabled", false);
+// Pref to control visibility and usability of the restore from backup feature.
+pref("browser.backup.restore.enabled", false);
 // The number of SQLite database pages to backup per step.
 pref("browser.backup.sqlite.pages_per_step", 50);
 // The delay between SQLite database backup steps in milliseconds.
@@ -3443,6 +3455,7 @@ pref("browser.backup.disabled-on-idle-backup-retry", false);
 // staging directories/archives are ones that the file system prevents us from
 // removing for any reason.
 pref("browser.backup.max-num-unremovable-staging-items", 5);
+pref("browser.backup.scheduled.user-disabled", false);
 
 #ifdef NIGHTLY_BUILD
   // Pref to enable the new profiles

@@ -84,6 +84,11 @@
   -->
   <string name="felt_privacy_info_card_subtitle_2">%1$s eyðir vefkökunum þínum, vafurferli og gögnum vefsvæðisins þegar þú lokar öllum huliðsflipum þínum. %2$s</string>
   <!--
+    Description of private browsing mode displayed to users on the homepage when they enable private mode.
+    %1$s is the name of the app (for example "Firefox").
+  -->
+  <string name="felt_privacy_info_card_subtitle_3">%1$s eyðir vefkökunum þínum, vafurferli og gögnum vefsvæðisins þegar þú lokar öllum huliðsflipunum þínum.</string>
+  <!--
     Clickable portion of the explanation for private browsing that links the user to our
     about privacy page.
     This string is used in felt_privacy_info_card_subtitle as the text for the link.
@@ -294,9 +299,9 @@
   <!-- Content description (not visible, for screen readers etc.) for main menu navigation header. -->
   <string name="browser_main_menu_content_description_navigation_header">Flakk</string>
   <!-- Content description (not visible, for screen readers etc.) for main menu help button. -->
-  <string name="browser_main_menu_content_description_help_button">Hjálp</string>
+  <string name="browser_main_menu_content_description_help_button" tools:ignore="UnusedResources" moz:removedIn="146">Hjálp</string>
   <!-- Content description (not visible, for screen readers etc.) for main menu settings button. -->
-  <string name="browser_main_menu_content_description_settings_button">Stillingar</string>
+  <string name="browser_main_menu_content_description_settings_button" tools:ignore="UnusedResources" moz:removedIn="146">Stillingar</string>
   <!-- Content description (not visible, for screen readers etc.) for bottom sheet handlebar extensions menu. -->
   <string name="browser_extensions_menu_handlebar_content_description">Loka spjaldi valmyndar forritsauka</string>
   <!-- Content description (not visible, for screen readers etc.) for bottom sheet handlebar save menu. -->
@@ -442,15 +447,15 @@
     Title for set firefox as default browser screen used by Nimbus experiments.
     Note: The word "Firefox" should NOT be translated
   -->
-  <string name="juno_onboarding_default_browser_title_nimbus_3" tools:ignore="BrandUsage,UnusedResources">Sjáðu hvers vegna milljónum manns líkar við Firefox</string>
+  <string name="juno_onboarding_default_browser_title_nimbus_3" tools:ignore="BrandUsage,UnusedResources" moz:removedIn="146">Sjáðu hvers vegna milljónum manns líkar við Firefox</string>
   <!-- Title for set firefox as default browser screen used by Nimbus experiments. -->
-  <string name="juno_onboarding_default_browser_title_nimbus_4" tools:ignore="UnusedResources">Öruggt vafur með fleiri valmöguleikum</string>
+  <string name="juno_onboarding_default_browser_title_nimbus_4" tools:ignore="UnusedResources" moz:removedIn="146">Öruggt vafur með fleiri valmöguleikum</string>
   <!-- Description for set firefox as default browser screen used by Nimbus experiments. -->
   <string name="juno_onboarding_default_browser_description_nimbus_3">Vafrinn okkar, sem ekki er rekinn í hagnaðarskyni, hjálpar til við að koma í veg fyrir að fyrirtæki laumist til að fylgjast með þér á ferðum þínum um vefinn.</string>
   <!-- Description for set firefox as default browser screen used by Nimbus experiments. -->
-  <string name="juno_onboarding_default_browser_description_nimbus_4" tools:ignore="UnusedResources">Meira en 100 milljónir manna vernda friðhelgi sína með því að velja vafra sem er studdur af félagasamtökum án hagnaðarmarkmiða.</string>
+  <string name="juno_onboarding_default_browser_description_nimbus_4" tools:ignore="UnusedResources" moz:removedIn="146">Meira en 100 milljónir manna vernda friðhelgi sína með því að velja vafra sem er studdur af félagasamtökum án hagnaðarmarkmiða.</string>
   <!-- Description for set firefox as default browser screen used by Nimbus experiments. -->
-  <string name="juno_onboarding_default_browser_description_nimbus_5" tools:ignore="UnusedResources">Þekktir rekjarar? Lokað sjálfkrafa á þá. Forritsaukar? Prófaðu alla þessa 700. PDF-skjöl? Innbyggði lesarinn okkar gerir auðvelt að stjórna þeim.</string>
+  <string name="juno_onboarding_default_browser_description_nimbus_5" tools:ignore="UnusedResources" moz:removedIn="146">Þekktir rekjarar? Lokað sjálfkrafa á þá. Forritsaukar? Prófaðu alla þessa 700. PDF-skjöl? Innbyggði lesarinn okkar gerir auðvelt að stjórna þeim.</string>
   <!-- Text for the button to set firefox as default browser on the device -->
   <string name="juno_onboarding_default_browser_positive_button" tools:ignore="UnusedResources">Setja sem sjálfgefinn vafra</string>
   <!-- Text for the button dismiss the screen and move on with the flow -->
@@ -582,6 +587,14 @@
   <string name="onboarding_marketing_redesign_learn_more">Hvernig við notum gögnin</string>
   <!-- Marketing onboarding page button label. Button to confirm choice and start browsing. -->
   <string name="onboarding_marketing_redesign_positive_button">Staðfesta</string>
+  <!-- Set to default browser onboarding redesign title. -->
+  <string name="onboarding_redesign_set_default_browser_title">Fáðu sjálfvirka rakningarvörn sjálfgefið</string>
+  <!-- Set to default browser onboarding redesign body. -->
+  <string name="onboarding_redesign_set_default_browser_body">Ein snerting hjálpar þér til að koma í veg fyrir að fyrirtæki njósni um ferðir þínar.</string>
+  <!-- Sync onboarding redesign title. 'Firefox' is intentionally hardcoded. -->
+  <string name="onboarding_redesign_sync_title" tools:ignore="BrandUsage">Samstilltu hvar sem þú notar Firefox</string>
+  <!-- Sync onboarding redesign body. -->
+  <string name="onboarding_redesign_sync_body">Náðu í bókamerki, flipa og lykilorð á hvaða tæki sem er. Allt varið með dulritun.</string>
   <!-- Sync onboarding redesign positive button text. -->
   <string name="onboarding_redesign_sync_positive_button">Hefja samstillingu</string>
   <!-- Sync onboarding redesign negative button text. -->
@@ -716,6 +729,8 @@
   <string name="preferences_https_only_title">Einungis-HTTPS-hamur</string>
   <!-- Preference title for using the screen lock to hide tabs in private browsing -->
   <string name="preferences_pbm_lock_screen_title">Nota skjálás til að fela flipa í huliðsvafri</string>
+  <!-- Informs the user how to access the tabs when "Use screen lock to hide tabs in private browsing" is enabled -->
+  <string name="preferences_pbm_lock_screen_summary_3">Opnaðu flipana þína með fingrafarinu þínu, PIN-númeri eða andlitskennslum. Ef þú kveikir á þessu er einnig hægt að koma í veg fyrir skjámyndatöku og deilingu.</string>
   <string name="preferences_pbm_lock_screen_summary_2" tools:ignore="UnusedResources" moz:removedIn="144">Skoða flipa með fingrafari, PIN-númeri eða andlitsopnun.</string>
   <!-- Label for cookie banner section in quick settings panel. -->
   <string name="cookie_banner_blocker">Útilokun vefkökuborða</string>
@@ -791,6 +806,10 @@
   <string name="preferences_app_icon">Forritstákn</string>
   <!-- Preference for showing the tab strip -->
   <string name="preferences_tab_strip">Birting flipastikunnar</string>
+  <!-- Preference for gestures based actions -->
+  <string name="preferences_toolbar_shortcut">Flýtileið á verkfærastiku</string>
+  <!-- Preference for gestures based actions -->
+  <string name="preferences_toolbar_select_shortcut">Veldu flýtileið</string>
   <!-- Preference for gestures based actions -->
   <string name="preferences_gestures">Bendingar</string>
   <!-- Preference for settings related to visual options -->
@@ -1710,6 +1729,10 @@
   <string name="webcompat_reporter_dismiss_success_snackbar_text" moz:removedIn="144" tools:ignore="UnusedResources">Loka</string>
   <!-- Placeholder text for the description field to prompt the user on what they should type. -->
   <string name="webcompat_reporter_problem_description_placeholder_text">Hvað gerðist? Hvað hefði átt að gerast?</string>
+  <!-- Label of the checkbox on the “Report broken site” screen for sending URLS blocked by Enhanced Tracking Protection. -->
+  <string name="webcompat_reporter_etp_checkbox_text">Sendu vefslóðir sem eru útilokaðar af rakningarvörn</string>
+  <!-- Description text for the checkbox on the “Report broken site” screen for sending URLS blocked by Enhanced Tracking Protection. It informs the user when checked, the report will include the list of URLs that were blocked by Enhanced Tracking Protection on the current page. -->
+  <string name="webcompat_reporter_etp_checkbox_description">Aukin rakningarvörn gæti lokað á rekjara og skriftur sem sum vefsvæði þurfa til að virka rétt.</string>
   <!--
     These reason strings are dropdown options on a WebCompat reporter form, indicating what is broken on the site.
 
@@ -2342,6 +2365,8 @@
     Title for the dialog that appears after disabling the baseline exceptions preference under Strict or Custom tracking protection
   -->
   <string name="preference_enhanced_tracking_protection_allow_list_dialog_title">Ertu viss um að þú viljir slökkva á lagfæringum?</string>
+  <!-- Message for the dialog that appears after disabling the baseline exceptions preference under Strict or Custom tracking protection. %1$s is the name of the application (e.g. Fenix). -->
+  <string name="preference_enhanced_tracking_protection_allow_list_dialog_message">Þessi stilling hjálpar til við að laga algengustu vandamál vefsvæða. Ef þú slekkur á henni gætu sumir vefir ekki virkað rétt og mun %1$s ekki geta hjálpað til við að leysa þessi vandamál.</string>
   <!-- Confirmation button text for the dialog that appears after disabling the baseline exceptions preference under Strict or Custom tracking protection -->
   <string name="preference_enhanced_tracking_protection_allow_list_dialog_confirm">Slökkva á lagfæringum</string>
   <!-- Cancel button text for the dialog that appears after disabling the baseline exceptions preference under Strict or Custom tracking protection. This dismisses the dialog and re-enables the preference. -->
@@ -2778,6 +2803,8 @@
   <string name="addresses_manage_addresses">Sýsla með tölvupóstföng</string>
   <!-- The header for the name of an address. Name represents a person's full name, typically made up of a first, middle and last name, e.g. John Joe Doe. -->
   <string name="addresses_name">Nafn</string>
+  <!-- Label for an address field (e.g. mailing address) used as part of the form autofill feature. The organization's name related to the address helps in distinguishing addresses used for business or personal purposes. -->
+  <string name="addresses_organization" tools:ignore="UnusedResources">Fyrirtæki/Stofnun</string>
   <!-- The header for the street address of an address -->
   <string name="addresses_street_address">Heimilisfang</string>
   <!-- The header for the city of an address -->
@@ -2794,6 +2821,44 @@
   <string name="addresses_phone">Sími</string>
   <!-- The header for the email of an address -->
   <string name="addresses_email">Tölvupóstur</string>
+  <!-- Label for an address field (e.g. mailing address) used as part of the form autofill feature. This specific field is used for addresses in Iran, Mexico. -->
+  <string name="addresses_neighborhood" tools:ignore="UnusedResources">Hverfi</string>
+  <!-- Label for an address field (e.g. mailing address) used as part of the form autofill feature. The Village or Township field, specific to Malaysia is crucial for addresses in rural areas. -->
+  <string name="addresses_village_township" tools:ignore="UnusedResources">Þorp eða bæjarfélag</string>
+  <!-- Label for an address field (e.g. mailing address) used as part of the form autofill feature. The Island field, used in places like the Cayman Islands and the Bahamas if an address is located on a specific island. -->
+  <string name="addresses_island" tools:ignore="UnusedResources">Eyja</string>
+  <!-- Label for an address field (e.g. mailing address) used as part of the form autofill feature. The Townland field, specific to Ireland is a specific type of land division used in rural areas. -->
+  <string name="addresses_townland" tools:ignore="UnusedResources">Bæjarland</string>
+  <!-- Label for an address field (e.g. mailing address) used as part of the form autofill feature. This specific field is used as secondary address information (below the country level, e.g. county) in Honk Kong, Sudan, Syria, Türkiye, and as sublocality (civil entity below a locality, e.g. district) in Korea. -->
+  <string name="addresses_district" tools:ignore="UnusedResources">Sveit</string>
+  <!-- Label for an address field (e.g. mailing address) used as part of the form autofill feature. Used in the United Kingdom, Norway and Sweden -->
+  <string name="addresses_post_town" tools:ignore="UnusedResources">Bær</string>
+  <!-- Label for an address field (e.g. mailing address) used as part of the form autofill feature. This specific field is used as a tertiary address information (below the state level, e.g. Tasmania in Australia -->
+  <string name="addresses_suburb" tools:ignore="UnusedResources">Úthverfi</string>
+  <!-- Label for an address field (e.g. mailing address) used as part of the form autofill feature. This specific field is crucial for addressing in regions where county lines play a key role in postal services. -->
+  <string name="addresses_county" tools:ignore="UnusedResources">Hreppur</string>
+  <!-- Label for an address field (e.g. mailing address) used as part of the form autofill feature. Significant in places where parishes are used for local administration and addressing. Ensures users can specify parish details for better autofill accuracy. Used in Barbados and Jamaica. -->
+  <string name="addresses_parish" tools:ignore="UnusedResources">Sókn</string>
+  <!-- Label for an address field (e.g. mailing address) used as part of the form autofill feature. Essential for addresses in countries like Japan where prefectures are a major administrative division. -->
+  <string name="addresses_prefecture" tools:ignore="UnusedResources">Hérað</string>
+  <!-- Label for an address field (e.g. mailing address) used as part of the form autofill feature. Allowing users to specify a particular area within a city or region. Used in Hong Kong -->
+  <string name="addresses_area" tools:ignore="UnusedResources">Svæði</string>
+  <!-- Label for an address field (e.g. mailing address) used as part of the form autofill feature. The header for the Do/Si of the address. Do/Si refers to provincial level divisions, pertinent to addresses in South Korea. -->
+  <string name="addresses_do_si" tools:ignore="UnusedResources">Do/Si</string>
+  <!-- Label for an address field (e.g. mailing address) used as part of the form autofill feature. Used in countries like Nicaragua and Colombia where departments are a key administrative division. -->
+  <string name="addresses_department" tools:ignore="UnusedResources">Sýsla</string>
+  <!-- Label for an address field (e.g. mailing address) used as part of the form autofill feature. Essential for addresses in the United Arab Emirates. -->
+  <string name="addresses_emirate" tools:ignore="UnusedResources">Emírshérað</string>
+  <!-- Label for an address field (e.g. mailing address) used as part of the form autofill feature. Relevant for addresses in countries like Russia and Ukraine. -->
+  <string name="addresses_oblast" tools:ignore="UnusedResources">Oblast</string>
+  <!-- Label for an address field (e.g. mailing address) used as part of the form autofill feature. The PIN (Postal Index Number) field, used in India is a code representing a specific area. -->
+  <string name="addresses_pin" tools:ignore="UnusedResources">Póstauðkenni</string>
+  <!-- Label for an address field (e.g. mailing address) used as part of the form autofill feature. The postal code field is universally used in address forms to specify the area code for mail sorting. -->
+  <string name="addresses_postal_code" tools:ignore="UnusedResources">Póstnúmer</string>
+  <!-- Label for an address field (e.g. mailing address) used as part of the form autofill feature. the Eircode field, specific to Ireland is a unique postal code system that helps in precise location identification. -->
+  <string name="addresses_eircode" tools:ignore="UnusedResources">Eir-kóði</string>
+  <!-- Label for an address field (e.g. mailing address) used as part of the form autofill feature. Used in cases we want to only display the word "Country" over "Country or Region". -->
+  <string name="addresses_country_only" tools:ignore="UnusedResources">Land</string>
   <!-- The text for the "Save" button for saving an address -->
   <string name="addresses_save_button">Vista</string>
   <!-- The text for the "Cancel" button for cancelling adding, updating or deleting an address -->

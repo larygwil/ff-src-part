@@ -299,9 +299,9 @@
   <!-- Content description (not visible, for screen readers etc.) for main menu navigation header. -->
   <string name="browser_main_menu_content_description_navigation_header">ການນໍາທາງ</string>
   <!-- Content description (not visible, for screen readers etc.) for main menu help button. -->
-  <string name="browser_main_menu_content_description_help_button">ຊ່ວຍເຫລືອ</string>
+  <string name="browser_main_menu_content_description_help_button" tools:ignore="UnusedResources" moz:removedIn="146">ຊ່ວຍເຫລືອ</string>
   <!-- Content description (not visible, for screen readers etc.) for main menu settings button. -->
-  <string name="browser_main_menu_content_description_settings_button">ການຕັ້ງຄ່າ</string>
+  <string name="browser_main_menu_content_description_settings_button" tools:ignore="UnusedResources" moz:removedIn="146">ການຕັ້ງຄ່າ</string>
   <!-- Content description (not visible, for screen readers etc.) for bottom sheet handlebar extensions menu. -->
   <string name="browser_extensions_menu_handlebar_content_description">ປິດຊີດເມນູສ່ວນຂະຫຍາຍ</string>
   <!-- Content description (not visible, for screen readers etc.) for bottom sheet handlebar save menu. -->
@@ -447,15 +447,15 @@
     Title for set firefox as default browser screen used by Nimbus experiments.
     Note: The word "Firefox" should NOT be translated
   -->
-  <string name="juno_onboarding_default_browser_title_nimbus_3" tools:ignore="BrandUsage,UnusedResources">ຄົ້ນຫາວ່າເປັນຫຍັງຈຶ່ງມີຫຼາຍລ້ານຄົນຮັກ Firefox</string>
+  <string name="juno_onboarding_default_browser_title_nimbus_3" tools:ignore="BrandUsage,UnusedResources" moz:removedIn="146">ຄົ້ນຫາວ່າເປັນຫຍັງຈຶ່ງມີຫຼາຍລ້ານຄົນຮັກ Firefox</string>
   <!-- Title for set firefox as default browser screen used by Nimbus experiments. -->
-  <string name="juno_onboarding_default_browser_title_nimbus_4" tools:ignore="UnusedResources">ການທ່ອງເວັບທີ່ປອດໄພມີທາງເລືອກຫຼາຍ</string>
+  <string name="juno_onboarding_default_browser_title_nimbus_4" tools:ignore="UnusedResources" moz:removedIn="146">ການທ່ອງເວັບທີ່ປອດໄພມີທາງເລືອກຫຼາຍ</string>
   <!-- Description for set firefox as default browser screen used by Nimbus experiments. -->
   <string name="juno_onboarding_default_browser_description_nimbus_3">ບຣາວເຊີທີ່ບໍ່ຫວັງຜົນກຳໄລຂອງພວກເຮົາຊ່ວຍຢຸດບໍລິສັດບໍ່ໃຫ້ຕິດຕາມທ່ານໄປທົ່ວເວັບ.</string>
   <!-- Description for set firefox as default browser screen used by Nimbus experiments. -->
-  <string name="juno_onboarding_default_browser_description_nimbus_4" tools:ignore="UnusedResources">ຫຼາຍກວ່າ 100 ລ້ານຄົນປົກປ້ອງຄວາມເປັນສ່ວນຕົວຂອງເຂົາເຈົ້າໂດຍການເລືອກຕົວທ່ອງເວັບທີ່ສະຫນັບສະຫນູນໂດຍອົງການບໍ່ຫວັງຜົນກໍາໄລ.</string>
+  <string name="juno_onboarding_default_browser_description_nimbus_4" tools:ignore="UnusedResources" moz:removedIn="146">ຫຼາຍກວ່າ 100 ລ້ານຄົນປົກປ້ອງຄວາມເປັນສ່ວນຕົວຂອງເຂົາເຈົ້າໂດຍການເລືອກຕົວທ່ອງເວັບທີ່ສະຫນັບສະຫນູນໂດຍອົງການບໍ່ຫວັງຜົນກໍາໄລ.</string>
   <!-- Description for set firefox as default browser screen used by Nimbus experiments. -->
-  <string name="juno_onboarding_default_browser_description_nimbus_5" tools:ignore="UnusedResources">ຮູ້ຈັກຜູ້ທີ່ຕິດຕາມບໍ່? ບລັອກອັດຕະໂນມັດ. ສ່ວນຂະຫຍາຍ? ພະຍາຍາມທັງຫມົດ 700. PDFs? ຜູ້ອ່ານທີ່ສ້າງຂຶ້ນຂອງພວກເຮົາເຮັດໃຫ້ພວກເຂົາຈັດການໄດ້ງ່າຍ.</string>
+  <string name="juno_onboarding_default_browser_description_nimbus_5" tools:ignore="UnusedResources" moz:removedIn="146">ຮູ້ຈັກຜູ້ທີ່ຕິດຕາມບໍ່? ບລັອກອັດຕະໂນມັດ. ສ່ວນຂະຫຍາຍ? ພະຍາຍາມທັງຫມົດ 700. PDFs? ຜູ້ອ່ານທີ່ສ້າງຂຶ້ນຂອງພວກເຮົາເຮັດໃຫ້ພວກເຂົາຈັດການໄດ້ງ່າຍ.</string>
   <!-- Text for the button to set firefox as default browser on the device -->
   <string name="juno_onboarding_default_browser_positive_button" tools:ignore="UnusedResources">ຕັ້ງໃຫ້ເປັນບຣາວເຊີຫລັກ</string>
   <!-- Text for the button dismiss the screen and move on with the flow -->
@@ -806,6 +806,10 @@
   <string name="preferences_app_icon">ໄອຄອນແອັບ</string>
   <!-- Preference for showing the tab strip -->
   <string name="preferences_tab_strip">ແຖບສະແດງແຖບ</string>
+  <!-- Preference for gestures based actions -->
+  <string name="preferences_toolbar_shortcut">ທາງລັດແຖບເຄື່ອງມື</string>
+  <!-- Preference for gestures based actions -->
+  <string name="preferences_toolbar_select_shortcut">ເລືອກທາງລັດ</string>
   <!-- Preference for gestures based actions -->
   <string name="preferences_gestures">ທ່າທາງ</string>
   <!-- Preference for settings related to visual options -->
@@ -1725,6 +1729,8 @@
   <string name="webcompat_reporter_dismiss_success_snackbar_text" moz:removedIn="144" tools:ignore="UnusedResources">ປິດ</string>
   <!-- Placeholder text for the description field to prompt the user on what they should type. -->
   <string name="webcompat_reporter_problem_description_placeholder_text">ເກີດຫຍັງຂຶ້ນ? ສິ່ງທີ່ຄວນເກີດຂຶ້ນ?</string>
+  <!-- Label of the checkbox on the “Report broken site” screen for sending URLS blocked by Enhanced Tracking Protection. -->
+  <string name="webcompat_reporter_etp_checkbox_text">ສົ່ງ URL ທີ່ຖືກບລັອກໂດຍການປ້ອງກັນການຕິດຕາມ</string>
   <!--
     These reason strings are dropdown options on a WebCompat reporter form, indicating what is broken on the site.
 
@@ -2479,14 +2485,22 @@
   <string name="preference_doh_increased_protection_info_1">ໃຊ້ຜູ້ໃຫ້ບໍລິການທີ່ທ່ານເລືອກ</string>
   <!-- Title displayed for "Max Protection" option under "DNS over HTTPS" -->
   <string name="preference_doh_max_protection">ການປົກປ້ອງສູງສຸດ</string>
+  <!-- Bullet point 2 for "Max Protection" information page under "DNS over HTTPS" -->
+  <string name="preference_doh_max_protection_info_2">ເຕືອນສະເໝີຖ້າ DNS ປອດໄພບໍ່ສາມາດໃຊ້ໄດ້</string>
+  <!-- Bullet point 3 for "Max Protection" information page under "DNS over HTTPS" -->
+  <string name="preference_doh_max_protection_info_3">ຖ້າ DNS ປອດໄພບໍ່ສາມາດໃຊ້ໄດ້ ເວັບໄຊຈະບໍ່ໂຫຼດ ຫຼື ເຮັດວຽກຢ່າງຖືກຕ້ອງ</string>
   <!-- Title displayed for "Off" option under "DNS over HTTPS" -->
   <string name="preference_doh_off">ປິດ</string>
+  <!-- Summary displayed for "Off" option under "DNS over HTTPS" -->
+  <string name="preference_doh_off_summary">ໃຊ້ຕົວແກ້ໄຂ DNS ເລີ່ມຕົ້ນຂອງທ່ານ</string>
   <!-- Text displayed above provider dropdown under "DNS over HTTPS" -->
   <string name="preference_doh_choose_provider">ເລືອກຜູ້ໃຫ້ບໍລິການ</string>
   <!-- Text displayed for "Default provider" under "DNS over HTTPS" providers -->
   <string name="preference_doh_provider_default">(ຄ່າເລີ່ມຕົ້ນ)</string>
   <!-- Text displayed for "Custom" under "DNS over HTTPS" providers -->
   <string name="preference_doh_provider_custom">ກຳນົດເອງ</string>
+  <!-- Text displayed for "Custom provider" dialog under "DNS over HTTPS" -->
+  <string name="preference_doh_provider_custom_dialog_title">ຜູ້ໃຫ້ບໍລິການທີ່ກໍາຫນົດເອງ</string>
   <!-- Text displayed above provider textfield under "DNS over HTTPS" -->
   <string name="preference_doh_provider_custom_dialog_textfield">ຜູ້ໃຫ້ບໍລິການ</string>
   <!-- Error text displayed for provider textfield under "DNS over HTTPS" if the URL does not start with "https://" or its scheme is not "https" -->
