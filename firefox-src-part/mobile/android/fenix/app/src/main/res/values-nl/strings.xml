@@ -249,6 +249,8 @@
   <string name="browser_menu_save_to_collection_2">In collectie opslaan</string>
   <!-- Browser menu button that open a share menu to share the current site -->
   <string name="browser_menu_share">Delen</string>
+  <!-- Browser menu button that goes to the homepage screen -->
+  <string name="browser_menu_homepage">Startpagina</string>
   <!--
     Browser menu button shown in custom tabs that opens the current tab in Fenix
     %1$s is the name of the app (for example "Firefox").
@@ -1246,6 +1248,18 @@
   <string name="preference_expanded_toolbar">Uitgevouwen</string>
   <!-- Preference description indicating the toolbar location preference is disabled when the tab strip is enabled -->
   <string name="preference_toolbar_pref_disabled_explanation">De adresbalk moet bovenaan staan als de tabbladenbalk wordt getoond.</string>
+  <!-- New tab shortcut in toolbar customization -->
+  <string name="toolbar_customize_shortcut_new_tab">Een nieuw tabblad openen</string>
+  <!-- Share shortcut in toolbar customization -->
+  <string name="toolbar_customize_shortcut_share">Delen</string>
+  <!-- Add bookmark shortcut in toolbar customization -->
+  <string name="toolbar_customize_shortcut_add_bookmark">Bladwijzer toevoegen</string>
+  <!-- Translate shortcut in toolbar customization. "Translate" is a verb -->
+  <string name="toolbar_customize_shortcut_translate">Vertalen</string>
+  <!-- Homepage shortcut in toolbar customization -->
+  <string name="toolbar_customize_shortcut_homepage">Startpagina</string>
+  <!-- Back shortcut in toolbar customization -->
+  <string name="toolbar_customize_shortcut_back">Terug</string>
   <!--
     App icon Preferences
 
@@ -1733,6 +1747,12 @@
   <string name="webcompat_reporter_etp_checkbox_text">Door bescherming tegen volgen geblokkeerde URL’s verzenden</string>
   <!-- Description text for the checkbox on the “Report broken site” screen for sending URLS blocked by Enhanced Tracking Protection. It informs the user when checked, the report will include the list of URLs that were blocked by Enhanced Tracking Protection on the current page. -->
   <string name="webcompat_reporter_etp_checkbox_description">Verbeterde bescherming tegen volgen kan trackers en scripts blokkeren die sommige websites nodig hebben om goed te werken.</string>
+  <!-- The button text for the preview report button to view a preview of the report. -->
+  <string name="webcompat_reporter_preview_report">Voorbeeld van rapport</string>
+  <!-- The title shown at the top of the WebCompat Report preview panel. This appears after the user taps the “Preview” button before sending a report. -->
+  <string name="webcompat_reporter_preview_bottom_sheet_header">Rapportvoorbeeld</string>
+  <!-- Label for the “Send” button shown in the WebCompat Report preview panel, which the user taps to submit the report. -->
+  <string name="webcompat_reporter_preview_bottom_sheet_send">Verzenden</string>
   <!--
     These reason strings are dropdown options on a WebCompat reporter form, indicating what is broken on the site.
 
@@ -3596,6 +3616,8 @@
   <string name="microsurvey_close_handle_content_description">Enquête sluiten</string>
   <!-- Content description for "X" button that is closing microsurvey. -->
   <string name="microsurvey_close_button_content_description">Sluiten</string>
+  <!-- The title of the autofill tab in the Debug Drawer. -->
+  <string name="debug_drawer_autofill_title">Hulpmiddelen voor automatisch invullen</string>
   <!--
     Debug drawer logins
 
@@ -3868,6 +3890,26 @@
   <string name="review_prompt_feedback_header">Het spijt ons dat u problemen ondervindt. Laat ons weten hoe we %1$s kunnen verbeteren.</string>
   <!-- Label for a button opening a feedback forum -->
   <string name="review_prompt_feedback_button">Feedback achterlaten</string>
+  <!--
+    Settings Search Strings
+
+    Title of Settings Search. "Search" is a verb here
+  -->
+  <string name="settings_search_title">Instellingen zoeken</string>
+  <!-- Content description (not visible, for screen readers etc.) for the button to clear the search field for settings search -->
+  <string name="content_description_settings_search_clear_search">Zoekveld leegmaken</string>
+  <!-- Content description (not visible, for screen readers etc.) for the button to navigate back to the Settings page from the Settings Search screen. -->
+  <string name="content_description_settings_search_navigate_back">Terug bladeren</string>
+  <!-- Message displayed when the search field in the Settings Search screen is empty -->
+  <string name="settings_search_empty_query_placeholder">Geen recente zoekopdrachten</string>
+  <!-- Message when error happens with Settings Search -->
+  <string name="settings_search_error_message">Er is een fout opgetreden</string>
+  <!-- Message title displayed when the search field is not empty but search results is empty. -->
+  <string name="settings_search_no_results_found_message">Niets gevonden</string>
+  <!-- Text of button allowing to clear history of recent searches done in the settings screen. -->
+  <string name="settings_search_clear_recent_searches_message">Alles wissen</string>
+  <!-- Section header for recent search results -->
+  <string name="settings_search_recent_searches_section_header">Recente zoekresultaten</string>
   <!--
     Terms of use pop up prompt
 

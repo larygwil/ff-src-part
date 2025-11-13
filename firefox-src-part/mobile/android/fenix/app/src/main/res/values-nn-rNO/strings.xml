@@ -249,6 +249,8 @@
   <string name="browser_menu_save_to_collection_2">Lagre i samling</string>
   <!-- Browser menu button that open a share menu to share the current site -->
   <string name="browser_menu_share">Del</string>
+  <!-- Browser menu button that goes to the homepage screen -->
+  <string name="browser_menu_homepage">Startside</string>
   <!--
     Browser menu button shown in custom tabs that opens the current tab in Fenix
     %1$s is the name of the app (for example "Firefox").
@@ -279,7 +281,7 @@
   <!-- Browser menu label for editing a bookmark -->
   <string name="browser_menu_edit">Rediger</string>
   <!-- Button shown on the home page that opens the Customize home settings -->
-  <string name="browser_menu_customize_home_1">Tilpasse startsida</string>
+  <string name="browser_menu_customize_home_1">Tilpass startsida</string>
   <!-- Browser menu label to sign in to sync on the device using Mozilla accounts -->
   <string name="browser_menu_sign_in">Logg inn</string>
   <!-- Browser menu caption label for the "Sign in" browser menu item described in `browser_menu_sign_in` -->
@@ -807,7 +809,7 @@
   <!-- Preference for showing the tab strip -->
   <string name="preferences_tab_strip">Vising av fanelinje</string>
   <!-- Preference for gestures based actions -->
-  <string name="preferences_toolbar_shortcut">Snarveg til verktøylinje</string>
+  <string name="preferences_toolbar_shortcut">Verktøylinje-snarveg</string>
   <!-- Preference for gestures based actions -->
   <string name="preferences_toolbar_select_shortcut">Vel ein snarveg</string>
   <!-- Preference for gestures based actions -->
@@ -1246,6 +1248,18 @@
   <string name="preference_expanded_toolbar">Utvida</string>
   <!-- Preference description indicating the toolbar location preference is disabled when the tab strip is enabled -->
   <string name="preference_toolbar_pref_disabled_explanation">Adresselinja må vere øvst når fanelinja vert vist.</string>
+  <!-- New tab shortcut in toolbar customization -->
+  <string name="toolbar_customize_shortcut_new_tab">Opne ei ny fane</string>
+  <!-- Share shortcut in toolbar customization -->
+  <string name="toolbar_customize_shortcut_share">Del</string>
+  <!-- Add bookmark shortcut in toolbar customization -->
+  <string name="toolbar_customize_shortcut_add_bookmark">Legg til bokmerke</string>
+  <!-- Translate shortcut in toolbar customization. "Translate" is a verb -->
+  <string name="toolbar_customize_shortcut_translate">Omset</string>
+  <!-- Homepage shortcut in toolbar customization -->
+  <string name="toolbar_customize_shortcut_homepage">Startside</string>
+  <!-- Back shortcut in toolbar customization -->
+  <string name="toolbar_customize_shortcut_back">Tilbake</string>
   <!--
     App icon Preferences
 
@@ -1486,7 +1500,7 @@
   <!-- Content description for tabs tray multiselect menu -->
   <string name="tab_tray_multiselect_menu_content_description">Meny for valde faner</string>
   <!-- Title text displayed for a homepage tab in the tabs tray. -->
-  <string name="tab_tray_homepage_tab">Heimeside</string>
+  <string name="tab_tray_homepage_tab">Startside</string>
   <!-- Title text displayed for a homepage tab in the tabs tray. %s is a placeholder that will be replaced by app name. -->
   <string name="tab_tray_homepage_tab_2" tools:ignore="UnusedResources" moz:removedIn="145">%s startside</string>
   <!-- Content description (not visible, for screen readers etc.): Removes tab from collection button. Removes the selected tab from collection when pressed -->
@@ -1733,6 +1747,12 @@
   <string name="webcompat_reporter_etp_checkbox_text">Send URL-ar blokkerte av sporingsvern</string>
   <!-- Description text for the checkbox on the “Report broken site” screen for sending URLS blocked by Enhanced Tracking Protection. It informs the user when checked, the report will include the list of URLs that were blocked by Enhanced Tracking Protection on the current page. -->
   <string name="webcompat_reporter_etp_checkbox_description">Utvida sporingsvern kan blokkere sporarar og skript som enkelte nettstadar treng for å fungere ordentleg.</string>
+  <!-- The button text for the preview report button to view a preview of the report. -->
+  <string name="webcompat_reporter_preview_report">Førehandsvis rapport</string>
+  <!-- The title shown at the top of the WebCompat Report preview panel. This appears after the user taps the “Preview” button before sending a report. -->
+  <string name="webcompat_reporter_preview_bottom_sheet_header">Førehandsvising av rapport</string>
+  <!-- Label for the “Send” button shown in the WebCompat Report preview panel, which the user taps to submit the report. -->
+  <string name="webcompat_reporter_preview_bottom_sheet_send">Send</string>
   <!--
     These reason strings are dropdown options on a WebCompat reporter form, indicating what is broken on the site.
 
@@ -3596,6 +3616,8 @@
   <string name="microsurvey_close_handle_content_description">Lat att undersøking</string>
   <!-- Content description for "X" button that is closing microsurvey. -->
   <string name="microsurvey_close_button_content_description">Lat att</string>
+  <!-- The title of the autofill tab in the Debug Drawer. -->
+  <string name="debug_drawer_autofill_title">Autofyllverktøy</string>
   <!--
     Debug drawer logins
 
@@ -3868,6 +3890,26 @@
   <string name="review_prompt_feedback_header">Vi beklagar at du har problem. Fortel oss korleis vi kan gjere %1$s betre.</string>
   <!-- Label for a button opening a feedback forum -->
   <string name="review_prompt_feedback_button">Gje tilbakemelding</string>
+  <!--
+    Settings Search Strings
+
+    Title of Settings Search. "Search" is a verb here
+  -->
+  <string name="settings_search_title">Søkjeinnstillingar</string>
+  <!-- Content description (not visible, for screen readers etc.) for the button to clear the search field for settings search -->
+  <string name="content_description_settings_search_clear_search">Tøm søk</string>
+  <!-- Content description (not visible, for screen readers etc.) for the button to navigate back to the Settings page from the Settings Search screen. -->
+  <string name="content_description_settings_search_navigate_back">Naviger tilbake</string>
+  <!-- Message displayed when the search field in the Settings Search screen is empty -->
+  <string name="settings_search_empty_query_placeholder">Ingen nylege søk</string>
+  <!-- Message when error happens with Settings Search -->
+  <string name="settings_search_error_message">Det oppstod ein feil</string>
+  <!-- Message title displayed when the search field is not empty but search results is empty. -->
+  <string name="settings_search_no_results_found_message">Ingenting dukka opp</string>
+  <!-- Text of button allowing to clear history of recent searches done in the settings screen. -->
+  <string name="settings_search_clear_recent_searches_message">Fjern alle</string>
+  <!-- Section header for recent search results -->
+  <string name="settings_search_recent_searches_section_header">Nylege søkjeresultat</string>
   <!--
     Terms of use pop up prompt
 

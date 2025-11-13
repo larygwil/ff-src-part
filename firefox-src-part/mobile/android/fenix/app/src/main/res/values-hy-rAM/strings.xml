@@ -249,6 +249,8 @@
   <string name="browser_menu_save_to_collection_2">Պահել հավաքածուում</string>
   <!-- Browser menu button that open a share menu to share the current site -->
   <string name="browser_menu_share">Տարածել</string>
+  <!-- Browser menu button that goes to the homepage screen -->
+  <string name="browser_menu_homepage">Տնէջ</string>
   <!--
     Browser menu button shown in custom tabs that opens the current tab in Fenix
     %1$s is the name of the app (for example "Firefox").
@@ -335,7 +337,7 @@
     Content description for a banner within the menu which prompt the user to make this app their default browser.
     %1$s is the name of the app (for example "Firefox").
   -->
-  <string name="browser_menu_default_banner_title">Դարձրեք %1$s-ը ձեր սկզբնադիրը</string>
+  <string name="browser_menu_default_banner_title">Դարձնել Ձեր սկզբնադիրը %1$s</string>
   <!-- Label text within the set as default banner -->
   <string name="browser_menu_default_banner_subtitle_2">Արագ է, գաղտնի և ստեղծված ձեզ կողմից:</string>
   <!-- Content description (not visible, for screen readers etc.) for the button that dismisses the set as default banner in the menu -->
@@ -1246,6 +1248,18 @@
   <string name="preference_expanded_toolbar">Ընդարձակված</string>
   <!-- Preference description indicating the toolbar location preference is disabled when the tab strip is enabled -->
   <string name="preference_toolbar_pref_disabled_explanation">Հասցեի տողը պետք է լինի վերևում, երբ ներդիրների գոտին ցուցադրվում է։</string>
+  <!-- New tab shortcut in toolbar customization -->
+  <string name="toolbar_customize_shortcut_new_tab">Բացել նոր ներդիր</string>
+  <!-- Share shortcut in toolbar customization -->
+  <string name="toolbar_customize_shortcut_share">Համօգտագործել</string>
+  <!-- Add bookmark shortcut in toolbar customization -->
+  <string name="toolbar_customize_shortcut_add_bookmark">Ավելացնել Էջանիշ</string>
+  <!-- Translate shortcut in toolbar customization. "Translate" is a verb -->
+  <string name="toolbar_customize_shortcut_translate">Թարգմանել</string>
+  <!-- Homepage shortcut in toolbar customization -->
+  <string name="toolbar_customize_shortcut_homepage">Տնէջ</string>
+  <!-- Back shortcut in toolbar customization -->
+  <string name="toolbar_customize_shortcut_back">Հետ</string>
   <!--
     App icon Preferences
 
@@ -2316,7 +2330,7 @@
   <!-- Instructions on how to access pairing -->
   <string name="sign_in_instructions" tools:ignore="BrandUsage"><![CDATA[Ձեր համակարգչում բացեք Firefox-ը և անցեք <b>https://firefox.com/pair</b>]]></string>
   <!-- Text shown for sign in pairing when ready -->
-  <string name="sign_in_ready_for_scan">Պատրաստ է սկանավորման</string>
+  <string name="sign_in_ready_for_scan">Պատրաստել սկանավորման</string>
   <!-- Text shown for settings option for sign with pairing -->
   <string name="sign_in_with_camera">Մուտք գործել Ձեր տեսախցիկով</string>
   <!-- Text shown for settings option for sign with email -->
@@ -2574,7 +2588,7 @@
   <!-- About page link text to open licensing information link -->
   <string name="about_licensing_information">Արտոնագրի տեղեկություն</string>
   <!-- About page link text to open a screen with libraries that are used -->
-  <string name="about_other_open_source_libraries">Գրադարաններ, որոնք մենք օգտագործում ենք</string>
+  <string name="about_other_open_source_libraries">Օգտագործվող գրադարաններ</string>
   <!--
     Toast shown to the user when they are activating the secret dev menu
     %1$d is number of long clicks left to enable the menu
@@ -3596,6 +3610,8 @@
   <string name="microsurvey_close_handle_content_description">Փակել հարցումը</string>
   <!-- Content description for "X" button that is closing microsurvey. -->
   <string name="microsurvey_close_button_content_description">Փակել</string>
+  <!-- The title of the autofill tab in the Debug Drawer. -->
+  <string name="debug_drawer_autofill_title">Ինքնալրացման գործիքներ</string>
   <!--
     Debug drawer logins
 

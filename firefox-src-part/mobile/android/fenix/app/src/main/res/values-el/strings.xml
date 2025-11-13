@@ -249,6 +249,8 @@
   <string name="browser_menu_save_to_collection_2">Αποθήκευση στη συλλογή</string>
   <!-- Browser menu button that open a share menu to share the current site -->
   <string name="browser_menu_share">Κοινή χρήση</string>
+  <!-- Browser menu button that goes to the homepage screen -->
+  <string name="browser_menu_homepage">Αρχική σελίδα</string>
   <!--
     Browser menu button shown in custom tabs that opens the current tab in Fenix
     %1$s is the name of the app (for example "Firefox").
@@ -576,7 +578,7 @@
   <!-- Terms of use (ToU) onboarding page continue button label. -->
   <string name="onboarding_redesign_tou_agree_and_continue_button_label">Συνέχεια</string>
   <!-- Onboarding header for the toolbar selection card. -->
-  <string name="onboarding_redesign_customize_toolbar_title">Πού θέλετε η γραμμή διευθύνσεων σας;</string>
+  <string name="onboarding_redesign_customize_toolbar_title">Πού θέλετε τη γραμμή διευθύνσεών σας;</string>
   <!-- Onboarding label for 'Continue' button. -->
   <string name="onboarding_redesign_continue_button">Συνέχεια</string>
   <!-- Marketing onboarding page title. 'Firefox' is intentionally hardcoded. -->
@@ -1246,6 +1248,18 @@
   <string name="preference_expanded_toolbar">Ανεπτυγμένη</string>
   <!-- Preference description indicating the toolbar location preference is disabled when the tab strip is enabled -->
   <string name="preference_toolbar_pref_disabled_explanation">Η γραμμή διευθύνσεων πρέπει να βρίσκεται στο πάνω μέρος όταν εμφανίζεται η γραμμή καρτελών.</string>
+  <!-- New tab shortcut in toolbar customization -->
+  <string name="toolbar_customize_shortcut_new_tab">Άνοιγμα νέας καρτέλας</string>
+  <!-- Share shortcut in toolbar customization -->
+  <string name="toolbar_customize_shortcut_share">Κοινή χρήση</string>
+  <!-- Add bookmark shortcut in toolbar customization -->
+  <string name="toolbar_customize_shortcut_add_bookmark">Προσθήκη σελιδοδείκτη</string>
+  <!-- Translate shortcut in toolbar customization. "Translate" is a verb -->
+  <string name="toolbar_customize_shortcut_translate">Μετάφραση</string>
+  <!-- Homepage shortcut in toolbar customization -->
+  <string name="toolbar_customize_shortcut_homepage">Αρχική σελίδα</string>
+  <!-- Back shortcut in toolbar customization -->
+  <string name="toolbar_customize_shortcut_back">Πίσω</string>
   <!--
     App icon Preferences
 
@@ -1733,6 +1747,12 @@
   <string name="webcompat_reporter_etp_checkbox_text">Αποστολή URL αποκλεισμένων από προστασία καταγραφής</string>
   <!-- Description text for the checkbox on the “Report broken site” screen for sending URLS blocked by Enhanced Tracking Protection. It informs the user when checked, the report will include the list of URLs that were blocked by Enhanced Tracking Protection on the current page. -->
   <string name="webcompat_reporter_etp_checkbox_description">Η Ενισχυμένη προστασία από καταγραφή ενδέχεται να αποκλείσει ιχνηλάτες και σενάρια εντολών που χρειάζονται ορισμένοι ιστότοποι για να λειτουργούν σωστά.</string>
+  <!-- The button text for the preview report button to view a preview of the report. -->
+  <string name="webcompat_reporter_preview_report">Προεπισκόπηση αναφοράς</string>
+  <!-- The title shown at the top of the WebCompat Report preview panel. This appears after the user taps the “Preview” button before sending a report. -->
+  <string name="webcompat_reporter_preview_bottom_sheet_header">Προεπισκόπηση αναφοράς</string>
+  <!-- Label for the “Send” button shown in the WebCompat Report preview panel, which the user taps to submit the report. -->
+  <string name="webcompat_reporter_preview_bottom_sheet_send">Αποστολή</string>
   <!--
     These reason strings are dropdown options on a WebCompat reporter form, indicating what is broken on the site.
 
@@ -1760,7 +1780,7 @@
 
     Title text displayed on the tab crash page. %1$s is the name of the app (for example "Firefox").
   -->
-  <string name="tab_crash_title_2">Συγγνώμη. Το %1$s δεν μπορεί να φορτώσει αυτήν τη σελίδα.</string>
+  <string name="tab_crash_title_2">Δυστυχώς, το %1$s δεν μπορεί να φορτώσει αυτήν τη σελίδα.</string>
   <!-- Send crash report checkbox text on the tab crash page -->
   <string name="tab_crash_send_report">Αποστολή αναφοράς κατάρρευσης στη Mozilla</string>
   <!-- Close tab button text on the tab crash page -->
@@ -3094,7 +3114,7 @@
     Search suggestions title for trending search suggestions.
     %s is a placeholder for the name of the search engine providing the trending search suggestions.
   -->
-  <string name="trending_searches_header_2">Δημοφιλές στο %s</string>
+  <string name="trending_searches_header_2">Δημοφιλή στο %s</string>
   <!-- Title for search suggestions when Google is the default search suggestion engine. -->
   <string name="google_search_engine_suggestion_header">Αναζήτηση Google</string>
   <!-- Title for search suggestions when the default search suggestion engine is anything other than Google. %s is default search engine name. -->
@@ -3596,6 +3616,8 @@
   <string name="microsurvey_close_handle_content_description">Κλείσιμο έρευνας</string>
   <!-- Content description for "X" button that is closing microsurvey. -->
   <string name="microsurvey_close_button_content_description">Κλείσιμο</string>
+  <!-- The title of the autofill tab in the Debug Drawer. -->
+  <string name="debug_drawer_autofill_title">Εργαλεία αυτόματης συμπλήρωσης</string>
   <!--
     Debug drawer logins
 
@@ -3868,6 +3890,24 @@
   <string name="review_prompt_feedback_header">Λυπούμαστε που αντιμετωπίζετε προβλήματα. Πείτε μας πώς μπορούμε να βελτιώσουμε το %1$s.</string>
   <!-- Label for a button opening a feedback forum -->
   <string name="review_prompt_feedback_button">Υποβολή σχολίων</string>
+  <!--
+    Settings Search Strings
+
+    Title of Settings Search. "Search" is a verb here
+  -->
+  <string name="settings_search_title">Αναζήτηση ρυθμίσεων</string>
+  <!-- Content description (not visible, for screen readers etc.) for the button to clear the search field for settings search -->
+  <string name="content_description_settings_search_clear_search">Απαλοιφή αναζήτησης</string>
+  <!-- Message displayed when the search field in the Settings Search screen is empty -->
+  <string name="settings_search_empty_query_placeholder">Δεν υπάρχουν πρόσφατες αναζητήσεις</string>
+  <!-- Message when error happens with Settings Search -->
+  <string name="settings_search_error_message">Προέκυψε σφάλμα</string>
+  <!-- Message title displayed when the search field is not empty but search results is empty. -->
+  <string name="settings_search_no_results_found_message">Δεν βρέθηκε τίποτα</string>
+  <!-- Text of button allowing to clear history of recent searches done in the settings screen. -->
+  <string name="settings_search_clear_recent_searches_message">Απαλοιφή όλων</string>
+  <!-- Section header for recent search results -->
+  <string name="settings_search_recent_searches_section_header">Πρόσφατα αποτελέσματα αναζήτησης</string>
   <!--
     Terms of use pop up prompt
 

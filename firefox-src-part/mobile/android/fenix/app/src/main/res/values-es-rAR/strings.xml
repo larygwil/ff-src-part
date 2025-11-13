@@ -249,6 +249,8 @@
   <string name="browser_menu_save_to_collection_2">Guardar en la colección</string>
   <!-- Browser menu button that open a share menu to share the current site -->
   <string name="browser_menu_share">Compartir</string>
+  <!-- Browser menu button that goes to the homepage screen -->
+  <string name="browser_menu_homepage">Página de inicio</string>
   <!--
     Browser menu button shown in custom tabs that opens the current tab in Fenix
     %1$s is the name of the app (for example "Firefox").
@@ -807,7 +809,7 @@
   <!-- Preference for showing the tab strip -->
   <string name="preferences_tab_strip">Visualización de la barra de pestañas</string>
   <!-- Preference for gestures based actions -->
-  <string name="preferences_toolbar_shortcut">Acceso directo a la barra de herramientas</string>
+  <string name="preferences_toolbar_shortcut">Acceso directo en la barra de herramientas</string>
   <!-- Preference for gestures based actions -->
   <string name="preferences_toolbar_select_shortcut">Seleccionar un atajo</string>
   <!-- Preference for gestures based actions -->
@@ -1246,6 +1248,18 @@
   <string name="preference_expanded_toolbar">Expandida</string>
   <!-- Preference description indicating the toolbar location preference is disabled when the tab strip is enabled -->
   <string name="preference_toolbar_pref_disabled_explanation">La barra de direcciones debe estar arriba cuando se muestre la barra de pestañas.</string>
+  <!-- New tab shortcut in toolbar customization -->
+  <string name="toolbar_customize_shortcut_new_tab">Abrir una nueva pestaña</string>
+  <!-- Share shortcut in toolbar customization -->
+  <string name="toolbar_customize_shortcut_share">Compartir</string>
+  <!-- Add bookmark shortcut in toolbar customization -->
+  <string name="toolbar_customize_shortcut_add_bookmark">Agregar un marcador</string>
+  <!-- Translate shortcut in toolbar customization. "Translate" is a verb -->
+  <string name="toolbar_customize_shortcut_translate">Traducir</string>
+  <!-- Homepage shortcut in toolbar customization -->
+  <string name="toolbar_customize_shortcut_homepage">Página de inicio</string>
+  <!-- Back shortcut in toolbar customization -->
+  <string name="toolbar_customize_shortcut_back">Atrás</string>
   <!--
     App icon Preferences
 
@@ -1733,6 +1747,12 @@
   <string name="webcompat_reporter_etp_checkbox_text">Enviar URLs bloqueadas por la protección de rastreo</string>
   <!-- Description text for the checkbox on the “Report broken site” screen for sending URLS blocked by Enhanced Tracking Protection. It informs the user when checked, the report will include the list of URLs that were blocked by Enhanced Tracking Protection on the current page. -->
   <string name="webcompat_reporter_etp_checkbox_description">La protección de rastreo aumentada puede bloquear rastreadores y scripts que algunos sitios web necesitan para funcionar correctamente.</string>
+  <!-- The button text for the preview report button to view a preview of the report. -->
+  <string name="webcompat_reporter_preview_report">Vista previa del informe</string>
+  <!-- The title shown at the top of the WebCompat Report preview panel. This appears after the user taps the “Preview” button before sending a report. -->
+  <string name="webcompat_reporter_preview_bottom_sheet_header">Vista previa del informe</string>
+  <!-- Label for the “Send” button shown in the WebCompat Report preview panel, which the user taps to submit the report. -->
+  <string name="webcompat_reporter_preview_bottom_sheet_send">Enviar</string>
   <!--
     These reason strings are dropdown options on a WebCompat reporter form, indicating what is broken on the site.
 
@@ -3596,6 +3616,8 @@
   <string name="microsurvey_close_handle_content_description">Cerrar encuesta</string>
   <!-- Content description for "X" button that is closing microsurvey. -->
   <string name="microsurvey_close_button_content_description">Cerrar</string>
+  <!-- The title of the autofill tab in the Debug Drawer. -->
+  <string name="debug_drawer_autofill_title">Herramientas de autocompletar</string>
   <!--
     Debug drawer logins
 
@@ -3868,6 +3890,26 @@
   <string name="review_prompt_feedback_header">Lamentamos que estés teniendo problemas. Hacenos saber cómo podemos mejorar %1$s.</string>
   <!-- Label for a button opening a feedback forum -->
   <string name="review_prompt_feedback_button">Dejar opinión</string>
+  <!--
+    Settings Search Strings
+
+    Title of Settings Search. "Search" is a verb here
+  -->
+  <string name="settings_search_title">Configuración de búsqueda</string>
+  <!-- Content description (not visible, for screen readers etc.) for the button to clear the search field for settings search -->
+  <string name="content_description_settings_search_clear_search">Borrar búsqueda</string>
+  <!-- Content description (not visible, for screen readers etc.) for the button to navigate back to the Settings page from the Settings Search screen. -->
+  <string name="content_description_settings_search_navigate_back">Navegar hacia atrás</string>
+  <!-- Message displayed when the search field in the Settings Search screen is empty -->
+  <string name="settings_search_empty_query_placeholder">No hay búsquedas recientes</string>
+  <!-- Message when error happens with Settings Search -->
+  <string name="settings_search_error_message">Ha ocurrido un error</string>
+  <!-- Message title displayed when the search field is not empty but search results is empty. -->
+  <string name="settings_search_no_results_found_message">No apareció nada</string>
+  <!-- Text of button allowing to clear history of recent searches done in the settings screen. -->
+  <string name="settings_search_clear_recent_searches_message">Eliminar todo</string>
+  <!-- Section header for recent search results -->
+  <string name="settings_search_recent_searches_section_header">Resultados de búsqueda recientes</string>
   <!--
     Terms of use pop up prompt
 
