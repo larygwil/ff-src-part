@@ -319,7 +319,7 @@
   <!-- Browser menu label for navigating to the translation feature, which provides language translation options the current visited page -->
   <string name="browser_menu_translate_page_2">Перевести страницу</string>
   <!-- Browser menu label for navigating to the Web Compat Reporter feature, which provides users the ability to send bug reports for broken sites. -->
-  <string name="browser_menu_webcompat_reporter">Сообщить о сломанном сайте…</string>
+  <string name="browser_menu_webcompat_reporter">Сломанный сайт?…</string>
   <!-- Browser menu label for navigating to the Web Compat Reporter feature, which provides users the ability to send bug reports for broken sites. -->
   <string name="browser_menu_webcompat_reporter_2">Сообщить о сломанном сайте</string>
   <!-- Browser menu label that is displayed when the current page has been translated by the translation feature. -->
@@ -1062,6 +1062,8 @@
   <string name="restart_warning_dialog_button_positive_2">Сменить значок</string>
   <!-- Dialog button text for cancelling app icon change -->
   <string name="restart_warning_dialog_button_negative">Отмена</string>
+  <!-- Error message snackbar shown after the user tried to apply the new icon but the Android OS threw an error while updating existing app shortcuts (e.g. private mode shortcut) -->
+  <string name="shortcuts_update_error">Не удалось обновить значок приложения. Удалить существующие ярлыки и попробовать снова.</string>
   <!--
     Add-ons general availability nimbus message
 
@@ -1220,7 +1222,7 @@
 
     Instructions on how to access pairing
   -->
-  <string name="pair_instructions_2"><![CDATA[Считайте штрих-код на <b>firefox.com/pair</b>]]></string>
+  <string name="pair_instructions_2"><![CDATA[Отсканируйте QR-код на <b>firefox.com/pair</b>]]></string>
   <!--
     Toolbar Preferences
 
