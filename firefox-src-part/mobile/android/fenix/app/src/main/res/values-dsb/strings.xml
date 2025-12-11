@@ -1,4 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
+
+<!--
+  This Source Code Form is subject to the terms of the Mozilla Public
+  License, v. 2.0. If a copy of the MPL was not distributed with this
+  file, You can obtain one at http://mozilla.org/MPL/2.0/.
+-->
+
 <resources xmlns:tools="http://schemas.android.com/tools" xmlns:moz="http://mozac.org/tools">
   <!-- App name for private browsing mode. %s is the name of the app (for example "Firefox"). -->
   <string name="app_name_private_5">Priwatny %s</string>
@@ -54,6 +61,8 @@
   <string name="tab_manager_empty_synced_tabs_page_description">Pśizjawśo se, aby synchronizěrowane rejtariki ze wšych wašych rědow zastojał.</string>
   <!-- The action text displayed on the synced tabs page when the user is not logged into an account, prompting the user to sign into their account. When clicked, it takes the user to the account sign-in flow. -->
   <string name="tab_manager_empty_synced_tabs_page_sign_in_cta">Pśizjawiś</string>
+  <!-- Text for the button used to show all stories -->
+  <string name="homepage_all_stories">Wšykne tšojeńka</string>
   <!--
     Home - Bookmarks
 
@@ -1058,6 +1067,8 @@
   <string name="restart_warning_dialog_title">Symbol nałoženja změniś?</string>
   <!-- Message to warn users that applying an alternative app icon may require an app restart. Whether or not the app closes depends on what version of Android it is, so we use the word "may" instead of "will". %1$s is replaced by the brand name (e.g. Firefox). -->
   <string name="restart_warning_dialog_body_2">Nałoženje móžo se zacyniś. Pótusniśo jadnorej nowy symbol, aby %1$s znowego wócynił.</string>
+  <!-- Message to warn users that applying an alternative app icon may require an app restart and will remove existing shortcuts because of the OS limitations. Whether or not the app closes depends on what version of Android it is, so we use the word "may" instead of "will". %1$s is replaced by the brand name (e.g. Firefox). -->
+  <string name="restart_and_shortcuts_removal_warning_dialog_body">Gaž se symbol změnja, se někake sedła a zwězanja wótwónoźuju, kótarež sćo składł do swójeje startoweje wobrazowki.\n\n%1$s se snaź zacynijo. Pótusniśo swój nowy symbol, aby jen zasej wócyniś.</string>
   <!-- Dialog button text for confirming the possible app restart and new icon selection -->
   <string name="restart_warning_dialog_button_positive_2">Symbol změniś</string>
   <!-- Dialog button text for cancelling app icon change -->
@@ -1472,6 +1483,14 @@
   <string name="tab_tray_menu_tab_settings">Nastajenja rejtarikow</string>
   <!-- Text shown in the menu for closing all tabs -->
   <string name="tab_tray_menu_item_close">Wšykne rejtariki zacyniś</string>
+  <!-- Text shown as the title of the Close all tabs confirmation dialog in Tab Manager -->
+  <string name="tab_manager_close_all_tabs_dialog_title">Wšykne rejtariki zacyniś?</string>
+  <!-- Text shown in the body of the Close all tabs confirmation dialog in Tab Manager -->
+  <string name="tab_manager_close_all_tabs_dialog_body">To wšykne wócynjone rejtariki zacynijo.</string>
+  <!-- Text shown on the confirm button in the Close all tabs confirmation dialog -->
+  <string name="tab_manager_close_all_tabs_dialog_confirm">Rejtariki zacyniś</string>
+  <!-- Text shown on the cancel button in the Close all tabs confirmation dialog -->
+  <string name="tab_manager_close_all_tabs_dialog_cancel">Pśetergnuś</string>
   <!-- Text shown in the multiselect menu for bookmarking selected tabs. -->
   <string name="tab_tray_multiselect_menu_item_bookmark">Cytańske znamje</string>
   <!-- Content description (not visible, for screen readers etc.): Bookmarks selected tabs. -->
@@ -1518,6 +1537,8 @@
   <string name="delete_from_history">Z historije lašowaś</string>
   <!-- Postfix for private WebApp titles. %1$s is the name of the app (for example "Firefox"). -->
   <string name="pwa_site_controls_title_private">%1$s (priwatny modus)</string>
+  <!-- Content description (not visible, for screen readers etc.) for the button to open the Tab Search feature to search through tabs. -->
+  <string name="tab_manager_open_tab_search">Pytanje rejtarikow wócyniś</string>
   <!--
     History
 
@@ -2748,14 +2769,16 @@
   <string name="preferences_addresses_sync_addresses_across_devices">Adrese pśez rědy synchronizěrowaś</string>
   <!-- Preference option for syncing addresses across devices. This is displayed when the user is signed into sync -->
   <string name="preferences_addresses_sync_addresses">Adrese synchronizěrowaś</string>
+  <!-- Content description navigating back from autofill settings screen. -->
+  <string name="autofill_settings_navigate_back_button_content_description">Slědk</string>
   <!-- Title of the "Add card" screen -->
   <string name="credit_cards_add_card">Kórtu pśidaś</string>
+  <!-- Content description for the "credit card feature" top bar back button -->
+  <string name="credit_cards_navigate_back_button_content_description">Slědk nawigěrowaś</string>
   <!-- Title of the "Edit card" screen -->
   <string name="credit_cards_edit_card">Kórtu wobźěłaś</string>
   <!-- The header for the card number of a credit card -->
   <string name="credit_cards_card_number">Kórtowy numer</string>
-  <!-- The header for the expiration date of a credit card -->
-  <string name="credit_cards_expiration_date">Datum płaśiwosći</string>
   <!-- The label for the expiration date month of a credit card to be used by a11y services -->
   <string name="credit_cards_expiration_date_month">Datum płaśiwosći (mjasec)</string>
   <!-- The label for the expiration date year of a credit card to be used by a11y services -->
@@ -3882,7 +3905,7 @@
   <!-- Message displayed when the search field in the Settings Search screen is empty -->
   <string name="settings_search_empty_query_placeholder">Žedne nejnowše pytanja</string>
   <!-- Message when error happens with Settings Search -->
-  <string name="settings_search_error_message">Zmólka jo nastała</string>
+  <string name="settings_search_error_message" tools:ignore="UnusedResources" moz:removedIn="147">Zmólka jo nastała</string>
   <!-- Text of button allowing to clear history of recent searches done in the settings screen. -->
   <string name="settings_search_clear_recent_searches_message">Wšykne wulašowaś</string>
   <!-- Section header for recent search results -->
@@ -3919,4 +3942,16 @@
   <string name="terms_of_use_prompt_accept">Akceptěrowaś</string>
   <!-- Label for a button to postpone accepting the terms of use -->
   <string name="terms_of_use_prompt_postpone">Pózdźej dopomnjeś</string>
+  <!--
+    Privacy notice homepage banner
+
+    A message we show the user on the homepage when there is a new version of the privacy notice. 'Firefox' is intentionally hardcoded.
+    %1$s is replaced by an active link using privacy_notice_updated_homepage_message_privacy_notice as text (Privacy Notice)
+    %2$s is replaced by an active link using privacy_notice_updated_homepage_message_learn_more as text (Learn more)
+  -->
+  <string name="privacy_notice_updated_homepage_message" tools:ignore="BrandUsage,UnusedResources">Smy to zaktualizěrowali: naša %1$s, aby my nejnowše funkcije w Firefox wótbłyšćowali. %2$s</string>
+  <!-- The first active link used in privacy_notice_updated_homepage_message -->
+  <string name="privacy_notice_updated_homepage_message_privacy_notice" tools:ignore="UnusedResources">powěźeńku priwatnosći</string>
+  <!-- The second active link used in privacy_notice_updated_homepage_message -->
+  <string name="privacy_notice_updated_homepage_message_learn_more" tools:ignore="UnusedResources">Dalšne informacije</string>
 </resources>

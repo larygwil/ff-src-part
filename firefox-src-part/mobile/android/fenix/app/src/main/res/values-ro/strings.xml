@@ -1,4 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
+
+<!--
+  This Source Code Form is subject to the terms of the Mozilla Public
+  License, v. 2.0. If a copy of the MPL was not distributed with this
+  file, You can obtain one at http://mozilla.org/MPL/2.0/.
+-->
+
 <resources xmlns:tools="http://schemas.android.com/tools" xmlns:moz="http://mozac.org/tools">
   <!-- App name for private browsing mode. %s is the name of the app (for example "Firefox"). -->
   <string name="app_name_private_5">%s privat</string>
@@ -230,13 +237,13 @@
   <!-- Browser menu toggle that requests a desktop site -->
   <string name="browser_menu_desktop_site">Versiune site de desktop</string>
   <!-- Browser menu button that reopens a private tab as a regular tab -->
-  <string name="browser_menu_open_in_regular_tab">Deschide într-o filă nouă</string>
+  <string name="browser_menu_open_in_regular_tab">Deschide într-o filă normală</string>
   <!-- Browser menu toggle that adds a shortcut to the site on the device home screen. -->
   <string name="browser_menu_add_to_homescreen">Adaugă în ecranul de pornire</string>
   <!-- Browser menu toggle that adds a PWA of the site on the device home screen. -->
-  <string name="browser_menu_add_app_to_homescreen">Adaugă aplicația pe ecranul de pornire</string>
+  <string name="browser_menu_add_app_to_homescreen">Adaugă aplicația în ecranul de pornire</string>
   <!-- Text for notifying users that Xiaomi devices require additional permissions to add to home screen -->
-  <string name="browser_menu_add_to_homescreen_xiaomi">Este posibil ca dispozitivele Xiaomi să necesite permisiuni suplimentare pentru adăugarea de comenzi rapide pe ecranul de pornire. Te rugăm să verifici setările.</string>
+  <string name="browser_menu_add_to_homescreen_xiaomi">Este posibil ca dispozitivele Xiaomi să necesite permisiuni suplimentare pentru adăugarea de comenzi rapide în ecranul de pornire. Te rugăm să verifici setările.</string>
   <!-- Content description (not visible, for screen readers etc.) for the Resync tabs button -->
   <string name="resync_button_content_description">Resincronizează</string>
   <!-- Browser menu button that opens the find in page menu -->
@@ -545,7 +552,7 @@
   <!-- Used as text for the link in onboarding_term_of_service_line_three. -->
   <string name="onboarding_term_of_service_line_three_link_text">Gestionează</string>
   <!-- Terms of use (ToU) onboarding redesign title. -->
-  <string name="onboarding_redesign_tou_title">Lansează browserul Android în ultima versiune</string>
+  <string name="onboarding_redesign_tou_title">Lansează ultima versiune a browserului Android</string>
   <!-- Terms of use (ToU) first subheader. -->
   <string name="onboarding_redesign_tou_subheader_one">Încarcă site-urile extrem de repede</string>
   <!-- Terms of use (ToU) second subheader. -->
@@ -641,7 +648,7 @@
   <!-- Onboarding theme selection card label for 'dark' option, used by Nimbus experiments. -->
   <string name="onboarding_customize_theme_dark_option">Întunecată</string>
   <!-- Onboarding theme selection card label for 'light' option, used by Nimbus experiments. -->
-  <string name="onboarding_customize_theme_light_option">Deschisă</string>
+  <string name="onboarding_customize_theme_light_option">Luminoasă</string>
   <!-- Onboarding theme selection card label for 'System auto' option, used by Nimbus experiments. -->
   <string name="onboarding_customize_theme_system_option">Sistem automat</string>
   <!-- Onboarding theme selection card content description for the main image. -->
@@ -1001,7 +1008,7 @@
   -->
   <string name="alternative_app_icon_option_default">Implicit</string>
   <!-- Title for the "Light" alternative app icon variant in the icon picker screen. -->
-  <string name="alternative_app_icon_option_light">Deschisă</string>
+  <string name="alternative_app_icon_option_light">Luminoasă</string>
   <!-- Title for the "Dark" alternative app icon variant in the icon picker screen. -->
   <string name="alternative_app_icon_option_dark">Întunecată</string>
   <!-- Title for the "Red" alternative app icon variant in the icon picker screen. -->
@@ -1027,7 +1034,7 @@
   <!-- Title for the "Midnight" gradient alternative app icon variant in the icon picker screen. The app icon features a dark gradient background, resembling the deep tones of the night sky. -->
   <string name="alternative_app_icon_option_gradient_midnight">Miezul nopții</string>
   <!-- Title for the "Northern Lights" gradient alternative app icon variant in the icon picker screen. The app icon has a dynamic green, blue, and purple gradient background, resembling the aurora borealis. -->
-  <string name="alternative_app_icon_option_gradient_northern_lights">Luminile nordului</string>
+  <string name="alternative_app_icon_option_gradient_northern_lights">Aurora boreală</string>
   <!-- Title for the "Retro 2004" themed alternative app icon variant in the icon picker screen. This app icon uses the classic Firefox logo from 2004. -->
   <string name="alternative_app_icon_option_retro_2004">Retro 2004</string>
   <!-- Title for the "Pixelated" themed alternative app icon variant in the icon picker screen. This app icon features a pixel-art style, resembling retro 8-bit graphics. -->
@@ -1057,7 +1064,9 @@
   <!-- Title to show in alert when user selects an alternative app icon -->
   <string name="restart_warning_dialog_title">Schimbi pictograma aplicației?</string>
   <!-- Message to warn users that applying an alternative app icon may require an app restart. Whether or not the app closes depends on what version of Android it is, so we use the word "may" instead of "will". %1$s is replaced by the brand name (e.g. Firefox). -->
-  <string name="restart_warning_dialog_body_2">Este posibil să se închidă aplicația. Atinge pictograma nouă și strălucitoare ca să redeschizi %1$s.</string>
+  <string name="restart_warning_dialog_body_2">Este posibil ca aplicația să se închidă. Atinge pictograma nouă și strălucitoare pentru a redeschide %1$s.</string>
+  <!-- Message to warn users that applying an alternative app icon may require an app restart and will remove existing shortcuts because of the OS limitations. Whether or not the app closes depends on what version of Android it is, so we use the word "may" instead of "will". %1$s is replaced by the brand name (e.g. Firefox). -->
+  <string name="restart_and_shortcuts_removal_warning_dialog_body">Modificarea pictogramei va elimina toate site-urile și comenzile rapide pe care le-ai salvat în ecranul de pornire.\n\nEste posibil ca %1$s să se închidă. Atinge noua pictogramă pentru a-l redeschide.</string>
   <!-- Dialog button text for confirming the possible app restart and new icon selection -->
   <string name="restart_warning_dialog_button_positive_2">Schimbă pictograma</string>
   <!-- Dialog button text for cancelling app icon change -->
@@ -1260,7 +1269,7 @@
 
     Preference for using light theme
   -->
-  <string name="preference_light_theme">Deschisă</string>
+  <string name="preference_light_theme">Luminoasă</string>
   <!-- Preference for using dark theme -->
   <string name="preference_dark_theme">Întunecată</string>
   <!-- Preference for using using dark or light theme automatically set by battery -->
@@ -1364,7 +1373,7 @@
   <!-- Title of preference that allows a user to auto close tabs after a specified amount of time -->
   <string name="preferences_close_tabs">Închide filele</string>
   <!-- Option for auto closing tabs that will never auto close tabs, always allows user to manually close tabs -->
-  <string name="close_tabs_manually">Manual</string>
+  <string name="close_tabs_manually">Niciodată</string>
   <!-- Option for auto closing tabs that will auto close tabs after one day -->
   <string name="close_tabs_after_one_day">După o zi</string>
   <!-- Option for auto closing tabs that will auto close tabs after one week -->
@@ -1472,6 +1481,14 @@
   <string name="tab_tray_menu_tab_settings">Setări file</string>
   <!-- Text shown in the menu for closing all tabs -->
   <string name="tab_tray_menu_item_close">Închide toate filele</string>
+  <!-- Text shown as the title of the Close all tabs confirmation dialog in Tab Manager -->
+  <string name="tab_manager_close_all_tabs_dialog_title">Închizi toate filele?</string>
+  <!-- Text shown in the body of the Close all tabs confirmation dialog in Tab Manager -->
+  <string name="tab_manager_close_all_tabs_dialog_body">Va închide toate filele deschise.</string>
+  <!-- Text shown on the confirm button in the Close all tabs confirmation dialog -->
+  <string name="tab_manager_close_all_tabs_dialog_confirm">Închide filele</string>
+  <!-- Text shown on the cancel button in the Close all tabs confirmation dialog -->
+  <string name="tab_manager_close_all_tabs_dialog_cancel">Anulează</string>
   <!-- Text shown in the multiselect menu for bookmarking selected tabs. -->
   <string name="tab_tray_multiselect_menu_item_bookmark">Marchează</string>
   <!-- Content description (not visible, for screen readers etc.): Bookmarks selected tabs. -->
@@ -2407,7 +2424,7 @@
   <!-- Preference for enhanced tracking protection for the custom protection settings -->
   <string name="preference_enhanced_tracking_protection_custom_cryptominers">Criptomineri</string>
   <!-- Preference for enhanced tracking protection for the custom protection settings -->
-  <string name="preference_enhanced_tracking_protection_custom_known_fingerprinters">Amprente digitale cunoscute</string>
+  <string name="preference_enhanced_tracking_protection_custom_known_fingerprinters">Detectoare cunoscute de amprente digitale</string>
   <!-- Button label for navigating to the Enhanced Tracking Protection details -->
   <string name="enhanced_tracking_protection_details">Detalii</string>
   <!-- Header for categories that are being being blocked by current Enhanced Tracking Protection settings -->
@@ -2459,11 +2476,11 @@
   <!-- Description of redirect tracker cookies that can be blocked by Enhanced Tracking Protection -->
   <string name="etp_redirect_trackers_description">Șterge cookie-urile setate de redirecționări către site-uri web de urmărire cunoscute.</string>
   <!-- Preference for fingerprinting protection for the custom protection settings -->
-  <string name="etp_suspected_fingerprinters_title">Amprente digitale suspectate</string>
+  <string name="etp_suspected_fingerprinters_title">Detectoare suspecte de amprente digitale</string>
   <!-- Description of fingerprinters that can be blocked by fingerprinting protection -->
-  <string name="etp_suspected_fingerprinters_description">Activează protecția prin amprente digitale pentru a opri suspecții de amprentare.</string>
+  <string name="etp_suspected_fingerprinters_description">Activează protecția împotriva amprentării digitale pentru a opri detectoarele suspecte de amprente digitale.</string>
   <!-- Category of trackers (fingerprinters) that can be blocked by Enhanced Tracking Protection -->
-  <string name="etp_known_fingerprinters_title">Amprente digitale cunoscute</string>
+  <string name="etp_known_fingerprinters_title">Detectoare cunoscute de amprente digitale</string>
   <!--
     Description of the SmartBlock Enhanced Tracking Protection feature. The * symbol is intentionally hardcoded here,
     as we use it on the UI to indicate which trackers have been partially unblocked.
@@ -2748,14 +2765,16 @@
   <string name="preferences_addresses_sync_addresses_across_devices">Sincronizează adresele pe toate dispozitivele</string>
   <!-- Preference option for syncing addresses across devices. This is displayed when the user is signed into sync -->
   <string name="preferences_addresses_sync_addresses">Sincronizează adresele</string>
+  <!-- Content description navigating back from autofill settings screen. -->
+  <string name="autofill_settings_navigate_back_button_content_description">Înapoi</string>
   <!-- Title of the "Add card" screen -->
   <string name="credit_cards_add_card">Adaugă un card</string>
+  <!-- Content description for the "credit card feature" top bar back button -->
+  <string name="credit_cards_navigate_back_button_content_description">Navighează înapoi</string>
   <!-- Title of the "Edit card" screen -->
   <string name="credit_cards_edit_card">Editează card</string>
   <!-- The header for the card number of a credit card -->
   <string name="credit_cards_card_number">Numărul cardului</string>
-  <!-- The header for the expiration date of a credit card -->
-  <string name="credit_cards_expiration_date">Data de expirare</string>
   <!-- The label for the expiration date month of a credit card to be used by a11y services -->
   <string name="credit_cards_expiration_date_month">Data de expirare luna</string>
   <!-- The label for the expiration date year of a credit card to be used by a11y services -->
@@ -2829,7 +2848,7 @@
   <!-- Label for an address field (e.g. mailing address) used as part of the form autofill feature. The Island field, used in places like the Cayman Islands and the Bahamas if an address is located on a specific island. -->
   <string name="addresses_island" tools:ignore="UnusedResources">Insulă</string>
   <!-- Label for an address field (e.g. mailing address) used as part of the form autofill feature. The Townland field, specific to Ireland is a specific type of land division used in rural areas. -->
-  <string name="addresses_townland" tools:ignore="UnusedResources">Municipiu</string>
+  <string name="addresses_townland" tools:ignore="UnusedResources">Comună</string>
   <!-- Label for an address field (e.g. mailing address) used as part of the form autofill feature. This specific field is used as secondary address information (below the country level, e.g. county) in Honk Kong, Sudan, Syria, Türkiye, and as sublocality (civil entity below a locality, e.g. district) in Korea. -->
   <string name="addresses_district" tools:ignore="UnusedResources">Raion</string>
   <!-- Label for an address field (e.g. mailing address) used as part of the form autofill feature. Used in the United Kingdom, Norway and Sweden -->
@@ -3616,7 +3635,7 @@
   -->
   <string name="debug_drawer_addresses_title">Adrese</string>
   <!-- The title of the section header for the list of debug locales that can be enabled and disabled. -->
-  <string name="debug_drawer_addresses_debug_locales_header">Depanează setările regionale pentru a activa</string>
+  <string name="debug_drawer_addresses_debug_locales_header">Depanează setările regionale pentru activare</string>
   <!-- The title of the header for the section for managing addresses. -->
   <string name="debug_drawer_addresses_management_header">Gestionează adresele</string>
   <!-- The title of the button in the debug drawer for adding a new address. -->
@@ -3804,7 +3823,7 @@
   <!-- The title of the explore extensions task for the setup checklist -->
   <string name="setup_checklist_task_explore_extensions">Explorează extensiile</string>
   <!-- The title of the search widget task for the setup checklist -->
-  <string name="setup_checklist_task_search_widget_2">Widgetul de căutare Explorează</string>
+  <string name="setup_checklist_task_search_widget_2">Descoperă widgeturi de căutare</string>
   <!--
     ===== Setup checklist feature: Group titles =====
 
@@ -3882,7 +3901,7 @@
   <!-- Message displayed when the search field in the Settings Search screen is empty -->
   <string name="settings_search_empty_query_placeholder">Nicio căutare recentă</string>
   <!-- Message when error happens with Settings Search -->
-  <string name="settings_search_error_message">A apărut o eroare</string>
+  <string name="settings_search_error_message" tools:ignore="UnusedResources" moz:removedIn="147">A apărut o eroare</string>
   <!-- Text of button allowing to clear history of recent searches done in the settings screen. -->
   <string name="settings_search_clear_recent_searches_message">Șterge tot</string>
   <!-- Section header for recent search results -->

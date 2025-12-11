@@ -1,4 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
+
+<!--
+  This Source Code Form is subject to the terms of the Mozilla Public
+  License, v. 2.0. If a copy of the MPL was not distributed with this
+  file, You can obtain one at http://mozilla.org/MPL/2.0/.
+-->
+
 <resources xmlns:tools="http://schemas.android.com/tools" xmlns:moz="http://mozac.org/tools">
   <!-- App name for private browsing mode. %s is the name of the app (for example "Firefox"). -->
   <string name="app_name_private_5">Private %s</string>
@@ -54,6 +61,8 @@
   <string name="tab_manager_empty_synced_tabs_page_description">Sign in to manage synchronised tabs from all your devices.</string>
   <!-- The action text displayed on the synced tabs page when the user is not logged into an account, prompting the user to sign into their account. When clicked, it takes the user to the account sign-in flow. -->
   <string name="tab_manager_empty_synced_tabs_page_sign_in_cta">Sign in</string>
+  <!-- Text for the button used to show all stories -->
+  <string name="homepage_all_stories">All stories</string>
   <!--
     Home - Bookmarks
 
@@ -1058,6 +1067,8 @@
   <string name="restart_warning_dialog_title">Change app icon?</string>
   <!-- Message to warn users that applying an alternative app icon may require an app restart. Whether or not the app closes depends on what version of Android it is, so we use the word "may" instead of "will". %1$s is replaced by the brand name (e.g. Firefox). -->
   <string name="restart_warning_dialog_body_2">The app may close. Just tap your shiny new icon to reopen %1$s.</string>
+  <!-- Message to warn users that applying an alternative app icon may require an app restart and will remove existing shortcuts because of the OS limitations. Whether or not the app closes depends on what version of Android it is, so we use the word "may" instead of "will". %1$s is replaced by the brand name (e.g. Firefox). -->
+  <string name="restart_and_shortcuts_removal_warning_dialog_body">Changing the icon will remove any sites and shortcuts you’ve saved to your Home screen. \n\n%1$s may close. Tap your new icon to reopen.</string>
   <!-- Dialog button text for confirming the possible app restart and new icon selection -->
   <string name="restart_warning_dialog_button_positive_2">Change icon</string>
   <!-- Dialog button text for cancelling app icon change -->
@@ -1472,6 +1483,14 @@
   <string name="tab_tray_menu_tab_settings">Tab settings</string>
   <!-- Text shown in the menu for closing all tabs -->
   <string name="tab_tray_menu_item_close">Close all tabs</string>
+  <!-- Text shown as the title of the Close all tabs confirmation dialog in Tab Manager -->
+  <string name="tab_manager_close_all_tabs_dialog_title">Close all tabs?</string>
+  <!-- Text shown in the body of the Close all tabs confirmation dialog in Tab Manager -->
+  <string name="tab_manager_close_all_tabs_dialog_body">This will close all open tabs.</string>
+  <!-- Text shown on the confirm button in the Close all tabs confirmation dialog -->
+  <string name="tab_manager_close_all_tabs_dialog_confirm">Close tabs</string>
+  <!-- Text shown on the cancel button in the Close all tabs confirmation dialog -->
+  <string name="tab_manager_close_all_tabs_dialog_cancel">Cancel</string>
   <!-- Text shown in the multiselect menu for bookmarking selected tabs. -->
   <string name="tab_tray_multiselect_menu_item_bookmark">Bookmark</string>
   <!-- Content description (not visible, for screen readers etc.): Bookmarks selected tabs. -->
@@ -1518,6 +1537,8 @@
   <string name="delete_from_history">Delete from history</string>
   <!-- Postfix for private WebApp titles. %1$s is the name of the app (for example "Firefox"). -->
   <string name="pwa_site_controls_title_private">%1$s (Private Mode)</string>
+  <!-- Content description (not visible, for screen readers etc.) for the button to open the Tab Search feature to search through tabs. -->
+  <string name="tab_manager_open_tab_search">Open tab search</string>
   <!--
     History
 
@@ -2748,14 +2769,16 @@
   <string name="preferences_addresses_sync_addresses_across_devices">Synchronise addresses across devices</string>
   <!-- Preference option for syncing addresses across devices. This is displayed when the user is signed into sync -->
   <string name="preferences_addresses_sync_addresses">Synchronise addresses</string>
+  <!-- Content description navigating back from autofill settings screen. -->
+  <string name="autofill_settings_navigate_back_button_content_description">Back</string>
   <!-- Title of the "Add card" screen -->
   <string name="credit_cards_add_card">Add card</string>
+  <!-- Content description for the "credit card feature" top bar back button -->
+  <string name="credit_cards_navigate_back_button_content_description">Navigate back</string>
   <!-- Title of the "Edit card" screen -->
   <string name="credit_cards_edit_card">Edit card</string>
   <!-- The header for the card number of a credit card -->
   <string name="credit_cards_card_number">Card Number</string>
-  <!-- The header for the expiration date of a credit card -->
-  <string name="credit_cards_expiration_date">Expiration Date</string>
   <!-- The label for the expiration date month of a credit card to be used by a11y services -->
   <string name="credit_cards_expiration_date_month">Expiration Date Month</string>
   <!-- The label for the expiration date year of a credit card to be used by a11y services -->
@@ -3882,7 +3905,7 @@
   <!-- Message displayed when the search field in the Settings Search screen is empty -->
   <string name="settings_search_empty_query_placeholder">No recent searches</string>
   <!-- Message when error happens with Settings Search -->
-  <string name="settings_search_error_message">An error has occurred</string>
+  <string name="settings_search_error_message" tools:ignore="UnusedResources" moz:removedIn="147">An error has occurred</string>
   <!-- Text of button allowing to clear history of recent searches done in the settings screen. -->
   <string name="settings_search_clear_recent_searches_message">Clear all</string>
   <!-- Section header for recent search results -->
@@ -3919,4 +3942,16 @@
   <string name="terms_of_use_prompt_accept">Accept</string>
   <!-- Label for a button to postpone accepting the terms of use -->
   <string name="terms_of_use_prompt_postpone">Remind me later</string>
+  <!--
+    Privacy notice homepage banner
+
+    A message we show the user on the homepage when there is a new version of the privacy notice. 'Firefox' is intentionally hardcoded.
+    %1$s is replaced by an active link using privacy_notice_updated_homepage_message_privacy_notice as text (Privacy Notice)
+    %2$s is replaced by an active link using privacy_notice_updated_homepage_message_learn_more as text (Learn more)
+  -->
+  <string name="privacy_notice_updated_homepage_message" tools:ignore="BrandUsage,UnusedResources">We’ve updated our %1$s to reflect the latest features in Firefox. %2$s</string>
+  <!-- The first active link used in privacy_notice_updated_homepage_message -->
+  <string name="privacy_notice_updated_homepage_message_privacy_notice" tools:ignore="UnusedResources">Privacy Notice</string>
+  <!-- The second active link used in privacy_notice_updated_homepage_message -->
+  <string name="privacy_notice_updated_homepage_message_learn_more" tools:ignore="UnusedResources">Learn more</string>
 </resources>

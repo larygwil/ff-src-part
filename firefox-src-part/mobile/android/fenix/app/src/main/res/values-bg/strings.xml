@@ -1,4 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
+
+<!--
+  This Source Code Form is subject to the terms of the Mozilla Public
+  License, v. 2.0. If a copy of the MPL was not distributed with this
+  file, You can obtain one at http://mozilla.org/MPL/2.0/.
+-->
+
 <resources xmlns:tools="http://schemas.android.com/tools" xmlns:moz="http://mozac.org/tools">
   <!-- App name for private browsing mode. %s is the name of the app (for example "Firefox"). -->
   <string name="app_name_private_5">Поверителен %s</string>
@@ -54,6 +61,8 @@
   <string name="tab_manager_empty_synced_tabs_page_description">Впишете се, за да управлявате синхронизираните раздели от всички ваши устройства.</string>
   <!-- The action text displayed on the synced tabs page when the user is not logged into an account, prompting the user to sign into their account. When clicked, it takes the user to the account sign-in flow. -->
   <string name="tab_manager_empty_synced_tabs_page_sign_in_cta">Вписване</string>
+  <!-- Text for the button used to show all stories -->
+  <string name="homepage_all_stories">Всички истории</string>
   <!--
     Home - Bookmarks
 
@@ -1058,6 +1067,8 @@
   <string name="restart_warning_dialog_title">Промяна на иконата на приложението?</string>
   <!-- Message to warn users that applying an alternative app icon may require an app restart. Whether or not the app closes depends on what version of Android it is, so we use the word "may" instead of "will". %1$s is replaced by the brand name (e.g. Firefox). -->
   <string name="restart_warning_dialog_body_2">Приложението може да се затвори. Просто докоснете новата ни лъскава иконка, за да го отворите отново %1$s.</string>
+  <!-- Message to warn users that applying an alternative app icon may require an app restart and will remove existing shortcuts because of the OS limitations. Whether or not the app closes depends on what version of Android it is, so we use the word "may" instead of "will". %1$s is replaced by the brand name (e.g. Firefox). -->
+  <string name="restart_and_shortcuts_removal_warning_dialog_body">Смяната на иконата ще премахне всички сайтове и преки пътища, които сте запазили от началния екран. \u0020\u0020%1$s може да бъде затворено. Докоснете новата икона, за да я отворите отново.</string>
   <!-- Dialog button text for confirming the possible app restart and new icon selection -->
   <string name="restart_warning_dialog_button_positive_2">Промяна на иконката</string>
   <!-- Dialog button text for cancelling app icon change -->
@@ -1472,6 +1483,14 @@
   <string name="tab_tray_menu_tab_settings">Настройки на раздели</string>
   <!-- Text shown in the menu for closing all tabs -->
   <string name="tab_tray_menu_item_close">Затваряне на всички раздели</string>
+  <!-- Text shown as the title of the Close all tabs confirmation dialog in Tab Manager -->
+  <string name="tab_manager_close_all_tabs_dialog_title">Затваряне на всички раздели?</string>
+  <!-- Text shown in the body of the Close all tabs confirmation dialog in Tab Manager -->
+  <string name="tab_manager_close_all_tabs_dialog_body">Това ще затвори всички отворени раздели.</string>
+  <!-- Text shown on the confirm button in the Close all tabs confirmation dialog -->
+  <string name="tab_manager_close_all_tabs_dialog_confirm">Затваряне на разделите</string>
+  <!-- Text shown on the cancel button in the Close all tabs confirmation dialog -->
+  <string name="tab_manager_close_all_tabs_dialog_cancel">Отказ</string>
   <!-- Text shown in the multiselect menu for bookmarking selected tabs. -->
   <string name="tab_tray_multiselect_menu_item_bookmark">Отметка</string>
   <!-- Content description (not visible, for screen readers etc.): Bookmarks selected tabs. -->
@@ -1518,6 +1537,8 @@
   <string name="delete_from_history">Премахване от историята</string>
   <!-- Postfix for private WebApp titles. %1$s is the name of the app (for example "Firefox"). -->
   <string name="pwa_site_controls_title_private">%1$s (поверителен режим)</string>
+  <!-- Content description (not visible, for screen readers etc.) for the button to open the Tab Search feature to search through tabs. -->
+  <string name="tab_manager_open_tab_search">Отваряне на раздели за търсене</string>
   <!--
     History
 
@@ -1731,7 +1752,7 @@
   <!-- Description text for the checkbox on the “Report broken site” screen for sending URLS blocked by Enhanced Tracking Protection. It informs the user when checked, the report will include the list of URLs that were blocked by Enhanced Tracking Protection on the current page. -->
   <string name="webcompat_reporter_etp_checkbox_description">Подобрена защита от проследяване може да блокира проследяващите скриптове, от които някои уебсайтове се нуждаят, за да работят правилно.</string>
   <!-- The button text for the preview report button to view a preview of the report. -->
-  <string name="webcompat_reporter_preview_report">Доклад за визуализация</string>
+  <string name="webcompat_reporter_preview_report">Доклад за предварителните прегледи</string>
   <!-- The title shown at the top of the WebCompat Report preview panel. This appears after the user taps the “Preview” button before sending a report. -->
   <string name="webcompat_reporter_preview_bottom_sheet_header">Преглед на доклад</string>
   <!-- Label for the “Send” button shown in the WebCompat Report preview panel, which the user taps to submit the report. -->
@@ -2748,14 +2769,16 @@
   <string name="preferences_addresses_sync_addresses_across_devices">Синхронизиране на адреси между устройства</string>
   <!-- Preference option for syncing addresses across devices. This is displayed when the user is signed into sync -->
   <string name="preferences_addresses_sync_addresses">Синхронизиране на адреси</string>
+  <!-- Content description navigating back from autofill settings screen. -->
+  <string name="autofill_settings_navigate_back_button_content_description">Назад</string>
   <!-- Title of the "Add card" screen -->
   <string name="credit_cards_add_card">Добавяне на карта</string>
+  <!-- Content description for the "credit card feature" top bar back button -->
+  <string name="credit_cards_navigate_back_button_content_description">Връщане назад</string>
   <!-- Title of the "Edit card" screen -->
   <string name="credit_cards_edit_card">Редактиране на карта</string>
   <!-- The header for the card number of a credit card -->
   <string name="credit_cards_card_number">Номер на карта</string>
-  <!-- The header for the expiration date of a credit card -->
-  <string name="credit_cards_expiration_date">Дата на валидност</string>
   <!-- The label for the expiration date month of a credit card to be used by a11y services -->
   <string name="credit_cards_expiration_date_month">Месец на валидност</string>
   <!-- The label for the expiration date year of a credit card to be used by a11y services -->
@@ -3666,9 +3689,9 @@
   <!-- The text field label for overriding current region. -->
   <string name="debug_drawer_override_current_region_label">Замяна на текущия регион</string>
   <!-- The title of the button for overriding home and current region. -->
-  <string name="debug_drawer_override_region">Заменяне на начало и текущ регион</string>
+  <string name="debug_drawer_override_region">Заменяне на адреса и текущия регион</string>
   <!-- The title of the button for overriding home region permanently. -->
-  <string name="debug_drawer_override_home_region_permanently">Заместване на началния регион за постоянно</string>
+  <string name="debug_drawer_override_home_region_permanently">Заменяне на началния регион за постоянно</string>
   <!--
     Add-ons debug tools
 
@@ -3844,7 +3867,7 @@
   <!-- Authentication prompt title to disable the private tabs mode -->
   <string name="pbm_authentication_disable_lock">Деактивиране на заключването на екрана на поверителните раздели</string>
   <!-- Label for a preference shown when the device supports screen lock (e.g., PIN, pattern, or password) but the user has not set one up. -->
-  <string name="pbm_authentication_lock_device_feature_disabled">Настройте заключване на екрана, за да скривате раздели</string>
+  <string name="pbm_authentication_lock_device_feature_disabled">Настройка на екранно заключване за скриване на разделите</string>
   <!-- Title text for the contextual feature recommendation (CFR) suggesting the user enable a screen lock to protect private tabs -->
   <string name="private_tab_cfr_title">Използване на заключване на екрана за скриване на поверителни раздели?</string>
   <!-- Negative button text for the contextual feature recommendation (CFR) dismissing the screen lock suggestion -->
@@ -3876,21 +3899,21 @@
   -->
   <string name="settings_search_title">Настройки за търсене</string>
   <!-- Content description (not visible, for screen readers etc.) for the button to clear the search field for settings search -->
-  <string name="content_description_settings_search_clear_search">Изчистване</string>
+  <string name="content_description_settings_search_clear_search">Изчистване на търсенето</string>
   <!-- Content description (not visible, for screen readers etc.) for the button to navigate back to the Settings page from the Settings Search screen. -->
-  <string name="content_description_settings_search_navigate_back">Придвижване назад</string>
+  <string name="content_description_settings_search_navigate_back">Връщане назад</string>
   <!-- Message displayed when the search field in the Settings Search screen is empty -->
   <string name="settings_search_empty_query_placeholder">Няма скорошни търсения</string>
   <!-- Message when error happens with Settings Search -->
-  <string name="settings_search_error_message">Възникна грешка</string>
+  <string name="settings_search_error_message" tools:ignore="UnusedResources" moz:removedIn="147">Възникна грешка</string>
   <!-- Text of button allowing to clear history of recent searches done in the settings screen. -->
   <string name="settings_search_clear_recent_searches_message">Изчистване на всички</string>
   <!-- Section header for recent search results -->
   <string name="settings_search_recent_searches_section_header">Скорошни резултати от търсенето</string>
   <!-- Message displayed when the search field is not empty but search results is empty. -->
-  <string name="settings_search_no_results_title">Нищо не се оказа</string>
+  <string name="settings_search_no_results_title">Няма информация</string>
   <!-- Sub-message displayed when the search field is not empty but search results is empty. -->
-  <string name="settings_search_no_results_message">Може би да опитате различно търсене?</string>
+  <string name="settings_search_no_results_message">Опитване на различно търсене?</string>
   <!--
     Terms of use pop up prompt
 
@@ -3919,4 +3942,16 @@
   <string name="terms_of_use_prompt_accept">Приемане</string>
   <!-- Label for a button to postpone accepting the terms of use -->
   <string name="terms_of_use_prompt_postpone">Напомняне по-късно</string>
+  <!--
+    Privacy notice homepage banner
+
+    A message we show the user on the homepage when there is a new version of the privacy notice. 'Firefox' is intentionally hardcoded.
+    %1$s is replaced by an active link using privacy_notice_updated_homepage_message_privacy_notice as text (Privacy Notice)
+    %2$s is replaced by an active link using privacy_notice_updated_homepage_message_learn_more as text (Learn more)
+  -->
+  <string name="privacy_notice_updated_homepage_message" tools:ignore="BrandUsage,UnusedResources">Актуализирахме нашите %1$s, за да отразим най-новите функции на Firefox. %2$s</string>
+  <!-- The first active link used in privacy_notice_updated_homepage_message -->
+  <string name="privacy_notice_updated_homepage_message_privacy_notice" tools:ignore="UnusedResources">Политика на поверителност</string>
+  <!-- The second active link used in privacy_notice_updated_homepage_message -->
+  <string name="privacy_notice_updated_homepage_message_learn_more" tools:ignore="UnusedResources">Научете повече</string>
 </resources>

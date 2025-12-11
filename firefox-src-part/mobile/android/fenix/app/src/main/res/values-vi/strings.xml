@@ -1,4 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
+
+<!--
+  This Source Code Form is subject to the terms of the Mozilla Public
+  License, v. 2.0. If a copy of the MPL was not distributed with this
+  file, You can obtain one at http://mozilla.org/MPL/2.0/.
+-->
+
 <resources xmlns:tools="http://schemas.android.com/tools" xmlns:moz="http://mozac.org/tools">
   <!-- App name for private browsing mode. %s is the name of the app (for example "Firefox"). -->
   <string name="app_name_private_5">%s riêng tư</string>
@@ -1058,6 +1065,8 @@
   <string name="restart_warning_dialog_title">Thay đổi biểu tượng ứng dụng?</string>
   <!-- Message to warn users that applying an alternative app icon may require an app restart. Whether or not the app closes depends on what version of Android it is, so we use the word "may" instead of "will". %1$s is replaced by the brand name (e.g. Firefox). -->
   <string name="restart_warning_dialog_body_2">Ứng dụng có thể sẽ đóng. Chỉ cần nhấn vào biểu tượng mới sáng bóng của bạn để mở lại %1$s.</string>
+  <!-- Message to warn users that applying an alternative app icon may require an app restart and will remove existing shortcuts because of the OS limitations. Whether or not the app closes depends on what version of Android it is, so we use the word "may" instead of "will". %1$s is replaced by the brand name (e.g. Firefox). -->
+  <string name="restart_and_shortcuts_removal_warning_dialog_body">Thay đổi biểu tượng sẽ xóa mọi trang web và lối tắt bạn đã lưu vào Màn hình chính. \n\n%1$s có thể sẽ đóng lại. Nhấn vào biểu tượng mới để mở lại.</string>
   <!-- Dialog button text for confirming the possible app restart and new icon selection -->
   <string name="restart_warning_dialog_button_positive_2">Thay đổi biểu tượng</string>
   <!-- Dialog button text for cancelling app icon change -->
@@ -1472,6 +1481,14 @@
   <string name="tab_tray_menu_tab_settings">Cài đặt thẻ</string>
   <!-- Text shown in the menu for closing all tabs -->
   <string name="tab_tray_menu_item_close">Đóng tất cả các thẻ</string>
+  <!-- Text shown as the title of the Close all tabs confirmation dialog in Tab Manager -->
+  <string name="tab_manager_close_all_tabs_dialog_title">Đóng tất cả các thẻ?</string>
+  <!-- Text shown in the body of the Close all tabs confirmation dialog in Tab Manager -->
+  <string name="tab_manager_close_all_tabs_dialog_body">Thao tác này sẽ đóng tất cả các thẻ đang mở.</string>
+  <!-- Text shown on the confirm button in the Close all tabs confirmation dialog -->
+  <string name="tab_manager_close_all_tabs_dialog_confirm">Đóng thẻ</string>
+  <!-- Text shown on the cancel button in the Close all tabs confirmation dialog -->
+  <string name="tab_manager_close_all_tabs_dialog_cancel">Hủy bỏ</string>
   <!-- Text shown in the multiselect menu for bookmarking selected tabs. -->
   <string name="tab_tray_multiselect_menu_item_bookmark">Đánh dấu</string>
   <!-- Content description (not visible, for screen readers etc.): Bookmarks selected tabs. -->
@@ -2748,14 +2765,16 @@
   <string name="preferences_addresses_sync_addresses_across_devices">Đồng bộ hóa địa chỉ trên các thiết bị</string>
   <!-- Preference option for syncing addresses across devices. This is displayed when the user is signed into sync -->
   <string name="preferences_addresses_sync_addresses">Đồng bộ hóa địa chỉ</string>
+  <!-- Content description navigating back from autofill settings screen. -->
+  <string name="autofill_settings_navigate_back_button_content_description">Quay lại</string>
   <!-- Title of the "Add card" screen -->
   <string name="credit_cards_add_card">Thêm thẻ</string>
+  <!-- Content description for the "credit card feature" top bar back button -->
+  <string name="credit_cards_navigate_back_button_content_description">Điều hướng quay lại</string>
   <!-- Title of the "Edit card" screen -->
   <string name="credit_cards_edit_card">Chỉnh sửa thẻ</string>
   <!-- The header for the card number of a credit card -->
   <string name="credit_cards_card_number">Số thẻ</string>
-  <!-- The header for the expiration date of a credit card -->
-  <string name="credit_cards_expiration_date">Ngày hết hạn</string>
   <!-- The label for the expiration date month of a credit card to be used by a11y services -->
   <string name="credit_cards_expiration_date_month">Tháng hết hạn</string>
   <!-- The label for the expiration date year of a credit card to be used by a11y services -->
@@ -3882,7 +3901,7 @@
   <!-- Message displayed when the search field in the Settings Search screen is empty -->
   <string name="settings_search_empty_query_placeholder">Không có tìm kiếm gần đây</string>
   <!-- Message when error happens with Settings Search -->
-  <string name="settings_search_error_message">Có lỗi đã xảy ra</string>
+  <string name="settings_search_error_message" tools:ignore="UnusedResources" moz:removedIn="147">Có lỗi đã xảy ra</string>
   <!-- Text of button allowing to clear history of recent searches done in the settings screen. -->
   <string name="settings_search_clear_recent_searches_message">Xóa tất cả</string>
   <!-- Section header for recent search results -->
