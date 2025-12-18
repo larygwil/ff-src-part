@@ -61,6 +61,8 @@
   <string name="tab_manager_empty_synced_tabs_page_description">Pro správu synchronizovaných panelů ze všech vašich zařízení se přihlaste.</string>
   <!-- The action text displayed on the synced tabs page when the user is not logged into an account, prompting the user to sign into their account. When clicked, it takes the user to the account sign-in flow. -->
   <string name="tab_manager_empty_synced_tabs_page_sign_in_cta">Přihlásit se</string>
+  <!-- Text for the button used to show all stories -->
+  <string name="homepage_all_stories">Všechny příběhy</string>
   <!--
     Home - Bookmarks
 
@@ -820,8 +822,6 @@
   <string name="preferences_gestures">Gesta</string>
   <!-- Preference for settings related to visual options -->
   <string name="preferences_customize">Přizpůsobení</string>
-  <!-- Preference description for banner about signing in -->
-  <string name="preferences_sign_in_description_2" tools:ignore="UnusedResources" moz:removedIn="145">Pro synchronizaci svých panelů, záložek, hesel a dalších věcí se přihlaste.</string>
   <!-- Preference description shown in the banner prompting the user to sign in for sync features -->
   <string name="preferences_sign_in_description">Synchronizujte své panely, záložky, hesla a další položky.</string>
   <!-- Preference shown instead of account display name while account profile information isn't available yet. -->
@@ -966,9 +966,9 @@
   -->
   <string name="customize_toggle_recently_visited">Nedávno navštívené</string>
   <!-- Title for the customize home screen section with Pocket. -->
-  <string name="customize_toggle_pocket_3">Články</string>
+  <string name="customize_toggle_pocket_3">Příběhy</string>
   <!-- Title for the customize home screen section with sponsored Pocket stories. -->
-  <string name="customize_toggle_pocket_sponsored">Sponzorované články</string>
+  <string name="customize_toggle_pocket_sponsored">Sponzorované příběhy</string>
   <!-- Title for the opening wallpaper settings screen -->
   <string name="customize_wallpapers">Tapety</string>
   <!-- Title for the customize home screen section with sponsored shortcuts. -->
@@ -1217,10 +1217,8 @@
   <!--
     Turn On Sync Preferences
 
-    Header of the Sync and save your data preference view
+    Header of the Sign in preference view
   -->
-  <string name="preferences_sync_2" tools:ignore="UnusedResources" moz:removedIn="145">Synchronizujte a ukládejte svá data</string>
-  <!-- Header of the Sign in preference view -->
   <string name="preferences_sign_in">Přihlásit se</string>
   <!-- Preference for reconnecting to FxA sync -->
   <string name="preferences_sync_sign_in_to_reconnect">Pro opětovné připojení se přihlaste</string>
@@ -1507,8 +1505,6 @@
   <string name="tab_tray_multiselect_menu_content_description">Nabídka pro vybrané panely</string>
   <!-- Title text displayed for a homepage tab in the tabs tray. -->
   <string name="tab_tray_homepage_tab">Domovská stránka</string>
-  <!-- Title text displayed for a homepage tab in the tabs tray. %s is a placeholder that will be replaced by app name. -->
-  <string name="tab_tray_homepage_tab_2" tools:ignore="UnusedResources" moz:removedIn="145">Domovská stránka aplikace %s</string>
   <!-- Content description (not visible, for screen readers etc.): Removes tab from collection button. Removes the selected tab from collection when pressed -->
   <string name="remove_tab_from_collection">Odstranit panel ze sbírky</string>
   <!-- Text for button to enter multiselect mode in tabs tray -->
@@ -2109,8 +2105,6 @@
   <string name="toast_copy_link_to_clipboard">Zkopírováno do schránky</string>
   <!-- An option from the share dialog to sign into sync -->
   <string name="sync_sign_in">Přihlásit ke službě Sync</string>
-  <!-- An option from the three dot menu to sync and save data -->
-  <string name="sync_menu_sync_and_save_data" tools:ignore="UnusedResources" moz:removedIn="145">Synchronizace a ukládání dat</string>
   <!-- An option from the three dot menu to sign in -->
   <string name="sync_menu_sign_in">Přihlásit se</string>
   <!-- An option from the share dialog to send link to all other sync devices -->
@@ -3140,12 +3134,12 @@
 
     Header text for a section on the home screen.
   -->
-  <string name="pocket_stories_header_2">Články</string>
+  <string name="pocket_stories_header_2">Příběhy</string>
   <!--
     Context description text for the "Discover more" button in the stories home screen section
     which navigates the user to a screen displaying more stories.
   -->
-  <string name="stories_discover_more_content_description">Objevte další články</string>
+  <string name="stories_discover_more_content_description">Objevte další příběhy</string>
   <!-- Content description for the "Navigate back" button on the top app bar of the Stories screen. -->
   <string name="stories_back_button_content_description">Návrat zpět</string>
   <!-- Text indicating that the Pocket story that also displays this text is a sponsored story by other 3rd party entity. -->

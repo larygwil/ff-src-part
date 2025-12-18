@@ -4432,8 +4432,8 @@ void nsIFrame::BuildDisplayListForChild(nsDisplayListBuilder* aBuilder,
         // frame's BuildDisplayList, so don't bother to async scroll with an
         // anchor in that case. Bug 2001861 tracks removing this check.
         !PresContext()->Document()->GetActiveViewTransition()) {
-      scrollsWithAnchor =
-          AnchorPositioningUtils::GetAnchorThatFrameScrollsWith(child);
+      scrollsWithAnchor = AnchorPositioningUtils::GetAnchorThatFrameScrollsWith(
+          child, aBuilder);
 
       if (scrollsWithAnchor && aBuilder->IsRetainingDisplayList()) {
         if (aBuilder->IsPartialUpdate()) {
@@ -4453,9 +4453,11 @@ void nsIFrame::BuildDisplayListForChild(nsDisplayListBuilder* aBuilder,
       if (savedOutOfFlowData->mContainingBlockInViewTransitionCapture) {
         MOZ_ASSERT(asr == nullptr);
         MOZ_ASSERT(aBuilder->IsInViewTransitionCapture());
-      } else if ((asr ? asr->mFrame : nullptr) !=
-                 nsLayoutUtils::GetASRAncestorFrame(child->GetParent(),
-                                                    aBuilder)) {
+      } else if ((asr ? FrameAndASRKind{asr->mFrame, asr->mKind}
+                      : FrameAndASRKind::default_value()) !=
+                 DisplayPortUtils::GetASRAncestorFrame(
+                     {child->GetParent(), ActiveScrolledRoot::ASRKind::Scroll},
+                     aBuilder)) {
         // A weird case for native anonymous content in the custom content
         // container when the root is captured by a view transition. This
         // content is built outside of the view transition capture but the
@@ -7267,14 +7269,21 @@ LogicalSize nsIFrame::ComputeAbsolutePosAutoSize(
   };
 
   // i.e. Absolute containing block
-  const auto* parent = GetParent();
-  const auto parentWM = parent->GetWritingMode();
+
   // Self alignment properties translate `auto` to normal for this purpose.
   // https://drafts.csswg.org/css-align-3/#valdef-justify-self-auto
+  nsContainerFrame* contFrame = static_cast<nsContainerFrame*>(this);
+  const StylePositionArea posArea = stylePos->mPositionArea;
+  const auto containerWM = GetParent()->GetWritingMode();
+  auto containerAxis = [&](LogicalAxis aSubjectAxis) {
+    return aWM.ConvertAxisTo(aSubjectAxis, containerWM);
+  };
   const auto inlineSelfAlign =
-      stylePos->UsedSelfAlignment(aWM, LogicalAxis::Inline, parentWM, nullptr);
+      contFrame->CSSAlignmentForAbsPosChildWithinContainingBlock(
+          aSizingInput, containerAxis(LogicalAxis::Inline), posArea, aCBSize);
   const auto blockSelfAlign =
-      stylePos->UsedSelfAlignment(aWM, LogicalAxis::Block, parentWM, nullptr);
+      contFrame->CSSAlignmentForAbsPosChildWithinContainingBlock(
+          aSizingInput, containerAxis(LogicalAxis::Block), posArea, aCBSize);
   const auto iShouldStretch = shouldStretch(
       inlineSelfAlign, this, iStartOffsetIsAuto, iEndOffsetIsAuto);
   const auto bShouldStretch =
