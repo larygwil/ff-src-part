@@ -631,7 +631,7 @@
   <!-- "Not now" onboarding button. -->
   <string name="nova_onboarding_negative_button" tools:ignore="UnusedResources">Ҳоло не</string>
   <!-- Terms of use (ToU) onboarding title. -->
-  <string name="nova_onboarding_tou_title" tools:ignore="UnusedResources">Барои дави озод омода шавед</string>
+  <string name="nova_onboarding_tou_title" tools:ignore="UnusedResources">Барои фаъолияти озод омода шавед</string>
   <!-- Terms of use (ToU) onboarding subtitle. -->
   <string name="nova_onboarding_tou_subtitle" tools:ignore="UnusedResources">Тезкор, бехатар ва маълумоти шуморо намефурӯшад.\nТамошобинӣ комилан беҳтар шудааст.</string>
   <!--
@@ -1612,7 +1612,7 @@
   <!-- Text for the button to open tabs of the selected collection -->
   <string name="collection_open_tabs">Варақаҳои кушодашуда</string>
   <!-- Hint for adding name of a collection -->
-  <string name="collection_name_hint">Номи пайваст</string>
+  <string name="collection_name_hint">Номи маҷмуа</string>
   <!-- Text for the menu button to remove a top site -->
   <string name="remove_top_site">Тоза кардан</string>
   <!-- Text for the menu button to delete a top site from history -->
