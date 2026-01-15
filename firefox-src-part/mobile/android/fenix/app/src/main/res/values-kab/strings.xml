@@ -55,8 +55,12 @@
   <string name="tab_tray_close_multiselect_content_description">Ffeɣ seg uskar n uget-afran</string>
   <!-- Content description for save to collection button while in multiselect mode in tab tray -->
   <string name="tab_tray_collection_button_multiselect_content_description">Sekles iccaren ittufernen ɣer tegrumma</string>
+  <!-- The header text displayed on the synced tabs page when the user is not logged into an account. -->
+  <string name="tab_manager_empty_synced_tabs_page_header">Err-d accaren-ik·im seg yal ibenk</string>
   <!-- The action text displayed on the synced tabs page when the user is not logged into an account, prompting the user to sign into their account. When clicked, it takes the user to the account sign-in flow. -->
   <string name="tab_manager_empty_synced_tabs_page_sign_in_cta">Kcem</string>
+  <!-- Text for the button used to show all stories -->
+  <string name="homepage_all_stories">Akk tidyanin</string>
   <!--
     Home - Bookmarks
 
@@ -2112,7 +2116,7 @@
   <!-- Title for Accessibility Text Size Scaling Preference -->
   <string name="preference_accessibility_font_size_title">Tuɣzi n tesefsit</string>
   <!-- %d is the percentage of the slide bar for setting the text font size and %% will be announced as "percent". -->
-  <string name="a11y_preference_accessibility_font_size_percentage">%d %%.</string>
+  <string name="a11y_preference_accessibility_font_size_percentage" tools:ignore="UnusedResources" moz:removedIn="148">%d %%.</string>
   <!-- Title for Accessibility Text Automatic Size Scaling Preference -->
   <string name="preference_accessibility_auto_size_2">Teɣzi tawurmant n tsefsit</string>
   <!-- Summary for Accessibility Text Automatic Size Scaling Preference -->
