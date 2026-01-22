@@ -279,8 +279,8 @@ const CONFIG_PANES = Object.freeze({
     ],
     iconSrc: "chrome://browser/skin/translations.svg",
   },
-  aiFeatures: {
-    l10nId: "preferences-ai-features-header",
+  ai: {
+    l10nId: "preferences-ai-controls-header",
     groupIds: ["debugModelManagement", "aiFeatures", "aiWindowFeatures"],
     module: "chrome://browser/content/preferences/config/aiFeatures.mjs",
     visible: () => srdSectionEnabled("aiFeatures"),

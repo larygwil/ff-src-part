@@ -229,9 +229,9 @@
   <!-- Browser menu button that opens account settings -->
   <string name="browser_menu_account_settings">アカウント情報</string>
   <!-- Browser menu button that sends a user to help articles -->
-  <string name="browser_menu_help">ヘルプ</string>
+  <string name="browser_menu_help" tools:ignore="UnusedResources" moz:removedIn="149">ヘルプ</string>
   <!-- Browser menu button that sends a to a the what's new article -->
-  <string name="browser_menu_whats_new">新着情報</string>
+  <string name="browser_menu_whats_new" tools:ignore="UnusedResources" moz:removedIn="149">新着情報</string>
   <!-- Browser menu button that opens the settings menu -->
   <string name="browser_menu_settings">設定</string>
   <!-- Browser menu button that opens a user's library -->
@@ -239,7 +239,7 @@
   <!-- Browser menu toggle that requests a desktop site -->
   <string name="browser_menu_desktop_site">PC 版サイト</string>
   <!-- Browser menu button that reopens a private tab as a regular tab -->
-  <string name="browser_menu_open_in_regular_tab">通常タブで開く</string>
+  <string name="browser_menu_open_in_regular_tab" tools:ignore="UnusedResources" moz:removedIn="149">通常タブで開く</string>
   <!-- Browser menu toggle that adds a shortcut to the site on the device home screen. -->
   <string name="browser_menu_add_to_homescreen">ホーム画面に追加</string>
   <!-- Browser menu toggle that adds a PWA of the site on the device home screen. -->
@@ -267,7 +267,7 @@
     Browser menu text shown in custom tabs to indicate this is a Fenix tab
     %1$s is the name of the app (for example "Firefox").
   -->
-  <string name="browser_menu_powered_by">POWERED BY %1$s</string>
+  <string name="browser_menu_powered_by" tools:ignore="UnusedResources" moz:removedIn="149">POWERED BY %1$s</string>
   <!--
     Browser menu text shown in custom tabs to indicate this is a Fenix tab
     %1$s is the name of the app (for example "Firefox").
@@ -280,15 +280,15 @@
   <!-- Browser menu button to open the current page in an external app -->
   <string name="browser_menu_open_app_link">外部アプリで開く</string>
   <!-- Browser menu button to show reader view appearance controls e.g. the used font type and size -->
-  <string name="browser_menu_customize_reader_view">リーダービューをカスタマイズ</string>
+  <string name="browser_menu_customize_reader_view" tools:ignore="UnusedResources" moz:removedIn="149">リーダービューをカスタマイズ</string>
   <!-- Browser menu button to show reader view appearance controls e.g. the used font type and size -->
   <string name="browser_menu_customize_reader_view_2">リーダービューをカスタマイズ</string>
   <!-- Browser menu label for adding a bookmark -->
-  <string name="browser_menu_add">追加</string>
+  <string name="browser_menu_add" tools:ignore="UnusedResources" moz:removedIn="149">追加</string>
   <!-- Browser menu label for editing a bookmark -->
-  <string name="browser_menu_edit">編集</string>
+  <string name="browser_menu_edit" tools:ignore="UnusedResources" moz:removedIn="149">編集</string>
   <!-- Button shown on the home page that opens the Customize home settings -->
-  <string name="browser_menu_customize_home_1">ホームページをカスタマイズ</string>
+  <string name="browser_menu_customize_home_1" tools:ignore="UnusedResources" moz:removedIn="149">ホームページをカスタマイズ</string>
   <!-- Browser menu label to sign in to sync on the device using Mozilla accounts -->
   <string name="browser_menu_sign_in">ログイン</string>
   <!-- Browser menu caption label for the "Sign in" browser menu item described in `browser_menu_sign_in` -->
@@ -307,10 +307,6 @@
   <string name="browser_close_main_menu_handlebar_content_description">メニューを閉じる</string>
   <!-- Content description (not visible, for screen readers etc.) for main menu navigation header. -->
   <string name="browser_main_menu_content_description_navigation_header">ナビゲーション</string>
-  <!-- Content description (not visible, for screen readers etc.) for main menu help button. -->
-  <string name="browser_main_menu_content_description_help_button" tools:ignore="UnusedResources" moz:removedIn="146">ヘルプ</string>
-  <!-- Content description (not visible, for screen readers etc.) for main menu settings button. -->
-  <string name="browser_main_menu_content_description_settings_button" tools:ignore="UnusedResources" moz:removedIn="146">設定</string>
   <!-- Content description (not visible, for screen readers etc.) for bottom sheet handlebar extensions menu. -->
   <string name="browser_extensions_menu_handlebar_content_description">拡張機能メニューシートを閉じます</string>
   <!-- Content description (not visible, for screen readers etc.) for bottom sheet handlebar save menu. -->
@@ -328,7 +324,7 @@
   <!-- Browser menu label for navigating to the translation feature, which provides language translation options the current visited page -->
   <string name="browser_menu_translate_page_2">ページを翻訳</string>
   <!-- Browser menu label for navigating to the Web Compat Reporter feature, which provides users the ability to send bug reports for broken sites. -->
-  <string name="browser_menu_webcompat_reporter">動作しないサイトを報告...</string>
+  <string name="browser_menu_webcompat_reporter" tools:ignore="UnusedResources" moz:removedIn="149">動作しないサイトを報告...</string>
   <!-- Browser menu label for navigating to the Web Compat Reporter feature, which provides users the ability to send bug reports for broken sites. -->
   <string name="browser_menu_webcompat_reporter_2">動作しないサイトを報告</string>
   <!-- Browser menu label that is displayed when the current page has been translated by the translation feature. -->
@@ -452,19 +448,8 @@
   <string name="juno_onboarding_privacy_notice_text" tools:ignore="BrandUsage">Firefox のプライバシー通知</string>
   <!-- Title for set firefox as default browser screen used by Nimbus experiments. -->
   <string name="juno_onboarding_default_browser_title_nimbus_2">私たちはあなたの安全を守りたいと願っています</string>
-  <!--
-    Title for set firefox as default browser screen used by Nimbus experiments.
-    Note: The word "Firefox" should NOT be translated
-  -->
-  <string name="juno_onboarding_default_browser_title_nimbus_3" tools:ignore="BrandUsage,UnusedResources" moz:removedIn="146">Firefox が選ばれる理由</string>
-  <!-- Title for set firefox as default browser screen used by Nimbus experiments. -->
-  <string name="juno_onboarding_default_browser_title_nimbus_4" tools:ignore="UnusedResources" moz:removedIn="146">多くの選択肢を持つ安全なブラウジング</string>
   <!-- Description for set firefox as default browser screen used by Nimbus experiments. -->
   <string name="juno_onboarding_default_browser_description_nimbus_3">非営利で作られた私たちのブラウザーは、企業によるウェブ上の密かな追跡を阻止するのに役立ちます。</string>
-  <!-- Description for set firefox as default browser screen used by Nimbus experiments. -->
-  <string name="juno_onboarding_default_browser_description_nimbus_4" tools:ignore="UnusedResources" moz:removedIn="146">1 億人以上の人が、非営利団体が支援するブラウザーを選択してプライバシーを保護しています。</string>
-  <!-- Description for set firefox as default browser screen used by Nimbus experiments. -->
-  <string name="juno_onboarding_default_browser_description_nimbus_5" tools:ignore="UnusedResources" moz:removedIn="146">既知のトラッカーが自動的にブロックされます。700 個すべての拡張機能を試せます。PDF は内蔵のリーダーで管理が簡単になります。</string>
   <!-- Text for the button to set firefox as default browser on the device -->
   <string name="juno_onboarding_default_browser_positive_button" tools:ignore="UnusedResources">既定のブラウザーに設定</string>
   <!-- Text for the button dismiss the screen and move on with the flow -->
@@ -1137,8 +1122,6 @@
   <string name="alternative_app_icon_group_solid_colors">無地</string>
   <!-- Title for the "Gradients" group of alternative app icon variants in the icon picker screen. This group contains icons with gradient backgrounds inspired by natural light conditions. -->
   <string name="alternative_app_icon_group_gradients">グラデーション</string>
-  <!-- Title for the "Other" group of alternative app icon variants in the icon picker screen. This group includes retro, pixel art, themed, and artist-created icons. -->
-  <string name="alternative_app_icon_group_other" tools:ignore="UnusedResources" moz:removedIn="146">その他</string>
   <!-- Title for the "Featured" group of alternative app icon variants in the icon picker screen. This group includes retro, pixel art, themed, and artist-created icons. -->
   <string name="alternative_app_icon_group_featured">注目</string>
   <!-- Title to show in alert when user selects an alternative app icon -->
@@ -1505,9 +1488,9 @@
   <!-- Title of the active section on the studies list -->
   <string name="studies_active">有効</string>
   <!-- Description for studies -->
-  <string name="studies_description_3">機能やアイデアを一般公開される前に試してみましょう。</string>
+  <string name="studies_description_3" moz:removedIn="148" tools:ignore="UnusedResources">機能やアイデアを一般公開される前に試してみましょう。</string>
   <!-- Title of the Studies data preference -->
-  <string name="studies_title">調査のインストールと実行</string>
+  <string name="studies_title" moz:removedIn="148" tools:ignore="UnusedResources">調査のインストールと実行</string>
   <!-- Learn more link for studies, links to an article for more information about studies. -->
   <string name="studies_learn_more">詳細情報</string>
   <!--
@@ -2200,7 +2183,7 @@
   <!-- An option from the share dialog to sign into sync -->
   <string name="sync_sign_in">Sync にログイン</string>
   <!-- An option from the three dot menu to sign in -->
-  <string name="sync_menu_sign_in">ログイン</string>
+  <string name="sync_menu_sign_in" tools:ignore="UnusedResources" moz:removedIn="149">ログイン</string>
   <!-- An option from the share dialog to send link to all other sync devices -->
   <string name="sync_send_to_all">すべての端末へ送信</string>
   <!-- An option from the share dialog to reconnect to sync -->
@@ -2360,7 +2343,7 @@
   <!-- Summary for the Delete browsing data on quit preference. "Quit" translation should match delete_browsing_data_on_quit_action translation. -->
   <string name="preference_summary_delete_browsing_data_on_quit_2">メインメニューから [終了] を選択すると、閲覧データが自動的に削除されます</string>
   <!-- Action item in menu for the Delete browsing data on quit feature -->
-  <string name="delete_browsing_data_on_quit_action">終了</string>
+  <string name="delete_browsing_data_on_quit_action" tools:ignore="UnusedResources" moz:removedIn="149">終了</string>
   <!-- Title text of a delete browsing data dialog. -->
   <string name="delete_history_prompt_title">削除する期間</string>
   <!-- Body text of a delete browsing data dialog. -->

@@ -153,7 +153,7 @@ const PREFERENCES_PANES = [
   "paneContainers",
   "paneExperimental",
   "paneMoreFromMozilla",
-  "paneAiFeatures",
+  "paneAi",
 ];
 
 const IGNORABLE_EVENTS = new WeakMap();

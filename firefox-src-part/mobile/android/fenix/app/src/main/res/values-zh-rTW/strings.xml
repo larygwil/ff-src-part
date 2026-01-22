@@ -229,9 +229,9 @@
   <!-- Browser menu button that opens account settings -->
   <string name="browser_menu_account_settings">帳號資訊</string>
   <!-- Browser menu button that sends a user to help articles -->
-  <string name="browser_menu_help">說明</string>
+  <string name="browser_menu_help" tools:ignore="UnusedResources" moz:removedIn="149">說明</string>
   <!-- Browser menu button that sends a to a the what's new article -->
-  <string name="browser_menu_whats_new">有什麼新鮮事</string>
+  <string name="browser_menu_whats_new" tools:ignore="UnusedResources" moz:removedIn="149">有什麼新鮮事</string>
   <!-- Browser menu button that opens the settings menu -->
   <string name="browser_menu_settings">設定</string>
   <!-- Browser menu button that opens a user's library -->
@@ -239,7 +239,7 @@
   <!-- Browser menu toggle that requests a desktop site -->
   <string name="browser_menu_desktop_site">桌面版網站</string>
   <!-- Browser menu button that reopens a private tab as a regular tab -->
-  <string name="browser_menu_open_in_regular_tab">用一般分頁開啟</string>
+  <string name="browser_menu_open_in_regular_tab" tools:ignore="UnusedResources" moz:removedIn="149">用一般分頁開啟</string>
   <!-- Browser menu toggle that adds a shortcut to the site on the device home screen. -->
   <string name="browser_menu_add_to_homescreen">新增至裝置主畫面</string>
   <!-- Browser menu toggle that adds a PWA of the site on the device home screen. -->
@@ -267,7 +267,7 @@
     Browser menu text shown in custom tabs to indicate this is a Fenix tab
     %1$s is the name of the app (for example "Firefox").
   -->
-  <string name="browser_menu_powered_by">POWERED BY %1$s</string>
+  <string name="browser_menu_powered_by" tools:ignore="UnusedResources" moz:removedIn="149">POWERED BY %1$s</string>
   <!--
     Browser menu text shown in custom tabs to indicate this is a Fenix tab
     %1$s is the name of the app (for example "Firefox").
@@ -280,15 +280,15 @@
   <!-- Browser menu button to open the current page in an external app -->
   <string name="browser_menu_open_app_link">在應用程式中開啟</string>
   <!-- Browser menu button to show reader view appearance controls e.g. the used font type and size -->
-  <string name="browser_menu_customize_reader_view">自訂閱讀畫面</string>
+  <string name="browser_menu_customize_reader_view" tools:ignore="UnusedResources" moz:removedIn="149">自訂閱讀畫面</string>
   <!-- Browser menu button to show reader view appearance controls e.g. the used font type and size -->
   <string name="browser_menu_customize_reader_view_2">自訂閱讀畫面</string>
   <!-- Browser menu label for adding a bookmark -->
-  <string name="browser_menu_add">新增</string>
+  <string name="browser_menu_add" tools:ignore="UnusedResources" moz:removedIn="149">新增</string>
   <!-- Browser menu label for editing a bookmark -->
-  <string name="browser_menu_edit">編輯</string>
+  <string name="browser_menu_edit" tools:ignore="UnusedResources" moz:removedIn="149">編輯</string>
   <!-- Button shown on the home page that opens the Customize home settings -->
-  <string name="browser_menu_customize_home_1">自訂首頁</string>
+  <string name="browser_menu_customize_home_1" tools:ignore="UnusedResources" moz:removedIn="149">自訂首頁</string>
   <!-- Browser menu label to sign in to sync on the device using Mozilla accounts -->
   <string name="browser_menu_sign_in">登入</string>
   <!-- Browser menu caption label for the "Sign in" browser menu item described in `browser_menu_sign_in` -->
@@ -307,10 +307,6 @@
   <string name="browser_close_main_menu_handlebar_content_description">關閉選單</string>
   <!-- Content description (not visible, for screen readers etc.) for main menu navigation header. -->
   <string name="browser_main_menu_content_description_navigation_header">導覽</string>
-  <!-- Content description (not visible, for screen readers etc.) for main menu help button. -->
-  <string name="browser_main_menu_content_description_help_button" tools:ignore="UnusedResources" moz:removedIn="146">說明</string>
-  <!-- Content description (not visible, for screen readers etc.) for main menu settings button. -->
-  <string name="browser_main_menu_content_description_settings_button" tools:ignore="UnusedResources" moz:removedIn="146">設定</string>
   <!-- Content description (not visible, for screen readers etc.) for bottom sheet handlebar extensions menu. -->
   <string name="browser_extensions_menu_handlebar_content_description">關閉擴充套件選單表</string>
   <!-- Content description (not visible, for screen readers etc.) for bottom sheet handlebar save menu. -->
@@ -328,7 +324,7 @@
   <!-- Browser menu label for navigating to the translation feature, which provides language translation options the current visited page -->
   <string name="browser_menu_translate_page_2">翻譯頁面</string>
   <!-- Browser menu label for navigating to the Web Compat Reporter feature, which provides users the ability to send bug reports for broken sites. -->
-  <string name="browser_menu_webcompat_reporter">回報網站問題…</string>
+  <string name="browser_menu_webcompat_reporter" tools:ignore="UnusedResources" moz:removedIn="149">回報網站問題…</string>
   <!-- Browser menu label for navigating to the Web Compat Reporter feature, which provides users the ability to send bug reports for broken sites. -->
   <string name="browser_menu_webcompat_reporter_2">回報網站問題</string>
   <!-- Browser menu label that is displayed when the current page has been translated by the translation feature. -->
@@ -438,6 +434,10 @@
     The colon character (in "%s:") is intended to have the screen reader make a small pause between the search engine name and the description of the button.
   -->
   <string name="search_engine_selector_content_description">%s：搜尋引擎選擇表</string>
+  <!-- Text for the snackbar shown to confirm the deletion of a single browsing history item. %1$s is the shortened URL of the deleted history entry or the the actual deleted search term. Only one such item is deleted at a time. -->
+  <string name="search_suggestions_delete_history_item_snackbar">已從瀏覽紀錄刪除 %1$s</string>
+  <!-- Content description (not visible, for screen readers etc.): Button shown near a history search result allowing to delete it from browsing history. -->
+  <string name="mozac_browser_awesomebar_remove_suggestion" tools:ignore="UnusedResources">刪除這筆瀏覽紀錄</string>
   <!--
     Home onboarding
 
@@ -452,19 +452,8 @@
   <string name="juno_onboarding_privacy_notice_text" tools:ignore="BrandUsage">Firefox 隱私權公告</string>
   <!-- Title for set firefox as default browser screen used by Nimbus experiments. -->
   <string name="juno_onboarding_default_browser_title_nimbus_2">我們希望確保您上網安全</string>
-  <!--
-    Title for set firefox as default browser screen used by Nimbus experiments.
-    Note: The word "Firefox" should NOT be translated
-  -->
-  <string name="juno_onboarding_default_browser_title_nimbus_3" tools:ignore="BrandUsage,UnusedResources" moz:removedIn="146">看看為什麼有數百萬人愛用 Firefox</string>
-  <!-- Title for set firefox as default browser screen used by Nimbus experiments. -->
-  <string name="juno_onboarding_default_browser_title_nimbus_4" tools:ignore="UnusedResources" moz:removedIn="146">更多讓您上網更安全的選擇</string>
   <!-- Description for set firefox as default browser screen used by Nimbus experiments. -->
   <string name="juno_onboarding_default_browser_description_nimbus_3">我們這套由非營利組織所開發的瀏覽器，會自動封鎖讓大企業在網路上偷偷跟蹤您的程式。</string>
-  <!-- Description for set firefox as default browser screen used by Nimbus experiments. -->
-  <string name="juno_onboarding_default_browser_description_nimbus_4" tools:ignore="UnusedResources" moz:removedIn="146">有超過一億人選用由非營利組織全力相挺的瀏覽器，來保護他們的隱私。</string>
-  <!-- Description for set firefox as default browser screen used by Nimbus experiments. -->
-  <string name="juno_onboarding_default_browser_description_nimbus_5" tools:ignore="UnusedResources" moz:removedIn="146">遇到已知的追蹤器？會自動封鎖。想要使用擴充套件？全部有 700 套任君選用。要開啟 PDF 檔案？我們直接內建閱讀器讓您輕鬆好管理。</string>
   <!-- Text for the button to set firefox as default browser on the device -->
   <string name="juno_onboarding_default_browser_positive_button" tools:ignore="UnusedResources">設為預設瀏覽器</string>
   <!-- Text for the button dismiss the screen and move on with the flow -->
@@ -1146,8 +1135,6 @@
   <string name="alternative_app_icon_group_solid_colors">純色</string>
   <!-- Title for the "Gradients" group of alternative app icon variants in the icon picker screen. This group contains icons with gradient backgrounds inspired by natural light conditions. -->
   <string name="alternative_app_icon_group_gradients">漸層色</string>
-  <!-- Title for the "Other" group of alternative app icon variants in the icon picker screen. This group includes retro, pixel art, themed, and artist-created icons. -->
-  <string name="alternative_app_icon_group_other" tools:ignore="UnusedResources" moz:removedIn="146">其他</string>
   <!-- Title for the "Featured" group of alternative app icon variants in the icon picker screen. This group includes retro, pixel art, themed, and artist-created icons. -->
   <string name="alternative_app_icon_group_featured">精選</string>
   <!-- Title to show in alert when user selects an alternative app icon -->
@@ -1514,11 +1501,27 @@
   <!-- Title of the active section on the studies list -->
   <string name="studies_active">進行中</string>
   <!-- Description for studies -->
-  <string name="studies_description_3">在功能推出給所有人之前，搶先試用新功能與點子。</string>
+  <string name="studies_description_3" moz:removedIn="148" tools:ignore="UnusedResources">在功能推出給所有人之前，搶先試用新功能與點子。</string>
+  <!-- Description for studies. Note: The word "Firefox" should NOT be translated -->
+  <string name="studies_description_4" tools:ignore="BrandUsage">Firefox 會隨機選擇使用者來測試功能，為每個人改進品質。</string>
   <!-- Title of the Studies data preference -->
-  <string name="studies_title">安裝並進行使用者研究</string>
+  <string name="studies_title" moz:removedIn="148" tools:ignore="UnusedResources">安裝並進行使用者研究</string>
+  <!-- Title of the Studies data preference -->
+  <string name="studies_title_2">允許進行功能研究</string>
   <!-- Learn more link for studies, links to an article for more information about studies. -->
   <string name="studies_learn_more">了解更多</string>
+  <!--
+    Remote Improvements (Rollouts)
+
+    Title of the Remote Improvements (rollouts) data preference
+  -->
+  <string name="remote_improvements_title">允許遠端改善</string>
+  <!-- Description for remote improvements. Note: The word "Firefox" should NOT be translated -->
+  <string name="remote_improvements_description" tools:ignore="BrandUsage">Firefox 將在新版本推出前，從遠端套用變更，以改進功能、效能與穩定性。</string>
+  <!-- Learn more link for remote improvements, links to an article for more information about rollouts. -->
+  <string name="remote_improvements_learn_more">更多資訊</string>
+  <!-- Title for remote improvements preference in Advanced settings -->
+  <string name="preferences_remote_improvements">遠端改善</string>
   <!--
     Sessions
 
@@ -1929,6 +1932,8 @@
   <string name="bookmark_error_edit_bookmark">無法編輯書籤</string>
   <!-- Snackbar edit button shown after a bookmark has been created. -->
   <string name="edit_bookmark_snackbar_action">編輯</string>
+  <!-- Bookmark menu select button -->
+  <string name="bookmark_menu_select_button">選擇</string>
   <!-- Bookmark menu move button -->
   <string name="bookmark_menu_move_button">移動</string>
   <!-- Bookmark overflow menu edit button -->
@@ -2215,7 +2220,7 @@
   <!-- An option from the share dialog to sign into sync -->
   <string name="sync_sign_in">登入 Sync</string>
   <!-- An option from the three dot menu to sign in -->
-  <string name="sync_menu_sign_in">登入</string>
+  <string name="sync_menu_sign_in" tools:ignore="UnusedResources" moz:removedIn="149">登入</string>
   <!-- An option from the share dialog to send link to all other sync devices -->
   <string name="sync_send_to_all">傳送到所有裝置</string>
   <!-- An option from the share dialog to reconnect to sync -->
@@ -2375,7 +2380,7 @@
   <!-- Summary for the Delete browsing data on quit preference. "Quit" translation should match delete_browsing_data_on_quit_action translation. -->
   <string name="preference_summary_delete_browsing_data_on_quit_2">點擊主選單中的「離開」時，自動清除上網資料</string>
   <!-- Action item in menu for the Delete browsing data on quit feature -->
-  <string name="delete_browsing_data_on_quit_action">離開</string>
+  <string name="delete_browsing_data_on_quit_action" tools:ignore="UnusedResources" moz:removedIn="149">離開</string>
   <!-- Title text of a delete browsing data dialog. -->
   <string name="delete_history_prompt_title">要清除的時間範圍</string>
   <!-- Body text of a delete browsing data dialog. -->

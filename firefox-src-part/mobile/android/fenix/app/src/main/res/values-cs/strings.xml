@@ -229,9 +229,9 @@
   <!-- Browser menu button that opens account settings -->
   <string name="browser_menu_account_settings">Informace o účtu</string>
   <!-- Browser menu button that sends a user to help articles -->
-  <string name="browser_menu_help">Nápověda</string>
+  <string name="browser_menu_help" tools:ignore="UnusedResources" moz:removedIn="149">Nápověda</string>
   <!-- Browser menu button that sends a to a the what's new article -->
-  <string name="browser_menu_whats_new">Co je nového</string>
+  <string name="browser_menu_whats_new" tools:ignore="UnusedResources" moz:removedIn="149">Co je nového</string>
   <!-- Browser menu button that opens the settings menu -->
   <string name="browser_menu_settings">Nastavení</string>
   <!-- Browser menu button that opens a user's library -->
@@ -239,7 +239,7 @@
   <!-- Browser menu toggle that requests a desktop site -->
   <string name="browser_menu_desktop_site">Verze stránky pro počítač</string>
   <!-- Browser menu button that reopens a private tab as a regular tab -->
-  <string name="browser_menu_open_in_regular_tab">Otevřít v běžném panelu</string>
+  <string name="browser_menu_open_in_regular_tab" tools:ignore="UnusedResources" moz:removedIn="149">Otevřít v běžném panelu</string>
   <!-- Browser menu toggle that adds a shortcut to the site on the device home screen. -->
   <string name="browser_menu_add_to_homescreen">Přidat na plochu</string>
   <!-- Browser menu toggle that adds a PWA of the site on the device home screen. -->
@@ -267,7 +267,7 @@
     Browser menu text shown in custom tabs to indicate this is a Fenix tab
     %1$s is the name of the app (for example "Firefox").
   -->
-  <string name="browser_menu_powered_by">Zobrazeno pomocí aplikace %1$s</string>
+  <string name="browser_menu_powered_by" tools:ignore="UnusedResources" moz:removedIn="149">Zobrazeno pomocí aplikace %1$s</string>
   <!--
     Browser menu text shown in custom tabs to indicate this is a Fenix tab
     %1$s is the name of the app (for example "Firefox").
@@ -280,15 +280,15 @@
   <!-- Browser menu button to open the current page in an external app -->
   <string name="browser_menu_open_app_link">Otevřít v aplikaci</string>
   <!-- Browser menu button to show reader view appearance controls e.g. the used font type and size -->
-  <string name="browser_menu_customize_reader_view">Přizpůsobit zobrazení čtečky</string>
+  <string name="browser_menu_customize_reader_view" tools:ignore="UnusedResources" moz:removedIn="149">Přizpůsobit zobrazení čtečky</string>
   <!-- Browser menu button to show reader view appearance controls e.g. the used font type and size -->
   <string name="browser_menu_customize_reader_view_2">Přizpůsobit zobrazení čtečky</string>
   <!-- Browser menu label for adding a bookmark -->
-  <string name="browser_menu_add">Přidat</string>
+  <string name="browser_menu_add" tools:ignore="UnusedResources" moz:removedIn="149">Přidat</string>
   <!-- Browser menu label for editing a bookmark -->
-  <string name="browser_menu_edit">Upravit</string>
+  <string name="browser_menu_edit" tools:ignore="UnusedResources" moz:removedIn="149">Upravit</string>
   <!-- Button shown on the home page that opens the Customize home settings -->
-  <string name="browser_menu_customize_home_1">Přizpůsobit</string>
+  <string name="browser_menu_customize_home_1" tools:ignore="UnusedResources" moz:removedIn="149">Přizpůsobit</string>
   <!-- Browser menu label to sign in to sync on the device using Mozilla accounts -->
   <string name="browser_menu_sign_in">Přihlásit se</string>
   <!-- Browser menu caption label for the "Sign in" browser menu item described in `browser_menu_sign_in` -->
@@ -307,10 +307,6 @@
   <string name="browser_close_main_menu_handlebar_content_description">Zavřít nabídku</string>
   <!-- Content description (not visible, for screen readers etc.) for main menu navigation header. -->
   <string name="browser_main_menu_content_description_navigation_header">Navigace</string>
-  <!-- Content description (not visible, for screen readers etc.) for main menu help button. -->
-  <string name="browser_main_menu_content_description_help_button" tools:ignore="UnusedResources" moz:removedIn="146">Nápověda</string>
-  <!-- Content description (not visible, for screen readers etc.) for main menu settings button. -->
-  <string name="browser_main_menu_content_description_settings_button" tools:ignore="UnusedResources" moz:removedIn="146">Nastavení</string>
   <!-- Content description (not visible, for screen readers etc.) for bottom sheet handlebar extensions menu. -->
   <string name="browser_extensions_menu_handlebar_content_description">Zavřít seznam s nabídnou rozšíření</string>
   <!-- Content description (not visible, for screen readers etc.) for bottom sheet handlebar save menu. -->
@@ -328,7 +324,7 @@
   <!-- Browser menu label for navigating to the translation feature, which provides language translation options the current visited page -->
   <string name="browser_menu_translate_page_2">Přeložit stránku</string>
   <!-- Browser menu label for navigating to the Web Compat Reporter feature, which provides users the ability to send bug reports for broken sites. -->
-  <string name="browser_menu_webcompat_reporter">Nahlásit nefunkční stránku…</string>
+  <string name="browser_menu_webcompat_reporter" tools:ignore="UnusedResources" moz:removedIn="149">Nahlásit nefunkční stránku…</string>
   <!-- Browser menu label for navigating to the Web Compat Reporter feature, which provides users the ability to send bug reports for broken sites. -->
   <string name="browser_menu_webcompat_reporter_2">Nahlásit nefunkční stránku</string>
   <!-- Browser menu label that is displayed when the current page has been translated by the translation feature. -->
@@ -438,6 +434,8 @@
     The colon character (in "%s:") is intended to have the screen reader make a small pause between the search engine name and the description of the button.
   -->
   <string name="search_engine_selector_content_description">%s: výběr vyhledávače</string>
+  <!-- Content description (not visible, for screen readers etc.): Button shown near a history search result allowing to delete it from browsing history. -->
+  <string name="mozac_browser_awesomebar_remove_suggestion" tools:ignore="UnusedResources">Smazat tuto položku historie</string>
   <!--
     Home onboarding
 
@@ -452,19 +450,8 @@
   <string name="juno_onboarding_privacy_notice_text" tools:ignore="BrandUsage">Zásady ochrany osobních údajů</string>
   <!-- Title for set firefox as default browser screen used by Nimbus experiments. -->
   <string name="juno_onboarding_default_browser_title_nimbus_2">Rádi vás udržujeme v bezpečí</string>
-  <!--
-    Title for set firefox as default browser screen used by Nimbus experiments.
-    Note: The word "Firefox" should NOT be translated
-  -->
-  <string name="juno_onboarding_default_browser_title_nimbus_3" tools:ignore="BrandUsage,UnusedResources" moz:removedIn="146">Zjistěte, proč miliony lidí milují Firefox</string>
-  <!-- Title for set firefox as default browser screen used by Nimbus experiments. -->
-  <string name="juno_onboarding_default_browser_title_nimbus_4" tools:ignore="UnusedResources" moz:removedIn="146">Bezpečné prohlížení s více možnostmi</string>
   <!-- Description for set firefox as default browser screen used by Nimbus experiments. -->
   <string name="juno_onboarding_default_browser_description_nimbus_3">Náš neziskový prohlížeč pomáhá zabránit společnostem v tajném sledování vašeho prohlížení webu.</string>
-  <!-- Description for set firefox as default browser screen used by Nimbus experiments. -->
-  <string name="juno_onboarding_default_browser_description_nimbus_4" tools:ignore="UnusedResources" moz:removedIn="146">Více než 100 milionů lidí chrání své soukromí tak, že si volí prohlížeč od neziskové organizace.</string>
-  <!-- Description for set firefox as default browser screen used by Nimbus experiments. -->
-  <string name="juno_onboarding_default_browser_description_nimbus_5" tools:ignore="UnusedResources" moz:removedIn="146">Známe sledovací prvky? Automaticky zablokováno. Rozšíření? Vyzkoušejte všech 700. PDF? Naše vestavěná čtečka usnadňuje jejich správu.</string>
   <!-- Text for the button to set firefox as default browser on the device -->
   <string name="juno_onboarding_default_browser_positive_button" tools:ignore="UnusedResources">Nastavit jako výchozí prohlížeč</string>
   <!-- Text for the button dismiss the screen and move on with the flow -->
@@ -1137,8 +1124,6 @@
   <string name="alternative_app_icon_group_solid_colors">Jednobarevné</string>
   <!-- Title for the "Gradients" group of alternative app icon variants in the icon picker screen. This group contains icons with gradient backgrounds inspired by natural light conditions. -->
   <string name="alternative_app_icon_group_gradients">Přechody barev</string>
-  <!-- Title for the "Other" group of alternative app icon variants in the icon picker screen. This group includes retro, pixel art, themed, and artist-created icons. -->
-  <string name="alternative_app_icon_group_other" tools:ignore="UnusedResources" moz:removedIn="146">Jiné</string>
   <!-- Title for the "Featured" group of alternative app icon variants in the icon picker screen. This group includes retro, pixel art, themed, and artist-created icons. -->
   <string name="alternative_app_icon_group_featured">Doporučené</string>
   <!-- Title to show in alert when user selects an alternative app icon -->
@@ -1505,11 +1490,27 @@
   <!-- Title of the active section on the studies list -->
   <string name="studies_active">Aktivní</string>
   <!-- Description for studies -->
-  <string name="studies_description_3">Vyzkoušejte funkce a nápady dříve, než budou veřejně dostupné.</string>
+  <string name="studies_description_3" moz:removedIn="148" tools:ignore="UnusedResources">Vyzkoušejte funkce a nápady dříve, než budou veřejně dostupné.</string>
+  <!-- Description for studies. Note: The word "Firefox" should NOT be translated -->
+  <string name="studies_description_4" tools:ignore="BrandUsage">Firefox náhodně vybírá uživatele k testování funkcí, což zlepšuje kvalitu pro všechny.</string>
   <!-- Title of the Studies data preference -->
-  <string name="studies_title">Instalovat a spouštět studie</string>
+  <string name="studies_title" moz:removedIn="148" tools:ignore="UnusedResources">Instalovat a spouštět studie</string>
+  <!-- Title of the Studies data preference -->
+  <string name="studies_title_2">Povolit studie funkcí</string>
   <!-- Learn more link for studies, links to an article for more information about studies. -->
   <string name="studies_learn_more">Zjistit více</string>
+  <!--
+    Remote Improvements (Rollouts)
+
+    Title of the Remote Improvements (rollouts) data preference
+  -->
+  <string name="remote_improvements_title">Povolit vzdálená vylepšení</string>
+  <!-- Description for remote improvements. Note: The word "Firefox" should NOT be translated -->
+  <string name="remote_improvements_description" tools:ignore="BrandUsage">Firefox vylepší funkce, výkon a stabilitu mezi aktualizacemi. Změny se aplikují vzdáleně.</string>
+  <!-- Learn more link for remote improvements, links to an article for more information about rollouts. -->
+  <string name="remote_improvements_learn_more">Zjistit více</string>
+  <!-- Title for remote improvements preference in Advanced settings -->
+  <string name="preferences_remote_improvements">Vzdálená vylepšení</string>
   <!--
     Sessions
 
@@ -1703,6 +1704,8 @@
   <string name="download_delete_item">Smazat</string>
   <!-- Content description for the toolbar "Navigate back" button -->
   <string name="download_navigate_back_description">Návrat zpět</string>
+  <!-- Content description for the toolbar "Navigate to Downloads Settings" button -->
+  <string name="download_navigate_settings_description">Přejít do nastavení stahování</string>
   <!-- Content description for the toolbar back button while searching the downloads -->
   <string name="download_close_search_description">Zpět a zavřít hledání</string>
   <!--
@@ -1918,6 +1921,8 @@
   <string name="bookmark_error_edit_bookmark">Záložku nelze upravit</string>
   <!-- Snackbar edit button shown after a bookmark has been created. -->
   <string name="edit_bookmark_snackbar_action">UPRAVIT</string>
+  <!-- Bookmark menu select button -->
+  <string name="bookmark_menu_select_button">Vybrat</string>
   <!-- Bookmark menu move button -->
   <string name="bookmark_menu_move_button">Přesunout</string>
   <!-- Bookmark overflow menu edit button -->
@@ -1998,6 +2003,10 @@
   <string name="select_bookmark_search_button_content_description">Hledat ve složkách</string>
   <!-- Content description for the overflow menu for a bookmark item. %s is a folder name or bookmark title. -->
   <string name="bookmark_item_menu_button_content_description">Nabídka položek pro %s</string>
+  <!-- Content description for the chevron that will open a folder on the select folder screen and display its children. %s is the title of the folder that will be opened -->
+  <string name="bookmark_select_folder_expand_folder_content_description">Rozbalit složku: %s</string>
+  <!-- Content description for the chevron that will close a folder on the select folder screen so that its children are no longer visible. %s is the title of the folder that will be closed -->
+  <string name="bookmark_select_folder_close_folder_content_description">Zavřít složku: %s</string>
   <!-- Content description for the "close" button in bookmarks screen. -->
   <string name="bookmark_close_button_content_description">Zavřít záložky</string>
   <!-- Title for the bookmark list empty state -->
@@ -2200,7 +2209,7 @@
   <!-- An option from the share dialog to sign into sync -->
   <string name="sync_sign_in">Přihlásit ke službě Sync</string>
   <!-- An option from the three dot menu to sign in -->
-  <string name="sync_menu_sign_in">Přihlásit se</string>
+  <string name="sync_menu_sign_in" tools:ignore="UnusedResources" moz:removedIn="149">Přihlásit se</string>
   <!-- An option from the share dialog to send link to all other sync devices -->
   <string name="sync_send_to_all">Poslat do všech zařízení</string>
   <!-- An option from the share dialog to reconnect to sync -->
@@ -2360,7 +2369,7 @@
   <!-- Summary for the Delete browsing data on quit preference. "Quit" translation should match delete_browsing_data_on_quit_action translation. -->
   <string name="preference_summary_delete_browsing_data_on_quit_2">Po výběru „Ukončit“ z hlavní nabídky aplikace dojde ke smazání soukromých dat</string>
   <!-- Action item in menu for the Delete browsing data on quit feature -->
-  <string name="delete_browsing_data_on_quit_action">Ukončit</string>
+  <string name="delete_browsing_data_on_quit_action" tools:ignore="UnusedResources" moz:removedIn="149">Ukončit</string>
   <!-- Title text of a delete browsing data dialog. -->
   <string name="delete_history_prompt_title">Časové období mazání</string>
   <!-- Body text of a delete browsing data dialog. -->
@@ -4002,6 +4011,8 @@
   <string name="settings_search_no_results_title">Nic se neobjevilo</string>
   <!-- Sub-message displayed when the search field is not empty but search results is empty. -->
   <string name="settings_search_no_results_message">Možná zkusit jiné vyhledávání?</string>
+  <!-- Content Description for the button to open Settings Search (to search through settings). -->
+  <string name="settings_search_button_content_description">Tlačítko vyhledávání v nastavení</string>
   <!-- ==== Terms of use pop up prompt ==== -->
 
   <!-- Title for the pop up prompt -->

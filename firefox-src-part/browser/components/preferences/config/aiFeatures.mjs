@@ -183,7 +183,8 @@ SettingGroupManager.registerGroups({
     ],
   },
   aiFeatures: {
-    l10nId: "try-ai-features-group",
+    l10nId: "preferences-ai-controls-sidebar-chatbot-group",
+    supportPage: "ai-chatbot",
     items: [
       {
         id: "chatbotProviderItem",
@@ -191,12 +192,11 @@ SettingGroupManager.registerGroups({
         items: [
           {
             id: "chatbotProvider",
-            l10nId: "try-ai-features-chatbot-provider",
+            l10nId: "preferences-ai-controls-sidebar-chatbot-control",
             control: "moz-select",
-            supportPage: "ai-chatbot",
             options: [
               {
-                l10nId: "try-ai-features-chatbot-choose-label",
+                l10nId: "preferences-ai-controls-state-available",
                 value: "",
               },
             ],

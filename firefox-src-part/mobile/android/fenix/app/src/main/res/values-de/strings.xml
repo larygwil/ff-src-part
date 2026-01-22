@@ -229,9 +229,9 @@
   <!-- Browser menu button that opens account settings -->
   <string name="browser_menu_account_settings">Kontoinformationen</string>
   <!-- Browser menu button that sends a user to help articles -->
-  <string name="browser_menu_help">Hilfe</string>
+  <string name="browser_menu_help" tools:ignore="UnusedResources" moz:removedIn="149">Hilfe</string>
   <!-- Browser menu button that sends a to a the what's new article -->
-  <string name="browser_menu_whats_new">Was ist neu</string>
+  <string name="browser_menu_whats_new" tools:ignore="UnusedResources" moz:removedIn="149">Was ist neu</string>
   <!-- Browser menu button that opens the settings menu -->
   <string name="browser_menu_settings">Einstellungen</string>
   <!-- Browser menu button that opens a user's library -->
@@ -239,7 +239,7 @@
   <!-- Browser menu toggle that requests a desktop site -->
   <string name="browser_menu_desktop_site">Desktop-Website</string>
   <!-- Browser menu button that reopens a private tab as a regular tab -->
-  <string name="browser_menu_open_in_regular_tab">In normalem Tab öffnen</string>
+  <string name="browser_menu_open_in_regular_tab" tools:ignore="UnusedResources" moz:removedIn="149">In normalem Tab öffnen</string>
   <!-- Browser menu toggle that adds a shortcut to the site on the device home screen. -->
   <string name="browser_menu_add_to_homescreen">Zum Startbildschirm hinzufügen</string>
   <!-- Browser menu toggle that adds a PWA of the site on the device home screen. -->
@@ -267,7 +267,7 @@
     Browser menu text shown in custom tabs to indicate this is a Fenix tab
     %1$s is the name of the app (for example "Firefox").
   -->
-  <string name="browser_menu_powered_by">BEREITGESTELLT VON %1$s</string>
+  <string name="browser_menu_powered_by" tools:ignore="UnusedResources" moz:removedIn="149">BEREITGESTELLT VON %1$s</string>
   <!--
     Browser menu text shown in custom tabs to indicate this is a Fenix tab
     %1$s is the name of the app (for example "Firefox").
@@ -280,15 +280,15 @@
   <!-- Browser menu button to open the current page in an external app -->
   <string name="browser_menu_open_app_link">Mit App öffnen</string>
   <!-- Browser menu button to show reader view appearance controls e.g. the used font type and size -->
-  <string name="browser_menu_customize_reader_view">Leseansicht anpassen</string>
+  <string name="browser_menu_customize_reader_view" tools:ignore="UnusedResources" moz:removedIn="149">Leseansicht anpassen</string>
   <!-- Browser menu button to show reader view appearance controls e.g. the used font type and size -->
   <string name="browser_menu_customize_reader_view_2">Leseansicht anpassen</string>
   <!-- Browser menu label for adding a bookmark -->
-  <string name="browser_menu_add">Hinzufügen</string>
+  <string name="browser_menu_add" tools:ignore="UnusedResources" moz:removedIn="149">Hinzufügen</string>
   <!-- Browser menu label for editing a bookmark -->
-  <string name="browser_menu_edit">Bearbeiten</string>
+  <string name="browser_menu_edit" tools:ignore="UnusedResources" moz:removedIn="149">Bearbeiten</string>
   <!-- Button shown on the home page that opens the Customize home settings -->
-  <string name="browser_menu_customize_home_1">Startbildschirm anpassen</string>
+  <string name="browser_menu_customize_home_1" tools:ignore="UnusedResources" moz:removedIn="149">Startbildschirm anpassen</string>
   <!-- Browser menu label to sign in to sync on the device using Mozilla accounts -->
   <string name="browser_menu_sign_in">Anmelden</string>
   <!-- Browser menu caption label for the "Sign in" browser menu item described in `browser_menu_sign_in` -->
@@ -307,10 +307,6 @@
   <string name="browser_close_main_menu_handlebar_content_description">Menü schließen</string>
   <!-- Content description (not visible, for screen readers etc.) for main menu navigation header. -->
   <string name="browser_main_menu_content_description_navigation_header">Navigation</string>
-  <!-- Content description (not visible, for screen readers etc.) for main menu help button. -->
-  <string name="browser_main_menu_content_description_help_button" tools:ignore="UnusedResources" moz:removedIn="146">Hilfe</string>
-  <!-- Content description (not visible, for screen readers etc.) for main menu settings button. -->
-  <string name="browser_main_menu_content_description_settings_button" tools:ignore="UnusedResources" moz:removedIn="146">Einstellungen</string>
   <!-- Content description (not visible, for screen readers etc.) for bottom sheet handlebar extensions menu. -->
   <string name="browser_extensions_menu_handlebar_content_description">Erweiterungs-Menü schließen</string>
   <!-- Content description (not visible, for screen readers etc.) for bottom sheet handlebar save menu. -->
@@ -328,7 +324,7 @@
   <!-- Browser menu label for navigating to the translation feature, which provides language translation options the current visited page -->
   <string name="browser_menu_translate_page_2">Seite übersetzen</string>
   <!-- Browser menu label for navigating to the Web Compat Reporter feature, which provides users the ability to send bug reports for broken sites. -->
-  <string name="browser_menu_webcompat_reporter">Problem mit Website melden…</string>
+  <string name="browser_menu_webcompat_reporter" tools:ignore="UnusedResources" moz:removedIn="149">Problem mit Website melden…</string>
   <!-- Browser menu label for navigating to the Web Compat Reporter feature, which provides users the ability to send bug reports for broken sites. -->
   <string name="browser_menu_webcompat_reporter_2">Problem mit Website melden</string>
   <!-- Browser menu label that is displayed when the current page has been translated by the translation feature. -->
@@ -438,6 +434,10 @@
     The colon character (in "%s:") is intended to have the screen reader make a small pause between the search engine name and the description of the button.
   -->
   <string name="search_engine_selector_content_description">%s: Suchmaschinen-Selektor</string>
+  <!-- Text for the snackbar shown to confirm the deletion of a single browsing history item. %1$s is the shortened URL of the deleted history entry or the the actual deleted search term. Only one such item is deleted at a time. -->
+  <string name="search_suggestions_delete_history_item_snackbar">%1$s aus Chronik gelöscht</string>
+  <!-- Content description (not visible, for screen readers etc.): Button shown near a history search result allowing to delete it from browsing history. -->
+  <string name="mozac_browser_awesomebar_remove_suggestion" tools:ignore="UnusedResources">Diesen Chronik-Eintrag löschen</string>
   <!--
     Home onboarding
 
@@ -452,19 +452,8 @@
   <string name="juno_onboarding_privacy_notice_text" tools:ignore="BrandUsage">Firefox-Datenschutzhinweis</string>
   <!-- Title for set firefox as default browser screen used by Nimbus experiments. -->
   <string name="juno_onboarding_default_browser_title_nimbus_2">Wir schützen Sie gerne</string>
-  <!--
-    Title for set firefox as default browser screen used by Nimbus experiments.
-    Note: The word "Firefox" should NOT be translated
-  -->
-  <string name="juno_onboarding_default_browser_title_nimbus_3" tools:ignore="BrandUsage,UnusedResources" moz:removedIn="146">Erfahren Sie, warum Millionen Firefox lieben</string>
-  <!-- Title for set firefox as default browser screen used by Nimbus experiments. -->
-  <string name="juno_onboarding_default_browser_title_nimbus_4" tools:ignore="UnusedResources" moz:removedIn="146">Sicheres Surfen mit mehr Auswahl</string>
   <!-- Description for set firefox as default browser screen used by Nimbus experiments. -->
   <string name="juno_onboarding_default_browser_description_nimbus_3">Unser gemeinnütziger Browser verhindert, dass Unternehmen heimlich Ihre Aktivitäten im Internet verfolgen.</string>
-  <!-- Description for set firefox as default browser screen used by Nimbus experiments. -->
-  <string name="juno_onboarding_default_browser_description_nimbus_4" tools:ignore="UnusedResources" moz:removedIn="146">Mehr als 100 Millionen Menschen schützen ihre Privatsphäre, indem sie einen Browser wählen, der von einer gemeinnützigen Organisation unterstützt wird.</string>
-  <!-- Description for set firefox as default browser screen used by Nimbus experiments. -->
-  <string name="juno_onboarding_default_browser_description_nimbus_5" tools:ignore="UnusedResources" moz:removedIn="146">Bekannte Elemente zur Aktivitätenverfolgung? Automatisch blockiert. Erweiterungen? Alle 700 PDFs ausprobieren? Unser eingebautes Lesezeichen macht sie einfach zu verwalten.</string>
   <!-- Text for the button to set firefox as default browser on the device -->
   <string name="juno_onboarding_default_browser_positive_button" tools:ignore="UnusedResources">Als Standardbrowser festlegen</string>
   <!-- Text for the button dismiss the screen and move on with the flow -->
@@ -1146,8 +1135,6 @@
   <string name="alternative_app_icon_group_solid_colors">Einfarbig</string>
   <!-- Title for the "Gradients" group of alternative app icon variants in the icon picker screen. This group contains icons with gradient backgrounds inspired by natural light conditions. -->
   <string name="alternative_app_icon_group_gradients">Verläufe</string>
-  <!-- Title for the "Other" group of alternative app icon variants in the icon picker screen. This group includes retro, pixel art, themed, and artist-created icons. -->
-  <string name="alternative_app_icon_group_other" tools:ignore="UnusedResources" moz:removedIn="146">Sonstiges</string>
   <!-- Title for the "Featured" group of alternative app icon variants in the icon picker screen. This group includes retro, pixel art, themed, and artist-created icons. -->
   <string name="alternative_app_icon_group_featured">Vorgestellt</string>
   <!-- Title to show in alert when user selects an alternative app icon -->
@@ -1378,7 +1365,7 @@
   <!-- Preference for using the dynamic toolbar -->
   <string name="preference_gestures_dynamic_toolbar">Zum Ausblenden der Symbolleiste scrollen</string>
   <!-- Preference for showing the opened tabs by swiping up on the toolbar -->
-  <string name="preference_gestures_swipe_toolbar_show_tabs">Nach oben wischen, ob Tabs zu öffnen</string>
+  <string name="preference_gestures_swipe_toolbar_show_tabs">Nach oben wischen, um Tabs zu öffnen</string>
   <!-- Preference for switching tabs by swiping horizontally on the addressbar -->
   <string name="preference_gestures_swipe_toolbar_switch_tabs_2">Adressleiste zur Seite scrollen, um Tabs zu wechseln</string>
   <!--
@@ -1514,11 +1501,27 @@
   <!-- Title of the active section on the studies list -->
   <string name="studies_active">Aktiv</string>
   <!-- Description for studies -->
-  <string name="studies_description_3">Probieren Sie Funktionen und Ideen aus, bevor sie für alle freigegeben werden.</string>
+  <string name="studies_description_3" moz:removedIn="148" tools:ignore="UnusedResources">Probieren Sie Funktionen und Ideen aus, bevor sie für alle freigegeben werden.</string>
+  <!-- Description for studies. Note: The word "Firefox" should NOT be translated -->
+  <string name="studies_description_4" tools:ignore="BrandUsage">Firefox wählt zufällig Nutzer aus, um Funktionen zu testen, was die Qualität für alle Nutzer verbessert.</string>
   <!-- Title of the Studies data preference -->
-  <string name="studies_title">Studien installieren und durchführen</string>
+  <string name="studies_title" moz:removedIn="148" tools:ignore="UnusedResources">Studien installieren und durchführen</string>
+  <!-- Title of the Studies data preference -->
+  <string name="studies_title_2">Funktionsstudien zulassen</string>
   <!-- Learn more link for studies, links to an article for more information about studies. -->
   <string name="studies_learn_more">Weitere Informationen</string>
+  <!--
+    Remote Improvements (Rollouts)
+
+    Title of the Remote Improvements (rollouts) data preference
+  -->
+  <string name="remote_improvements_title">Verbesserungen per Fernzugriff zulassen</string>
+  <!-- Description for remote improvements. Note: The word "Firefox" should NOT be translated -->
+  <string name="remote_improvements_description" tools:ignore="BrandUsage">Firefox wird die Funktionen, Leistung und Stabilität zwischen den Updates verbessern. Änderungen per Fernzugriff angewendet.</string>
+  <!-- Learn more link for remote improvements, links to an article for more information about rollouts. -->
+  <string name="remote_improvements_learn_more">Weitere Informationen</string>
+  <!-- Title for remote improvements preference in Advanced settings -->
+  <string name="preferences_remote_improvements">Verbesserungen per Fernzugriff</string>
   <!--
     Sessions
 
@@ -1929,6 +1932,8 @@
   <string name="bookmark_error_edit_bookmark">Lesezeichen konnte nicht bearbeitet werden</string>
   <!-- Snackbar edit button shown after a bookmark has been created. -->
   <string name="edit_bookmark_snackbar_action">BEARBEITEN</string>
+  <!-- Bookmark menu select button -->
+  <string name="bookmark_menu_select_button">Auswählen</string>
   <!-- Bookmark menu move button -->
   <string name="bookmark_menu_move_button">Verschieben</string>
   <!-- Bookmark overflow menu edit button -->
@@ -2215,7 +2220,7 @@
   <!-- An option from the share dialog to sign into sync -->
   <string name="sync_sign_in">Bei Sync anmelden</string>
   <!-- An option from the three dot menu to sign in -->
-  <string name="sync_menu_sign_in">Anmelden</string>
+  <string name="sync_menu_sign_in" tools:ignore="UnusedResources" moz:removedIn="149">Anmelden</string>
   <!-- An option from the share dialog to send link to all other sync devices -->
   <string name="sync_send_to_all">An alle Geräte senden</string>
   <!-- An option from the share dialog to reconnect to sync -->
@@ -2375,7 +2380,7 @@
   <!-- Summary for the Delete browsing data on quit preference. "Quit" translation should match delete_browsing_data_on_quit_action translation. -->
   <string name="preference_summary_delete_browsing_data_on_quit_2">Löscht die Browser-Daten automatisch, wenn Sie im Hauptmenü die Option „Beenden“ auswählen</string>
   <!-- Action item in menu for the Delete browsing data on quit feature -->
-  <string name="delete_browsing_data_on_quit_action">Beenden</string>
+  <string name="delete_browsing_data_on_quit_action" tools:ignore="UnusedResources" moz:removedIn="149">Beenden</string>
   <!-- Title text of a delete browsing data dialog. -->
   <string name="delete_history_prompt_title">Zu löschender Zeitraum</string>
   <!-- Body text of a delete browsing data dialog. -->
@@ -2838,6 +2843,20 @@
   <string name="saved_logins_sort_strategy_last_used">Zuletzt verwendet</string>
   <!-- Content description (not visible, for screen readers etc.) -->
   <string name="saved_logins_menu_dropdown_chevron_icon_content_description_2">Menü „Passwörter sortieren“</string>
+  <!--
+    Email Masks
+
+    Title for the Email Masks in the settings menu
+  -->
+  <string name="preferences_email_masks">E-Mail-Masken</string>
+  <!-- Title for the Suggest Email Masks toggle -->
+  <string name="preferences_email_masks_suggest_title">E-Mail-Masken vorschlagen</string>
+  <!-- Summary for the Suggest Email Masks toggle. -->
+  <string name="preferences_email_masks_suggest_summary">Verbergen Sie Ihre echte E-Mail-Adresse, um Ihren Posteingang vor Spam zu schützen. Einige Websites unterstützen keine E-Mail-Masken.</string>
+  <!-- Text that links to additional information about the Email Masks -->
+  <string name="preferences_email_masks_suggest_learn_more">Weitere Informationen</string>
+  <!-- Title for the Manage Email Masks links to Firefox Relay dashboard -->
+  <string name="preferences_email_masks_manage_title">E-Mail-Masken verwalten</string>
   <!--
     Autofill
 
