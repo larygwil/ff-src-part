@@ -435,7 +435,7 @@
   -->
   <string name="search_engine_selector_content_description">%s: selector de buscador</string>
   <!-- Text for the snackbar shown to confirm the deletion of a single browsing history item. %1$s is the shortened URL of the deleted history entry or the the actual deleted search term. Only one such item is deleted at a time. -->
-  <string name="search_suggestions_delete_history_item_snackbar">%1$s eliminados del historial</string>
+  <string name="search_suggestions_delete_history_item_snackbar">%1$s eliminado del historial</string>
   <!-- Content description (not visible, for screen readers etc.): Button shown near a history search result allowing to delete it from browsing history. -->
   <string name="mozac_browser_awesomebar_remove_suggestion" tools:ignore="UnusedResources">Eliminar esta entrada del historial</string>
   <!--
@@ -620,7 +620,7 @@
   <!-- "Not now" onboarding button. -->
   <string name="nova_onboarding_negative_button" tools:ignore="UnusedResources">No ahora</string>
   <!-- Terms of use (ToU) onboarding title. -->
-  <string name="nova_onboarding_tou_title" tools:ignore="UnusedResources">Prepárate para correr libre</string>
+  <string name="nova_onboarding_tou_title" tools:ignore="UnusedResources">Preparate para navegar libremente</string>
   <!-- Terms of use (ToU) onboarding subtitle. -->
   <string name="nova_onboarding_tou_subtitle" tools:ignore="UnusedResources">Rápido, seguro y no te traicionará.\nLa navegación ahora es mejor.</string>
   <!--
@@ -647,7 +647,7 @@
   <!-- "Set to default" onboarding title. -->
   <string name="nova_onboarding_set_to_default_title" tools:ignore="UnusedResources">Decile adiós a los rastreadores siniestros</string>
   <!-- "Set to default" onboarding subtitle. -->
-  <string name="nova_onboarding_set_to_default_subtitle" tools:ignore="UnusedResources">Protegemos tus datos y bloqueamos automáticamente las empresas para que no espíen tus clics.</string>
+  <string name="nova_onboarding_set_to_default_subtitle" tools:ignore="UnusedResources">Protegemos tus datos y bloqueamos automáticamente a las empresas para que no espíen tus clics.</string>
   <!-- "Set to default" onboarding button. -->
   <string name="nova_onboarding_set_to_default_button" tools:ignore="UnusedResources">Establecer como navegador predeterminado</string>
   <!-- Toolbar selection onboarding title. -->
@@ -688,7 +688,7 @@
   <!-- "Add search widget" onboarding title. -->
   <string name="nova_onboarding_add_search_widget_title" tools:ignore="UnusedResources">Hacer que cada búsqueda sea más privada</string>
   <!-- "Add search widget" onboarding subtitle. 'Firefox' is intentionally hardcoded. -->
-  <string name="nova_onboarding_add_search_widget_subtitle" tools:ignore="BrandUsage,UnusedResources">Comencé cada búsqueda desde la pantalla de inicio de tu teléfono y tené la seguridad de que las protecciones automáticas de Firefox te cubren las espaldas.</string>
+  <string name="nova_onboarding_add_search_widget_subtitle" tools:ignore="BrandUsage,UnusedResources">Comenzá cada búsqueda desde la pantalla de inicio de tu teléfono y tené la seguridad de que las protecciones automáticas de Firefox te cubren las espaldas.</string>
   <!-- "Add search widget" onboarding button. 'Firefox' is intentionally hardcoded. -->
   <string name="nova_onboarding_add_search_widget_button" tools:ignore="BrandUsage,UnusedResources">Agregar widget de Firefox</string>
   <!-- ==== End of Project "Nova" onboarding strings ==== -->
@@ -770,6 +770,8 @@
   <string name="preferences_search">Buscar</string>
   <!-- Preference for settings related to Search engines -->
   <string name="preferences_search_engines">Buscadores</string>
+  <!-- Settings item to add a search widget on the device's homescreen. -->
+  <string name="preferences_add_search_widget_from_settings">Widget de pantalla de inicio</string>
   <!-- Preference for settings related to Search engines suggestions -->
   <string name="preferences_search_engines_suggestions">Sugerencias de buscadores</string>
   <!-- Preference Category for settings related to Search address bar -->
@@ -969,7 +971,7 @@
     Message shown as the summary of the download location preference when the
     app has lost the permission to access a previously selected custom folder.
   -->
-  <string name="preference_downloads_folder_permission_lost">No tiene permiso para usar esta carpeta. Intente elegir uno diferente.</string>
+  <string name="preference_downloads_folder_permission_lost">No tiene permiso para usar esta carpeta. Pruebe elegir una diferente.</string>
   <!-- Preference title for choosing an app to handle downloads -->
   <string name="preferences_choose_app_for_downloads">Administrar descargas con otra aplicación</string>
   <!-- Title for the setting to automatically clean up downloaded files. %s is the name of the app (for example "Firefox"). -->
@@ -1503,11 +1505,11 @@
   <!-- Description for studies -->
   <string name="studies_description_3" moz:removedIn="148" tools:ignore="UnusedResources">Probá funciones e ideas antes de que estén disponibles para todos.</string>
   <!-- Description for studies. Note: The word "Firefox" should NOT be translated -->
-  <string name="studies_description_4" tools:ignore="BrandUsage">Firefox selecciona usuarios al azar para probar funciones, lo que mejora la calidad para todos.</string>
+  <string name="studies_description_4" tools:ignore="BrandUsage">Firefox selecciona usuarios al azar para probar las funcionalidades, lo que mejora la calidad para todos.</string>
   <!-- Title of the Studies data preference -->
   <string name="studies_title" moz:removedIn="148" tools:ignore="UnusedResources">Instalar y ejecutar estudios</string>
   <!-- Title of the Studies data preference -->
-  <string name="studies_title_2">Permitir estudios de funciones</string>
+  <string name="studies_title_2">Permitir estudios de funcionalidades</string>
   <!-- Learn more link for studies, links to an article for more information about studies. -->
   <string name="studies_learn_more">Conocer más</string>
   <!--
@@ -2852,7 +2854,7 @@
   <!-- Title for the Suggest Email Masks toggle -->
   <string name="preferences_email_masks_suggest_title">Sugerir máscaras de correo electrónico</string>
   <!-- Summary for the Suggest Email Masks toggle. -->
-  <string name="preferences_email_masks_suggest_summary">Ocultá tu correo electrónico real para proteger tu bandeja de entrada del spam. Algunos sitios no soportan máscaras de correo electrónico.</string>
+  <string name="preferences_email_masks_suggest_summary">Oculte su correo electrónico real para proteger la bandeja de entrada del spam. Algunos sitios no soportan máscaras de correo electrónico.</string>
   <!-- Text that links to additional information about the Email Masks -->
   <string name="preferences_email_masks_suggest_learn_more">Conocer más</string>
   <!-- Title for the Manage Email Masks links to Firefox Relay dashboard -->

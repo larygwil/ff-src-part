@@ -619,6 +619,8 @@
   <string name="nova_onboarding_continue_button" tools:ignore="UnusedResources">Continuer</string>
   <!-- "Not now" onboarding button. -->
   <string name="nova_onboarding_negative_button" tools:ignore="UnusedResources">Plus tard</string>
+  <!-- Terms of use (ToU) onboarding title. -->
+  <string name="nova_onboarding_tou_title" tools:ignore="UnusedResources">Préparez-vous à naviguer en toute liberté</string>
   <!-- Terms of use (ToU) onboarding subtitle. -->
   <string name="nova_onboarding_tou_subtitle" tools:ignore="UnusedResources">Rapide, sûr et digne de confiance.\nLa navigation vient de passer à la vitesse supérieure.</string>
   <!--
@@ -768,6 +770,8 @@
   <string name="preferences_search">Recherche</string>
   <!-- Preference for settings related to Search engines -->
   <string name="preferences_search_engines">Moteurs de recherche</string>
+  <!-- Settings item to add a search widget on the device's homescreen. -->
+  <string name="preferences_add_search_widget_from_settings">Widget sur l’écran d’accueil</string>
   <!-- Preference for settings related to Search engines suggestions -->
   <string name="preferences_search_engines_suggestions">Suggestions des moteurs de recherche</string>
   <!-- Preference Category for settings related to Search address bar -->
@@ -959,6 +963,15 @@
   <string name="preferences_open_links_in_apps_ask">Demander avant d’ouvrir</string>
   <!-- Preference for open links in third party apps never open in apps option -->
   <string name="preferences_open_links_in_apps_never">Jamais</string>
+  <!-- Preference category for file storage. -->
+  <string name="preferences_category_file_storage">Stockage de fichiers</string>
+  <!-- Preference title for downloads default location. -->
+  <string name="preferences_downloads_default_location_title">Emplacement de téléchargement par défaut</string>
+  <!--
+    Message shown as the summary of the download location preference when the
+    app has lost the permission to access a previously selected custom folder.
+  -->
+  <string name="preference_downloads_folder_permission_lost">Vous n’avez pas la permission d’utiliser ce dossier. Essayez d’en choisir un autre.</string>
   <!-- Preference title for choosing an app to handle downloads -->
   <string name="preferences_choose_app_for_downloads">Gérer les téléchargements avec une autre application</string>
   <!-- Title for the setting to automatically clean up downloaded files. %s is the name of the app (for example "Firefox"). -->
@@ -1704,6 +1717,8 @@
   <string name="download_delete_item">Supprimer</string>
   <!-- Content description for the toolbar "Navigate back" button -->
   <string name="download_navigate_back_description">Précédent</string>
+  <!-- Content description for the toolbar "Navigate to Downloads Settings" button -->
+  <string name="download_navigate_settings_description">Accéder aux paramètres de téléchargement</string>
   <!-- Content description for the toolbar back button while searching the downloads -->
   <string name="download_close_search_description">Précédent et fermer la recherche</string>
   <!--
@@ -2001,6 +2016,10 @@
   <string name="select_bookmark_search_button_content_description">Rechercher dans les dossiers</string>
   <!-- Content description for the overflow menu for a bookmark item. %s is a folder name or bookmark title. -->
   <string name="bookmark_item_menu_button_content_description">Menu du marque-page %s</string>
+  <!-- Content description for the chevron that will open a folder on the select folder screen and display its children. %s is the title of the folder that will be opened -->
+  <string name="bookmark_select_folder_expand_folder_content_description">Développer le dossier\u00a0: %s</string>
+  <!-- Content description for the chevron that will close a folder on the select folder screen so that its children are no longer visible. %s is the title of the folder that will be closed -->
+  <string name="bookmark_select_folder_close_folder_content_description">Fermer le dossier\u00a0: %s</string>
   <!-- Content description for the "close" button in bookmarks screen. -->
   <string name="bookmark_close_button_content_description">Fermer les marque-pages</string>
   <!-- Title for the bookmark list empty state -->
@@ -4019,6 +4038,8 @@
   <string name="settings_search_no_results_title">Aucun résultat</string>
   <!-- Sub-message displayed when the search field is not empty but search results is empty. -->
   <string name="settings_search_no_results_message">Essayez peut-être une recherche différente\u00a0?</string>
+  <!-- Content Description for the button to open Settings Search (to search through settings). -->
+  <string name="settings_search_button_content_description">Bouton de recherche des paramètres</string>
   <!-- ==== Terms of use pop up prompt ==== -->
 
   <!-- Title for the pop up prompt -->

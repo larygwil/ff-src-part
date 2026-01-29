@@ -2884,6 +2884,10 @@ export var Policies = {
   TranslateEnabled: {
     onBeforeAddons(manager, param) {
       setAndLockPref("browser.translations.enable", param);
+      setAndLockPref(
+        "browser.ai.control.translations",
+        param ? "enabled" : "blocked"
+      );
     },
   },
 

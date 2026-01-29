@@ -16,6 +16,8 @@ ChromeUtils.defineESModuleGetters(this, {
   SelectableProfileService:
     "resource:///modules/profiles/SelectableProfileService.sys.mjs",
   TranslationsParent: "resource://gre/actors/TranslationsParent.sys.mjs",
+  TranslationsUtils:
+    "chrome://global/content/translations/TranslationsUtils.mjs",
   WindowsLaunchOnLogin: "resource://gre/modules/WindowsLaunchOnLogin.sys.mjs",
   NimbusFeatures: "resource://nimbus/ExperimentAPI.sys.mjs",
   FormAutofillPreferences:
@@ -5084,7 +5086,7 @@ var gMainPane = {
         this.hideError();
         this.disableButtons(true);
         try {
-          await TranslationsParent.deleteAllLanguageFiles();
+          await TranslationsUtils.deleteAllLanguageFiles();
           this.markAllDownloadPhases("uninstalled");
         } catch (error) {
           TranslationsView.showError("translations-manage-error-remove", error);

@@ -2935,7 +2935,12 @@ pref("browser.toolbars.bookmarks.showOtherBookmarks", true);
 
 // Felt Privacy pref to control simplified private browsing UI
 pref("browser.privatebrowsing.felt-privacy-v1", false);
-pref("security.certerrors.felt-privacy-v1", true);
+#if defined(NIGHTLY_BUILD)
+  pref("security.certerrors.felt-privacy-v1", true);
+#else
+  pref("security.certerrors.felt-privacy-v1", false);
+#endif
+
 
 // Prefs to control the Firefox Account toolbar menu.
 // This pref will surface existing Firefox Account information
