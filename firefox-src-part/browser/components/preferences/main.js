@@ -8,6 +8,10 @@
 /* import-globals-from /browser/base/content/aboutDialog-appUpdater.js */
 /* global MozXULElement */
 
+/**
+ * @import { Setting } from "chrome://global/content/preferences/Setting.mjs"
+ */
+
 ChromeUtils.defineESModuleGetters(this, {
   BackgroundUpdate: "resource://gre/modules/BackgroundUpdate.sys.mjs",
   UpdateListener: "resource://gre/modules/UpdateListener.sys.mjs",
@@ -56,6 +60,17 @@ const APP_ICON_ATTR_NAME = "appHandlerIcon";
 const OPEN_EXTERNAL_LINK_NEXT_TO_ACTIVE_TAB_VALUE =
   Ci.nsIBrowserDOMWindow.OPEN_NEWTAB_AFTER_CURRENT;
 
+/**
+ * @param {Setting} featureSetting
+ * @param {Setting} defaultSetting
+ */
+function canShowAiFeature(featureSetting, defaultSetting) {
+  return (
+    featureSetting.value != "blocked" &&
+    !(featureSetting.value == "default" && defaultSetting.value == "blocked")
+  );
+}
+
 Preferences.addAll([
   // Startup
   { id: "browser.startup.page", type: "int" },
@@ -69,6 +84,15 @@ Preferences.addAll([
   { id: "browser.download.always_ask_before_handling_new_types", type: "bool" },
   { id: "browser.download.folderList", type: "int" },
   { id: "browser.download.dir", type: "file" },
+
+  // AI Controls, these pref values can affect settings on the main pane and
+  // have base Settings here
+  { id: "browser.ai.control.default", type: "string" },
+  { id: "browser.ai.control.translations", type: "string" },
+  { id: "browser.ai.control.pdfjsAltText", type: "string" },
+  { id: "browser.ai.control.smartTabGroups", type: "string" },
+  { id: "browser.ai.control.linkPreviewKeyPoints", type: "string" },
+  { id: "browser.ai.control.sidebarChatbot", type: "string" },
 
   /* Tab preferences
   Preferences:
@@ -105,6 +129,7 @@ Preferences.addAll([
   { id: "browser.ctrlTab.sortByRecentlyUsed", type: "bool" },
   { id: "browser.tabs.hoverPreview.enabled", type: "bool" },
   { id: "browser.tabs.hoverPreview.showThumbnails", type: "bool" },
+  { id: "browser.tabs.groups.enabled", type: "bool" },
   { id: "browser.tabs.groups.smart.userEnabled", type: "bool" },
   { id: "browser.tabs.groups.smart.enabled", type: "bool" },
   { id: "privacy.userContext.ui.enabled", type: "bool" },
@@ -164,6 +189,7 @@ Preferences.addAll([
   { id: "layout.css.always_underline_links", type: "bool" },
   { id: "layout.spellcheckDefault", type: "int" },
   { id: "accessibility.tabfocus", type: "int" },
+
   { id: "browser.ml.linkPreview.enabled", type: "bool" },
   { id: "browser.ml.linkPreview.optin", type: "bool" },
   { id: "browser.ml.linkPreview.longPress", type: "bool" },
@@ -504,15 +530,23 @@ Preferences.addSetting(
     },
   })
 );
+
 Preferences.addSetting({
   id: "linkPreviewEnabled",
   pref: "browser.ml.linkPreview.enabled",
-  // @ts-ignore bug 1996860
-  visible: () => LinkPreview.canShowPreferences,
+  deps: ["aiControlDefault", "aiControlLinkPreviews"],
+  visible: ({ aiControlDefault, aiControlLinkPreviews }) => {
+    return (
+      canShowAiFeature(aiControlLinkPreviews, aiControlDefault) &&
+      // @ts-ignore bug 1996860
+      LinkPreview.canShowPreferences
+    );
+  },
 });
 Preferences.addSetting({
   id: "linkPreviewKeyPoints",
   pref: "browser.ml.linkPreview.optin",
+  // LinkPreview.canShowKeyPoints depends on the global genai pref.
   // @ts-ignore bug 1996860
   visible: () => LinkPreview.canShowKeyPoints,
 });
@@ -651,10 +685,20 @@ Preferences.addSetting({
   },
 });
 Preferences.addSetting({ id: "containersPlaceholder" });
+Preferences.addSetting({
+  id: "legacyTranslationsVisible",
+  deps: ["aiControlDefault", "aiControlTranslations"],
+  visible: ({ aiControlDefault, aiControlTranslations }) =>
+    !Services.prefs.getBoolPref("browser.settings-redesign.enable", false) &&
+    canShowAiFeature(aiControlTranslations, aiControlDefault),
+});
 
 Preferences.addSetting({
   id: "offerTranslations",
   pref: "browser.translations.automaticallyPopup",
+  deps: ["aiControlDefault", "aiControlTranslations"],
+  visible: ({ aiControlDefault, aiControlTranslations }) =>
+    canShowAiFeature(aiControlTranslations, aiControlDefault),
 });
 
 function createNeverTranslateSitesDescription() {
@@ -756,10 +800,13 @@ Preferences.addSetting({
 
 Preferences.addSetting({
   id: "translationsManageButton",
+  deps: ["aiControlDefault", "aiControlTranslations"],
   onUserClick(e) {
     e.preventDefault();
     gotoPref("paneTranslations");
   },
+  visible: ({ aiControlDefault, aiControlTranslations }) =>
+    canShowAiFeature(aiControlTranslations, aiControlDefault),
 });
 
 Preferences.addSetting({
@@ -1608,6 +1655,32 @@ Preferences.addSetting({
   visible: () => TransientPrefs.prefShouldBeVisible("browser.tabs.warnOnOpen"),
 });
 
+// AI Control pref settings
+Preferences.addSetting({
+  id: "aiControlDefault",
+  pref: "browser.ai.control.default",
+});
+Preferences.addSetting({
+  id: "aiControlTranslations",
+  pref: "browser.ai.control.translations",
+});
+Preferences.addSetting({
+  id: "aiControlPdfjsAltText",
+  pref: "browser.ai.control.pdfjsAltText",
+});
+Preferences.addSetting({
+  id: "aiControlSmartTabGroups",
+  pref: "browser.ai.control.smartTabGroups",
+});
+Preferences.addSetting({
+  id: "aiControlLinkPreviews",
+  pref: "browser.ai.control.linkPreviewKeyPoints",
+});
+Preferences.addSetting({
+  id: "aiControlSidebarChatbot",
+  pref: "browser.ai.control.sidebarChatbot",
+});
+
 // "Interaction" tabs settings
 Preferences.addSetting({
   id: "tabsInteraction",
@@ -1630,15 +1703,35 @@ Preferences.addSetting({
   visible: ({ tabHoverPreview }) => !!tabHoverPreview.value,
 });
 Preferences.addSetting({
+  id: "tabGroups",
+  pref: "browser.tabs.groups.enabled",
+});
+Preferences.addSetting({
   id: "smartTabGroups",
   pref: "browser.tabs.groups.smart.enabled",
 });
 Preferences.addSetting({
   id: "tabGroupSuggestions",
   pref: "browser.tabs.groups.smart.userEnabled",
-  deps: ["smartTabGroups"],
-  visible: ({ smartTabGroups }) =>
-    !!smartTabGroups.value && Services.locale.appLocaleAsBCP47.startsWith("en"),
+  deps: [
+    "tabGroups",
+    "smartTabGroups",
+    "aiControlDefault",
+    "aiControlSmartTabGroups",
+  ],
+  visible: ({
+    smartTabGroups,
+    tabGroups,
+    aiControlDefault,
+    aiControlSmartTabGroups,
+  }) => {
+    return (
+      canShowAiFeature(aiControlSmartTabGroups, aiControlDefault) &&
+      !!tabGroups.value &&
+      !!smartTabGroups.value &&
+      Services.locale.appLocaleAsBCP47.startsWith("en")
+    );
+  },
 });
 if (AppConstants.platform === "win") {
   /**
@@ -2768,6 +2861,7 @@ SettingGroupManager.registerGroups({
   },
   securityPrivacyStatus: {
     inProgress: true,
+    card: "never",
     items: [
       {
         id: "privacyCard",
@@ -2777,6 +2871,7 @@ SettingGroupManager.registerGroups({
   },
   securityPrivacyWarnings: {
     inProgress: true,
+    card: "never",
     items: [
       {
         id: "warningCard",
@@ -3743,6 +3838,7 @@ SettingGroupManager.registerGroups({
   },
   etpBanner: {
     inProgress: true,
+    card: "never",
     items: [
       {
         id: "etpBannerEl",
@@ -4943,19 +5039,34 @@ var gMainPane = {
    * Initialize the translations view.
    */
   async initTranslations() {
-    if (!Services.prefs.getBoolPref("browser.translations.enable")) {
-      return;
-    }
-
+    let legacyTranslationsVisible = Preferences.getSetting(
+      "legacyTranslationsVisible"
+    );
     /**
      * Which phase a language download is in.
      *
      * @typedef {"downloaded" | "loading" | "uninstalled"} DownloadPhase
      */
 
-    // Immediately show the group so that the async load of the component does
-    // not cause the layout to jump. The group will be empty initially.
-    document.getElementById("translationsGroup").hidden = false;
+    let translationsGroup = document.getElementById("translationsGroup");
+    let setTranslationsGroupVisbility = () => {
+      // Immediately show the group so that the async load of the component does
+      // not cause the layout to jump. The group will be empty initially.
+      translationsGroup.hidden = !legacyTranslationsVisible.visible;
+      translationsGroup.classList.toggle(
+        "setting-hidden",
+        translationsGroup.hidden
+      );
+    };
+    setTranslationsGroupVisbility();
+
+    legacyTranslationsVisible.on("change", setTranslationsGroupVisbility);
+    window.addEventListener(
+      "unload",
+      () =>
+        legacyTranslationsVisible.off("change", setTranslationsGroupVisbility),
+      { once: true }
+    );
 
     class TranslationsState {
       /**

@@ -87,6 +87,14 @@ export class PdfjsParent extends JSWindowActorParent {
     this._findFailedString = null;
     this._lastNotFoundStringLength = 0;
 
+    if (
+      !Services.prefs.prefHasUserValue("pdfjs.enableAltText") &&
+      !Services.locale.appLocaleAsBCP47.startsWith("en") &&
+      Services.prefs.getBoolPref("pdfjs.enableAltText", true)
+    ) {
+      Services.prefs.setBoolPref("pdfjs.enableAltText", false);
+    }
+
     this._updatedPreference();
   }
 
