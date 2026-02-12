@@ -89,6 +89,6 @@ export class PdfJsGuessAltTextFeature extends AIFeature {
   }
 
   static get isManagedByPolicy() {
-    return false;
+    return Services.prefs.prefIsLocked("pdfjs.enableAltText");
   }
 }

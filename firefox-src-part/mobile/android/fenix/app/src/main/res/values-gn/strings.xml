@@ -646,6 +646,8 @@
   <string name="nova_onboarding_tou_body_line_3_link_text">Eñangareko ñembohekóre</string>
   <!-- "Set to default" onboarding title. -->
   <string name="nova_onboarding_set_to_default_title" tools:ignore="UnusedResources">Embojepyhéi tapykuehohaitépe</string>
+  <!-- "Set to default" onboarding title. -->
+  <string name="nova_onboarding_set_to_default_title_2">Embojurujapa nde juajuhaita tekoñemi reheve</string>
   <!-- "Set to default" onboarding subtitle. -->
   <string name="nova_onboarding_set_to_default_subtitle">Romo’ã ne mba’ekuaarãita ha rojoko opaite mba’apohaguasuita oma’ẽñemíva eikehápe.</string>
   <!-- "Set to default" onboarding button. -->
@@ -967,6 +969,11 @@
   <string name="preferences_category_file_storage">Marandurenda ñembyaty</string>
   <!-- Preference title for downloads default location. -->
   <string name="preferences_downloads_default_location_title">Tendaite ypygua ñemboguejykue</string>
+  <!--
+    Message shown as the summary of the download location preference when the
+    app has lost the permission to access a previously selected custom folder.
+  -->
+  <string name="preference_downloads_folder_permission_lost">Noñemoneĩri ndéve eiporu hag̃ua ko marandurenda. Eiporavokuaa ambuéva.</string>
   <!-- Preference title for choosing an app to handle downloads -->
   <string name="preferences_choose_app_for_downloads">Eñangareko ñemboguejýre ambue tembiporu’i ndive</string>
   <!-- Title for the setting to automatically clean up downloaded files. %s is the name of the app (for example "Firefox"). -->
@@ -1499,6 +1506,8 @@
   <string name="studies_active">Myandy</string>
   <!-- Description for studies -->
   <string name="studies_description_3" moz:removedIn="148" tools:ignore="UnusedResources">Eiporu tembiapoite ha temimo’ã opavavete oiporukuaa mboyve.</string>
+  <!-- Description for studies. Note: The word "Firefox" should NOT be translated -->
+  <string name="studies_description_4" tools:ignore="BrandUsage">Firefox oiporavo péichante oha’ã hag̃ua tembiapoite, opavavete oiporu porãve hag̃ua.</string>
   <!-- Title of the Studies data preference -->
   <string name="studies_title" moz:removedIn="148" tools:ignore="UnusedResources">Emohenda ha emongu’e mba’ekuaarã</string>
   <!-- Title of the Studies data preference -->
@@ -1511,6 +1520,8 @@
     Title of the Remote Improvements (rollouts) data preference
   -->
   <string name="remote_improvements_title">Emoneĩ ñemyatyrõ okáguivo</string>
+  <!-- Description for remote improvements. Note: The word "Firefox" should NOT be translated -->
+  <string name="remote_improvements_description" tools:ignore="BrandUsage">Firefox omoporãvéta tembiapoite, ijeporu ha hekopyta oñembohekopyahúvo. Ñemoambueita ojepo oka guive.</string>
   <!-- Learn more link for remote improvements, links to an article for more information about rollouts. -->
   <string name="remote_improvements_learn_more">Eikuaave</string>
   <!-- Title for remote improvements preference in Advanced settings -->
@@ -2850,6 +2861,8 @@
   <string name="preferences_email_masks">Ñanduti veve rovamo’ãha</string>
   <!-- Title for the Suggest Email Masks toggle -->
   <string name="preferences_email_masks_suggest_title">Ere ñanduti veve rovamo’ãha</string>
+  <!-- Summary for the Suggest Email Masks toggle. -->
+  <string name="preferences_email_masks_suggest_summary">Eñomi ne ñanduti veve emo’ã hag̃ua ne ñe’ẽmondo g̃uahẽha eipota’ỹvagui. Oĩ tenda omoneĩ’ỹva ñanduti veve rovamo’ãha.</string>
   <!-- Text that links to additional information about the Email Masks -->
   <string name="preferences_email_masks_suggest_learn_more">Eikuaave</string>
   <!-- Title for the Manage Email Masks links to Firefox Relay dashboard -->
