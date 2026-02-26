@@ -14,6 +14,11 @@ class ContentSearchHandoffUIController {
   #ui = null;
   #shadowRoot = null;
 
+  /**
+   * Whether or not we are in private browsing mode.
+   */
+  #inPrivateBrowsing = false;
+
   constructor(ui) {
     this._isPrivateEngine = false;
     this._engineIcon = null;
@@ -47,19 +52,19 @@ class ContentSearchHandoffUIController {
     );
   }
 
-  _onMsgEngine({ isPrivateEngine, engine }) {
-    this._isPrivateEngine = isPrivateEngine;
+  _onMsgEngine({ inPrivateBrowsing, engine }) {
+    this.#inPrivateBrowsing = inPrivateBrowsing;
     this._updateEngine(engine);
   }
 
   _onMsgCurrentEngine(engine) {
-    if (!this._isPrivateEngine) {
+    if (!this.#inPrivateBrowsing) {
       this._updateEngine(engine);
     }
   }
 
   _onMsgCurrentPrivateEngine(engine) {
-    if (this._isPrivateEngine) {
+    if (this.#inPrivateBrowsing) {
       this._updateEngine(engine);
     }
   }

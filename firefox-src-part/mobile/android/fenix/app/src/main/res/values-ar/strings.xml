@@ -58,7 +58,7 @@
   <!-- The header text displayed on the synced tabs page when the user is not logged into an account. -->
   <string name="tab_manager_empty_synced_tabs_page_header">احصل على التبويبات من أي جهاز</string>
   <!-- The supplementary text displayed on the synced tabs page when the user is not logged into an account. -->
-  <string name="tab_manager_empty_synced_tabs_page_description">تسجيل الدخول لإدارة التبويبات المتزامنة عبر كل أجهزتك.</string>
+  <string name="tab_manager_empty_synced_tabs_page_description">سجّل الدخول لإدارة التبويبات المتزامنة من جميع أجهزتك.</string>
   <!-- The action text displayed on the synced tabs page when the user is not logged into an account, prompting the user to sign into their account. When clicked, it takes the user to the account sign-in flow. -->
   <string name="tab_manager_empty_synced_tabs_page_sign_in_cta">تسجيل الدخول</string>
   <!-- Text for the button used to show all stories -->
@@ -112,7 +112,7 @@
   <!-- Text for the positive action button -->
   <string name="open_in_app_cfr_positive_button_text">الانتقال إلى الإعدادات</string>
   <!-- Text for the negative action button -->
-  <string name="open_in_app_cfr_negative_button_text">إهمال</string>
+  <string name="open_in_app_cfr_negative_button_text">رفض</string>
   <!-- Private browsing erase action "contextual feature recommendation" (CFR) -->
 
   <!--
@@ -122,17 +122,17 @@
   -->
   <string name="address_bar_swipe_cfr_message_2">اسحب شريط الأدوات لليمين أو اليسار للانتقال بين التبويبات.</string>
   <!-- Text for the info dialog when camera permissions have been denied but user tries to access a camera feature. -->
-  <string name="camera_permissions_needed_message">يُشترط الوصول إلى الكاميرا. افتح إعدادات أندرويد، وانقر ”الأذونات“ ثم انقر ”سماح“.</string>
+  <string name="camera_permissions_needed_message">يُشترط الوصول إلى الكاميرا. افتح إعدادات أندرويد، وانقر \"الأذونات\" ثم انقر \"سماح\".</string>
   <!-- Text for the positive action button to go to Android Settings to grant permissions. -->
   <string name="camera_permissions_needed_positive_button_text">الانتقال إلى الإعدادات</string>
   <!-- Text for the negative action button to dismiss the dialog. -->
-  <string name="camera_permissions_needed_negative_button_text">إهمال</string>
+  <string name="camera_permissions_needed_negative_button_text">رفض</string>
   <!-- Text for the banner message to tell users about our auto close feature. -->
   <string name="tab_tray_close_tabs_banner_message">ضبط التبويبات المفتوحة لتُغلَق من تلقاء نفسها إن لم تُعرض منذ اليوم أو الأسبوع أو الشهر الماضي.</string>
   <!-- Text for the positive action button to go to Settings for auto close tabs. -->
   <string name="tab_tray_close_tabs_banner_positive_button_text">خيارات العرض</string>
   <!-- Text for the negative action button to dismiss the Close Tabs Banner. -->
-  <string name="tab_tray_close_tabs_banner_negative_button_text">إهمال</string>
+  <string name="tab_tray_close_tabs_banner_negative_button_text">رفض</string>
   <!-- Text for the banner message to tell users about our inactive tabs feature. -->
   <string name="tab_tray_inactive_onboarding_message">سيتم نقل التبويبات التي لم تعرضها منذ أسبوعين إلى هنا.</string>
   <!-- Text for the action link to go to Settings for inactive tabs. -->
@@ -513,9 +513,9 @@
   <!-- Title for the startup crash page. %s is the name of the app (for example "Firefox") -->
   <string name="startup_crash_title">يحتاج %s إلى إعادة التشغيل</string>
   <!-- Body text for the startup crash page. %s is the name of the app (for example "Firefox") -->
-  <string name="startup_crash_body">حدثت مشكلة أثناء فتح %s.\n\nتُساعدنا تقارير الإنهيار على تشخيص مشكلات المتصفح وإصلاحها. وقد تتضمن التقارير بيانات شخصية أو حساسة.</string>
+  <string name="startup_crash_body">حدثت مشكلة أثناء فتح %s.\n\nيساعدنا إرسال تقرير الأعطال في تشخيص مشاكل المتصفح وإصلاحها. قد تتضمن التقارير بيانات شخصية أو حساسة.</string>
   <!-- Button text to submit a startup crash report -->
-  <string name="startup_crash_positive">أرسِل بلاغًا بالانهيار</string>
+  <string name="startup_crash_positive">إرسال تقرير عن العطل</string>
   <!-- Button text to continue and not send a startup crash report -->
   <string name="startup_crash_negative">لا، شكرًا</string>
   <!-- Button text to reopen firefox after the crash is processed %s is the name of the app (for example "Firefox") -->
@@ -1080,7 +1080,7 @@
   <!-- Description text for the artist series wallpapers. "Independent voices" is the name of the wallpaper collection -->
   <string name="wallpaper_artist_series_description">مجموعة الأصوات المستقلة.</string>
   <!-- Wallpaper onboarding dialog header text. -->
-  <string name="wallpapers_onboarding_dialog_title_text">جرب إضافة لمسة من اللون</string>
+  <string name="wallpapers_onboarding_dialog_title_text">جرّب إضافة لمسة من اللون</string>
   <!-- Wallpaper onboarding dialog body text. -->
   <string name="wallpapers_onboarding_dialog_body_text">اختر خلفية تتحدث إليك.</string>
   <!-- Wallpaper onboarding dialog learn more button text. The button navigates to the wallpaper settings screen. -->
@@ -1754,11 +1754,26 @@
   <string name="download_rename_dialog_label">الاسم</string>
   <string name="download_rename_dialog_confirm_button">حفظ</string>
   <string name="download_rename_dialog_cancel_button">إلغاء</string>
+  <!--
+    Error message when renaming with a name that already exists.
+    %s is the proposed file name.
+  -->
+  <string name="download_rename_error_exists_error">يوجد ملف باسم \"%s\" بالفعل في هذا الموقع</string>
+  <!-- Error message when renaming with an invalid file name. -->
+  <string name="download_rename_error_invalid_name_error">لا يُمكن استخدام \"/\" في أسماء الملفات</string>
   <!-- Title for the alert dialog when the file cannot be renamed. -->
   <string name="download_rename_error_cannot_rename_title">يتعذّر إعادة تسمية الملف</string>
   <!-- Description message for the alert dialog when the file cannot be renamed. -->
   <string name="download_rename_error_cannot_rename_description">يتعذّر إعادة تسمية الملف نظرًا لقيود النظام أو التخزين.</string>
   <string name="download_rename_error_dismiss_button">حسنًا</string>
+  <!--
+    Title for the alert dialog to change file extension.
+    %s is the file type to change to.
+  -->
+  <string name="change_file_extension_title">هل تريد تغيير نوع الملف إلى %s؟</string>
+  <string name="change_file_extension_description">قد يفتح هذا الملف في تطبيق مختلف، مما يمكن أن يشكل خطراً على جهازك.</string>
+  <string name="change_file_extension_cancel_button">ألغِ</string>
+  <string name="change_file_extension_confirm_button">نعم، غيِّره</string>
   <!-- Text for the header of in progress downloads -->
   <string name="download_header_in_progress">جارٍ</string>
   <!--
@@ -2046,7 +2061,7 @@
   <!-- Description for the bookmark list empty state when you're not signed into sync. -->
   <string name="bookmark_empty_list_guest_description">احفظ المواقع أثناء التصفح. سجّل الدخول لمزامنة العلامات المرجعية من جميع أجهزتك.</string>
   <!-- Text for the button to navigate to sync authentication -->
-  <string name="bookmark_empty_list_guest_cta">لِج للمزامنة</string>
+  <string name="bookmark_empty_list_guest_cta">سجّل الدخول للمزامنة</string>
   <!-- Description for the bookmark list empty state when you're signed into sync. -->
   <string name="bookmark_empty_list_authenticated_description">احفظ المواقع أثناء التصفح. وسنقوم بمزامنة العلامات المرجعية من أجهزتك الأخرى.</string>
   <!-- Description for the bookmark list empty state when you're in an empty folder. -->
@@ -2876,6 +2891,10 @@
   <string name="preferences_email_masks_suggest_learn_more">اطّلع على المزيد</string>
   <!-- Title for the Manage Email Masks links to Firefox Relay dashboard -->
   <string name="preferences_email_masks_manage_title">إدارة أقنعة البريد الإلكتروني</string>
+  <!-- The message displayed when a user has used all of their free-tier email masks, so now the application will choose an existing one at random. -->
+  <string name="email_masks_max_free_tier_reached">استنفدت أقنعة البريد الإلكتروني المجانية الـ 5، لذلك حدّدنا لك واحدًا لإعادة استخدامه.</string>
+  <!-- The message displayed when there was an error with the email mask or Firefox Account services. -->
+  <string name="email_masks_error_retrieving_masks">أقنعة البريد الإلكتروني غير متوفرة حاليًا. يُرجى المحاولة مرة أخرى بعد قليل.</string>
   <!--
     Autofill
 
@@ -3912,7 +3931,7 @@
 
     Subtitle for a setup checklist with 3 steps initial step. %1$s is the name of the app (for example "Firefox").
   -->
-  <string name="setup_checklist_subtitle_3_steps_initial_state">أكمل هذه الخطوات 3 لإعداد %1$s للحصول على أقصى استفادة من تجربة تصفحك.</string>
+  <string name="setup_checklist_subtitle_3_steps_initial_state">أكمل هذه الخطوات الـ 3 لإعداد %1$s للحصول على أقصى استفادة من تجربة تصفحك.</string>
   <!-- Subtitle for a setup checklist with 3 steps when the first task is completed. -->
   <string name="setup_checklist_subtitle_3_steps_first_step">بداية رائعة! لقد أكملت 1 خطوة من أصل 3 خطوات.</string>
   <!-- Subtitle for a setup checklist with 3 steps when two of the tasks are completed. -->

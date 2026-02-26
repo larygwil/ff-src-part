@@ -1640,6 +1640,14 @@
   <!-- Content description (not visible, for screen readers etc.) for the button to open the Tab Search feature to search through tabs. -->
   <string name="tab_manager_open_tab_search">Отваряне на раздел за търсене</string>
   <!--
+    Tab Group
+
+    Title for the create tab group bottom sheet
+  -->
+  <string name="create_tab_group_title">Създаване на група от раздели</string>
+  <string name="create_tab_group_save_button">Запазване</string>
+  <string name="edit_tab_group_bottom_sheet_close_content_description">Затваряне на група за редактиране</string>
+  <!--
     History
 
     Text for the button to search all history
@@ -1754,11 +1762,26 @@
   <string name="download_rename_dialog_label">Име</string>
   <string name="download_rename_dialog_confirm_button">Запазване</string>
   <string name="download_rename_dialog_cancel_button">Отказ</string>
+  <!--
+    Error message when renaming with a name that already exists.
+    %s is the proposed file name.
+  -->
+  <string name="download_rename_error_exists_error">Файл с име „%s“ вече съществува на това местоположение</string>
+  <!-- Error message when renaming with an invalid file name. -->
+  <string name="download_rename_error_invalid_name_error">Имената на файловете не могат да използват „/“</string>
   <!-- Title for the alert dialog when the file cannot be renamed. -->
   <string name="download_rename_error_cannot_rename_title">Файлът не може да бъде преименуван</string>
   <!-- Description message for the alert dialog when the file cannot be renamed. -->
   <string name="download_rename_error_cannot_rename_description">Файлът не може да бъде преименуван поради системни ограничения или ограничения на хранилището.</string>
   <string name="download_rename_error_dismiss_button">Добре</string>
+  <!--
+    Title for the alert dialog to change file extension.
+    %s is the file type to change to.
+  -->
+  <string name="change_file_extension_title">Промяна на файловия тип на %s?</string>
+  <string name="change_file_extension_description">Това може да отвори файла в друго приложение и да бъде рисковано за вашето устройство.</string>
+  <string name="change_file_extension_cancel_button">Отказ</string>
+  <string name="change_file_extension_confirm_button">Да, смени го</string>
   <!-- Text for the header of in progress downloads -->
   <string name="download_header_in_progress">Изпълнява се</string>
   <!--
@@ -2876,6 +2899,10 @@
   <string name="preferences_email_masks_suggest_learn_more">Научете повече</string>
   <!-- Title for the Manage Email Masks links to Firefox Relay dashboard -->
   <string name="preferences_email_masks_manage_title">Управление на маскирането</string>
+  <!-- The message displayed when a user has used all of their free-tier email masks, so now the application will choose an existing one at random. -->
+  <string name="email_masks_max_free_tier_reached">Използвахте своите 5 безплатни имейл маски, затова избрахме една, за да я използвате повторно.</string>
+  <!-- The message displayed when there was an error with the email mask or Firefox Account services. -->
+  <string name="email_masks_error_retrieving_masks">Имейл маските не са налични в момента. Опитайте отново след няколко минути.</string>
   <!--
     Autofill
 

@@ -67,15 +67,33 @@ export const ToastNotification = {
     this.sendUserEventTelemetry("IMPRESSION", message, dispatch);
     dispatch({ type: "IMPRESSION", data: message });
 
+    let image = null;
+    if (content.image_url) {
+      try {
+        const uri = Services.io.newURI(
+          Services.urlFormatter.formatURL(content.image_url)
+        );
+        const channel = Services.io.newChannelFromURI(
+          uri,
+          null,
+          Services.scriptSecurityManager.getSystemPrincipal(),
+          null,
+          Ci.nsILoadInfo.SEC_ALLOW_CROSS_ORIGIN_SEC_CONTEXT_IS_NULL,
+          Ci.nsIContentPolicy.TYPE_IMAGE
+        );
+        image = await ChromeUtils.fetchDecodedImage(uri, channel);
+      } catch (e) {
+        console.error("showToastNotification image loading failed", e);
+      }
+    }
+
     let alert = Cc["@mozilla.org/alert-notification;1"].createInstance(
       Ci.nsIAlertNotification
     );
     let systemPrincipal = Services.scriptSecurityManager.getSystemPrincipal();
     alert.init(
       tag,
-      content.image_url
-        ? Services.urlFormatter.formatURL(content.image_url)
-        : content.image_url,
+      null /* aImageURL */,
       title,
       body,
       true /* aTextClickable */,
@@ -87,6 +105,7 @@ export const ToastNotification = {
       null /* aInPrivateBrowsing */,
       content.requireInteraction
     );
+    alert.image = image;
 
     if (content.actions) {
       let actions = Cu.cloneInto(content.actions, {});

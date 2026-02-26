@@ -12,10 +12,13 @@ const lazy = XPCOMUtils.declareLazy({
     iid: Ci.nsIProtocolProxyService,
   },
 });
-const { TRANSPARENT_PROXY_RESOLVES_HOST } = Ci.nsIProxyInfo;
+const { TRANSPARENT_PROXY_RESOLVES_HOST, ALWAYS_TUNNEL_VIA_PROXY } =
+  Ci.nsIProxyInfo;
 const failOverTimeout = 10; // seconds
 
 const MODE_PREF = "browser.ipProtection.mode";
+
+const isXpcshell = Services.env.exists("XPCSHELL_TEST_PROFILE_DIR");
 
 export const IPPMode = Object.freeze({
   MODE_FULL: 0,
@@ -35,12 +38,7 @@ const DEFAULT_EXCLUDED_URL_PREFS = [
   "identity.fxaccounts.remote.profile.uri",
   "identity.fxaccounts.auth.uri",
   "identity.fxaccounts.remote.profile.uri",
-];
-
-const ESSENTIAL_URL_PREFS = [
-  "toolkit.telemetry.server",
-  "network.trr.uri",
-  "network.trr.default_provider_uri",
+  "captivedetect.canonicalURL",
 ];
 
 /**
@@ -81,13 +79,15 @@ export class IPPChannelFilter {
    * @param {string} isolationKey - the isolation key for the proxy connection.
    * @param {MasqueProtocol|ConnectProtocol} protocol - the protocol definition.
    * @param {nsIProxyInfo} fallBackInfo - optional fallback proxy info.
+   * @param {boolean} [alwaysTunnel] - when true, always tunnel requests through the proxy
    * @returns {nsIProxyInfo}
    */
   static constructProxyInfo(
     authToken,
     isolationKey,
     protocol,
-    fallBackInfo = null
+    fallBackInfo = null,
+    alwaysTunnel = false
   ) {
     switch (protocol.name) {
       case "masque":
@@ -101,17 +101,21 @@ export class IPPChannelFilter {
           failOverTimeout,
           fallBackInfo
         );
-      case "connect":
+      case "connect": {
+        const flags =
+          TRANSPARENT_PROXY_RESOLVES_HOST |
+          (alwaysTunnel ? ALWAYS_TUNNEL_VIA_PROXY : 0);
         return lazy.ProxyService.newProxyInfo(
           protocol.scheme,
           protocol.host,
           protocol.port,
           authToken,
           isolationKey,
-          TRANSPARENT_PROXY_RESOLVES_HOST,
+          flags,
           failOverTimeout,
           fallBackInfo
         );
+      }
       default:
         throw new Error(
           "Cannot construct ProxyInfo for Unknown server-protocol: " +
@@ -131,12 +135,16 @@ export class IPPChannelFilter {
    */
   static serverToProxyInfo(authToken, server) {
     const isolationKey = IPPChannelFilter.makeIsolationKey();
+    // When running tests, we can’t set alwaysTunnel to true because our test
+    // server doesn’t support tunneling.
+    const alwaysTunnel = !(Cu.isInAutomation || isXpcshell);
     return server.protocols.reduceRight((fallBackInfo, protocol) => {
       return IPPChannelFilter.constructProxyInfo(
         authToken,
         isolationKey,
         protocol,
-        fallBackInfo
+        fallBackInfo,
+        alwaysTunnel
       );
     }, null);
   }
@@ -161,6 +169,14 @@ export class IPPChannelFilter {
   }
 
   /**
+   * Uninitializes the IPPChannelFilter, removing the proxyInfo and aborting any pending channels.
+   * After this step, the filter will pause channels that should be proxied until a new proxyInfo is set through initialize() again, or the filter is stopped.
+   */
+  uninitialize() {
+    this.proxyInfo = null;
+  }
+
+  /**
    * @param {Array<string>} [excludedPages]
    */
   constructor(excludedPages = []) {
@@ -174,16 +190,6 @@ export class IPPChannelFilter {
       const prefValue = Services.prefs.getStringPref(pref, "");
       if (prefValue) {
         this.addPageExclusion(prefValue);
-      }
-    });
-
-    // Get origins essential to starting the proxy and exclude
-    // them prior to connecting
-    this.#essentialOrigins = new Set();
-    ESSENTIAL_URL_PREFS.forEach(pref => {
-      const prefValue = Services.prefs.getStringPref(pref, "");
-      if (prefValue) {
-        this.addEssentialExclusion(prefValue);
       }
     });
 
@@ -261,16 +267,26 @@ export class IPPChannelFilter {
         return true;
       }
 
-      const origin = uri.prePath; // scheme://host[:port]
-
-      if (!this.proxyInfo && this.#essentialOrigins.has(origin)) {
+      if (IPPChannelFilter.isLocal(uri)) {
         return true;
       }
 
-      let loadingPrincipal = channel.loadInfo?.loadingPrincipal;
-      let hasExclusion =
-        loadingPrincipal &&
-        lazy.IPPExceptionsManager.hasExclusion(loadingPrincipal);
+      const origin = uri.prePath; // scheme://host[:port]
+
+      // Exclude system channels essential to starting the proxy until the proxy is ready.
+      if (
+        !this.proxyInfo &&
+        !channel.isDocument &&
+        channel.loadInfo?.triggeringPrincipal?.isSystemPrincipal
+      ) {
+        return true;
+      }
+
+      let principal =
+        channel.loadInfo?.loadingPrincipal ||
+        Services.scriptSecurityManager.getChannelURIPrincipal(channel);
+
+      let hasExclusion = lazy.IPPExceptionsManager.hasExclusion(principal);
 
       if (hasExclusion) {
         return true;
@@ -280,6 +296,30 @@ export class IPPChannelFilter {
     } catch (_) {
       return true;
     }
+  }
+
+  static isLocal(uri) {
+    if (Services.io.hostnameIsLocalIPAddress(uri)) {
+      return true;
+    }
+
+    const hostname = uri.host;
+    return (
+      /^(.+\.)?localhost$/.test(hostname) ||
+      /^(.+\.)?localhost6$/.test(hostname) ||
+      /^(.+\.)?localhost.localdomain$/.test(hostname) ||
+      /^(.+\.)?localhost6.localdomain6$/.test(hostname) ||
+      // https://tools.ietf.org/html/rfc2606
+      /\.example$/.test(hostname) ||
+      /\.invalid$/.test(hostname) ||
+      /\.test$/.test(hostname) ||
+      // https://tools.ietf.org/html/rfc8375
+      /^(.+\.)?home\.arpa$/.test(hostname) ||
+      // https://tools.ietf.org/html/rfc6762
+      /\.local$/.test(hostname) ||
+      // Loopback
+      /^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(hostname)
+    );
   }
 
   /**
@@ -296,15 +336,6 @@ export class IPPChannelFilter {
     } catch (_) {
       // ignore bad entries
     }
-  }
-
-  /**
-   * Adds a URL to the essential exclusion list.
-   *
-   * @param {string} url - The URL to exclude.
-   */
-  addEssentialExclusion(url) {
-    this.addPageExclusion(url, this.#essentialOrigins);
   }
 
   /**
@@ -339,6 +370,9 @@ export class IPPChannelFilter {
    * All ProxyInfo objects related to this Connection will have the same isolation key.
    */
   get isolationKey() {
+    if (!this.proxyInfo) {
+      return null;
+    }
     return this.proxyInfo.connectionIsolationKey;
   }
 
@@ -431,7 +465,6 @@ export class IPPChannelFilter {
   #observers = [];
   #active = false;
   #excludedOrigins = new Set();
-  #essentialOrigins = new Set();
   #pendingChannels = [];
 
   static makeIsolationKey() {

@@ -309,6 +309,40 @@ this.ippActivator = class extends ExtensionAPI {
               );
           },
         }).api(),
+        onIPPExceptionsChanged: new ExtensionCommon.EventManager({
+          context,
+          name: "ippActivator.onIPPExceptionsChanged",
+          register: fire => {
+            const observer = {
+              observe(subject, topic, data) {
+                if (topic !== "perm-changed") {
+                  return;
+                }
+
+                if (data === "cleared") {
+                  fire.async();
+                  return;
+                }
+
+                let permission;
+                try {
+                  permission = subject.QueryInterface(Ci.nsIPermission);
+                } catch (e) {
+                  return;
+                }
+
+                if (permission.type !== "ipp-vpn") {
+                  return;
+                }
+
+                fire.async();
+              },
+            };
+
+            Services.obs.addObserver(observer, "perm-changed");
+            return () => Services.obs.removeObserver(observer, "perm-changed");
+          },
+        }).api(),
       },
     };
   }

@@ -303,6 +303,9 @@ class TabPanel extends HoverPanel {
     this.panelElement
       .querySelector(".tab-preview-add-note")
       .addEventListener("click", () => this.#openTabNotePanel());
+    this.panelElement
+      .querySelector(".tab-preview-note-expand")
+      .addEventListener("click", () => (this.#noteExpanded = true));
   }
 
   /**
@@ -343,6 +346,8 @@ class TabPanel extends HoverPanel {
     //
     // If the popup is closed this call will be ignored.
     this.#movePanel();
+
+    this.#noteExpanded = false;
 
     originalTab?.removeEventListener("TabAttrModified", this);
     this.#tab.addEventListener("TabAttrModified", this);
@@ -545,20 +550,41 @@ class TabPanel extends HoverPanel {
         "";
     }
 
-    const noteTextContainer = this.panelElement.querySelector(
-      ".tab-note-text-container"
+    const noteContainer = this.panelElement.querySelector(
+      ".tab-preview-note-container"
+    );
+    const noteTextContainer = noteContainer.querySelector(
+      ".tab-preview-note-text"
     );
     const addNoteButton = this.panelElement.querySelector(
       ".tab-preview-add-note"
     );
+
     if (this._prefUseTabNotes && lazy.TabNotes.isEligible(this.#tab)) {
       lazy.TabNotes.get(this.#tab).then(note => {
         noteTextContainer.textContent = note?.text || "";
+
         addNoteButton.toggleAttribute("hidden", !!note);
+        noteContainer.toggleAttribute("hidden", !note?.text);
+
+        // Allow CSS to see if the note is overflowing
+        this.#noteOverflow =
+          noteTextContainer.scrollHeight > noteTextContainer.clientHeight;
+
+        // Pass the width of the button to CSS so that
+        // they can be used to calculate the correct offset of the gradient mask
+        let button = this.panelElement.querySelector(
+          ".tab-preview-note-expand"
+        );
+        noteTextContainer.style.setProperty(
+          "--tab-note-expand-toggle-width",
+          `${button.offsetWidth}px`
+        );
       });
     } else {
       noteTextContainer.textContent = "";
       addNoteButton.setAttribute("hidden", "");
+      noteContainer.setAttribute("hidden", "");
     }
 
     let thumbnailContainer = this.panelElement.querySelector(
@@ -594,6 +620,25 @@ class TabPanel extends HoverPanel {
         this.popupOptions.y
       );
     }
+  }
+
+  /**
+   * @param {boolean} val
+   */
+  set #noteExpanded(val) {
+    this.panelElement.toggleAttribute("note-expanded", val);
+    if (val && this.#tab) {
+      this.#tab.dispatchEvent(
+        new CustomEvent("TabNote:Expand", { bubbles: true })
+      );
+    }
+  }
+
+  /**
+   * @param {boolean} val
+   */
+  set #noteOverflow(val) {
+    this.panelElement.toggleAttribute("note-overflow", val);
   }
 
   get popupOptions() {

@@ -1640,6 +1640,14 @@
   <!-- Content description (not visible, for screen readers etc.) for the button to open the Tab Search feature to search through tabs. -->
   <string name="tab_manager_open_tab_search">Abrir pestana de busca</string>
   <!--
+    Tab Group
+
+    Title for the create tab group bottom sheet
+  -->
+  <string name="create_tab_group_title">Crear grupo de pestanas</string>
+  <string name="create_tab_group_save_button">Gardar</string>
+  <string name="edit_tab_group_bottom_sheet_close_content_description">Pecha Editar grupo de pestanas</string>
+  <!--
     History
 
     Text for the button to search all history
@@ -1754,11 +1762,26 @@
   <string name="download_rename_dialog_label">Nome</string>
   <string name="download_rename_dialog_confirm_button">Gardar</string>
   <string name="download_rename_dialog_cancel_button">Cancelar</string>
+  <!--
+    Error message when renaming with a name that already exists.
+    %s is the proposed file name.
+  -->
+  <string name="download_rename_error_exists_error">Xa existe un ficheiro chamado \"%s\" nesta localización</string>
+  <!-- Error message when renaming with an invalid file name. -->
+  <string name="download_rename_error_invalid_name_error">Os nomes de ficheiro non poden usar \"/\"</string>
   <!-- Title for the alert dialog when the file cannot be renamed. -->
   <string name="download_rename_error_cannot_rename_title">Non se pode cambiar o nome do ficheiro</string>
   <!-- Description message for the alert dialog when the file cannot be renamed. -->
   <string name="download_rename_error_cannot_rename_description">Este ficheiro non se pode renomear debido ás restricións do sistema ou de almacenamento.</string>
   <string name="download_rename_error_dismiss_button">Aceptar</string>
+  <!--
+    Title for the alert dialog to change file extension.
+    %s is the file type to change to.
+  -->
+  <string name="change_file_extension_title">Cambiar o tipo de ficheiro a %s?</string>
+  <string name="change_file_extension_description">Isto pode abrir o ficheiro nunha aplicación diferente e ser perigoso para o teu dispositivo.</string>
+  <string name="change_file_extension_cancel_button">Cancelar</string>
+  <string name="change_file_extension_confirm_button">Si, cambialo</string>
   <!-- Text for the header of in progress downloads -->
   <string name="download_header_in_progress">En progreso</string>
   <!--
@@ -2876,6 +2899,10 @@
   <string name="preferences_email_masks_suggest_learn_more">Máis información</string>
   <!-- Title for the Manage Email Masks links to Firefox Relay dashboard -->
   <string name="preferences_email_masks_manage_title">Xestionar máscaras de correo electrónico</string>
+  <!-- The message displayed when a user has used all of their free-tier email masks, so now the application will choose an existing one at random. -->
+  <string name="email_masks_max_free_tier_reached">Usaches as túas 5 máscaras de correo electrónico gratuítas, polo que escollemos unha para que as reutilices.</string>
+  <!-- The message displayed when there was an error with the email mask or Firefox Account services. -->
+  <string name="email_masks_error_retrieving_masks">As máscaras de correo electrónico non están dispoñibles neste momento. Téntao de novo nuns minutos.</string>
   <!--
     Autofill
 

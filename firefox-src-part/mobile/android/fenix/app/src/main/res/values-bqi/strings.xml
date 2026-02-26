@@ -1754,11 +1754,26 @@
   <string name="download_rename_dialog_label">نوم</string>
   <string name="download_rename_dialog_confirm_button">زفت</string>
   <string name="download_rename_dialog_cancel_button">لقو</string>
+  <!--
+    Error message when renaming with a name that already exists.
+    %s is the proposed file name.
+  -->
+  <string name="download_rename_error_exists_error">فایلی وا نوم «%s» ز زیتر منه ای جاگه بیڌسه.</string>
+  <!-- Error message when renaming with an invalid file name. -->
+  <string name="download_rename_error_invalid_name_error">نوم فایلا نتره «/» ن و کار گره</string>
   <!-- Title for the alert dialog when the file cannot be renamed. -->
   <string name="download_rename_error_cannot_rename_title">نتره نوم فایل ن آلشت کونه</string>
   <!-- Description message for the alert dialog when the file cannot be renamed. -->
   <string name="download_rename_error_cannot_rename_description">سی دل مئدۊدیتا سیستوم یا جاگه زفت کردن، آلشت نوم ای فایل ٱنجوم نؽگره.</string>
   <string name="download_rename_error_dismiss_button">خا</string>
+  <!--
+    Title for the alert dialog to change file extension.
+    %s is the file type to change to.
+  -->
+  <string name="change_file_extension_title">نوع فایل و %s آلشت داڌه بۊ؟</string>
+  <string name="change_file_extension_description">یو گاشڌ فایل ن من برنومه دیری بوگوشه وو سی دسگا ایسا خترناک بۊ.</string>
+  <string name="change_file_extension_cancel_button">لقو</string>
+  <string name="change_file_extension_confirm_button">هری، آلشتس کوݩ</string>
   <!-- Text for the header of in progress downloads -->
   <string name="download_header_in_progress">هونی پؽش اروه</string>
   <!--
@@ -2876,6 +2891,10 @@
   <string name="preferences_email_masks_suggest_learn_more">قلوه دووسته بۊین</string>
   <!-- Title for the Manage Email Masks links to Firefox Relay dashboard -->
   <string name="preferences_email_masks_manage_title">دؽوۉداری بؽڌار کونا ایمیل</string>
+  <!-- The message displayed when a user has used all of their free-tier email masks, so now the application will choose an existing one at random. -->
+  <string name="email_masks_max_free_tier_reached">ایسا ز 5 بؽڌار کوݩ ایمیل خوتووݩ استفاڌه کردینه، سی دل هیمو ایما یکی ن سی و کار گرؽڌن دووارته سی ایسا پسند کردیمه.</string>
+  <!-- The message displayed when there was an error with the email mask or Firefox Account services. -->
+  <string name="email_masks_error_retrieving_masks">بؽڌار کونا ایمیل سکو من دسرس نؽڌن.\nچن دیقه دی دووارته امتهووݩ کۊنین.</string>
   <!--
     Autofill
 

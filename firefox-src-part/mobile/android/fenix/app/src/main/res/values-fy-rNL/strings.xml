@@ -323,6 +323,8 @@
   <string name="browser_menu_save_as_pdf_2">Bewarje as PDF</string>
   <!-- Browser menu label for navigating to the translation feature, which provides language translation options the current visited page -->
   <string name="browser_menu_translate_page_2">Side oersette</string>
+  <!-- Browser menu label for navigating to the summarization feature, which provides site summarization for the current visited page -->
+  <string name="browser_menu_summarize_page">Side gearfetsje</string>
   <!-- Browser menu label for navigating to the Web Compat Reporter feature, which provides users the ability to send bug reports for broken sites. -->
   <string name="browser_menu_webcompat_reporter" tools:ignore="UnusedResources" moz:removedIn="149">Net-wurkjende website melde…</string>
   <!-- Browser menu label for navigating to the Web Compat Reporter feature, which provides users the ability to send bug reports for broken sites. -->
@@ -646,6 +648,8 @@
   <string name="nova_onboarding_tou_body_line_3_link_text">Ynstellingen beheare</string>
   <!-- "Set to default" onboarding title. -->
   <string name="nova_onboarding_set_to_default_title" tools:ignore="UnusedResources">Nim ôfskied fan grizelige trackers</string>
+  <!-- "Set to default" onboarding title. -->
+  <string name="nova_onboarding_set_to_default_title_2">Iepenje al jo keppelingen mei ynboude privacy</string>
   <!-- "Set to default" onboarding subtitle. -->
   <string name="nova_onboarding_set_to_default_subtitle">Wy beskermje jo gegevens en blokkearje automatysk bedriuwen dy’t jo klikken bespionearje.</string>
   <!-- "Set to default" onboarding button. -->
@@ -1736,6 +1740,8 @@
   <string name="download_share_url">URL diele</string>
   <!-- Text for the button to share the download file -->
   <string name="download_share_file">Bestân diele</string>
+  <!-- Text for the button to rename the download file -->
+  <string name="download_rename_file">Bestân omneame</string>
   <!-- Alert dialog confirmation before deleting multiple download items, this is the title. -->
   <string name="download_delete_multi_select_dialog_confirmation">Binne jo wis dat jo de selektearre items fuortsmite wolle?</string>
   <!-- Alert dialog confirmation before deleting multiple download items, this is the positive action. -->
@@ -1748,6 +1754,26 @@
   <string name="download_rename_dialog_label">Namme</string>
   <string name="download_rename_dialog_confirm_button">Bewarje</string>
   <string name="download_rename_dialog_cancel_button">Annulearje</string>
+  <!--
+    Error message when renaming with a name that already exists.
+    %s is the proposed file name.
+  -->
+  <string name="download_rename_error_exists_error">Der bestiet al in bestân mei de namme ‘%s’ op dizze lokaasje</string>
+  <!-- Error message when renaming with an invalid file name. -->
+  <string name="download_rename_error_invalid_name_error">Bestânsnammen meie ‘/’ net brûke</string>
+  <!-- Title for the alert dialog when the file cannot be renamed. -->
+  <string name="download_rename_error_cannot_rename_title">Kin betân net omneame</string>
+  <!-- Description message for the alert dialog when the file cannot be renamed. -->
+  <string name="download_rename_error_cannot_rename_description">Dit bestân kin net omneamd wurde fanwegen systeem- of ûnthâldbeheiningen.</string>
+  <string name="download_rename_error_dismiss_button">OK</string>
+  <!--
+    Title for the alert dialog to change file extension.
+    %s is the file type to change to.
+  -->
+  <string name="change_file_extension_title">Bestânstype wizigje nei %s?</string>
+  <string name="change_file_extension_description">Dit kin it bestân yn in oare app iepenje en riskant wêze foar jo apparaat.</string>
+  <string name="change_file_extension_cancel_button">Annulearje</string>
+  <string name="change_file_extension_confirm_button">Ja, wizigje</string>
   <!-- Text for the header of in progress downloads -->
   <string name="download_header_in_progress">Wurdt útfierd</string>
   <!--
@@ -2865,6 +2891,10 @@
   <string name="preferences_email_masks_suggest_learn_more">Mear ynfo</string>
   <!-- Title for the Manage Email Masks links to Firefox Relay dashboard -->
   <string name="preferences_email_masks_manage_title">E-mailmaskers beheare</string>
+  <!-- The message displayed when a user has used all of their free-tier email masks, so now the application will choose an existing one at random. -->
+  <string name="email_masks_max_free_tier_reached">Jo hawwe jo fiif fergese e-mailmaskers brûkt, dus wy hawwe ien foar jo útsocht om opnij te brûken.</string>
+  <!-- The message displayed when there was an error with the email mask or Firefox Account services. -->
+  <string name="email_masks_error_retrieving_masks">E-mailmaskers binne op dit stuit net beskikber. Probearje it oer in pear minuten opnij.</string>
   <!--
     Autofill
 

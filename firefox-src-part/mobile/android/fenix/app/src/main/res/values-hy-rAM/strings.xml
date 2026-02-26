@@ -1208,7 +1208,7 @@
   <!-- Text shown when user enters empty device name -->
   <string name="empty_device_name_error">Սարքի անունը չի կարող դատարկ լինել:</string>
   <!-- Label indicating that sync is in progress -->
-  <string name="sync_syncing_in_progress">Համաժամեցում…</string>
+  <string name="sync_syncing_in_progress">Հմ.ժամեցում</string>
   <!-- Label summary indicating that sync failed. %s is the date stamp showing last time it succeeded. -->
   <string name="sync_failed_summary">Համաժամեցումը ձախողվեց: Վերջին հաջողությունը՝ %s</string>
   <!-- Label summary showing never synced -->
@@ -1754,11 +1754,26 @@
   <string name="download_rename_dialog_label">Անուն</string>
   <string name="download_rename_dialog_confirm_button">Պահել</string>
   <string name="download_rename_dialog_cancel_button">Չեղարկել</string>
+  <!--
+    Error message when renaming with a name that already exists.
+    %s is the proposed file name.
+  -->
+  <string name="download_rename_error_exists_error">«%s» անունով ֆայլ արդեն գոյություն ունի այս տեղում</string>
+  <!-- Error message when renaming with an invalid file name. -->
+  <string name="download_rename_error_invalid_name_error">Ֆայլերի անունները չեն կարող պարունակել «/» նշանը</string>
   <!-- Title for the alert dialog when the file cannot be renamed. -->
   <string name="download_rename_error_cannot_rename_title">Հնարավոր չէ վերանվանել ֆայլը</string>
   <!-- Description message for the alert dialog when the file cannot be renamed. -->
   <string name="download_rename_error_cannot_rename_description">Այս ֆայլը չի կարող վերանվանվել համակարգի կամ պահեստավորման սահմանափակումների պատճառով։</string>
   <string name="download_rename_error_dismiss_button">Լավ</string>
+  <!--
+    Title for the alert dialog to change file extension.
+    %s is the file type to change to.
+  -->
+  <string name="change_file_extension_title">Փոխե՞լ ֆայլի տեսակը %s-ի՞։</string>
+  <string name="change_file_extension_description">Սա կարող է բացել ֆայլը այլ հավելվածում և վտանգավոր լինել ձեր սարքի համար։</string>
+  <string name="change_file_extension_cancel_button">Չեղարկել</string>
+  <string name="change_file_extension_confirm_button">Այո, փոխիր այն</string>
   <!-- Text for the header of in progress downloads -->
   <string name="download_header_in_progress">Ընթացքում</string>
   <!--
@@ -2876,6 +2891,10 @@
   <string name="preferences_email_masks_suggest_learn_more">Իմանալ ավելին</string>
   <!-- Title for the Manage Email Masks links to Firefox Relay dashboard -->
   <string name="preferences_email_masks_manage_title">Կառավարել էլ. փոստի դիմակները</string>
+  <!-- The message displayed when a user has used all of their free-tier email masks, so now the application will choose an existing one at random. -->
+  <string name="email_masks_max_free_tier_reached">Դուք օգտագործել եք ձեր 5 անվճար էլ. փոստի դիմակները, ուստի մենք ընտրեցինք մեկը, որպեսզի կարողանաք վերօգտագործել։</string>
+  <!-- The message displayed when there was an error with the email mask or Firefox Account services. -->
+  <string name="email_masks_error_retrieving_masks">Էլ․ փոստի դիմակներն այս պահին հասանելի չեն։ Փորձեք կրկին մի քանի րոպեից։</string>
   <!--
     Autofill
 

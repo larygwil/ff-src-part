@@ -1640,6 +1640,14 @@
   <!-- Content description (not visible, for screen readers etc.) for the button to open the Tab Search feature to search through tabs. -->
   <string name="tab_manager_open_tab_search">Öppna fliksökning</string>
   <!--
+    Tab Group
+
+    Title for the create tab group bottom sheet
+  -->
+  <string name="create_tab_group_title">Skapa flikgrupp</string>
+  <string name="create_tab_group_save_button">Spara</string>
+  <string name="edit_tab_group_bottom_sheet_close_content_description">Stäng redigera flikgrupp</string>
+  <!--
     History
 
     Text for the button to search all history
@@ -1754,11 +1762,26 @@
   <string name="download_rename_dialog_label">Namn</string>
   <string name="download_rename_dialog_confirm_button">Spara</string>
   <string name="download_rename_dialog_cancel_button">Avbryt</string>
+  <!--
+    Error message when renaming with a name that already exists.
+    %s is the proposed file name.
+  -->
+  <string name="download_rename_error_exists_error">En fil med namnet \"%s\" finns redan på den här platsen</string>
+  <!-- Error message when renaming with an invalid file name. -->
+  <string name="download_rename_error_invalid_name_error">Filnamn kan inte använda ”/”</string>
   <!-- Title for the alert dialog when the file cannot be renamed. -->
   <string name="download_rename_error_cannot_rename_title">Kan inte byta namn på fil</string>
   <!-- Description message for the alert dialog when the file cannot be renamed. -->
   <string name="download_rename_error_cannot_rename_description">Den här filen kan inte byta namn på grund av system- eller lagringsbegränsningar.</string>
   <string name="download_rename_error_dismiss_button">OK</string>
+  <!--
+    Title for the alert dialog to change file extension.
+    %s is the file type to change to.
+  -->
+  <string name="change_file_extension_title">Ändra filtyp till %s?</string>
+  <string name="change_file_extension_description">Detta kan öppna filen i en annan app och vara riskabelt för din enhet.</string>
+  <string name="change_file_extension_cancel_button">Avbryt</string>
+  <string name="change_file_extension_confirm_button">Ja, ändra den</string>
   <!-- Text for the header of in progress downloads -->
   <string name="download_header_in_progress">Pågår</string>
   <!--
@@ -2876,6 +2899,10 @@
   <string name="preferences_email_masks_suggest_learn_more">Läs mer</string>
   <!-- Title for the Manage Email Masks links to Firefox Relay dashboard -->
   <string name="preferences_email_masks_manage_title">Hantera e-postalias</string>
+  <!-- The message displayed when a user has used all of their free-tier email masks, so now the application will choose an existing one at random. -->
+  <string name="email_masks_max_free_tier_reached">Du har använt dina 5 gratis e-postalias, så vi valde ut ett som du kan återanvända.</string>
+  <!-- The message displayed when there was an error with the email mask or Firefox Account services. -->
+  <string name="email_masks_error_retrieving_masks">E-postalias är inte tillgängliga just nu. Försök igen om några minuter.</string>
   <!--
     Autofill
 

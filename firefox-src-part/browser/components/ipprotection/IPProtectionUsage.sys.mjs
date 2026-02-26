@@ -16,9 +16,7 @@
  * So after a connection is established, the isolation key should be added.
  */
 export class IPProtectionUsage {
-  constructor() {
-    ChromeUtils.generateQI([Ci.nsIObserver]);
-  }
+  constructor() {}
 
   start() {
     if (this.#active) {
@@ -105,7 +103,3 @@ export class IPProtectionUsage {
   #active = false;
   #isolationKeys = new Set();
 }
-
-IPProtectionUsage.prototype.QueryInterface = ChromeUtils.generateQI([
-  Ci.nsIObserver,
-]);

@@ -208,7 +208,7 @@
   <!-- Browser menu button that opens the extensions manager -->
   <string name="browser_menu_extensions">Rozšíření</string>
   <!-- Browser menu banner header text for extensions onboarding when all installed extensions have been disabled. -->
-  <string name="browser_menu_disabled_extensions_banner_onboarding_header" tools:ignore="UnusedResources" moz:removedIn="149">Máte nainstalovány rozšíření, ale nejsou povolené</string>
+  <string name="browser_menu_disabled_extensions_banner_onboarding_header" tools:ignore="UnusedResources" moz:removedIn="149">Máte nainstalována rozšíření, ale nejsou povolena</string>
   <!-- Browser menu button that opens the extensions manager -->
   <string name="browser_menu_manage_extensions">Správa rozšíření</string>
   <!-- Browser menu group that contains additional settings in collapsed state -->
@@ -414,7 +414,7 @@
   <!-- Button in the search suggestions onboarding that does not allow search suggestions in private sessions -->
   <string name="search_suggestions_onboarding_do_not_allow_button">Nepovolit</string>
   <!-- Search suggestion onboarding hint title text -->
-  <string name="search_suggestions_onboarding_title">Chcete našeptávat dotazy pro vyhledávač také v anonymním prohlížení?</string>
+  <string name="search_suggestions_onboarding_title">Chcete zobrazovat návrhy vyhledávání také při anonymním prohlížení?</string>
   <!-- Search suggestion onboarding hint description text, %s is the name of the app (for example "Firefox"). -->
   <string name="search_suggestions_onboarding_text">%s bude sdílet text zadávaný do adresního řádku s vaším výchozím vyhledávačem.</string>
   <!-- Search engine suggestion title text. %s is the name of the suggested engine. -->
@@ -777,7 +777,7 @@
   <!-- Settings item to add a search widget on the device's homescreen. -->
   <string name="preferences_add_search_widget_from_settings">Widget domovské obrazovky</string>
   <!-- Preference for settings related to Search engines suggestions -->
-  <string name="preferences_search_engines_suggestions">Návrhy z vyhledávačů</string>
+  <string name="preferences_search_engines_suggestions">Návrhy od vyhledávačů</string>
   <!-- Preference Category for settings related to Search address bar -->
   <string name="preferences_settings_address_bar">Předvolby adresního řádku</string>
   <!-- Preference Category for settings to Firefox Suggest -->
@@ -912,7 +912,7 @@
   <!-- Preference for developers -->
   <string name="preferences_remote_debugging">Vzdálené ladění pomocí USB</string>
   <!-- Preference title for switch preference to show search suggestions -->
-  <string name="preferences_show_search_suggestions">Našeptávat dotazy pro vyhledávač</string>
+  <string name="preferences_show_search_suggestions">Zobrazovat návrhy vyhledávání</string>
   <!-- Preference title for switch preference to show voice search button -->
   <string name="preferences_show_voice_search">Zobrazit hlasové vyhledávání</string>
   <!-- Preference title for switch preference to show search suggestions also in private mode -->
@@ -948,7 +948,7 @@
   -->
   <string name="preferences_show_nonsponsored_suggestions">Návrhy od aplikace %1$s</string>
   <!-- Summary for preference to show Firefox Suggest search suggestions for web content -->
-  <string name="preferences_show_nonsponsored_suggestions_summary">Získat návrhy z webu související s vaším vyhledáváním</string>
+  <string name="preferences_show_nonsponsored_suggestions_summary">Získat návrhy z webu souvisejícím s vaším vyhledáváním</string>
   <!-- Preference for link sharing -->
   <string name="preferences_link_sharing">Sdílení odkazu</string>
   <!-- Title for the link sharing toggle. %1$s is replaced by the brand name (e.g. Firefox). -->
@@ -1754,6 +1754,13 @@
   <string name="download_rename_dialog_label">Název</string>
   <string name="download_rename_dialog_confirm_button">Uložit</string>
   <string name="download_rename_dialog_cancel_button">Zrušit</string>
+  <!--
+    Error message when renaming with a name that already exists.
+    %s is the proposed file name.
+  -->
+  <string name="download_rename_error_exists_error">Soubor s názvem „%s“ již v tomto umístění existuje</string>
+  <!-- Error message when renaming with an invalid file name. -->
+  <string name="download_rename_error_invalid_name_error">Názvy souborů nemohou obsahovat znak „/“</string>
   <!-- Title for the alert dialog when the file cannot be renamed. -->
   <string name="download_rename_error_cannot_rename_title">Soubor se nedá přejmenovat</string>
   <!-- Description message for the alert dialog when the file cannot be renamed. -->
@@ -2625,7 +2632,7 @@
 
     Preference title for DNS over HTTPS settings
   -->
-  <string name="preference_doh_title">DNS skrze HTTPS</string>
+  <string name="preference_doh_title">DNS over HTTPS</string>
   <!-- Description of the preference to enable "DNS over HTTPS". %1$s is replaced by a link using `preference_doh_learn_more` at text ("Learn More"). -->
   <string name="preference_doh_summary">Systém DNS (Domain Name System) přes HTTPS odesílá váš požadavek na název domény prostřednictvím šifrovaného připojení, čímž zajišťuje bezpečný systém DNS a znemožňuje ostatním zjistit, na kterou webovou stránku se chystáte vstoupit. %1$s</string>
   <!-- Used as text for the link in `preference_doh_title`, points to documentation about "DNS over HTTPS" -->
@@ -2635,7 +2642,7 @@
   <!-- Content description for the "Info" button -->
   <string name="preference_doh_info_description">Info</string>
   <!-- Content description for the "Add Site" button -->
-  <string name="preference_doh_add_site_description">Přidat stránku</string>
+  <string name="preference_doh_add_site_description">Přidat web</string>
   <!-- Title displayed for "Default Protection" option under "DNS over HTTPS" -->
   <string name="preference_doh_default_protection">Výchozí ochrana</string>
   <!-- Summary displayed for "Default Protection" option under "DNS over HTTPS". %1$s is the name of the application (e.g. Fenix). -->
@@ -2695,7 +2702,7 @@
   <!-- Description of "exceptions" for "DNS over HTTPS". %1$s is the name of the app (for example "Firefox"). -->
   <string name="preference_doh_exceptions_summary">%1$s nebude zabezpečené DNS na těchto serverech a jejich subdoménách používat.</string>
   <!-- Text displayed that links to adding website domain for "DNS over HTTPS" exceptions. -->
-  <string name="preference_doh_exceptions_add">Přidat stránku</string>
+  <string name="preference_doh_exceptions_add">Přidat web</string>
   <!-- Text displayed above the input field when adding exceptions for "DNS over HTTPS". -->
   <string name="preference_doh_exceptions_add_site">Server</string>
   <!-- Placeholder URL displayed in the input field when adding exceptions for "DNS over HTTPS". -->
@@ -2876,6 +2883,10 @@
   <string name="preferences_email_masks_suggest_learn_more">Zjistit více</string>
   <!-- Title for the Manage Email Masks links to Firefox Relay dashboard -->
   <string name="preferences_email_masks_manage_title">Spravovat e-mailové masky</string>
+  <!-- The message displayed when a user has used all of their free-tier email masks, so now the application will choose an existing one at random. -->
+  <string name="email_masks_max_free_tier_reached">Už jste použili svých 5 bezplatných e-mailových masek, proto jsme pro vás vybrali jednu k opětovnému použití.</string>
+  <!-- The message displayed when there was an error with the email mask or Firefox Account services. -->
+  <string name="email_masks_error_retrieving_masks">E-mailové masky nyní nejsou k dispozici. Zkuste to znovu za několik minut.</string>
   <!--
     Autofill
 

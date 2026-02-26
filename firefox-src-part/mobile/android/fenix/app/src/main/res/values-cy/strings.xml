@@ -1640,6 +1640,14 @@
   <!-- Content description (not visible, for screen readers etc.) for the button to open the Tab Search feature to search through tabs. -->
   <string name="tab_manager_open_tab_search">Agor chwilio tabiau</string>
   <!--
+    Tab Group
+
+    Title for the create tab group bottom sheet
+  -->
+  <string name="create_tab_group_title">Creu grŵp tabiau</string>
+  <string name="create_tab_group_save_button">Cadw</string>
+  <string name="edit_tab_group_bottom_sheet_close_content_description">Cau Grŵp Tab Golygu</string>
+  <!--
     History
 
     Text for the button to search all history
@@ -1754,11 +1762,26 @@
   <string name="download_rename_dialog_label">Enw</string>
   <string name="download_rename_dialog_confirm_button">Cadw</string>
   <string name="download_rename_dialog_cancel_button">Diddymu</string>
+  <!--
+    Error message when renaming with a name that already exists.
+    %s is the proposed file name.
+  -->
+  <string name="download_rename_error_exists_error">Mae ffeil o\'r enw “%s” eisoes yn bodoli yn y lleoliad hwn</string>
+  <!-- Error message when renaming with an invalid file name. -->
+  <string name="download_rename_error_invalid_name_error">Dyw enwau ffeiliau ddim yn gallu ddefnyddio “/”</string>
   <!-- Title for the alert dialog when the file cannot be renamed. -->
-  <string name="download_rename_error_cannot_rename_title">Methu ailenwi ffeil</string>
+  <string name="download_rename_error_cannot_rename_title">Methu ail-enwi ffeil</string>
   <!-- Description message for the alert dialog when the file cannot be renamed. -->
-  <string name="download_rename_error_cannot_rename_description">Nid oes modd ailenwi\'r ffeil hon oherwydd cyfyngiadau system neu storio.</string>
+  <string name="download_rename_error_cannot_rename_description">Does dim modd ail-enwi\'r ffeil hon oherwydd cyfyngiadau system neu storio.</string>
   <string name="download_rename_error_dismiss_button">Iawn</string>
+  <!--
+    Title for the alert dialog to change file extension.
+    %s is the file type to change to.
+  -->
+  <string name="change_file_extension_title">Newid y math o ffeil i %s?</string>
+  <string name="change_file_extension_description">Efallai bydd hyn yn agor y ffeil mewn ap gwahanol a gallai fod yn beryglus i\'ch dyfais.</string>
+  <string name="change_file_extension_cancel_button">Diddymu</string>
+  <string name="change_file_extension_confirm_button">Iawn, ei newid</string>
   <!-- Text for the header of in progress downloads -->
   <string name="download_header_in_progress">Ar waith</string>
   <!--
@@ -2876,6 +2899,10 @@
   <string name="preferences_email_masks_suggest_learn_more">Dysgu rhagor</string>
   <!-- Title for the Manage Email Masks links to Firefox Relay dashboard -->
   <string name="preferences_email_masks_manage_title">Rheoli arallenwau e-bost</string>
+  <!-- The message displayed when a user has used all of their free-tier email masks, so now the application will choose an existing one at random. -->
+  <string name="email_masks_max_free_tier_reached">Rydych chi wedi defnyddio\'ch 5 arallenw e-bost am ddim, felly rydym wedi dewis un i chi ei ailddefnyddio.</string>
+  <!-- The message displayed when there was an error with the email mask or Firefox Account services. -->
+  <string name="email_masks_error_retrieving_masks">Does dim arallenwau e-bost ar gael ar hyn o bryd. Ceisiwch eto mewn ychydig funudau.</string>
   <!--
     Autofill
 

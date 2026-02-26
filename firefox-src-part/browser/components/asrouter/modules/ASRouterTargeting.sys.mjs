@@ -64,8 +64,10 @@ ChromeUtils.defineESModuleGetters(lazy, {
   FeatureCalloutBroker:
     "resource:///modules/asrouter/FeatureCalloutBroker.sys.mjs",
   HomePage: "resource:///modules/HomePage.sys.mjs",
+  PrivateBrowsingUtils: "resource://gre/modules/PrivateBrowsingUtils.sys.mjs",
   ProfileAge: "resource://gre/modules/ProfileAge.sys.mjs",
   Region: "resource://gre/modules/Region.sys.mjs",
+  SearchService: "moz-src:///toolkit/components/search/SearchService.sys.mjs",
   // eslint-disable-next-line mozilla/no-browser-refs-in-toolkit
   SelectableProfileService:
     "resource:///modules/profiles/SelectableProfileService.sys.mjs",
@@ -768,12 +770,11 @@ const TargetingGetters = {
       return Promise.resolve(NONE);
     }
     return new Promise(resolve => {
-      // Note: calling getAppProvidedEngines, calls Services.search.init which
+      // Note: calling getAppProvidedEngines, calls SearchService.init which
       // ensures this code is only executed after Search has been initialized.
-      Services.search
-        .getAppProvidedEngines()
+      lazy.SearchService.getAppProvidedEngines()
         .then(engines => {
-          let { defaultEngine } = Services.search;
+          let { defaultEngine } = lazy.SearchService;
           resolve({
             // Skip reporting the id for third party engines.
             current: defaultEngine.isAppProvided ? defaultEngine.id : null,
@@ -1387,6 +1388,17 @@ const TargetingGetters = {
         null
       ) === "full";
     return isEncryptedBackup;
+  },
+
+  get isPrivateWindow() {
+    let win = lazy.BrowserWindowTracker.getTopWindow({
+      allowFromInactiveWorkspace: true,
+    });
+    // If there's no window (like in backgroundTask mode), return false
+    if (!win) {
+      return false;
+    }
+    return lazy.PrivateBrowsingUtils.isContentWindowPrivate(win);
   },
 };
 

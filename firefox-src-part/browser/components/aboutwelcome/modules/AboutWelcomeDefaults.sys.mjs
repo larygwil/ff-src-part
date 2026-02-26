@@ -42,7 +42,7 @@ const MR_ABOUT_WELCOME_DEFAULT = {
     {
       id: "AW_BACKUP_RESTORE_EMBEDDED_BACKUP_FOUND",
       targeting:
-        "backupRestoreEnabled && (backupsInfo.found || backupsInfo.multipleBackupsFound)",
+        "backupRestoreEnabled && !hasSelectableProfiles && (backupsInfo.found && !backupsInfo.multipleBackupsFound)",
       content: {
         fullscreen: true,
         logo: {},
@@ -51,6 +51,66 @@ const MR_ABOUT_WELCOME_DEFAULT = {
         },
         subtitle: {
           string_id: "restore-from-backup-subtitle",
+        },
+        tiles: {
+          type: "backup_restore",
+        },
+        position: "split",
+        split_narrow_bkg_position: "-42px",
+        background:
+          "url('chrome://activity-stream/content/data/content/assets/fox-doodle-backup-restore.svg') var(--mr-secondary-position) no-repeat var(--mr-screen-background-color)",
+        progress_bar: true,
+        hide_secondary_section: "responsive",
+        backup_show_filepicker: {
+          action: {},
+        },
+        skip_button: {
+          label: {
+            string_id: "restore-from-backup-secondary-button",
+          },
+          action: {
+            navigate: true,
+          },
+        },
+      },
+    },
+    {
+      id: "AW_BACKUP_RESTORE_EMBEDDED_MULTIPLE_BACKUPS_FOUND",
+      targeting:
+        "backupRestoreEnabled && !hasSelectableProfiles && backupsInfo.multipleBackupsFound",
+      content: {
+        fullscreen: true,
+        logo: {},
+        title: {
+          string_id: "restore-from-backup-title",
+        },
+        subtitle: {
+          string_id: "restore-from-backup-subtitle",
+        },
+        cta_paragraph: {
+          icon: {
+            background:
+              "center / contain no-repeat url('chrome://global/skin/icons/info.svg')",
+            height: "16px",
+            width: "16px",
+            marginInline: "0 4px",
+          },
+          info_tile: true,
+          text: {
+            string_id: "multiple-backups-info-tile",
+            string_name: "settings-label",
+          },
+          style: {
+            marginBlock: "20px 0",
+            letterSpacing: "revert",
+          },
+          action: {
+            type: "OPEN_ABOUT_PAGE",
+            data: {
+              args: "preferences#sync-backup",
+              where: "tabshifted",
+            },
+          },
         },
         tiles: {
           type: "backup_restore",
@@ -169,6 +229,417 @@ const MR_ABOUT_WELCOME_DEFAULT = {
             addFlowParams: true,
           },
           targeting: "!isFxASignedIn",
+        },
+      },
+    },
+    {
+      id: "AW_SMART_WINDOW_NEEDS_DEFAULT_AND_PIN",
+      targeting:
+        "attributionData && attributionData.campaign == 'smart_window' && doesAppNeedPin && (unhandledCampaignAction != 'SET_DEFAULT_BROWSER') && (unhandledCampaignAction != 'PIN_FIREFOX_TO_TASKBAR') && (unhandledCampaignAction != 'PIN_AND_DEFAULT') && 'browser.shell.checkDefaultBrowser'|preferenceValue && !isDefaultBrowser",
+      force_hide_steps_indicator: true,
+      content: {
+        fullscreen: true,
+        position: "split",
+        split_narrow_bkg_position: "-60px",
+        image_alt_text: {
+          string_id: "smartwindow-onboarding-image-alt",
+        },
+        background:
+          "url('chrome://activity-stream/content/data/content/assets/mr-kit-smart-window.svg') var(--mr-secondary-position) no-repeat",
+        progress_bar: true,
+        hide_secondary_section: "responsive",
+        logo: {},
+        title: {
+          string_id: "smartwindow-onboarding-title",
+        },
+        subtitle: {
+          string_id: "smartwindow-onboarding-subtitle",
+        },
+        tiles: {
+          type: "multiselect",
+          data: [
+            {
+              id: "checkbox-1",
+              defaultValue: true,
+              label: {
+                string_id:
+                  "mr2022-onboarding-easy-setup-set-default-checkbox-label",
+              },
+              action: {
+                type: "SET_DEFAULT_BROWSER",
+              },
+            },
+            {
+              id: "checkbox-2",
+              defaultValue: true,
+              label: {
+                string_id: isMSIX
+                  ? "mr2022-onboarding-pin-primary-button-label-msix"
+                  : "mr2022-onboarding-pin-primary-button-label",
+              },
+              action: {
+                type: "MULTI_ACTION",
+                data: {
+                  actions: [
+                    {
+                      type: "PIN_FIREFOX_TO_TASKBAR",
+                    },
+                    {
+                      type: "PIN_FIREFOX_TO_START_MENU",
+                    },
+                  ],
+                },
+              },
+            },
+          ],
+        },
+        primary_button: {
+          label: {
+            string_id: "smartwindow-onboarding-primary-button",
+          },
+          action: {
+            type: "MULTI_ACTION",
+            collectSelect: true,
+            navigate: true,
+            data: {
+              actions: [
+                {
+                  type: "OPEN_ABOUT_PAGE",
+                  data: {
+                    args: "newtab",
+                    where: "current",
+                  },
+                },
+                {
+                  type: "SET_PREF",
+                  data: {
+                    pref: {
+                      name: "showEmbeddedImport",
+                      value: true,
+                    },
+                  },
+                },
+                {
+                  type: "FXA_AIWINDOW_SIGNIN_FLOW",
+                },
+              ],
+            },
+          },
+        },
+        secondary_button: {
+          label: {
+            string_id: "mr2022-onboarding-secondary-skip-button-label",
+          },
+          action: {
+            type: "MULTI_ACTION",
+            navigate: true,
+            data: {
+              actions: [
+                {
+                  type: "OPEN_ABOUT_PAGE",
+                  data: {
+                    args: "newtab",
+                    where: "current",
+                  },
+                },
+                {
+                  type: "SET_PREF",
+                  data: {
+                    pref: {
+                      name: "showEmbeddedImport",
+                      value: true,
+                    },
+                  },
+                },
+                {
+                  type: "FXA_AIWINDOW_SIGNIN_FLOW",
+                },
+              ],
+            },
+          },
+          has_arrow_icon: true,
+        },
+      },
+    },
+    {
+      id: "AW_SMART_WINDOW_NEEDS_DEFAULT",
+      targeting:
+        "attributionData && attributionData.campaign == 'smart_window' && (!doesAppNeedPin || (unhandledCampaignAction == 'PIN_FIREFOX_TO_TASKBAR')) && (unhandledCampaignAction != 'SET_DEFAULT_BROWSER') && (unhandledCampaignAction != 'PIN_AND_DEFAULT') && 'browser.shell.checkDefaultBrowser'|preferenceValue && !isDefaultBrowser",
+      force_hide_steps_indicator: true,
+      content: {
+        fullscreen: true,
+        position: "split",
+        split_narrow_bkg_position: "-60px",
+        image_alt_text: {
+          string_id: "smartwindow-onboarding-image-alt",
+        },
+        background:
+          "url('chrome://activity-stream/content/data/content/assets/mr-kit-smart-window.svg') var(--mr-secondary-position) no-repeat",
+        progress_bar: true,
+        hide_secondary_section: "responsive",
+        logo: {},
+        title: {
+          string_id: "smartwindow-onboarding-title",
+        },
+        subtitle: {
+          string_id: "smartwindow-onboarding-subtitle",
+        },
+        tiles: {
+          type: "multiselect",
+          data: [
+            {
+              id: "checkbox-1",
+              defaultValue: true,
+              label: {
+                string_id:
+                  "mr2022-onboarding-easy-setup-set-default-checkbox-label",
+              },
+              action: {
+                type: "SET_DEFAULT_BROWSER",
+              },
+            },
+          ],
+        },
+        primary_button: {
+          label: {
+            string_id: "smartwindow-onboarding-primary-button",
+          },
+          action: {
+            type: "MULTI_ACTION",
+            collectSelect: true,
+            navigate: true,
+            data: {
+              actions: [
+                {
+                  type: "OPEN_ABOUT_PAGE",
+                  data: {
+                    args: "newtab",
+                    where: "current",
+                  },
+                },
+                {
+                  type: "SET_PREF",
+                  data: {
+                    pref: {
+                      name: "showEmbeddedImport",
+                      value: true,
+                    },
+                  },
+                },
+                {
+                  type: "FXA_AIWINDOW_SIGNIN_FLOW",
+                },
+              ],
+            },
+          },
+        },
+        secondary_button: {
+          label: {
+            string_id: "mr2022-onboarding-secondary-skip-button-label",
+          },
+          action: {
+            type: "MULTI_ACTION",
+            navigate: true,
+            data: {
+              actions: [
+                {
+                  type: "OPEN_ABOUT_PAGE",
+                  data: {
+                    args: "newtab",
+                    where: "current",
+                  },
+                },
+                {
+                  type: "SET_PREF",
+                  data: {
+                    pref: {
+                      name: "showEmbeddedImport",
+                      value: true,
+                    },
+                  },
+                },
+                {
+                  type: "FXA_AIWINDOW_SIGNIN_FLOW",
+                },
+              ],
+            },
+          },
+          has_arrow_icon: true,
+        },
+      },
+    },
+    {
+      id: "AW_SMART_WINDOW_NEEDS_PIN",
+      targeting:
+        "attributionData && attributionData.campaign == 'smart_window' && doesAppNeedPin && (unhandledCampaignAction != 'PIN_FIREFOX_TO_TASKBAR') && (unhandledCampaignAction != 'PIN_AND_DEFAULT') && (!'browser.shell.checkDefaultBrowser'|preferenceValue || isDefaultBrowser || (unhandledCampaignAction == 'SET_DEFAULT_BROWSER'))",
+      force_hide_steps_indicator: true,
+      content: {
+        fullscreen: true,
+        position: "split",
+        split_narrow_bkg_position: "-60px",
+        image_alt_text: {
+          string_id: "smartwindow-onboarding-image-alt",
+        },
+        background:
+          "url('chrome://activity-stream/content/data/content/assets/mr-kit-smart-window.svg') var(--mr-secondary-position) no-repeat",
+        progress_bar: true,
+        hide_secondary_section: "responsive",
+        logo: {},
+        title: {
+          string_id: "smartwindow-onboarding-title",
+        },
+        subtitle: {
+          string_id: "smartwindow-onboarding-subtitle",
+        },
+        tiles: {
+          type: "multiselect",
+          data: [
+            {
+              id: "checkbox-1",
+              defaultValue: true,
+              label: {
+                string_id: isMSIX
+                  ? "mr2022-onboarding-pin-primary-button-label-msix"
+                  : "mr2022-onboarding-pin-primary-button-label",
+              },
+              action: {
+                type: "MULTI_ACTION",
+                data: {
+                  actions: [
+                    {
+                      type: "PIN_FIREFOX_TO_TASKBAR",
+                    },
+                    {
+                      type: "PIN_FIREFOX_TO_START_MENU",
+                    },
+                  ],
+                },
+              },
+            },
+          ],
+        },
+        primary_button: {
+          label: {
+            string_id: "smartwindow-onboarding-primary-button",
+          },
+          action: {
+            type: "MULTI_ACTION",
+            collectSelect: true,
+            navigate: true,
+            data: {
+              actions: [
+                {
+                  type: "OPEN_ABOUT_PAGE",
+                  data: {
+                    args: "newtab",
+                    where: "current",
+                  },
+                },
+                {
+                  type: "SET_PREF",
+                  data: {
+                    pref: {
+                      name: "showEmbeddedImport",
+                      value: true,
+                    },
+                  },
+                },
+                {
+                  type: "FXA_AIWINDOW_SIGNIN_FLOW",
+                },
+              ],
+            },
+          },
+        },
+        secondary_button: {
+          label: {
+            string_id: "mr2022-onboarding-secondary-skip-button-label",
+          },
+          action: {
+            type: "MULTI_ACTION",
+            navigate: true,
+            data: {
+              actions: [
+                {
+                  type: "OPEN_ABOUT_PAGE",
+                  data: {
+                    args: "newtab",
+                    where: "current",
+                  },
+                },
+                {
+                  type: "SET_PREF",
+                  data: {
+                    pref: {
+                      name: "showEmbeddedImport",
+                      value: true,
+                    },
+                  },
+                },
+                {
+                  type: "FXA_AIWINDOW_SIGNIN_FLOW",
+                },
+              ],
+            },
+          },
+          has_arrow_icon: true,
+        },
+      },
+    },
+    {
+      id: "AW_SMART_WINDOW_NO_CHECKBOXES",
+      targeting:
+        "attributionData && attributionData.campaign == 'smart_window' && (!doesAppNeedPin || (unhandledCampaignAction == 'PIN_FIREFOX_TO_TASKBAR') || (unhandledCampaignAction == 'PIN_AND_DEFAULT')) && (!'browser.shell.checkDefaultBrowser'|preferenceValue || isDefaultBrowser || (unhandledCampaignAction == 'SET_DEFAULT_BROWSER') || (unhandledCampaignAction == 'PIN_AND_DEFAULT'))",
+      force_hide_steps_indicator: true,
+      content: {
+        fullscreen: true,
+        position: "split",
+        split_narrow_bkg_position: "-60px",
+        image_alt_text: {
+          string_id: "smartwindow-onboarding-image-alt",
+        },
+        background:
+          "url('chrome://activity-stream/content/data/content/assets/mr-kit-smart-window.svg') var(--mr-secondary-position) no-repeat",
+        progress_bar: true,
+        hide_secondary_section: "responsive",
+        logo: {},
+        title: {
+          string_id: "smartwindow-onboarding-title",
+        },
+        subtitle: {
+          string_id: "smartwindow-onboarding-subtitle",
+        },
+        primary_button: {
+          label: {
+            string_id: "smartwindow-onboarding-primary-button",
+          },
+          action: {
+            type: "MULTI_ACTION",
+            navigate: true,
+            data: {
+              actions: [
+                {
+                  type: "OPEN_ABOUT_PAGE",
+                  data: {
+                    args: "newtab",
+                    where: "current",
+                  },
+                },
+                {
+                  type: "SET_PREF",
+                  data: {
+                    pref: {
+                      name: "showEmbeddedImport",
+                      value: true,
+                    },
+                  },
+                },
+                {
+                  type: "FXA_AIWINDOW_SIGNIN_FLOW",
+                },
+              ],
+            },
+          },
         },
       },
     },
@@ -970,9 +1441,10 @@ async function getAttributionContent() {
       };
     }
   }
-  if (attribution?.ua) {
+  if (attribution) {
     return {
-      ua: decodeURIComponent(attribution.ua),
+      ...attribution,
+      ua: attribution.ua ? decodeURIComponent(attribution.ua) : undefined,
     };
   }
   return null;
@@ -1040,6 +1512,10 @@ async function prepareContentForReact(content) {
 
   if (content?.template === "return_to_amo") {
     return content;
+  }
+
+  if (content?.campaign === "smart_window") {
+    content.backdrop = "var(--mr-smart-window-background-gradient)";
   }
 
   // Set the primary import button source based on attribution.

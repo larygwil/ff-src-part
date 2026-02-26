@@ -115,7 +115,7 @@ const IPPAutoStart = new IPPAutoStartSingleton();
 /**
  * This class monitors the startup phases and registers/unregisters the channel
  * filter to avoid data leak. The activation of the VPN is done by the
- * IPPAutoStart object above.
+ * IPPAutoStart and IPPAutoRestore objects above.
  */
 class IPPEarlyStartupFilter {
   #autoStartAndAtStartup = false;
@@ -143,7 +143,7 @@ class IPPEarlyStartupFilter {
   initOnStartupCompleted() {}
 
   uninit() {
-    if (this.autoStartAndAtStartup) {
+    if (this.#autoStartAndAtStartup) {
       this.#autoStartAndAtStartup = false;
 
       lazy.IPPProxyManager.removeEventListener(

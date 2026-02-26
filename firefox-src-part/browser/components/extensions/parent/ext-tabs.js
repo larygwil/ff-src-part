@@ -162,6 +162,7 @@ const allProperties = new Set([
   "discarded",
   "favIconUrl",
   "groupId",
+  "splitViewId",
   "hidden",
   "isArticle",
   "mutedInfo",
@@ -494,6 +495,20 @@ this.tabs = class extends ExtensionAPIPersistent {
             return;
           }
           needed.push("groupId");
+        } else if (event.type == "TabMove") {
+          const { previousTabState, currentTabState } = event.detail;
+          if (previousTabState.splitViewId === currentTabState.splitViewId) {
+            // Ignore all TabMove events except when the splitViewId changes.
+            return;
+          }
+          if (updatedTab.removedByAdoption || updatedTab.addedByAdoption) {
+            // Ignore TabMove events that were fired while adopting a split
+            // view and its tabs across windows. When a split view is adopted,
+            // it continues to exist in the new window, so despite the multiple
+            // TabMove events, effectively splitViewId does not change.
+            return;
+          }
+          needed.push("splitViewId");
         } else if (event.type == "TabShow") {
           needed.push("hidden");
         } else if (event.type == "TabHide") {
@@ -563,6 +578,9 @@ this.tabs = class extends ExtensionAPIPersistent {
       if (filter.properties.has("groupId")) {
         listeners.set("TabGrouped", listener);
         listeners.set("TabUngrouped", listener);
+      }
+      if (filter.properties.has("splitViewId")) {
+        listeners.set("TabMove", listener);
       }
       if (filter.properties.has("hidden")) {
         listeners.set("TabShow", listener);
@@ -1147,7 +1165,9 @@ this.tabs = class extends ExtensionAPIPersistent {
           */
           let lastInsertionMap = new Map();
 
-          for (let nativeTab of getNativeTabsFromIDArray(tabIds)) {
+          const tabsToMove = getNativeTabsFromIDArray(tabIds);
+          while (tabsToMove.length) {
+            let nativeTab = tabsToMove.shift();
             // If the window is not specified, use the window from the tab.
             let window = destinationWindow || nativeTab.ownerGlobal;
             let isSameWindow = nativeTab.ownerGlobal == window;
@@ -1207,17 +1227,41 @@ this.tabs = class extends ExtensionAPIPersistent {
               continue;
             }
 
+            let splitview = nativeTab.splitview;
+            if (splitview) {
+              // When a tab of a split view is moved, the whole split view is
+              // moved instead. Drop all tabs in the split view that are
+              // requested to be moved, since we will handle them now.
+              for (const tab of splitview.tabs) {
+                let i;
+                while ((i = tabsToMove.indexOf(tab)) !== -1) {
+                  tabsToMove.splice(i, 1);
+                }
+              }
+            }
             if (isSameWindow) {
               // If the window we are moving is the same, just move the tab.
+              // moveTabTo handles regular tabs and split views.
               gBrowser.moveTabTo(nativeTab, { tabIndex: insertionPoint });
+            } else if (splitview) {
+              // Split view for different window.
+              let tabIndexInSplitview = splitview.tabs.indexOf(nativeTab);
+              splitview = gBrowser.adoptSplitView(splitview, {
+                tabIndex: insertionPoint,
+              });
+              nativeTab = splitview.tabs[tabIndexInSplitview];
             } else {
               // If the window we are moving the tab in is different, then move the tab
               // to the new window.
+              // TODO bug 1762800: handle adoptTab failure.
               nativeTab = gBrowser.adoptTab(nativeTab, {
                 tabIndex: insertionPoint,
               });
             }
-            lastInsertionMap.set(window, nativeTab._tPos);
+            lastInsertionMap.set(
+              window,
+              splitview ? splitview.lastElementChild._tPos : nativeTab._tPos
+            );
             tabsMoved.push(nativeTab);
           }
 

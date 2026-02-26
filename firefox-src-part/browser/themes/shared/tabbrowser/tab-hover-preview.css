@@ -5,6 +5,12 @@
 #tab-preview-panel {
   --panel-width: 280px;
   --panel-padding: 0;
+  --tab-note-text-background: light-dark(rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.3));
+  --tab-note-text-border-color: transparent;
+  @media (prefers-contrast) {
+    --tab-note-text-background: transparent;
+    --tab-note-text-border-color: var(--border-color-card);
+  }
   /* stylelint-disable-next-line media-query-no-invalid */
   @media not -moz-pref("browser.tabs.notes.enabled") {
     pointer-events: none;
@@ -17,8 +23,6 @@
 
 .tab-preview-title {
   overflow: hidden;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
   font-weight: var(--heading-font-weight);
 }
@@ -57,11 +61,6 @@
   }
 }
 
-.tab-note-text-container:not(:empty) {
-  font: menu;
-  margin: 0 var(--space-large) var(--space-large);
-}
-
 .tab-preview-add-note {
   --box-border-color: transparent;
   --box-padding: var(--space-medium);
@@ -69,6 +68,68 @@
 
   &[hidden] {
     display: none;
+  }
+}
+
+.tab-preview-note-container {
+  font: menu;
+  position: relative;
+  margin: 0 var(--space-small) var(--space-small);
+  padding: var(--space-small);
+  border-radius: var(--border-radius-medium);
+  background-color: var(--tab-note-text-background);
+  border: var(--border-width) solid var(--tab-note-text-border-color);
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+.tab-preview-note-text {
+  overflow-wrap: break-word;
+
+  #tab-preview-panel:not([note-expanded]) & {
+    /* Set by Javascript */
+    --tab-note-expand-toggle-width: 0;
+
+    --gradient-width: 40px;
+    --gradient-offset: 10px;
+    --gradient-direction: right;
+
+    overflow: hidden;
+    -webkit-line-clamp: 10;
+
+    mask:
+      /* Mask 1: make all lines except the last visible (by default,
+       * unmasked portions of an element are invisible, which is why
+       * this is needed). Mask 2: Fade out the end of the last line */
+      linear-gradient(black) 0 0 / 100% calc(100% - 1lh) no-repeat,
+      linear-gradient(
+          to var(--gradient-direction),
+          black calc(100% - var(--tab-note-expand-toggle-width) - var(--gradient-width) - var(--gradient-offset)),
+          transparent calc(100% - var(--tab-note-expand-toggle-width) - var(--gradient-offset))
+        )
+        0 100% / 100% 1lh no-repeat;
+
+    &:dir(rtl) {
+      --gradient-direction: left;
+    }
+  }
+}
+
+.tab-preview-note-expand {
+  display: none;
+  text-decoration: underline;
+  cursor: pointer;
+  position: absolute;
+  /* position at bottom-end of containing box, using the same padding as the
+   * containing box */
+  inset-block-end: 0;
+  inset-inline-end: 0;
+  padding: var(--space-small);
+
+  #tab-preview-panel[note-overflow]:not([note-expanded]) & {
+    display: block;
   }
 }
 
