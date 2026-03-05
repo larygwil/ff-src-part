@@ -2113,6 +2113,9 @@ pref("browser.newtabpage.activity-stream.discoverystream.thumbsUpDown.searchTops
 // Displays publisher favicons on recommended stories of New Tab page
 pref("browser.newtabpage.activity-stream.discoverystream.publisherFavicon.enabled", true);
 
+// The pref controls if search hand-off is enabled for Activity Stream.
+pref("browser.newtabpage.activity-stream.improvesearch.handoffToAwesomebar", true);
+
 pref("browser.newtabpage.activity-stream.logowordmark.alwaysVisible", true);
 
 // URLs from the user's history that contain this search param will be hidden
@@ -2337,9 +2340,6 @@ pref("identity.fxaccounts.autoconfig.uri", "");
 
 // URL for help link about Send Tab.
 pref("identity.sendtabpromo.url", "https://support.mozilla.org/1/firefox/%VERSION%/%OS%/%LOCALE%/send-tab");
-
-// Whether synced tabs should be loaded using the moz-remote-image: protocol.
-pref("identity.tabs.remoteSVGIconDecoding", false);
 
 // URLs for promo links to mobile browsers. Note that consumers are expected to
 // append a value for utm_campaign.
@@ -2949,11 +2949,7 @@ pref("browser.toolbars.bookmarks.showOtherBookmarks", true);
 
 // Felt Privacy pref to control simplified private browsing UI
 pref("browser.privatebrowsing.felt-privacy-v1", false);
-#if defined(NIGHTLY_BUILD)
-  pref("security.certerrors.felt-privacy-v1", true);
-#else
-  pref("security.certerrors.felt-privacy-v1", false);
-#endif
+pref("security.certerrors.felt-privacy-v1", true);
 
 
 // Prefs to control the Firefox Account toolbar menu.

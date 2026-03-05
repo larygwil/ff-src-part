@@ -83,14 +83,14 @@ class TabNotesControllerClass {
     Services.obs.addObserver(this, "CanonicalURL:ActorUnregistered");
     if (this.TAB_NOTES_ENABLED) {
       lazy.logConsole.debug("browserFirstWindowReady", "Tab notes enabled");
-      this.#init().then(() => {
+      return this.#init().then(() => {
         for (const win of lazy.BrowserWindowTracker.orderedWindows) {
           this.#initWindow(win);
         }
       });
-    } else {
-      lazy.logConsole.debug("browserFirstWindowReady", "Tab notes disabled");
     }
+    lazy.logConsole.debug("browserFirstWindowReady", "Tab notes disabled");
+    return Promise.resolve();
   }
 
   /**
@@ -137,6 +137,16 @@ class TabNotesControllerClass {
   #initWindow(win) {
     EVENTS.forEach(eventName => win.addEventListener(eventName, this));
     win.gBrowser.addTabsProgressListener(this);
+
+    // check tabs that may have had canonicalUrl restored from session data
+    for (const tab of win.gBrowser.tabs) {
+      if (tab.canonicalUrl && lazy.TabNotes.isEligible(tab)) {
+        lazy.TabNotes.has(tab).then(hasTabNote => {
+          tab.hasTabNote = hasTabNote;
+        });
+      }
+    }
+
     lazy.logConsole.debug("initWindow", win, EVENTS);
   }
 
@@ -172,7 +182,7 @@ class TabNotesControllerClass {
    * @see tabnotes.manifest
    */
   browserQuitApplicationGranted() {
-    this.#deinit();
+    return this.#deinit();
   }
 
   /**
@@ -295,7 +305,7 @@ class TabNotesControllerClass {
    *
    * @type {Extract<nsIObserver, Function>}
    */
-  observe(aSubject, aTopic) {
+  observe(_aSubject, aTopic) {
     switch (aTopic) {
       case "CanonicalURL:ActorRegistered":
         // Tab notes pref was flipped from disabled to enabled while the
@@ -428,6 +438,13 @@ class TabNotesControllerClass {
 
       // General same document case: we are navigating in the same document,
       // so the tab note indicator does not need to change.
+      return;
+    }
+
+    if (aFlags & Ci.nsIWebProgressListener.LOCATION_CHANGE_SESSION_STORE) {
+      // Location was changed as part of a session restoration. In this case
+      // the canonical URL was already retrieved from session data.
+      lazy.logConsole.debug("preserving tab note state during session restore");
       return;
     }
 

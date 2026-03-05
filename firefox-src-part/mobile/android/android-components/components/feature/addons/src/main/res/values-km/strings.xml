@@ -236,7 +236,7 @@
   <!-- The author of an add-on. -->
   <string name="mozac_feature_addons_author">អ្នកនិពន្ធ</string>
   <!-- The last date that the add-on was updated. -->
-  <string name="mozac_feature_addons_last_updated">បានធ្វើបច្ចុប្បន្នភាពចុងក្រោយ</string>
+  <string name="mozac_feature_addons_last_updated">បានអាប់ដេតចុងក្រោយ</string>
   <!-- The developer website (Homepage) of the add-on. -->
   <string name="mozac_feature_addons_home_page">ទំព័រដើម</string>
   <!-- A link where users can find more information about add-ons permissions. -->
@@ -378,8 +378,6 @@
   <!-- Text shown when attempting to install an add-on that can only be install via Enterprise Policies, which is not supported on Android.  %1$s is the add-on name. -->
   <string name="mozac_feature_addons_admin_install_only">មិនអាចដំឡើង %1$s បានទេ ពីព្រោះវាអាចដំឡើងបានដោយអង្គការដែលប្រើគោលការណ៍សហគ្រាសប៉ុណ្ណោះ ដែលមិនត្រូវបានគាំទ្រនៅលើវេទិកានេះ។</string>
   <!-- Text shown when attempting to install an add-on that is soft-blocked. %1$s is the add-on name. %2$s is the app name. -->
-  <string name="mozac_feature_addons_soft_blocked_1" moz:removedIn="147" tools:ignore="UnusedResources">%1$s បំពាន​គោលការណ៍​របស់ Mozilla ហើយ​មិន​អាច​ដំឡើង​នៅ​លើ %2$s បាន​ទេ។</string>
-  <!-- Text shown when attempting to install an add-on that is soft-blocked. %1$s is the add-on name. %2$s is the app name. -->
   <string name="mozac_feature_addons_soft_blocked_2">%1$s ត្រូវ​បាន​រឹតត្បិត ហើយ​មិន​អាច​ដំឡើង​នៅ​លើ %2$s បាន​ទេ។</string>
   <!-- Text shown after failed to enable an add-on. %1$s is the add-on name. -->
   <string name="mozac_feature_addons_failed_to_enable">បរាជ័យក្នុងការបើក %1$s</string>
@@ -426,11 +424,7 @@
   <!-- Status message below an add-on in the add-ons manager when this add-on has been blocklisted. %1$s is the add-on name. -->
   <string name="mozac_feature_addons_status_blocklisted_1">កម្មវិធីបន្ថែមនេះត្រូវបានរារាំងដោយសារតែការរំលោភលើគោលការណ៍របស់ Mozilla ហើយត្រូវបានបិទ។</string>
   <!-- Status message below an add-on in the add-ons manager when this add-on has been soft-blocked. -->
-  <string name="mozac_feature_addons_status_softblocked_1" moz:removedIn="147" tools:ignore="UnusedResources">កម្មវិធីបន្ថែមនេះត្រូវបានដាក់កម្រិតចំពោះការរំលោភលើគោលការណ៍របស់ Mozilla ហើយត្រូវបានបិទ។ អ្នកអាចបើកវាបាន ប៉ុន្តែវាអាចមានគ្រោះថ្នាក់។</string>
-  <!-- Status message below an add-on in the add-ons manager when this add-on has been soft-blocked. -->
   <string name="mozac_feature_addons_status_softblocked_2">ផ្នែកបន្ថែមនេះត្រូវបានដាក់កម្រិត ហើយត្រូវបានបិទ។ អ្នកអាចបើកវាបាន ប៉ុន្តែវាអាចមានគ្រោះថ្នាក់។</string>
-  <!-- Status message below an add-on in the add-ons manager when this add-on has been soft-blocked but the user re-enabled it. -->
-  <string name="mozac_feature_addons_status_softblocked_re_enabled" moz:removedIn="147" tools:ignore="UnusedResources">កម្មវិធីបន្ថែមនេះបំពានគោលការណ៍របស់ Mozilla។ ការប្រើប្រាស់វាអាចមានហានិភ័យ។</string>
   <!-- Status message below an add-on in the add-ons manager when this add-on has been soft-blocked but the user re-enabled it. -->
   <string name="mozac_feature_addons_status_softblocked_re_enabled_2">ផ្នែកបន្ថែមនេះត្រូវបានដាក់កម្រិត។ ការប្រើប្រាស់វាអាចមានហានិភ័យ។</string>
   <!-- Status message below an add-on in the add-ons manager when this add-on hasn't been signed correctly. %1$s is the add-on name. -->

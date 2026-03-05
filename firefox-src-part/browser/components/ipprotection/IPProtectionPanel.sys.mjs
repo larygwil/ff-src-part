@@ -150,6 +150,17 @@ export class IPProtectionPanel {
   }
 
   /**
+   * Gets the toolbar for this panel's window
+   *
+   * @return {IPProtectionToolbarButton|undefined}
+   *  The toolbarbutton element, or undefined if the window has been garbage collected.
+   */
+  get toolbarButton() {
+    const win = this.#window.get();
+    return lazy.IPProtection.getToolbarButton(win);
+  }
+
+  /**
    * Check the state of the enclosing panel to see if
    * it is active (open or showing).
    */
@@ -281,12 +292,20 @@ export class IPProtectionPanel {
     panelEl.requestUpdate();
   }
 
-  #startProxy() {
-    lazy.IPPProxyManager.start();
+  async #startProxy() {
+    const { started, error } = await lazy.IPPProxyManager.start(true);
+    if (!started) {
+      const errorMessage =
+        error == ERRORS.NETWORK ? ERRORS.NETWORK : ERRORS.GENERIC;
+      this.setState({
+        error: errorMessage,
+      });
+      this.toolbarButton?.updateState(null, { error: errorMessage });
+    }
   }
 
-  #stopProxy() {
-    lazy.IPPProxyManager.stop();
+  async #stopProxy() {
+    await lazy.IPPProxyManager.stop();
   }
 
   /**
@@ -498,6 +517,7 @@ export class IPProtectionPanel {
         this.setState({
           error: "",
         });
+        this.toolbarButton?.updateState(null, { error: "" });
       }
     }
   }
@@ -650,16 +670,32 @@ export class IPProtectionPanel {
   /**
    * BigInts throw when using JSON.stringify or when using arithmetic with
    * numbers so we convert them to numbers here so they max and remaining can
-   * be safely used.
+   * be safely used. Check usageInfo first, if that doesn't exist, check the
+   * entitlement. If neither exist, return null.
    *
    * @returns {object} An object with max and remaining as numbers
    */
   #getBandwidthUsage() {
-    if (lazy.BANDWIDTH_USAGE_ENABLED && lazy.IPPProxyManager.usageInfo) {
+    if (
+      lazy.BANDWIDTH_USAGE_ENABLED &&
+      lazy.IPPProxyManager.usageInfo?.max != null
+    ) {
       return {
         max: Number(lazy.IPPProxyManager.usageInfo.max),
         remaining: Number(lazy.IPPProxyManager.usageInfo.remaining),
         reset: lazy.IPPProxyManager.usageInfo.reset,
+      };
+    } else if (
+      lazy.BANDWIDTH_USAGE_ENABLED &&
+      lazy.IPPEnrollAndEntitleManager.entitlement?.maxBytes != null
+    ) {
+      // Usage info doesn't exist yet. Check the entitlement
+      return {
+        max: Number(lazy.IPPEnrollAndEntitleManager.entitlement?.maxBytes),
+        remaining: Number(
+          lazy.IPPEnrollAndEntitleManager.entitlement?.maxBytes
+        ),
+        reset: null,
       };
     }
 
@@ -723,17 +759,9 @@ export class IPProtectionPanel {
       event.type == "IPProtectionService:StateChanged" ||
       event.type === "IPPEnrollAndEntitleManager:StateChanged"
     ) {
-      let hasError =
-        lazy.IPPProxyManager.state === lazy.IPPProxyStates.ERROR &&
-        (lazy.IPPProxyManager.errors.includes(ERRORS.GENERIC) ||
-          lazy.IPPProxyManager.errors.includes(ERRORS.NETWORK));
-
       let errorType = "";
-      if (hasError) {
-        // Prioritize network error over generic error
-        errorType = lazy.IPPProxyManager.errors.includes(ERRORS.NETWORK)
-          ? ERRORS.NETWORK
-          : ERRORS.GENERIC;
+      if (lazy.IPPProxyManager.state === lazy.IPPProxyStates.ERROR) {
+        errorType = ERRORS.GENERIC;
       }
 
       this.setState({
@@ -748,6 +776,10 @@ export class IPProtectionPanel {
         isActivating:
           lazy.IPPProxyManager.state === lazy.IPPProxyStates.ACTIVATING,
         bandwidthUsage: this.#getBandwidthUsage(),
+        bandwidthWarning:
+          lazy.IPProtectionService.state === lazy.IPProtectionStates.READY
+            ? this.state.bandwidthWarning
+            : false,
       });
     } else if (event.type == "IPPExceptionsManager:ExclusionChanged") {
       this.#updateSiteData();
@@ -792,11 +824,24 @@ export class IPProtectionPanel {
         remainingPercent > BANDWIDTH.THIRD_THRESHOLD
       ) {
         threshold = firstWarning;
-      } else if (remainingPercent <= BANDWIDTH.THIRD_THRESHOLD) {
+      } else if (
+        remainingPercent > 0 &&
+        remainingPercent <= BANDWIDTH.THIRD_THRESHOLD
+      ) {
         threshold = secondWarning;
+      } else if (remainingPercent === 0) {
+        threshold = 100;
       }
 
+      const lastRecordedThreshold = Services.prefs.getIntPref(
+        BANDWIDTH_THRESHOLD_PREF,
+        threshold
+      );
       Services.prefs.setIntPref(BANDWIDTH_THRESHOLD_PREF, threshold);
+
+      if (lastRecordedThreshold !== threshold) {
+        this.#measureBandwidthThreshold(threshold, lastRecordedThreshold);
+      }
 
       // Reset dismissed warnings when usage is reset
       if (threshold === 0) {
@@ -814,8 +859,10 @@ export class IPProtectionPanel {
         });
       }
 
-      // Show warning only if threshold is 75 or 90 and higher than dismissed threshold
-      if (
+      // Check threshold and clear or set warning
+      if (threshold === 100) {
+        this.setState({ bandwidthWarning: false });
+      } else if (
         (threshold === firstWarning || threshold === secondWarning) &&
         threshold > this.#lastBandwidthWarningMessageDismissed
       ) {
@@ -825,5 +872,15 @@ export class IPProtectionPanel {
         this.setState({ bandwidthWarning: false });
       }
     }
+  }
+
+  #measureBandwidthThreshold(threshold, lastRecordedThreshold) {
+    if (!threshold || threshold == lastRecordedThreshold) {
+      return;
+    }
+
+    Glean.ipprotection.bandwidthUsedThreshold.record({
+      percentage: threshold,
+    });
   }
 }

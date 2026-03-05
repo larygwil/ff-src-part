@@ -242,9 +242,23 @@ export default class IPProtectionContentElement extends MozLitElement {
     if (this.state.bandwidthWarning) {
       messageId = "ipprotection-message-bandwidth-warning";
       messageType = "warning";
+      const bandwidthRemaining =
+        this.state.bandwidthUsage.remaining / BANDWIDTH.BYTES_IN_GB;
+      const maxUsage = this.state.bandwidthUsage.max / BANDWIDTH.BYTES_IN_GB;
+      const pctUsed = (100 * (maxUsage - bandwidthRemaining)) / maxUsage;
+      let usageLeft = Math.round(bandwidthRemaining);
+
+      if (pctUsed >= 75 && pctUsed < 90) {
+        usageLeft = bandwidthRemaining.toFixed(1);
+      } else if (bandwidthRemaining < 1) {
+        messageId = "ipprotection-message-bandwidth-warning-mb";
+        usageLeft = Math.floor(
+          this.state.bandwidthUsage.remaining / BANDWIDTH.BYTES_IN_MB
+        );
+      }
       messageLinkL10nArgs = JSON.stringify({
-        usageLeft: this.state.bandwidthUsage.remaining / BANDWIDTH.BYTES_IN_GB,
-        maxUsage: this.state.bandwidthUsage.max / BANDWIDTH.BYTES_IN_GB,
+        usageLeft,
+        maxUsage,
       });
     } else if (this.state.onboardingMessage) {
       messageId = this.state.onboardingMessage;
@@ -451,6 +465,9 @@ export default class IPProtectionContentElement extends MozLitElement {
       !this._messageDismissed
     ) {
       this._showMessageBar = true;
+    } else if (!this.state.onboardingMessage && !this.state.bandwidthWarning) {
+      // Remove the message bar if we can no longer render messages before they were dismissed
+      this._showMessageBar = false;
     }
 
     const messageBar = this._showMessageBar ? this.messageBarTemplate() : null;
