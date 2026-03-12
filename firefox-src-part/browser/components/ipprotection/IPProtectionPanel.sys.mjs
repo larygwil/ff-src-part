@@ -6,6 +6,7 @@ const lazy = {};
 
 ChromeUtils.defineESModuleGetters(lazy, {
   ASRouter: "resource:///modules/asrouter/ASRouter.sys.mjs",
+  PrivateBrowsingUtils: "resource://gre/modules/PrivateBrowsingUtils.sys.mjs",
   CustomizableUI:
     "moz-src:///browser/components/customizableui/CustomizableUI.sys.mjs",
   IPPEnrollAndEntitleManager:
@@ -210,7 +211,7 @@ export class IPProtectionPanel {
       hasUpgraded: lazy.IPPEnrollAndEntitleManager.hasUpgraded,
       onboardingMessage: "",
       bandwidthWarning: false,
-      paused: false,
+      paused: lazy.IPPProxyManager.state === lazy.IPPProxyStates.PAUSED,
       isSiteExceptionsEnabled: this.isExceptionsFeatureEnabled,
       siteData: this.#getSiteData(),
       bandwidthUsage: this.#getBandwidthUsage(),
@@ -293,7 +294,13 @@ export class IPProtectionPanel {
   }
 
   async #startProxy() {
-    const { started, error } = await lazy.IPPProxyManager.start(true);
+    const win = this.#window.get();
+    const inPrivateBrowsing =
+      !!win && lazy.PrivateBrowsingUtils.isWindowPrivate(win);
+    const { started, error } = await lazy.IPPProxyManager.start(
+      true,
+      inPrivateBrowsing
+    );
     if (!started) {
       const errorMessage =
         error == ERRORS.NETWORK ? ERRORS.NETWORK : ERRORS.GENERIC;
@@ -316,7 +323,11 @@ export class IPProtectionPanel {
   static showHelpPage(e) {
     let win = e.target?.ownerGlobal;
     if (win) {
-      win.openWebLinkIn(LINKS.SUPPORT_URL, "tab");
+      win.openWebLinkIn(
+        Services.urlFormatter.formatURLPref("app.support.baseURL") +
+          LINKS.SUPPORT_SLUG,
+        "tab"
+      );
     }
 
     let panelParent = e.target?.closest("panel");
@@ -339,6 +350,10 @@ export class IPProtectionPanel {
     if (this.initiatedUpgrade) {
       lazy.IPPEnrollAndEntitleManager.refetchEntitlement();
       this.initiatedUpgrade = false;
+    }
+
+    if (!this.state.unauthenticated) {
+      lazy.IPPProxyManager.refreshUsage();
     }
 
     this.#updateSiteData();
@@ -486,6 +501,7 @@ export class IPProtectionPanel {
    * Ensure there is a signed in account and then open the panel after enrolling.
    */
   async enroll() {
+    Glean.ipprotection.getStarted.record();
     const signedIn = await this.startLoginFlow();
     if (!signedIn) {
       return;
@@ -498,10 +514,14 @@ export class IPProtectionPanel {
 
     // Asynchronously enroll and entitle the user.
     // It will only need to finish before the proxy can start.
-    lazy.IPPEnrollAndEntitleManager.maybeEnrollAndEntitle();
+    const enrolling = lazy.IPPEnrollAndEntitleManager.maybeEnrollAndEntitle();
     if (!this.active) {
       await this.open();
     }
+    const result = await enrolling;
+    Glean.ipprotection.enrollment.record({
+      enrolled: result?.isEnrolledAndEntitled,
+    });
   }
 
   /**
@@ -780,6 +800,7 @@ export class IPProtectionPanel {
           lazy.IPProtectionService.state === lazy.IPProtectionStates.READY
             ? this.state.bandwidthWarning
             : false,
+        paused: lazy.IPPProxyManager.state === lazy.IPPProxyStates.PAUSED,
       });
     } else if (event.type == "IPPExceptionsManager:ExclusionChanged") {
       this.#updateSiteData();
@@ -788,11 +809,13 @@ export class IPProtectionPanel {
       const principal = win?.gBrowser.contentPrincipal;
 
       lazy.IPPExceptionsManager.setExclusion(principal, false);
+      Glean.ipprotection.exclusionToggled.record({ excluded: false });
     } else if (event.type == "IPProtection:UserDisableVPNForSite") {
       const win = event.target.ownerGlobal;
       const principal = win?.gBrowser.contentPrincipal;
 
       lazy.IPPExceptionsManager.setExclusion(principal, true);
+      Glean.ipprotection.exclusionToggled.record({ excluded: true });
     } else if (event.type == "IPProtection:DismissBandwidthWarning") {
       // Store the dismissed threshold level
       this.#lastBandwidthWarningMessageDismissed = event.detail.threshold;

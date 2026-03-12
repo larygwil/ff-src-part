@@ -1592,6 +1592,8 @@
   <string name="tab_manager_multiselect_menu_item_share">Co-roinn</string>
   <!-- Text shown in the multiselect menu for adding selected tabs to collections. -->
   <string name="tab_manager_multiselect_menu_item_add_to_collection">Cuir ri cruinneachadh</string>
+  <!-- Text shown in the multiselect menu for adding selected tabs to a tab group. -->
+  <string name="tab_manager_multiselect_menu_item_add_to_tab_group">Cuir ri buidheann</string>
   <!-- Content description for tabs tray multiselect share button -->
   <string name="tab_tray_multiselect_share_content_description" tools:ignore="UnusedResources" moz:removedIn="149">Co-roinn na tabaichean a thagh thu</string>
   <!-- Content description for tabs tray multiselect menu -->
@@ -1638,12 +1640,21 @@
     Title for the create tab group bottom sheet
   -->
   <string name="create_tab_group_title">Cruthaich buidheann thabaichean</string>
+  <!-- Title for the edit tab group bottom sheet -->
+  <string name="edit_tab_group_title">Deasaich am buidheann</string>
   <string name="create_tab_group_save_button">Sàbhail</string>
   <string name="edit_tab_group_bottom_sheet_close_content_description">Dùin deasachadh buidheann nan taba</string>
   <!-- Default tab group name when creating a tab group -->
-  <string name="create_tab_group_default_name">Buidheann</string>
+  <string name="create_tab_group_default_name" tools:ignore="UnusedResources" moz:removedIn="150">Buidheann</string>
+  <!--
+    Default tab group name when creating a tab group
+    %d is the number of existing tab groups + 1.
+  -->
+  <string name="create_tab_group_form_default_name">Buidheann %d</string>
   <!-- Label for the tab group name field in the bottom sheet to create a new tab group. -->
-  <string name="create_tab_group_name_label">Ainm</string>
+  <string name="create_tab_group_name_label" tools:ignore="UnusedResources" moz:removedIn="150">Ainm</string>
+  <!-- Label for the tab group name field in the bottom sheet to create or edit a tab group. -->
+  <string name="tab_group_name_label">Ainm</string>
   <!--
     History
 
@@ -1978,7 +1989,7 @@
   <!-- Bookmark overflow menu edit button -->
   <string name="bookmark_menu_edit_button">Deasaich</string>
   <!-- Bookmark overflow menu copy button -->
-  <string name="bookmark_menu_copy_button">Lethbhreac</string>
+  <string name="bookmark_menu_copy_button" tools:ignore="UnusedResources" moz:removedIn="150">Lethbhreac</string>
   <!-- Bookmark overflow menu share button -->
   <string name="bookmark_menu_share_button">Co-roinn</string>
   <!-- Bookmark overflow menu select all bookmarks -->
@@ -2308,23 +2319,23 @@
   -->
   <string name="nimbus_notification_default_browser_text" tools:ignore="BrandUsage,UnusedResources">Cleachd Firefox mar am brabhsair bunaiteach agad</string>
   <!-- Title shown in the notification that pops up to re-engage the user -->
-  <string name="notification_re_engagement_title">Feuch am brabhsadh prìobhaideach</string>
+  <string name="notification_re_engagement_title" tools:ignore="UnusedResources" moz:removedIn="150">Feuch am brabhsadh prìobhaideach</string>
   <!--
     Text shown in the notification that pops up to re-engage the user.
     %1$s is a placeholder that will be replaced by the app name.
   -->
-  <string name="notification_re_engagement_text">Dèan brabhsadh gun bhriosgaid no eachdraidh sam bith a shàbhaladh ann am %1$s</string>
+  <string name="notification_re_engagement_text" tools:ignore="UnusedResources" moz:removedIn="150">Dèan brabhsadh gun bhriosgaid no eachdraidh sam bith a shàbhaladh ann am %1$s</string>
   <!-- Title A shown in the notification that pops up to re-engage the user -->
-  <string name="notification_re_engagement_A_title">Dèan brabhsadh gun lorg fhàgail</string>
+  <string name="notification_re_engagement_A_title" tools:ignore="UnusedResources" moz:removedIn="150">Dèan brabhsadh gun lorg fhàgail</string>
   <!--
     Text A shown in the notification that pops up to re-engage the user.
     %1$s is a placeholder that will be replaced by the app name.
   -->
-  <string name="notification_re_engagement_A_text">Ma nì thu brabhsadh prìobhaideach, cha sàbhail %1$s am fiosrachadh agad.</string>
+  <string name="notification_re_engagement_A_text" tools:ignore="UnusedResources" moz:removedIn="150">Ma nì thu brabhsadh prìobhaideach, cha sàbhail %1$s am fiosrachadh agad.</string>
   <!-- Title B shown in the notification that pops up to re-engage the user -->
-  <string name="notification_re_engagement_B_title">Tòisich air rudan a lorg</string>
+  <string name="notification_re_engagement_B_title" tools:ignore="UnusedResources" moz:removedIn="150">Tòisich air rudan a lorg</string>
   <!-- Text B shown in the notification that pops up to re-engage the user -->
-  <string name="notification_re_engagement_B_text">Lorg rud-eigin am fagas. No faigh lorg air rud-eigin spòrsail.</string>
+  <string name="notification_re_engagement_B_text" tools:ignore="UnusedResources" moz:removedIn="150">Lorg rud-eigin am fagas. No faigh lorg air rud-eigin spòrsail.</string>
   <!--
     Survey
 
@@ -3670,6 +3681,13 @@
   -->
   <string name="connection_security_panel_verified_by">Air a dhearbhadh le %s</string>
   <!--
+    Text for the connection security panel when the site uses a QWAC.
+    %s is a placeholder for the organization for which the certificate was issued.
+  -->
+  <string name="connection_security_panel_issued_to">Air fhoillseachadh dha %s</string>
+  <!-- Text for the connection security panel when the site uses a QWAC. -->
+  <string name="connection_security_panel_qualified_certificate">A rèir riatanasan Riaghlad (AE) 2024/1183.</string>
+  <!--
     Debug drawer
 
     The user-facing title of the Debug Drawer feature.
@@ -3719,6 +3737,8 @@
   <string name="debug_drawer_tab_tools_tab_creation_tool_button_text_private">Cuir ris na tabaichean prìobhaideach</string>
   <!--
     Microsurvey
+    Note: Some strings are marked as unused as they are referenced via the Nimbus experimentation
+    platform and have no persistent reference in code
 
     Prompt view
 
@@ -3757,6 +3777,16 @@
   <string name="likert_scale_option_7" tools:ignore="BrandUsage,UnusedResources">Cha dèan mi lorg ann am Firefox</string>
   <!-- Option for likert scale -->
   <string name="likert_scale_option_8" tools:ignore="UnusedResources">Cha chleachd mi gleus an t-sioncronachaidh</string>
+  <!-- Option for likert scale -->
+  <string name="likert_scale_option_slow_or_buggy" tools:ignore="UnusedResources">Tha e slaodach no mearachdach</string>
+  <!-- Option for likert scale -->
+  <string name="likert_scale_option_features_hard_to_find_or_missing" tools:ignore="UnusedResources">Tha na gleusan doirbh ri lorg no a dhìth</string>
+  <!-- Option for likert scale -->
+  <string name="likert_scale_option_confusing_or_hard_to_use" tools:ignore="UnusedResources">Tha e tro chèile no doiribh ri chleachdadh</string>
+  <!-- Option for likert scale -->
+  <string name="likert_scale_option_its_okay" tools:ignore="UnusedResources">Tha e ceart gu leòr ach chan eil e nas fheàrr na brabhsairean eile</string>
+  <!-- Option for likert scale. Note: The word "Firefox" should NOT be translated. -->
+  <string name="likert_scale_option_i_plan_to_keep_using" tools:ignore="BrandUsage,UnusedResources">Tha mi am beachd Firefox a chumail</string>
   <!-- Text shown in prompt for printing microsurvey. "sec" It's an abbreviation for "second". Note: The word "Firefox" should NOT be translated. -->
   <string name="microsurvey_prompt_printing_title" tools:ignore="BrandUsage,UnusedResources">Cuidich leinn a’ leasachadh clò-bhualadh ann am Firefox. Cha doir e ach mionaid.</string>
   <!-- Text shown in prompt for search microsurvey. Note: The word "Firefox" should NOT be translated. -->
@@ -3771,6 +3801,8 @@
   <string name="microsurvey_search_title" tools:ignore="BrandUsage,UnusedResources">Dè cho riaraichte ’s a tha thu leis a’ ghleus luirg ùr ann am Firefox?</string>
   <!-- Text shown in the survey title for sync experience microsurvey. Note: The word "Firefox" should NOT be translated. -->
   <string name="microsurvey_sync_title" tools:ignore="BrandUsage,UnusedResources">Dè cho riaraichte ’s a tha thu le gleus an t-sioncronachaidh ann am Firefox?</string>
+  <!-- Text shown in the survey title for 'describe your experience so far' microsurvey. Note: The word "Firefox" should NOT be translated. -->
+  <string name="microsurvey_describe_your_experience_title" tools:ignore="BrandUsage,UnusedResources">Cuidich leinn le bhith a’ toirt piseach air Firefox. Ciamar a dh’èirich leat leis gu ruige seo?</string>
   <!--
     Accessibility
 
@@ -3783,6 +3815,8 @@
   <string name="microsurvey_close_handle_content_description">Dùin an t-suirbhidh</string>
   <!-- Content description for "X" button that is closing microsurvey. -->
   <string name="microsurvey_close_button_content_description">Dùin</string>
+  <!-- The title of the autofill tab in the Debug Drawer. -->
+  <string name="debug_drawer_autofill_title">Innealan fèin-lìonaidh</string>
   <!--
     Debug drawer logins
 
@@ -3809,6 +3843,16 @@
   <string name="debug_drawer_add_new_address">Cuir seòladh ùr ris airson an sgeama ionadail a thagh thu</string>
   <!-- The title of the button for deleting in the debug drawer all addresses. -->
   <string name="debug_drawer_delete_all_addresses">Sguab gach seòladh às</string>
+  <!--
+    Debug drawer credit cards
+
+    The title of the credit cards feature in the Debug Drawer.
+  -->
+  <string name="debug_drawer_credit_cards_title">Cairtean-creideis</string>
+  <!-- The title of the button in the debug drawer for adding a new credit card -->
+  <string name="debug_drawer_add_new_credit_card">Cuir cairt-chreideis ùr ris</string>
+  <!-- The title of the button for deleting in the debug drawer all addresses. -->
+  <string name="debug_drawer_delete_all_credit_cards">Sguab a h-uile cairt-chreideis às</string>
   <!--
     Debug drawer "contextual feature recommendation" (CFR) tools
 
@@ -3845,6 +3889,14 @@
   <string name="debug_drawer_override_region">Tar-àithn an roinn-dachaigh is roinn-dùthcha làithreach</string>
   <!-- The title of the button for overriding home region permanently. -->
   <string name="debug_drawer_override_home_region_permanently">Tar-àithn an roinn-dachaigh gu buan</string>
+  <!--
+    Add-ons debug tools
+
+    The description of the Add-ons Tools in the Debug Drawer
+  -->
+  <string name="debug_drawer_addons_tools_title">Innealan thuilleadan</string>
+  <!-- The title of the button used to check for add-on updates. -->
+  <string name="addons_debug_tools_check_for_updates_button">Thoir sùil airson ùrachaidhean</string>
   <!--
     Messages explaining how to exit fullscreen mode
 
@@ -3971,6 +4023,8 @@
   <string name="setup_checklist_task_toolbar_selection">Tagh àite dhan bhàr-inneal</string>
   <!-- The title of the explore extensions task for the setup checklist -->
   <string name="setup_checklist_task_explore_extensions">Rùraich na leudachain</string>
+  <!-- The title of the search widget task for the setup checklist -->
+  <string name="setup_checklist_task_search_widget_2">Rùraich widget an luirg</string>
   <!--
     ===== Setup checklist feature: Group titles =====
 
@@ -4005,18 +4059,84 @@
   <string name="pbm_authentication_unlock">Thoir a’ ghlas dheth</string>
   <!-- Title text instructing the user to unlock private tabs -->
   <string name="pbm_authentication_unlock_private_tabs">Thoir a’ ghlas far nan tabaichean prìobhaideach</string>
+  <!-- Authentication prompt title to enable the private tabs mode -->
+  <string name="pbm_authentication_enable_lock">Cuir glais sgrìn nan tabaichean prìobhaideach an comas</string>
+  <!-- Authentication prompt title to disable the private tabs mode -->
+  <string name="pbm_authentication_disable_lock">Cuir glais sgrìn nan tabaichean prìobhaideach à comas</string>
+  <!-- Label for a preference shown when the device supports screen lock (e.g., PIN, pattern, or password) but the user has not set one up. -->
+  <string name="pbm_authentication_lock_device_feature_disabled">Suidhich glais sgrìn airson tabaichean a chur am falach</string>
   <!-- Title text for the contextual feature recommendation (CFR) suggesting the user enable a screen lock to protect private tabs -->
   <string name="private_tab_cfr_title">A bheil thu airson tabaichean prìobhaideach a chur am falach air cùlaibh na sgrìn-ghlasaidh?</string>
   <!-- Negative button text for the contextual feature recommendation (CFR) dismissing the screen lock suggestion -->
   <string name="private_tab_cfr_negative">Chan eil, tapadh leibh</string>
   <!-- Positive button text for the contextual feature recommendation (CFR) enabling screen lock for private tabs -->
   <string name="private_tab_cfr_positive">Glais tabaichean</string>
+  <!--
+    Review prompt
+
+    Title for a prompt asking the user about their experience using the app. %1$s is the name of the app (for example "Firefox").
+  -->
+  <string name="review_prompt_pre_prompt_header">Dè do bheachd air %1$s?</string>
+  <!-- Label for a button negatively rating the user's experience with the app -->
+  <string name="review_prompt_negative_button">Tha duilgheadasan agam</string>
+  <!-- Label for a button positively rating the user's experience with the app -->
+  <string name="review_prompt_positive_button">Tha e fìor-mhath!</string>
+  <!-- Title for a prompt asking the user to rate the app on Google Play Store. %1$s is the name of the app (for example "Firefox"). -->
+  <string name="review_prompt_rate_header">Nach math gu bheil %1$s a’ còrdadh riut. Nach sgaoil thu an gaol le bhith a’ toirt rangachadh dha?</string>
+  <!-- Label for a button proceeding to rate the app on Google Play Store. %1$s is the name of the app (for example "Firefox"). -->
+  <string name="review_prompt_rate_button">Rangaich %1$s sa Play Store</string>
+  <!-- Title for a prompt asking the user send us feedback. %1$s is the name of the app (for example "Firefox"). -->
+  <string name="review_prompt_feedback_header">Tha sinn duilich gu bheil duilgheadasan agad. Nach innis thu dhuinn mar a nì sinn %1$s nas fheàrr dhut?</string>
+  <!-- Label for a button opening a feedback forum -->
+  <string name="review_prompt_feedback_button">Sgrìobh beachd</string>
+  <!--
+    Settings Search Strings
+
+    Title of Settings Search. "Search" is a verb here
+  -->
+  <string name="settings_search_title">Roghainnean luirg</string>
+  <!-- Content description (not visible, for screen readers etc.) for the button to clear the search field for settings search -->
+  <string name="content_description_settings_search_clear_search">Falamhaich an lorg</string>
+  <!-- Content description (not visible, for screen readers etc.) for the button to navigate back to the Settings page from the Settings Search screen. -->
+  <string name="content_description_settings_search_navigate_back">Air ais</string>
+  <!-- Message displayed when the search field in the Settings Search screen is empty -->
+  <string name="settings_search_empty_query_placeholder">Cha do lorg thu dad o chionn goirid</string>
+  <!-- Text of button allowing to clear history of recent searches done in the settings screen. -->
+  <string name="settings_search_clear_recent_searches_message">Falamhaich na h-uile</string>
   <!-- Section header for recent search results -->
   <string name="settings_search_recent_searches_section_header">Toraidhean luirg o chionn goirid</string>
+  <!-- Message displayed when the search field is not empty but search results is empty. -->
+  <string name="settings_search_no_results_title">Cha do nochd dad</string>
+  <!-- Sub-message displayed when the search field is not empty but search results is empty. -->
+  <string name="settings_search_no_results_message">Feuch lorg eile ’s dòcha?</string>
   <!-- Content Description for the button to open Settings Search (to search through settings). -->
   <string name="settings_search_button_content_description">Putan lorg nan roghainnean</string>
   <!-- ==== Terms of use pop up prompt ==== -->
 
+  <!-- Title for the pop up prompt -->
+  <string name="terms_of_use_prompt_title">Fhuair sinn ùrachadh</string>
+  <!--
+    Message for the terms of use pop up prompt
+    %1$s is the product name "Firefox"
+    %2$s is the string terms_of_use_prompt_link_terms_of_use (Terms of Use) that is a link to the terms of use
+    %3$s is the string terms_of_use_prompt_link_privacy_notice (Privacy Notice) that is a link to the privacy notice
+  -->
+  <string name="terms_of_use_prompt_message_1">Thug sinn a-steach %1$s %2$s agus dh’ùraich sinn na %3$s againn.</string>
+  <!--
+    Second part of the terms of use pop up prompt
+    %1$s is the string terms_of_use_prompt_link_learn_more (Learn more) that is a link to a website with more information about the terms of use
+  -->
+  <string name="terms_of_use_prompt_message_2">Gabh mionaid, thoir sùil orra ’s gabh riutha. %1$s.</string>
+  <!-- Terms of use link in the pop up prompt message that links to the terms of use -->
+  <string name="terms_of_use_prompt_link_terms_of_use">teirmichean a’ chleachdaidh</string>
+  <!-- Privacy notice link in the pop up prompt message that links to the privacy notice -->
+  <string name="terms_of_use_prompt_link_privacy_notice">aithris na prìobhaideachd</string>
+  <!-- Learn more link in the pop up prompt message that links to a site with more information about the terms of use -->
+  <string name="terms_of_use_prompt_link_learn_more">Barrachd fiosrachaidh</string>
+  <!-- Label for a button to accept the terms of use -->
+  <string name="terms_of_use_prompt_accept">Gabh ris</string>
+  <!-- Label for a button to postpone accepting the terms of use -->
+  <string name="terms_of_use_prompt_postpone">Cuir nam chuimhne an ceann greis</string>
   <!-- ==== Experiment strings. ==== -->
 
   <!-- A title for the popup prompt. -->

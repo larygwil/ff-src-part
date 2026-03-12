@@ -123,7 +123,8 @@ export class UrlbarInput extends HTMLElement {
                          role="button"
                          data-l10n-id="urlbar-searchmode-exit-button" />
           <menupopup class="searchmode-switcher-popup toolbar-menupopup"
-                     consumeoutsideclicks="false">
+                     consumeoutsideclicks="false"
+                     native="false">
             <menucaption class="searchmode-switcher-popup-description"
                          role="heading" />
             <menuseparator/>
@@ -2309,8 +2310,9 @@ export class UrlbarInput extends HTMLElement {
    * @param {string} value
    * @param {object} options
    * @param {SearchEngine} options.searchEngine
+   * @param {string} [options.where]
    */
-  openEngineHomePage(value, { searchEngine }) {
+  openEngineHomePage(value, { searchEngine, where = "current" }) {
     if (!searchEngine) {
       console.warn("No searchEngine parameter");
       return;
@@ -2327,12 +2329,12 @@ export class UrlbarInput extends HTMLElement {
     }
 
     this._lastSearchString = "";
-    if (this.#isAddressbar) {
+    if (this.#isAddressbar && where == "current") {
       this.inputField.value = url;
     }
     this.selectionStart = -1;
 
-    this.window.openTrustedLinkIn(url, "current");
+    this.window.openTrustedLinkIn(url, where);
   }
 
   /**
@@ -3642,6 +3644,15 @@ export class UrlbarInput extends HTMLElement {
       Services.prefs.setIntPref(
         "browser.search.totalSearches",
         totalSearches + 1
+      );
+    }
+
+    // Record when the user uses the search bar so SearchWidgetTracker can
+    // remove the search bar when it hasn't been used in a long time.
+    if (this.#sapName == "searchbar") {
+      Services.prefs.setStringPref(
+        "browser.search.widget.lastUsed",
+        new Date().toISOString()
       );
     }
 

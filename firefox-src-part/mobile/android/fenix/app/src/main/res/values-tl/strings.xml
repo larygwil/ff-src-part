@@ -1371,7 +1371,7 @@
   <!-- Bookmark overflow menu edit button -->
   <string name="bookmark_menu_edit_button">Baguhin</string>
   <!-- Bookmark overflow menu copy button -->
-  <string name="bookmark_menu_copy_button">Kopyahin</string>
+  <string name="bookmark_menu_copy_button" tools:ignore="UnusedResources" moz:removedIn="150">Kopyahin</string>
   <!-- Bookmark overflow menu share button -->
   <string name="bookmark_menu_share_button">Ibahagi</string>
   <!-- Bookmark overflow menu open in new tab button -->
@@ -1671,23 +1671,23 @@
   -->
   <string name="nimbus_notification_default_browser_text" tools:ignore="BrandUsage,UnusedResources">Gawin mong default browser ang Firefox</string>
   <!-- Title shown in the notification that pops up to re-engage the user -->
-  <string name="notification_re_engagement_title">Subukan ang pribadong pag-browse</string>
+  <string name="notification_re_engagement_title" tools:ignore="UnusedResources" moz:removedIn="150">Subukan ang pribadong pag-browse</string>
   <!--
     Text shown in the notification that pops up to re-engage the user.
     %1$s is a placeholder that will be replaced by the app name.
   -->
-  <string name="notification_re_engagement_text">Mag-browse nang walang naka-save na cookie o kasaysayan gamit ang %1$s</string>
+  <string name="notification_re_engagement_text" tools:ignore="UnusedResources" moz:removedIn="150">Mag-browse nang walang naka-save na cookie o kasaysayan gamit ang %1$s</string>
   <!-- Title A shown in the notification that pops up to re-engage the user -->
-  <string name="notification_re_engagement_A_title">Mag-browse nang walang bakas</string>
+  <string name="notification_re_engagement_A_title" tools:ignore="UnusedResources" moz:removedIn="150">Mag-browse nang walang bakas</string>
   <!--
     Text A shown in the notification that pops up to re-engage the user.
     %1$s is a placeholder that will be replaced by the app name.
   -->
-  <string name="notification_re_engagement_A_text">Hindi nase-save ang info mo sa pribadong pag-browse sa %1$s.</string>
+  <string name="notification_re_engagement_A_text" tools:ignore="UnusedResources" moz:removedIn="150">Hindi nase-save ang info mo sa pribadong pag-browse sa %1$s.</string>
   <!-- Title B shown in the notification that pops up to re-engage the user -->
-  <string name="notification_re_engagement_B_title">Simulan ang iyong unang paghahanap</string>
+  <string name="notification_re_engagement_B_title" tools:ignore="UnusedResources" moz:removedIn="150">Simulan ang iyong unang paghahanap</string>
   <!-- Text B shown in the notification that pops up to re-engage the user -->
-  <string name="notification_re_engagement_B_text">Humanap ka ng kakaiba, o kaya masaya!</string>
+  <string name="notification_re_engagement_B_text" tools:ignore="UnusedResources" moz:removedIn="150">Humanap ka ng kakaiba, o kaya masaya!</string>
   <!--
     Survey
 
@@ -2907,6 +2907,8 @@
   <string name="debug_drawer_tab_tools_tab_creation_tool_button_text_private">Idagdag sa mga pribadong tab</string>
   <!--
     Microsurvey
+    Note: Some strings are marked as unused as they are referenced via the Nimbus experimentation
+    platform and have no persistent reference in code
 
     Prompt view
 

@@ -130,6 +130,15 @@
         }
         this.finishMoveTogetherSelectedTabs(draggedTab);
         this._updateTabStylesOnDrag(draggedTab, dropEffect);
+        // Collapsing the tab group needs to occur after the non dragged tab widths
+        // have had their maxWidth to their current width by _updateTabStylesOnDrag.
+        // This is to avoid the dragged tab label container being positioned incorrectly.
+        if (
+          draggedTab._dragData.expandGroupOnDrop &&
+          !draggedTab.group.collapsed
+        ) {
+          draggedTab.group.collapsed = true;
+        }
 
         if (dropEffect == "move") {
           this.#setMovingTabMode(true);
@@ -202,7 +211,7 @@
       } else {
         let newIndex = this._getDropIndex(event);
         if (
-          isSplitViewWrapper(draggedTab) &&
+          (isSplitViewWrapper(draggedTab) || isTabGroupLabel(draggedTab)) &&
           newIndex < gBrowser.pinnedTabCount
         ) {
           newIndex = gBrowser.pinnedTabCount;
@@ -515,8 +524,12 @@
           }
         }
       } else if (isTabGroupLabel(draggedTab)) {
+        const dropIndex = this._getDropIndex(event);
+        const droppedIntoPinnedArea = dropIndex < gBrowser.pinnedTabCount;
         gBrowser.adoptTabGroup(draggedTab.group, {
-          elementIndex: this._getDropIndex(event),
+          elementIndex: droppedIntoPinnedArea
+            ? gBrowser.pinnedTabCount
+            : dropIndex,
         });
       } else if (draggedTab) {
         // Move the tabs into this window. To avoid multiple tab-switches in
@@ -1258,10 +1271,6 @@
           this._moveTogetherSelectedTabs(tab);
         } else if (isTabGroupLabel(tab)) {
           this._setIsDraggingTabGroup(tab.group, true);
-
-          if (collapseTabGroupDuringDrag) {
-            tab.group.collapsed = true;
-          }
         }
       }
 
