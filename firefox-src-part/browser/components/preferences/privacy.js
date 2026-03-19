@@ -935,7 +935,10 @@ Preferences.addSetting({
   visible: ({ ipProtectionVisible, ipProtectionNotOptedIn }) =>
     ipProtectionVisible.value && ipProtectionNotOptedIn.value,
   onUserClick() {
-    IPProtection.getPanel(window.browsingContext.topChromeWindow)?.enroll();
+    IPProtection.getPanel(window.browsingContext.topChromeWindow)?.enroll({
+      entrypoint: "vpn_integration_settings",
+      utm_source: "settings",
+    });
   },
 });
 
@@ -1074,10 +1077,27 @@ Preferences.addSetting({
   pref: "browser.ipProtection.bandwidth.enabled",
 });
 Preferences.addSetting({
+  id: "ipProtectionBandwidthSection",
+  deps: [
+    "ipProtectionVisible",
+    "ipProtectionBandwidthVisible",
+    "ipProtectionNotOptedIn",
+  ],
+  visible: ({
+    ipProtectionVisible,
+    ipProtectionBandwidthVisible,
+    ipProtectionNotOptedIn,
+  }) =>
+    ipProtectionVisible.value &&
+    ipProtectionBandwidthVisible.value &&
+    !ipProtectionNotOptedIn.value,
+});
+Preferences.addSetting({
   id: "ipProtectionBandwidth",
   deps: [
     "ipProtectionVisible",
     "ipProtectionBandwidthVisible",
+    "ipProtectionBandwidthSection",
     "ipProtectionNotOptedIn",
   ],
   visible: ({

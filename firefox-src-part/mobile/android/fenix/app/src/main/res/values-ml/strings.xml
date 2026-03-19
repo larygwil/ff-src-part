@@ -945,11 +945,7 @@
   <string name="customize_addon_collection_user_hint">ശേഖരണ ഉടമ (ഉപയോക്തൃ ഐഡി)</string>
   <!-- Toast shown after confirming the custom extension collection configuration -->
   <string name="toast_customize_extension_collection_done">വിപുലീകരണപ്പിരിവു പുതുച്ചു. മാറ്റങ്ങൾ നടപ്പിലാക്കാൻ പ്രയോഗത്തിൽനിന്നു പുറത്തുകടക്കുന്നു…</string>
-  <!--
-    Customize Home
-
-    Header text for jumping back into the recent tab in customize the home screen
-  -->
+  <!-- Header text for jumping back into the recent tab in customize the home screen -->
   <string name="customize_toggle_jump_back_in">തിരികെ കയറുക</string>
   <!-- Title for the customize home screen section with bookmarks. -->
   <string name="customize_toggle_bookmarks">അടയാളക്കുറിപ്പുകള്‍</string>
@@ -1885,11 +1881,11 @@
   -->
   <string name="bookmark_deletion_snackbar_message">%1$s നീക്കം ചെയ്തു</string>
   <!-- Bookmark undo button for deletion snackbar action -->
-  <string name="bookmark_undo_deletion">പൂർവസ്ഥിതിയാക്കുക</string>
+  <string name="bookmark_undo_deletion" tools:ignore="UnusedResources" moz:removedIn="150">പൂർവസ്ഥിതിയാക്കുക</string>
   <!-- Bookmark snackbar message for deleting a single item. %s is the title of the item being deleted -->
-  <string name="bookmark_delete_single_item">%s മായച്ചതു്</string>
+  <string name="bookmark_delete_single_item" tools:ignore="UnusedResources" moz:removedIn="150">%s മായച്ചതു്</string>
   <!-- Bookmark snackbar message for deleting multiple items. %s is the number of items being deleted -->
-  <string name="bookmark_delete_multiple_items">മായച്ച ഇനങ്ങൾ: %s</string>
+  <string name="bookmark_delete_multiple_items" tools:ignore="UnusedResources" moz:removedIn="150">മായച്ച ഇനങ്ങൾ: %s</string>
   <!-- Content description for the bookmark navigation bar back button -->
   <string name="bookmark_navigate_back_button_content_description">പുറകോട്ട് ചെല്ലുക</string>
   <!-- Content description for the bookmark list new folder navigation bar button -->

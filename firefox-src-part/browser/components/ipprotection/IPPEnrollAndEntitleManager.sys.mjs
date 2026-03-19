@@ -5,6 +5,8 @@
 const lazy = {};
 
 ChromeUtils.defineESModuleGetters(lazy, {
+  IPPProxyManager:
+    "moz-src:///browser/components/ipprotection/IPPProxyManager.sys.mjs",
   IPPStartupCache:
     "moz-src:///browser/components/ipprotection/IPPStartupCache.sys.mjs",
   IPProtectionService:
@@ -103,6 +105,10 @@ class IPPEnrollAndEntitleManagerSingleton extends EventTarget {
 
     const entitled = await this.#entitle(forceRefetch);
     deferred.resolve(entitled);
+
+    if (entitled?.isEntitled) {
+      lazy.IPPProxyManager.refreshUsage();
+    }
 
     this.#entitlementPromise = null;
     return entitled;
@@ -337,6 +343,13 @@ class IPPEnrollAndEntitleManagerSingleton extends EventTarget {
    */
   get isEnrolling() {
     return !!this.#enrollingPromise;
+  }
+
+  /**
+   * Waits for the current enrollment to complete, if any.
+   */
+  async waitForEnrollment() {
+    return this.#enrollingPromise;
   }
 
   /**

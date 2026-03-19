@@ -10,7 +10,7 @@ export const LINKS = Object.freeze({
         "browser.ipProtection.productVpn.endpoint",
         "https://www.mozilla.org"
       ) +
-      "/products/vpn/?utm_medium=firefox-desktop&utm_source=freevpnpilot&utm_campaign=evergreen&utm_content=vpnpanel"
+      "/products/vpn/?utm_medium=firefox-desktop&utm_source=vpn-panel&utm_campaign=fx-vpn&utm_content=upgrade-button"
     );
   },
 
@@ -29,16 +29,12 @@ export const ERRORS = Object.freeze({
 
 export const SIGNIN_DATA = Object.freeze({
   where: "tab",
-  entrypoint: "desktop-fx-vpn",
+  entrypoint: "vpn_integration_panel",
   autoClose: false,
   extraParams: {
-    service: "sync",
-    entrypoint_experiment: "fx-vpn-pilot",
-    entrypoint_variation: "alpha",
-    utm_source: "callout",
-    utm_campaign: "fx-vpn-pilot",
+    service: "vpn",
+    utm_campaign: "fx-vpn",
     utm_medium: "firefox-desktop",
-    utm_term: "fx-vpn-pilot-panel-button",
   },
 });
 

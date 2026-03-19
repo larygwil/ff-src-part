@@ -401,11 +401,7 @@
   <string name="customize_addon_collection_hint">Toplam ataması</string>
   <!-- Hint displayed on input field for custom collection user ID -->
   <string name="customize_addon_collection_user_hint">Toplam iyesi (Paydalanıwshı ID)</string>
-  <!--
-    Customize Home
-
-    Header text for jumping back into the recent tab in customize the home screen
-  -->
+  <!-- Header text for jumping back into the recent tab in customize the home screen -->
   <string name="customize_toggle_jump_back_in">Artqa qaytıw</string>
   <!--
     Title for the customize home screen section with recently visited. Recently visited is
@@ -823,7 +819,7 @@
   -->
   <string name="bookmark_deletion_snackbar_message">%1$s óshirildi</string>
   <!-- Bookmark undo button for deletion snackbar action -->
-  <string name="bookmark_undo_deletion">BIYKARLAW</string>
+  <string name="bookmark_undo_deletion" tools:ignore="UnusedResources" moz:removedIn="150">BIYKARLAW</string>
   <!--
     Site Permissions
 

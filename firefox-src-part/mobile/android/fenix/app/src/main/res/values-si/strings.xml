@@ -643,11 +643,7 @@
   <string name="customize_addon_collection_hint">එකතුවෙහි නම</string>
   <!-- Hint displayed on input field for custom collection user ID -->
   <string name="customize_addon_collection_user_hint">එකතුවේ හිමිකරු (පරිශ්‍රීලක හැඳු.)</string>
-  <!--
-    Customize Home
-
-    Header text for jumping back into the recent tab in customize the home screen
-  -->
+  <!-- Header text for jumping back into the recent tab in customize the home screen -->
   <string name="customize_toggle_jump_back_in">ආපසු පනින්න</string>
   <!-- Title for the customize home screen section with bookmarks. -->
   <string name="customize_toggle_bookmarks">පොත්යොමු</string>
@@ -1153,11 +1149,11 @@
   -->
   <string name="bookmark_deletion_snackbar_message">%1$s මැකිණි</string>
   <!-- Bookmark undo button for deletion snackbar action -->
-  <string name="bookmark_undo_deletion">පෙරසේ</string>
+  <string name="bookmark_undo_deletion" tools:ignore="UnusedResources" moz:removedIn="150">පෙරසේ</string>
   <!-- Bookmark snackbar message for deleting a single item. %s is the title of the item being deleted -->
-  <string name="bookmark_delete_single_item">%s මැකිණි</string>
+  <string name="bookmark_delete_single_item" tools:ignore="UnusedResources" moz:removedIn="150">%s මැකිණි</string>
   <!-- Bookmark snackbar message for deleting multiple items. %s is the number of items being deleted -->
-  <string name="bookmark_delete_multiple_items">මකන ලද අථක: %s</string>
+  <string name="bookmark_delete_multiple_items" tools:ignore="UnusedResources" moz:removedIn="150">මකන ලද අථක: %s</string>
   <!-- Content description for the bookmark navigation bar back button -->
   <string name="bookmark_navigate_back_button_content_description">ආපසු යාත්‍රණය</string>
   <!-- Content description for the bookmark list new folder navigation bar button -->

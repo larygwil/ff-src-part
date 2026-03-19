@@ -1002,11 +1002,7 @@
   <string name="customize_addon_collection_user_hint">ເຈົ້າຂອງການເກັບສະສົມ (ໄອດີຜູ້ໃຊ້)</string>
   <!-- Toast shown after confirming the custom extension collection configuration -->
   <string name="toast_customize_extension_collection_done">ດັດແກ້ຄໍເລັກຊັນສ່ວນຂະຫຍາຍ. ກຳລັງອອກຈາກແອັບພລິເຄຊັນເພື່ອນຳໃຊ້ການປ່ຽນແປງ…</string>
-  <!--
-    Customize Home
-
-    Header text for jumping back into the recent tab in customize the home screen
-  -->
+  <!-- Header text for jumping back into the recent tab in customize the home screen -->
   <string name="customize_toggle_jump_back_in">ກັບເຂົ້າໄປ</string>
   <!-- Title for the customize home screen section with bookmarks. -->
   <string name="customize_toggle_bookmarks">ບຸກມາກ</string>
@@ -1903,11 +1899,11 @@
   -->
   <string name="bookmark_deletion_snackbar_message">ລຶບ %1$s ແລ້ວ</string>
   <!-- Bookmark undo button for deletion snackbar action -->
-  <string name="bookmark_undo_deletion">ເອົາກັບຄືນ</string>
+  <string name="bookmark_undo_deletion" tools:ignore="UnusedResources" moz:removedIn="150">ເອົາກັບຄືນ</string>
   <!-- Bookmark snackbar message for deleting a single item. %s is the title of the item being deleted -->
-  <string name="bookmark_delete_single_item">%s ລຶບແລ້ວ</string>
+  <string name="bookmark_delete_single_item" tools:ignore="UnusedResources" moz:removedIn="150">%s ລຶບແລ້ວ</string>
   <!-- Bookmark snackbar message for deleting multiple items. %s is the number of items being deleted -->
-  <string name="bookmark_delete_multiple_items">ລາຍການທີ່ລຶບແລ້ວ: %s</string>
+  <string name="bookmark_delete_multiple_items" tools:ignore="UnusedResources" moz:removedIn="150">ລາຍການທີ່ລຶບແລ້ວ: %s</string>
   <!-- Content description for the bookmark navigation bar back button -->
   <string name="bookmark_navigate_back_button_content_description">ນຳທາງຍ້ອນກັບ</string>
   <!-- Content description for the bookmark list new folder navigation bar button -->

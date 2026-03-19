@@ -343,9 +343,14 @@ class IPPProxyManagerSingleton extends EventTarget {
 
     await lazy.IPProtectionServerlist.maybeFetchList();
 
-    const enrollAndEntitleData =
-      await lazy.IPPEnrollAndEntitleManager.maybeEnrollAndEntitle(abortSignal);
-    if (!enrollAndEntitleData || !enrollAndEntitleData.isEnrolledAndEntitled) {
+    let enrollAndEntitleData;
+    if (lazy.IPPEnrollAndEntitleManager.isEnrolling) {
+      enrollAndEntitleData =
+        await lazy.IPPEnrollAndEntitleManager.waitForEnrollment();
+    }
+    // If the current account can not be enrolled or is not entitled,
+    // the starting the proxy should fail.
+    if (!lazy.IPPEnrollAndEntitleManager.isEnrolledAndEntitled) {
       throw enrollAndEntitleData?.error || ERRORS.GENERIC;
     }
 
@@ -363,7 +368,7 @@ class IPPProxyManagerSingleton extends EventTarget {
       if (usage) {
         this.#setUsage(usage);
         if (this.#usage.remaining <= 0) {
-          this.pause();
+          this.#setPausedState();
           return false;
         }
       }
@@ -445,6 +450,9 @@ class IPPProxyManagerSingleton extends EventTarget {
       duration: String(sessionLength),
     });
     this.updateState();
+    if (userAction && this.#state !== IPPProxyStates.PAUSED) {
+      this.refreshUsage();
+    }
   }
 
   /**
@@ -475,11 +483,22 @@ class IPPProxyManagerSingleton extends EventTarget {
    *
    * Usage refresh will still be attempted at the reset time.
    */
-  pause() {
+  #setPausedState() {
+    const wasActive = this.#state === IPPProxyStates.ACTIVE;
     this.#pass = null;
-    this.#connection?.uninitialize();
     lazy.clearTimeout(this.#rotationTimer);
     this.#rotationTimer = 0;
+
+    if (wasActive) {
+      this.#connection?.uninitialize();
+    } else {
+      this.#connection?.stop();
+    }
+
+    Glean.ipprotection.paused.record({
+      wasActive,
+    });
+
     this.#setState(IPPProxyStates.PAUSED);
   }
 
@@ -574,17 +593,17 @@ class IPPProxyManagerSingleton extends EventTarget {
     });
     this.#rotateProxyPassPromise = promise;
     const { pass, usage, error } = await this.#getPassAndUsage();
-    if (error) {
-      this.#setErrorState(error);
-      return null;
-    }
-
     if (usage) {
       this.#setUsage(usage);
       if (this.#usage.remaining <= 0) {
-        this.pause();
+        this.#setPausedState();
         return null;
       }
+    }
+
+    if (error) {
+      this.#setErrorState(error);
+      return null;
     }
 
     if (!pass) {
@@ -743,12 +762,6 @@ class IPPProxyManagerSingleton extends EventTarget {
   #setState(state) {
     if (state === this.#state) {
       return;
-    }
-
-    if (state === IPPProxyStates.PAUSED) {
-      Glean.ipprotection.paused.record({
-        wasActive: this.#state === IPPProxyStates.ACTIVE,
-      });
     }
 
     this.#state = state;

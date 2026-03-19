@@ -1358,6 +1358,8 @@ export class UserCharacteristicsPageService {
       v1: [
         "ALIASED_LINE_WIDTH_RANGE",
         "ALIASED_POINT_SIZE_RANGE",
+        "IMPLEMENTATION_COLOR_READ_FORMAT",
+        "IMPLEMENTATION_COLOR_READ_TYPE",
         "MAX_COMBINED_TEXTURE_IMAGE_UNITS",
         "MAX_CUBE_MAP_TEXTURE_SIZE",
         "MAX_FRAGMENT_UNIFORM_VECTORS",
@@ -1413,7 +1415,7 @@ export class UserCharacteristicsPageService {
           "MAX_COLOR_ATTACHMENTS_WEBGL",
           "MAX_DRAW_BUFFERS_WEBGL",
         ],
-        EXT_disjoint_timer_query: ["TIMESTAMP_EXT"],
+        EXT_disjoint_timer_query: ["QUERY_COUNTER_BITS_EXT", "TIMESTAMP_EXT"],
         OVR_multiview2: ["MAX_VIEWS_OVR"],
       },
     };
@@ -1553,6 +1555,8 @@ export class UserCharacteristicsPageService {
       };
     }
 
+    const contextAttrs = gl.getContextAttributes();
+
     const map = {
       // Debug Params
       Extensions: results.debugParams.extensions,
@@ -1575,6 +1579,9 @@ export class UserCharacteristicsPageService {
         results.shaderPrecision.FRAGMENT_SHADER
       ),
       PrecisionVertex: JSON.stringify(results.shaderPrecision.VERTEX_SHADER),
+      // Context Attributes
+      Antialias: String(contextAttrs.antialias),
+      Alpha: String(contextAttrs.alpha),
     };
 
     this.collectGleanMetricsFromMap(map, {

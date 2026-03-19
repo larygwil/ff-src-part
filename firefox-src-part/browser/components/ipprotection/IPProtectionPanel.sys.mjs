@@ -352,10 +352,6 @@ export class IPProtectionPanel {
       this.initiatedUpgrade = false;
     }
 
-    if (!this.state.unauthenticated) {
-      lazy.IPPProxyManager.refreshUsage();
-    }
-
     this.#updateSiteData();
 
     this.setState({
@@ -478,20 +474,29 @@ export class IPProtectionPanel {
 
   /**
    * Start flow for signing in and then opening the panel on success
+   *
+   * @param {object} options
+   * @param {string} options.entrypoint
+   *  The entrypoint to pass for the sign in flow
+   * @param {string} options.utm_source
+   *  The utm_source to pass for the sign in flow
    */
-  async startLoginFlow() {
+  async startLoginFlow({
+    entrypoint = "vpn_integration_panel",
+    utm_source = "panel",
+  } = {}) {
     let window = this.#window.get();
     let browser = window.gBrowser;
-
-    if (lazy.IPPSignInWatcher.isSignedIn) {
-      return true;
-    }
 
     // Close the panel if the user will need to sign in.
     this.close();
 
     const signedIn = await lazy.SpecialMessageActions.fxaSignInFlow(
-      SIGNIN_DATA,
+      {
+        ...SIGNIN_DATA,
+        entrypoint,
+        extraParams: { ...SIGNIN_DATA.extraParams, utm_source },
+      },
       browser
     );
     return signedIn;
@@ -499,10 +504,12 @@ export class IPProtectionPanel {
 
   /**
    * Ensure there is a signed in account and then open the panel after enrolling.
+   *
+   * @param {object} options
    */
-  async enroll() {
+  async enroll(options = {}) {
     Glean.ipprotection.getStarted.record();
-    const signedIn = await this.startLoginFlow();
+    const signedIn = await this.startLoginFlow(options);
     if (!signedIn) {
       return;
     }
@@ -773,7 +780,7 @@ export class IPProtectionPanel {
       this.initiatedUpgrade = true;
       this.close();
     } else if (event.type == "IPProtection:OptIn") {
-      this.enroll();
+      this.enroll({ entrypoint: "vpn_integration_panel" });
     } else if (
       event.type == "IPPProxyManager:StateChanged" ||
       event.type == "IPProtectionService:StateChanged" ||

@@ -372,6 +372,8 @@
     %2$s is the name of the language which the page was translated to. (For example: French)
   -->
   <string name="browser_toolbar_translated_successfully">Stránka byla přeložena z jazyka %1$s do jazyka %2$s.</string>
+  <!-- CFR description for the browser toolbar describing the "Shake to summarize feature" -->
+  <string name="browser_toolbar_summarize_cfr_description">Zatřeste zařízením pro shrnutí této stránky během několika sekund. ⚡️</string>
   <!--
     Translation Toolbar
 
@@ -942,6 +944,8 @@
   <string name="preferences_show_nonsponsored_suggestions">Návrhy od aplikace %1$s</string>
   <!-- Summary for preference to show Firefox Suggest search suggestions for web content -->
   <string name="preferences_show_nonsponsored_suggestions_summary">Získat návrhy z webu souvisejícím s vaším vyhledáváním</string>
+  <!-- Preference title for switch preference to show search optimization cards -->
+  <string name="preferences_show_search_optimization_cards">Dostávat návrhy Mozilly během psaní</string>
   <!-- Preference for link sharing -->
   <string name="preferences_link_sharing">Sdílení odkazu</string>
   <!-- Title for the link sharing toggle. %1$s is replaced by the brand name (e.g. Firefox). -->
@@ -1032,8 +1036,10 @@
   <!--
     Customize Home
 
-    Header text for jumping back into the recent tab in customize the home screen
+    Title for the customize home screen section with privacy report.
   -->
+  <string name="customize_toggle_privacy_report">Hlášení o soukromí</string>
+  <!-- Header text for jumping back into the recent tab in customize the home screen -->
   <string name="customize_toggle_jump_back_in">Návrat zpět</string>
   <!-- Title for the customize home screen section with bookmarks. -->
   <string name="customize_toggle_bookmarks">Záložky</string>
@@ -1201,7 +1207,7 @@
   <!-- Text shown when user enters empty device name -->
   <string name="empty_device_name_error">Název zařízení nemůže být prázdný.</string>
   <!-- Label indicating that sync is in progress -->
-  <string name="sync_syncing_in_progress">Probíhá synchronizace…</string>
+  <string name="sync_syncing_in_progress">Synchronizace…</string>
   <!-- Label summary indicating that sync failed. %s is the date stamp showing last time it succeeded. -->
   <string name="sync_failed_summary">Synchronizace selhala. Poslední úspěch: %s</string>
   <!-- Label summary showing never synced -->
@@ -1643,11 +1649,15 @@
   <!-- Title for the edit tab group bottom sheet -->
   <string name="edit_tab_group_title">Upravit skupinu</string>
   <string name="create_tab_group_save_button">Uložit</string>
+  <!-- Default tab group name when creating a tab group -->
+  <string name="create_tab_group_default_name" tools:ignore="UnusedResources" moz:removedIn="150">Skupina</string>
   <!--
     Default tab group name when creating a tab group
     %d is the number of existing tab groups + 1.
   -->
   <string name="create_tab_group_form_default_name">Skupina %d</string>
+  <!-- Label for the tab group name field in the bottom sheet to create a new tab group. -->
+  <string name="create_tab_group_name_label" tools:ignore="UnusedResources" moz:removedIn="150">Název skupiny panelů</string>
   <!-- Label for the tab group name field in the bottom sheet to create or edit a tab group. -->
   <string name="tab_group_name_label">Název</string>
   <!--
@@ -2040,11 +2050,11 @@
   -->
   <string name="bookmark_deletion_snackbar_message">Záložka odstraněna: %1$s</string>
   <!-- Bookmark undo button for deletion snackbar action -->
-  <string name="bookmark_undo_deletion">ZPĚT</string>
+  <string name="bookmark_undo_deletion" tools:ignore="UnusedResources" moz:removedIn="150">ZPĚT</string>
   <!-- Bookmark snackbar message for deleting a single item. %s is the title of the item being deleted -->
-  <string name="bookmark_delete_single_item">Záložka %s byla smazána</string>
+  <string name="bookmark_delete_single_item" tools:ignore="UnusedResources" moz:removedIn="150">Záložka %s byla smazána</string>
   <!-- Bookmark snackbar message for deleting multiple items. %s is the number of items being deleted -->
-  <string name="bookmark_delete_multiple_items">Smazané položky: %s</string>
+  <string name="bookmark_delete_multiple_items" tools:ignore="UnusedResources" moz:removedIn="150">Smazané položky: %s</string>
   <!-- Content description for the bookmark navigation bar back button -->
   <string name="bookmark_navigate_back_button_content_description">Návrat zpět</string>
   <!-- Content description for the bookmark list new folder navigation bar button -->
@@ -2506,6 +2516,19 @@
   <string name="preference_enhanced_tracking_protection_explanation_2">%s vás chrání před nejběžnějšími sledovacími prvky, které sbírají informace o tom, co děláte na internetu.</string>
   <!-- Text displayed that links to website about enhanced tracking protection -->
   <string name="preference_enhanced_tracking_protection_explanation_learn_more">Zjistit více</string>
+  <plurals name="trackers_blocked_count">
+    <!--
+      Trackers blocked card on homepage
+
+      Text shown on the trackers blocked card. %d is the number of trackers blocked.
+    -->
+    <item quantity="one">Zablokován %d sledovací prvek</item>
+    <item quantity="few">Zablokovány %d sledovací prvky</item>
+    <item quantity="many">Zablokováno %d sledovacích prvků</item>
+    <item quantity="other">Zablokováno %d sledovacích prvků</item>
+  </plurals>
+  <!-- Text shown on the trackers blocked card when no trackers have been blocked yet -->
+  <string name="trackers_blocked_empty">Jste chráněni</string>
   <!-- Preference for enhanced tracking protection for the standard protection settings -->
   <string name="preference_enhanced_tracking_protection_standard_default_1">Standardní (výchozí)</string>
   <!-- Preference description for enhanced tracking protection for the standard protection settings -->
@@ -3772,6 +3795,16 @@
   <string name="likert_scale_option_7" tools:ignore="BrandUsage,UnusedResources">Vyhledávání ve Firefoxu nepoužívám</string>
   <!-- Option for likert scale -->
   <string name="likert_scale_option_8" tools:ignore="UnusedResources">Nepoužívám synchronizaci</string>
+  <!-- Option for likert scale -->
+  <string name="likert_scale_option_slow_or_buggy" tools:ignore="UnusedResources">Je pomalý nebo zabugovaný</string>
+  <!-- Option for likert scale -->
+  <string name="likert_scale_option_features_hard_to_find_or_missing" tools:ignore="UnusedResources">Funkce se těžko hledají nebo chybí</string>
+  <!-- Option for likert scale -->
+  <string name="likert_scale_option_confusing_or_hard_to_use" tools:ignore="UnusedResources">Je matoucí nebo obtížně použitelný</string>
+  <!-- Option for likert scale -->
+  <string name="likert_scale_option_its_okay" tools:ignore="UnusedResources">Je v pořádku, ale ne lepší než ostatní prohlížeče</string>
+  <!-- Option for likert scale. Note: The word "Firefox" should NOT be translated. -->
+  <string name="likert_scale_option_i_plan_to_keep_using" tools:ignore="BrandUsage,UnusedResources">Hodlám pokračovat v používání Firefoxu</string>
   <!-- Text shown in prompt for printing microsurvey. "sec" It's an abbreviation for "second". Note: The word "Firefox" should NOT be translated. -->
   <string name="microsurvey_prompt_printing_title" tools:ignore="BrandUsage,UnusedResources">Pomozte nám vylepšit tisk z Firefoxu. Zabere to jenom chvilku</string>
   <!-- Text shown in prompt for search microsurvey. Note: The word "Firefox" should NOT be translated. -->
@@ -3786,6 +3819,8 @@
   <string name="microsurvey_search_title" tools:ignore="BrandUsage,UnusedResources">Jak jste spokojen(a) s vyhledáváním ve Firefoxu?</string>
   <!-- Text shown in the survey title for sync experience microsurvey. Note: The word "Firefox" should NOT be translated. -->
   <string name="microsurvey_sync_title" tools:ignore="BrandUsage,UnusedResources">Jak jste spokojeni se synchronizací ve Firefoxu?</string>
+  <!-- Text shown in the survey title for 'describe your experience so far' microsurvey. Note: The word "Firefox" should NOT be translated. -->
+  <string name="microsurvey_describe_your_experience_title" tools:ignore="BrandUsage,UnusedResources">Pomozte nám vylepšit Firefox. Co nejlépe vystihuje vaše dosavadní zkušenosti?</string>
   <!--
     Accessibility
 
@@ -4104,7 +4139,7 @@
     %2$s is the string terms_of_use_prompt_link_terms_of_use (Terms of Use) that is a link to the terms of use
     %3$s is the string terms_of_use_prompt_link_privacy_notice (Privacy Notice) that is a link to the privacy notice
   -->
-  <string name="terms_of_use_prompt_message_1">Zavedli jsme pro %1$s dokument %2$s a aktualizovali jsme naše %3$s.</string>
+  <string name="terms_of_use_prompt_message_1">Zavedli jsme %2$s aplikace %1$s a aktualizovali jsme naše %3$s.</string>
   <!--
     Second part of the terms of use pop up prompt
     %1$s is the string terms_of_use_prompt_link_learn_more (Learn more) that is a link to a website with more information about the terms of use
