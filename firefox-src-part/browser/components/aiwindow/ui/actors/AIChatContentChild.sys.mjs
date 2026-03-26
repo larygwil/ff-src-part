@@ -36,7 +36,17 @@ export class AIChatContentChild extends JSWindowActorChild {
     "AIChatContent:Ready",
     "AIChatContent:DispatchAction",
     "AIChatContent:OpenLink",
+    "AIChatContent:DispatchNewChat",
+    "AIChatContent:AccountSignIn",
   ]);
+
+  /**
+   * Trusted URLs pushed from parent for synchronous validation.
+   * Stored as array for Xray wrapper compatibility.
+   *
+   * @type {string[]}
+   */
+  #trustedUrls = [];
 
   /**
    *  Receives event from the content process and sends to the parent.
@@ -54,21 +64,45 @@ export class AIChatContentChild extends JSWindowActorChild {
         this.#handleSearchDispatch(event);
         break;
 
-      case "AIChatContent:DispatchAction": {
+      case "AIChatContent:DispatchAction":
         this.#handleActionDispatch(event);
         break;
-      }
 
       case "AIChatContent:DispatchFollowUp":
         this.#handleFollowUpDispatch(event);
         break;
 
+      case "AIChatContent:DispatchNewChat":
+        /*
+         * This message round-trips:
+         * child
+         * -> parent (to reset conversation state in ai-window)
+         * -> child (to clear the UI via "clear-conversation").
+         * The parent owns the conversation state, so we must go through it to start a new chat.
+         */
+        this.sendAsyncMessage("AIChatContent:DispatchNewChat");
+        break;
+
       case "AIChatContent:Ready":
         this.sendAsyncMessage("AIChatContent:Ready");
+
+        // Flush any trusted URLs that arrived before chatContent existed.
+        // Parent also re-pushes on Ready via #notifyContentReady
+        if (this.#trustedUrls.length) {
+          this.#dispatchToChatContent("aiChatContentActor:trustedUrlsUpdated", {
+            trustedUrls: this.#trustedUrls,
+          });
+          this.#trustedUrls = [];
+        }
+
         break;
 
       case "AIChatContent:OpenLink":
         this.sendAsyncMessage("AIChatContent:OpenLink", event.detail);
+        break;
+
+      case "AIChatContent:AccountSignIn":
+        this.sendAsyncMessage("AIChatContent:AccountSignIn", event.detail);
         break;
 
       default:
@@ -99,6 +133,11 @@ export class AIChatContentChild extends JSWindowActorChild {
   }
 
   async receiveMessage(message) {
+    if (message.name === "AIChatContent:TrustedUrlsUpdated") {
+      this.#handleTrustedUrlsUpdated(message.data);
+      return undefined;
+    }
+
     const mapping =
       AIChatContentChild.#EVENT_MAPPINGS_FROM_PARENT[message.name];
 
@@ -111,6 +150,40 @@ export class AIChatContentChild extends JSWindowActorChild {
 
     const payload = message.data;
     return this.#dispatchToChatContent(mapping.event, payload);
+  }
+
+  /**
+   * Handles trusted URLs pushed from parent.
+   *
+   * Normalizes URLs: canonicalizes via URL.parse().href and strips fragments
+   * to ensure "example.com/page" and "example.com/page#section" match.
+   *
+   * @param {object} data - Message data
+   * @param {string[]} data.trustedUrls - Array of trusted URLs from parent
+   */
+  #handleTrustedUrlsUpdated(data) {
+    const { trustedUrls } = data;
+    const list = Array.isArray(trustedUrls) ? trustedUrls : [];
+
+    const normalized = list
+      .map(url => {
+        const parsed = URL.parse(url);
+        if (!parsed) {
+          return null;
+        }
+        if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+          return null;
+        }
+        parsed.hash = "";
+        return parsed.href;
+      })
+      .filter(Boolean);
+
+    this.#trustedUrls = normalized;
+
+    this.#dispatchToChatContent("aiChatContentActor:trustedUrlsUpdated", {
+      trustedUrls: normalized,
+    });
   }
 
   #dispatchToChatContent(eventName, payload) {

@@ -13,12 +13,12 @@ import {
   constructRealTimeInfoInjectionMessage,
 } from "moz-src:///browser/components/aiwindow/models/ChatUtils.sys.mjs";
 
-import { makeGuid, getRoleLabel } from "./ChatUtils.sys.mjs";
+import { getRoleLabel } from "./ChatUtils.sys.mjs";
 import {
   CONVERSATION_STATUS,
   MESSAGE_ROLE,
   SYSTEM_PROMPT_TYPE,
-} from "./ChatConstants.sys.mjs";
+} from "./AIWindowConstants.sys.mjs";
 import {
   AssistantRoleOpts,
   ChatMessage,
@@ -26,12 +26,34 @@ import {
   UserRoleOpts,
 } from "./ChatMessage.sys.mjs";
 
+import { EventEmitter } from "resource://gre/modules/EventEmitter.sys.mjs";
+import {
+  consumeStreamChunk,
+  createParserState,
+  flushTokenRemainder,
+} from "chrome://browser/content/aiwindow/modules/TokenStreamParser.mjs";
+import { SecurityProperties } from "moz-src:///browser/components/aiwindow/models/SecurityProperties.sys.mjs";
+
+const lazy = {};
+ChromeUtils.defineESModuleGetters(lazy, {
+  ChatStore:
+    "moz-src:///browser/components/aiwindow/ui/modules/ChatStore.sys.mjs",
+  MemoriesManager:
+    "moz-src:///browser/components/aiwindow/models/memories/MemoriesManager.sys.mjs",
+});
+
+ChromeUtils.defineLazyGetter(lazy, "console", function () {
+  return console.createInstance({
+    prefix: "ChatConversation",
+  });
+});
+
 const CHAT_ROLES = [MESSAGE_ROLE.USER, MESSAGE_ROLE.ASSISTANT];
 
 /**
  * A conversation containing messages.
  */
-export class ChatConversation {
+export class ChatConversation extends EventEmitter {
   id;
   title;
   description;
@@ -40,6 +62,8 @@ export class ChatConversation {
   createdDate;
   updatedDate;
   status;
+  securityProperties;
+  /** @type {ChatMessage[]} */
   #messages;
   #minNextOrdinal = 0;
   activeBranchTipMessageId;
@@ -58,7 +82,7 @@ export class ChatConversation {
    */
   constructor(params) {
     const {
-      id = makeGuid(),
+      id = crypto.randomUUID(),
       title,
       description,
       pageUrl,
@@ -67,6 +91,8 @@ export class ChatConversation {
       updatedDate = Date.now(),
       messages = [],
     } = params;
+
+    super();
 
     this.id = id;
     this.title = title;
@@ -79,6 +105,86 @@ export class ChatConversation {
 
     // NOTE: Destructuring params.status causes a linter error
     this.status = params.status || CONVERSATION_STATUS.ACTIVE;
+    this.securityProperties =
+      params.securityProperties ?? new SecurityProperties();
+  }
+
+  handleChunk(chunk, currentMessage, parserState) {
+    let update = false;
+
+    const { plainText, tokens } = consumeStreamChunk(chunk, parserState);
+    if (plainText) {
+      currentMessage.content.body += plainText;
+      update = true;
+    }
+
+    if (tokens) {
+      currentMessage.addTokens(tokens);
+      update = true;
+    }
+
+    if (update) {
+      this.emit("chat-conversation:message-update", currentMessage);
+
+      lazy.ChatStore.updateConversation(this);
+    }
+  }
+
+  async receiveResponse(stream) {
+    const parserState = createParserState();
+    const currentMessage = this.#getCurrentAssistantResponse();
+
+    if (currentMessage?.content?.body) {
+      currentMessage.content.body += "\n\n";
+    }
+
+    let pendingToolCalls = null;
+    let fullResponseText = "";
+    let usage = null;
+
+    for await (const chunk of stream) {
+      usage = chunk?.usage;
+      if (chunk.text) {
+        fullResponseText += chunk.text;
+        this.handleChunk(chunk.text, currentMessage, parserState);
+      }
+
+      if (chunk?.toolCalls?.length) {
+        pendingToolCalls = chunk.toolCalls;
+      }
+    }
+
+    const remainder = flushTokenRemainder(parserState);
+    if (remainder) {
+      currentMessage.content.body += remainder;
+      this.emit("chat-conversation:message-update", currentMessage);
+    }
+
+    if (currentMessage._pendingMemoryIds?.length) {
+      currentMessage.memoriesApplied =
+        await lazy.MemoriesManager.getMemoriesByID(
+          new Set(currentMessage._pendingMemoryIds)
+        );
+
+      delete currentMessage._pendingMemoryIds;
+
+      this.emit("chat-conversation:message-update", currentMessage);
+    }
+
+    await lazy.ChatStore.updateConversation(this);
+    this.emit("chat-conversation:message-complete", currentMessage);
+
+    return { pendingToolCalls, fullResponseText, usage };
+  }
+
+  #getCurrentAssistantResponse() {
+    return this.messages
+      .filter(
+        message =>
+          message.role === MESSAGE_ROLE.ASSISTANT &&
+          message?.content?.type === "text"
+      )
+      .at(-1);
   }
 
   /**
@@ -167,6 +273,26 @@ export class ChatConversation {
   }
 
   /**
+   * Gets any URL mentioned in the conversation. These URLs have heightened security
+   * permissions as they have been explicitly added to the conversation by the user.
+   *
+   * @returns {Set<string>}
+   */
+  getAllMentionURLs() {
+    /** @type {Set<string>} */
+    const mentionUrls = new Set();
+    for (const message of this.#messages) {
+      const { contextMentions } = message.content;
+      if (contextMentions) {
+        for (const { url } of contextMentions) {
+          mentionUrls.add(url);
+        }
+      }
+    }
+    return mentionUrls;
+  }
+
+  /**
    * Add a user message to the conversation
    *
    * @todo Bug 2005424
@@ -191,6 +317,10 @@ export class ChatConversation {
 
     if (userOpts.contextMentions?.length) {
       content.contextMentions = userOpts.contextMentions;
+    }
+
+    if (pageUrl) {
+      content.contextPageUrl = pageUrl.href;
     }
 
     let currentTurn = this.currentTurnIndex();
@@ -273,8 +403,17 @@ export class ChatConversation {
    * @param {URL} pageUrl - The URL of the page when prompt was submitted
    * @param {openAIEngine} engineInstance
    * @param {UserRoleOpts} [userOpts]
+   * @param {boolean} [skipUserDispatch=false] - If true, do not emit the
+   *   message-update event after adding the user message (used for retries
+   *   to avoid duplicate user messages in the child process).
    */
-  async generatePrompt(prompt, pageUrl, engineInstance, userOpts = undefined) {
+  async generatePrompt(
+    prompt,
+    pageUrl,
+    engineInstance,
+    userOpts = undefined,
+    skipUserDispatch = false
+  ) {
     // Remove stale ephemeral messages before adding new user message
     this.removeSystemTimeMemoriesMessages();
 
@@ -283,24 +422,39 @@ export class ChatConversation {
       this.addSystemMessage(SYSTEM_PROMPT_TYPE.TEXT, systemPrompt);
     }
 
+    // userContext starts empty so the user message can be added and dispatched
+    // immediately for better perceived performance. The realTimeContext and
+    // memoriesContext properties are set on it by reference below before this
+    // method returns, so the full context is available to getMessagesInOpenAiFormat()
+    // when the LLM call is made.
     let userContext = {};
+    this.addUserMessage(prompt, pageUrl, userOpts, userContext);
+    if (!skipUserDispatch) {
+      this.emit("chat-conversation:message-update", this.messages.at(-1));
+    }
+
     const realTimeContext = await this.getRealTimeInfo(engineInstance, {
       contextMentions: userOpts?.contextMentions,
     });
     if (realTimeContext) {
-      userContext[realTimeContext] = realTimeContext;
+      userContext.realTimeContext = realTimeContext;
     }
 
     if (userOpts?.memoriesEnabled) {
-      const memoriesContext = await this.getMemoriesContext(
-        prompt,
-        engineInstance
-      );
-      if (memoriesContext) {
-        userContext[memoriesContext] = memoriesContext;
+      try {
+        const memoriesContext = await this.getMemoriesContext(
+          prompt,
+          engineInstance
+        );
+        if (memoriesContext) {
+          userContext.memoriesContext = memoriesContext;
+        }
+      } catch (memoriesContextError) {
+        lazy.console.error(
+          `Failed to generate memories context message: ${memoriesContextError}`
+        );
       }
     }
-    this.addUserMessage(prompt, pageUrl, userOpts, userContext);
 
     return this;
   }
@@ -572,5 +726,9 @@ export class ChatConversation {
 
   get messages() {
     return this.#messages;
+  }
+
+  get messageCount() {
+    return this.#messages.filter(m => CHAT_ROLES.includes(m.role)).length;
   }
 }

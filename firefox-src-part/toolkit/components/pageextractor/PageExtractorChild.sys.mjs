@@ -5,7 +5,7 @@
 // @ts-check
 
 /**
- * @import { GetTextOptions, GetDOMOptions, CanvasSnapshot, ExtractionResult } from './PageExtractor.d.ts'
+ * @import { GetTextOptions, CanvasSnapshot, ExtractionResult, PageMetadata, ReaderModeDocument } from './PageExtractor.d.ts'
  * @import { PageExtractorParent } from './PageExtractorParent.sys.mjs'
  */
 
@@ -65,9 +65,20 @@ export class PageExtractorChild extends JSWindowActorChild {
             canvasSnapshots: [],
           };
         }
+        await this.waitForPageReady();
         return this.getText(data);
       case "PageExtractorParent:WaitForPageReady":
         return this.waitForPageReady();
+      case "PageExtractorParent:GetPageMetadata":
+        if (this.isAboutReader()) {
+          const document = this.browsingContext?.window?.document;
+          const text = this.getAboutReaderContent() ?? "";
+          const language = document?.querySelector(".container")?.lang ?? "";
+          const wordCount = this.#getWordCount(language, text);
+
+          return { structuredDataTypes: [], wordCount, language };
+        }
+        return this.getPageMetadata();
     }
     return Promise.reject(new Error("Unknown message: " + name));
   }
@@ -95,6 +106,117 @@ export class PageExtractorChild extends JSWindowActorChild {
   }
 
   /**
+   * @see PageExtractorParent#getPageMetadata for docs
+   *
+   * @returns {Promise<PageMetadata>}
+   */
+  async getPageMetadata() {
+    const document = this.browsingContext?.window?.document;
+
+    if (!document) {
+      return Promise.reject(
+        new Error("No document available for page metadata extraction.")
+      );
+    }
+
+    const structuredDataTypes = this.#extractStructuredDataTypes(document);
+    const language = this.#detectLanguage(document);
+    const wordCount = this.#getWordCount(language, document.body.innerText);
+
+    return { structuredDataTypes, wordCount, language };
+  }
+
+  /**
+   * This will establish a word count of the text argument based on the provided language.
+   *
+   * @param {string} language
+   * @param {string} text
+   * @returns {number}
+   */
+  #getWordCount(language, text) {
+    let wordCount = 0;
+    const segmenter = new Intl.Segmenter(language || undefined, {
+      granularity: "word",
+    });
+    for (const { isWordLike } of segmenter.segment(text)) {
+      if (isWordLike) {
+        wordCount++;
+      }
+    }
+    return wordCount;
+  }
+
+  /**
+   * This extracts various `@type` values within the JSON-LD structured data markup of a page.
+   *
+   * @param {Document} document
+   * @returns {string[]}
+   */
+  #extractStructuredDataTypes(document) {
+    const scripts = document.querySelectorAll(
+      'script[type="application/ld+json" i]'
+    );
+    const types = new Set();
+
+    const asArray = value => {
+      if (Array.isArray(value)) {
+        return value;
+      }
+      return value == null ? [] : [value];
+    };
+
+    for (const script of scripts) {
+      const text = script.textContent?.trim();
+      if (!text) {
+        continue;
+      }
+
+      let parsed;
+      try {
+        parsed = JSON.parse(text);
+      } catch {
+        continue;
+      }
+
+      // JSON-LD can be:
+      // - an object
+      // - an array of objects
+      // - an object with @graph: [...]
+      const topLevelItems = asArray(parsed);
+      const graphItems = topLevelItems.flatMap(x => asArray(x?.["@graph"]));
+      const items = graphItems.length ? graphItems : topLevelItems;
+
+      for (const item of items) {
+        for (const t of asArray(item?.["@type"])) {
+          if (typeof t === "string") {
+            types.add(t);
+          }
+        }
+      }
+    }
+
+    return Array.from(types);
+  }
+
+  /**
+   * Query the lang tag of the document.
+   *
+   * @param {Document} document
+   * @returns {string}
+   */
+  #detectLanguage(document) {
+    const declared = document?.documentElement?.lang;
+    if (declared) {
+      try {
+        return new Intl.Locale(declared).baseName;
+      } catch {
+        return "";
+      }
+    }
+    return "";
+  }
+
+  /**
    * @see PageExtractorParent#getReaderModeContent for docs
    *
    * @param {boolean} force
@@ -112,19 +234,20 @@ export class PageExtractorChild extends JSWindowActorChild {
       return EMPTY_EXTRACTION_RESULT;
     }
 
-    const article = await lazy.ReaderMode.parseDocument(document);
-    if (!article) {
+    /** @type {ReaderModeDocument} */
+    const readerModeDocument = await lazy.ReaderMode.parseDocument(document);
+    if (!readerModeDocument) {
       return EMPTY_EXTRACTION_RESULT;
     }
 
-    let text = (article?.textContent || "")
-      .trim()
-      // Replace duplicate whitespace with either a single newline or space
-      .replace(/(\s*\n\s*)|\s{2,}/g, (_, newline) => (newline ? "\n" : " "));
+    const { textContent, title } = readerModeDocument;
 
-    if (article.title) {
-      text = article.title + "\n\n" + text;
+    let text = collapseWhitespace(textContent);
+
+    if (title) {
+      text = title + "\n\n" + text;
     }
+
     lazy.console.log("GetReaderModeContent", { force });
     lazy.console.debug(text);
 
@@ -299,4 +422,76 @@ export class PageExtractorChild extends JSWindowActorChild {
       return null;
     }
   }
+}
+
+/**
+ * Reader mode provides the textContent of the HTMLElement and not the innerText so the
+ * whitespace is not de-duplicated. This algorithm maintains at most 2 newlines in
+ * some whitespace, or 1 whitespace character. Only "\n" and " " are retained. This is
+ * similar to the whitespace collapsing behavior of rendered HTML. Note that this
+ * algorithm ignores Unicode whitespace characters, which are a larger set of potential
+ * characters.
+ *
+ * https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Text/Whitespace
+ *
+ * So:
+ *   "\t\n \t"       => "\n"
+ *   "\t\n \t\n\n\n" => "\n\n"
+ *   "example     text" => "example text"
+ *   "\n\r"      => ""
+ *
+ * @param {string} textContent
+ * @returns {string}
+ */
+function collapseWhitespace(textContent) {
+  textContent = textContent.trim();
+  let text = "";
+  let prevWasWhitespace = false;
+  let newLinesCount = 0;
+
+  for (let i = 0; i < textContent.length; i++) {
+    const ch = textContent[i];
+
+    if (
+      // Is this a whitespace character that is used in HTML whitespace collapsing?
+      ch === " " ||
+      ch === "\n" ||
+      ch === "\t" ||
+      ch === "\r"
+    ) {
+      // Remember that there was whitespace and count the newlines.
+      if (ch === "\n") {
+        newLinesCount++;
+      }
+      prevWasWhitespace = true;
+    } else {
+      // There is a character that needs to be added. Also add any whitespace that
+      // was encountered.
+
+      if (prevWasWhitespace) {
+        // Add the collapsed version of the whitespace.
+        if (newLinesCount == 0) {
+          text += " ";
+        } else if (newLinesCount == 1) {
+          text += "\n";
+        } else {
+          text += "\n\n";
+        }
+        // Reset the whitespace tracking varaibles.
+        newLinesCount = 0;
+        prevWasWhitespace = false;
+      }
+
+      // Add the next character.
+      text += ch;
+    }
+  }
+
+  if (prevWasWhitespace) {
+    throw new Error(
+      "Expected all of the trailing whitespace to be handled by String#trim"
+    );
+  }
+
+  return text;
 }

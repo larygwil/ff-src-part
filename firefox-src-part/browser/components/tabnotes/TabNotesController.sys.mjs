@@ -212,10 +212,17 @@ class TabNotesControllerClass {
           const browser = event.target;
           const { canonicalUrl } = event.detail;
           const gBrowser = browser.getTabBrowser();
+          /** @type {MozTabbrowserTab} */
           const tab = gBrowser.getTabForBrowser(browser);
           tab.canonicalUrl = canonicalUrl;
           lazy.TabNotes.has(tab).then(hasTabNote => {
             tab.hasTabNote = hasTabNote;
+            lazy.logConsole.debug("TabNote:Determined", tab, hasTabNote);
+            tab.dispatchEvent(
+              new CustomEvent("TabNote:Determined", {
+                detail: { hasTabNote },
+              })
+            );
           });
 
           lazy.logConsole.debug("CanonicalURL:Identified", tab, canonicalUrl);

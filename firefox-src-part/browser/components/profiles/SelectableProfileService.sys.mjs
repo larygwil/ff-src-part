@@ -25,6 +25,7 @@ ChromeUtils.defineESModuleGetters(lazy, {
   DownloadPaths: "resource://gre/modules/DownloadPaths.sys.mjs",
   EveryWindow: "resource:///modules/EveryWindow.sys.mjs",
   ExperimentAPI: "resource://nimbus/ExperimentAPI.sys.mjs",
+  MigrationUtils: "resource:///modules/MigrationUtils.sys.mjs",
   NimbusFeatures: "resource://nimbus/ExperimentAPI.sys.mjs",
   PrivateBrowsingUtils: "resource://gre/modules/PrivateBrowsingUtils.sys.mjs",
   setTimeout: "resource://gre/modules/Timer.sys.mjs",
@@ -102,6 +103,8 @@ class SelectableProfileServiceClass extends EventEmitter {
   #badge = null;
   #windowActivated = null;
   #isEnabled = false;
+  // This is a rough number of the current profiles. It is not always correct.
+  #cachedProfileCount = null;
 
   // The preferences that must be permanently stored in the database and kept
   // consistent amongst profiles.
@@ -110,6 +113,7 @@ class SelectableProfileServiceClass extends EventEmitter {
     "browser.crashReports.unsubmittedCheck.autoSubmit2",
     "browser.discovery.enabled",
     "browser.shell.checkDefaultBrowser",
+    "browser.backup.enabled_on.profiles",
     DAU_GROUPID_PREF_NAME,
     "datareporting.healthreport.uploadEnabled",
     "datareporting.policy.currentPolicyVersion",
@@ -238,10 +242,10 @@ class SelectableProfileServiceClass extends EventEmitter {
 
   async #attemptFlushProfileService() {
     try {
-      await this.#profileService.asyncFlush();
+      await this.#profileService.asyncFlushCurrentProfile();
     } catch (e) {
       try {
-        await this.#profileService.asyncFlushCurrentProfile();
+        await this.#profileService.asyncFlush();
       } catch (ex) {
         console.error(
           `Failed to flush changes to the profiles database: ${ex}`
@@ -333,6 +337,17 @@ class SelectableProfileServiceClass extends EventEmitter {
       return;
     }
 
+    const resetProfilePath = Services.env.get("SELECTABLE_PROFILE_RESET_PATH");
+    if (resetProfilePath) {
+      await this.#updateProfilePath(
+        resetProfilePath,
+        ProfilesDatastoreService.constructor.getDirectory("ProfD").path
+      );
+
+      Services.env.set("SELECTABLE_PROFILE_RESET_PATH", "");
+      Services.env.set("SELECTABLE_PROFILE_RESET_STORE_ID", "");
+    }
+
     // When we launch into the startup window, the `ProfD` is not defined so
     // getting the directory will throw. Leaving the `currentProfile` as null
     // is fine for the startup window.
@@ -343,6 +358,16 @@ class SelectableProfileServiceClass extends EventEmitter {
         ProfilesDatastoreService.constructor.getDirectory("ProfD")
       );
     } catch {}
+
+    if (resetProfilePath && this.#currentProfile) {
+      let { themeBg, themeFg } = this.getColorsForDefaultTheme();
+
+      this.currentProfile.theme = {
+        themeId: DEFAULT_THEME_ID,
+        themeFg,
+        themeBg,
+      };
+    }
 
     // If this isn't the first init prior to creating the first new profile and
     // the app is started up we should have found a current profile.
@@ -386,6 +411,8 @@ class SelectableProfileServiceClass extends EventEmitter {
       500
     );
 
+    this.#cachedProfileCount = await this.getProfileCount();
+
     // The 'activate' event listeners use #currentProfile, so this line has
     // to come after #currentProfile has been set.
     this.initWindowTracker();
@@ -415,6 +442,24 @@ class SelectableProfileServiceClass extends EventEmitter {
       // We only need to migrate if we are in an existing profile group.
       await this.#maybeAddDAUGroupIDToDB();
     }
+  }
+
+  async startupMigrationInit() {
+    if (this.#initialized) {
+      return;
+    }
+
+    if (!lazy.MigrationUtils.isStartupMigration) {
+      return;
+    }
+
+    this.#connection =
+      await ProfilesDatastoreService.getStartupMigrationConnection();
+    if (!this.#connection) {
+      return;
+    }
+
+    this.#storeID = await ProfilesDatastoreService.storeID;
   }
 
   async uninit() {
@@ -1264,7 +1309,13 @@ class SelectableProfileServiceClass extends EventEmitter {
       throw new Error(`Unable to insertProfile with values: ${profileData}`);
     }
 
+    this.#cachedProfileCount = await this.getProfileCount();
+
     ProfilesDatastoreService.notify();
+
+    for (let win of lazy.EveryWindow.readyWindows) {
+      win.gBrowser.updateTitlebar();
+    }
 
     return this.getProfile(profileId);
   }
@@ -1289,6 +1340,12 @@ class SelectableProfileServiceClass extends EventEmitter {
     await this.#connection.execute("DELETE FROM Profiles WHERE id = :id;", {
       id: aProfile.id,
     });
+
+    this.#cachedProfileCount = await this.getProfileCount();
+
+    for (let win of lazy.EveryWindow.readyWindows) {
+      win.gBrowser.updateTitlebar();
+    }
 
     ProfilesDatastoreService.notify();
   }
@@ -1378,6 +1435,33 @@ class SelectableProfileServiceClass extends EventEmitter {
   }
 
   /**
+   * Update the profile path in the db.
+   *
+   * @param {string} aProfilePath The absolute path of the selectable profile
+   * to be updated
+   * @param {string} aUpdatedPath The new absolute path for the selectable
+   * profile
+   */
+  async #updateProfilePath(aProfilePath, aUpdatedPath) {
+    let aProfileDir = Cc["@mozilla.org/file/local;1"].createInstance(
+      Ci.nsIFile
+    );
+    aProfileDir.initWithPath(aProfilePath);
+    let relativePath = this.getRelativeProfilePath(aProfileDir);
+
+    let aUpdatedDir = Cc["@mozilla.org/file/local;1"].createInstance(
+      Ci.nsIFile
+    );
+    aUpdatedDir.initWithPath(aUpdatedPath);
+    let updatedRelativePath = this.getRelativeProfilePath(aUpdatedDir);
+
+    await this.#connection.execute(
+      `UPDATE Profiles SET path = :path WHERE path = :current;`,
+      { current: relativePath, path: updatedRelativePath }
+    );
+  }
+
+  /**
    * Create and launch a new SelectableProfile and add it to the group datastore.
    * This is an unmanaged profile from the nsToolkitProfile perspective.
    *
@@ -1420,6 +1504,18 @@ class SelectableProfileServiceClass extends EventEmitter {
         return new SelectableProfile(row);
       })
       .sort((p1, p2) => p1.name.localeCompare(p2.name));
+  }
+
+  /**
+   * Synchronously gets a cached value for the number of profiles in the group.
+   * This will be incorrect in the event that another instance has added or
+   * removed profiles recently.
+   *
+   * @returns {number}
+   *   The cached number of profiles in the group.
+   */
+  getCachedProfileCount() {
+    return this.#cachedProfileCount;
   }
 
   /**

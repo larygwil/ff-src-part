@@ -15,18 +15,33 @@ import {
   GetPageContent,
   RunSearch,
   getUserMemories,
+  GET_OPEN_TABS,
+  SEARCH_BROWSING_HISTORY,
+  GET_PAGE_CONTENT,
+  RUN_SEARCH,
+  GET_USER_MEMORIES,
 } from "moz-src:///browser/components/aiwindow/models/Tools.sys.mjs";
 import { extractValidUrls } from "moz-src:///browser/components/aiwindow/models/ChatUtils.sys.mjs";
 import {
   extractMarkdownLinks,
   validateCitedUrls,
 } from "moz-src:///browser/components/aiwindow/models/CitationParser.sys.mjs";
+import { compactMessages } from "moz-src:///browser/components/aiwindow/models/PromptOptimizer.sys.mjs";
+
+// Hard limit on how many times run_search can execute per conversation turn.
+// Prevents infinite tool-call loops when the model repeatedly requests search.
+// Bug 2024006.
+const MAX_RUN_SEARCH_PER_TURN = 3;
 
 const lazy = {};
 ChromeUtils.defineESModuleGetters(lazy, {
   AIWindow:
     "moz-src:///browser/components/aiwindow/ui/modules/AIWindow.sys.mjs",
 });
+
+/**
+ * @import { ChatConversation } from "moz-src:///browser/components/aiwindow/ui/modules/ChatConversation.sys.mjs"
+ */
 
 /**
  * Chat
@@ -48,6 +63,7 @@ Object.assign(Chat, {
     run_search: RunSearch.runSearch.bind(RunSearch),
     get_user_memories: getUserMemories,
   },
+  lastUsage: null,
 
   /**
    * Stream assistant output with tool-call support.
@@ -59,42 +75,67 @@ Object.assign(Chat, {
    * @param {openAIEngine} engineInstance
    * @param {object} [context]
    * @param {BrowsingContext} [context.browsingContext]
-   * @yields {string} Assistant text chunks
    */
-  async *fetchWithHistory(conversation, engineInstance, context = {}) {
+  async fetchWithHistory(conversation, engineInstance, context = {}) {
     const fxAccountToken = await openAIEngine.getFxAccountToken();
+    if (!fxAccountToken) {
+      console.error("fetchWithHistory Account Token null or undefined");
+      const fxaError = new Error("FxA token unavailable");
+      fxaError.error = 4; // ACCOUNT_ERROR: triggers FxA sign-in prompt in the UI
+      throw fxaError;
+    }
 
     const toolRoleOpts = new ToolRoleOpts(this.modelId);
     const currentTurn = conversation.currentTurnIndex();
     const config = engineInstance.getConfig(engineInstance.feature);
     const inferenceParams = config?.parameters || {};
 
-    const allAllowedUrls = new Set();
-    let fullResponseText = "";
+    /**
+     * For the first turn only, we use exactly what the user typed as the `run_search` search query.
+     * To make that work, we use a different tool definition for the first turn vs. all subsequent turns.
+     */
+    let chatToolsConfig = structuredClone(toolsConfig);
+    let isVerbatimQuery = true;
+    if (currentTurn > 0) {
+      chatToolsConfig =
+        RunSearch.setGeneratedSearchQueryDescription(chatToolsConfig);
+      isVerbatimQuery = false;
+    }
 
-    const streamModelResponse = () =>
-      engineInstance.runWithGenerator({
+    const allAllowedUrls = new Set();
+    await this._collectInitialAllowedUrls(conversation, allAllowedUrls);
+
+    let fullResponseText = "";
+    const searchExecuted = conversation._searchExecutedTurn === currentTurn;
+    let blockedSearchAttempts = 0;
+
+    const streamModelResponse = () => {
+      const rawMessages = conversation.getMessagesInOpenAiFormat();
+      const compactedMessages = compactMessages(rawMessages);
+
+      return engineInstance.runWithGenerator({
         streamOptions: { enabled: true },
         fxAccountToken,
         tool_choice: "auto",
-        tools: toolsConfig,
-        args: conversation.getMessagesInOpenAiFormat(),
+        tools: chatToolsConfig,
+        args: compactedMessages,
         ...inferenceParams,
       });
+    };
 
     while (true) {
       let pendingToolCalls = null;
 
       try {
-        for await (const chunk of streamModelResponse()) {
-          if (chunk?.text) {
-            fullResponseText += chunk.text;
-            yield chunk.text;
-          }
+        this.lastUsage = null;
+        const response = await conversation.receiveResponse(
+          streamModelResponse()
+        );
+        fullResponseText = response.fullResponseText;
+        pendingToolCalls = response.pendingToolCalls;
 
-          if (chunk?.toolCalls?.length) {
-            pendingToolCalls = chunk.toolCalls;
-          }
+        if (response.usage) {
+          this.lastUsage = response.usage;
         }
       } catch (err) {
         console.error("fetchWithHistory streaming error:", err);
@@ -104,6 +145,62 @@ Object.assign(Chat, {
       if (!pendingToolCalls || pendingToolCalls.length === 0) {
         this._validateCitations(fullResponseText, allAllowedUrls);
         return;
+      }
+
+      // Guard: if the first pending tool call is a duplicate run_search,
+      // return an error tool result so the model continues without
+      // executing the search or navigating the browser.
+      // Bug 2024006: after MAX_RUN_SEARCH_PER_TURN blocked attempts, remove
+      // the tool entirely so the model is forced to respond with text.
+      // @todo Bug 2006159 - Check all pending tool calls, not just the first
+      const firstPending = pendingToolCalls[0]?.function;
+      if (firstPending?.name === RUN_SEARCH && searchExecuted) {
+        blockedSearchAttempts++;
+
+        const blockedCalls = pendingToolCalls.slice(0, 1).map(tc => ({
+          id: tc.id,
+          type: "function",
+          function: {
+            name: tc.function.name,
+            arguments: tc.function.arguments || "{}",
+          },
+        }));
+        conversation.addAssistantMessage("function", {
+          tool_calls: blockedCalls,
+        });
+
+        for (const tc of pendingToolCalls.slice(0, 1)) {
+          const content = {
+            tool_call_id: tc.id,
+            body: "ERROR: run_search tool call error: You may only run one search per user message. Respond to the user with what you have already found and ask if they want you to proceed with the next search. Do not hallucinate search results.",
+            name: tc.function.name,
+          };
+          conversation.addToolCallMessage(content, currentTurn, toolRoleOpts);
+        }
+
+        if (blockedSearchAttempts === MAX_RUN_SEARCH_PER_TURN) {
+          chatToolsConfig = chatToolsConfig.filter(
+            t => t.function?.name !== RUN_SEARCH
+          );
+        }
+        continue;
+      }
+      // If the user disabled memories in the last message, the assistant
+      // should not be able to retrieve them using the get_user_memories tool
+      else if (firstPending?.name === GET_USER_MEMORIES) {
+        const lastUserMessage =
+          conversation.messages.findLast(m => m.role === 0) ?? null;
+        if (lastUserMessage.memoriesEnabled === false) {
+          for (const tc of pendingToolCalls.slice(0, 1)) {
+            const content = {
+              tool_call_id: tc.id,
+              body: "ERROR: get_user_memories tool call error: inform the user that they have disabled memories, so they cannot be retrieved.",
+              name: tc.function.name,
+            };
+            conversation.addToolCallMessage(content, currentTurn, toolRoleOpts);
+          }
+          continue;
+        }
       }
 
       // @todo Bug 2006159 - Implement parallel tool calling
@@ -137,8 +234,13 @@ Object.assign(Chat, {
           continue;
         }
 
-        if (toolName === "run_search") {
-          yield { searching: true, query: toolParams.query };
+        // Make sure we aren't using a generated query when we shouldn't be
+        if (
+          toolName === RUN_SEARCH &&
+          isVerbatimQuery &&
+          toolParams.hasOwnProperty("query")
+        ) {
+          delete toolParams.query;
         }
 
         let result, searchHandoffBrowser;
@@ -150,8 +252,9 @@ Object.assign(Chat, {
 
           const hasParams = toolParams && !!Object.keys(toolParams).length;
           const params = hasParams ? toolParams : undefined;
+          const secProps = conversation.securityProperties;
 
-          if (toolName === "run_search") {
+          if (toolName === RUN_SEARCH) {
             if (!context.browsingContext) {
               console.error(
                 "run_search: No browsingContext provided, aborting search handoff"
@@ -159,9 +262,23 @@ Object.assign(Chat, {
               return;
             }
             searchHandoffBrowser = context.browsingContext.embedderElement;
-            result = await toolFunc(params ?? {}, context);
+            result = await toolFunc(params ?? {}, context, secProps);
+            conversation._searchExecutedTurn = currentTurn;
+          } else if (toolName === GET_PAGE_CONTENT) {
+            const startTime = new Date();
+            result = await toolFunc(params, allAllowedUrls, secProps);
+            Glean.smartWindow.getPageContent.record({
+              location: context?.telemetry?.location,
+              chat_id: conversation.id,
+              message_seq: conversation.messageCount,
+              length: result.reduce(
+                (acc, curr) => acc + (curr?.length || 0),
+                0
+              ),
+              time: new Date() - startTime,
+            });
           } else {
-            result = await (hasParams ? toolFunc(params) : toolFunc());
+            result = await toolFunc(params, secProps);
           }
 
           this._collectAllowedUrlsFromToolCall(
@@ -182,7 +299,11 @@ Object.assign(Chat, {
           ?.updateConversation(conversation)
           .catch(() => {});
 
-        if (toolName === "run_search") {
+        if (toolName === RUN_SEARCH) {
+          // Commit here because we return early below and never reach the
+          // post-loop commit.
+          conversation.securityProperties.commit();
+
           const win = searchHandoffBrowser?.ownerGlobal;
           if (!win || win.closed) {
             console.error(
@@ -210,6 +331,31 @@ Object.assign(Chat, {
         // @todo Bug 2006159 - Implement parallel tool calling
         break;
       }
+
+      // Commit flags once all tool calls in this batch have finished so that
+      // no tool call can observe flags staged by a sibling call.
+      conversation.securityProperties.commit();
+    }
+  },
+
+  /**
+   * Pre-populate allowed URLs from open tabs and @mentioned URLs.
+   *
+   * @param {ChatConversation} conversation
+   * @param {Set<string>} allAllowedUrls - Set to populate
+   */
+  async _collectInitialAllowedUrls(conversation, allAllowedUrls) {
+    const openTabs = await this.toolMap.get_open_tabs(
+      undefined,
+      conversation.securityProperties
+    );
+    for (const url of extractValidUrls(openTabs)) {
+      allAllowedUrls.add(url);
+    }
+
+    // Add @mentioned URLs from conversation history
+    for (const mentionURL of conversation.getAllMentionURLs()) {
+      allAllowedUrls.add(mentionURL);
     }
   },
 
@@ -221,11 +367,11 @@ Object.assign(Chat, {
    * @param {Set<string>} allAllowedUrls - Set to add URLs to
    */
   _collectAllowedUrlsFromToolCall(toolName, result, allAllowedUrls) {
-    if (toolName === "get_open_tabs" && Array.isArray(result)) {
+    if (toolName === GET_OPEN_TABS && Array.isArray(result)) {
       for (const url of extractValidUrls(result)) {
         allAllowedUrls.add(url);
       }
-    } else if (toolName === "search_browsing_history") {
+    } else if (toolName === SEARCH_BROWSING_HISTORY) {
       let parsed = result;
       if (typeof result === "string") {
         try {

@@ -242,6 +242,7 @@ const PROFILE_THEMES_MAP = new Map([
 ]);
 
 ChromeUtils.defineESModuleGetters(lazy, {
+  BackupService: "resource:///modules/backup/BackupService.sys.mjs",
   EveryWindow: "resource:///modules/EveryWindow.sys.mjs",
   formAutofillStorage: "resource://autofill/FormAutofillStorage.sys.mjs",
   LoginHelper: "resource://gre/modules/LoginHelper.sys.mjs",
@@ -299,6 +300,12 @@ export class ProfilesParent extends JSWindowActorParent {
           // Something blocked our attempt to quit.
           return null;
         }
+
+        // Since this profile will be deleted, let's make sure to update any prefs
+        // that depended on its existence
+        await lazy.BackupService.removeFromEnabledListPref(
+          SelectableProfileService.currentProfile.id
+        );
 
         try {
           await SelectableProfileService.deleteCurrentProfile();

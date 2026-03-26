@@ -6,7 +6,7 @@
 
 /**
  * @import { HiddenFrame } from "resource://gre/modules/HiddenFrame.sys.mjs"
- * @import { GetTextOptions, ExtractionResult } from './PageExtractor.d.ts'
+ * @import { GetTextOptions, ExtractionResult, PageMetadata } from './PageExtractor.d.ts'
  * @import { PageExtractorChild } from './PageExtractorChild.sys.mjs'
  */
 
@@ -50,6 +50,17 @@ export class PageExtractorParent extends JSWindowActorParent {
   }
 
   /**
+   * Get metadata related to the page.
+   *
+   * @see PageExtractorChild#getPageMetadata
+   *
+   * @returns {Promise<PageMetadata>}
+   */
+  getPageMetadata() {
+    return this.sendQuery("PageExtractorParent:GetPageMetadata");
+  }
+
+  /**
    * Gets the visible text from the page. This function is a bit smarter than just
    * document.body.innerText. See GetTextOptions
    *
@@ -59,12 +70,57 @@ export class PageExtractorParent extends JSWindowActorParent {
    * @returns {Promise<ExtractionResult>}
    */
   async getText(options = {}) {
+    if (options._forceRemoveBoilerplate && !Cu.isInAutomation) {
+      throw new Error(
+        "The _forceRemoveBoilerplate option from GetTextOptions can only be used in tests."
+      );
+    }
+
     if (this.#isPDF()) {
       const text = await this.browsingContext.currentWindowGlobal
         .getActor("Pdfjs")
         .getTextContent();
       return { text, links: [], canvasSnapshots: [] };
     }
+
+    if (options.removeBoilerplate) {
+      // Boilerplate removal is done by fetching the content in Reader Mode. If that
+      // fails then fallback to getting all of the content.
+      const response = await this.getReaderModeContent(
+        options._forceRemoveBoilerplate // This is a test-only option.
+      );
+      if (options._forceRemoveBoilerplate && !response.text) {
+        throw new Error(
+          "Expected to get text back when using the test-only _forceRemoveBoilerplate."
+        );
+      }
+      if (response.text) {
+        // Reader mode content was found.
+        if (
+          options.sufficientLength &&
+          response.text.length > options.sufficientLength
+        ) {
+          // Try to cut at a sentence boundary within the last 100 characters of the
+          // end.
+          //
+          // TODO(Bug 2023932) Make this internationalized, splitting on a "." only works
+          // in certain scripts like Latin.
+          const truncatePoint = response.text.lastIndexOf(
+            ".",
+            options.sufficientLength
+          );
+          if (truncatePoint > options.sufficientLength - 100) {
+            response.text = response.text.substring(0, truncatePoint + 1);
+          } else {
+            response.text =
+              response.text.substring(0, options.sufficientLength) + "…";
+          }
+        }
+
+        return response;
+      }
+    }
+
     return this.sendQuery("PageExtractorParent:GetText", options);
   }
 

@@ -7,8 +7,11 @@ import { html, ifDefined } from "chrome://global/content/vendor/lit.all.mjs";
 import {
   BANDWIDTH,
   LINKS,
-  ERRORS,
 } from "chrome://browser/content/ipprotection/ipprotection-constants.mjs";
+
+const { ERRORS } = ChromeUtils.importESModule(
+  "moz-src:///toolkit/components/ipprotection/IPPProxyManager.sys.mjs"
+);
 
 // eslint-disable-next-line import/no-unassigned-import
 import "chrome://browser/content/ipprotection/ipprotection-message-bar.mjs";
@@ -397,24 +400,15 @@ export default class IPProtectionContentElement extends MozLitElement {
 
     const hasExclusion = this.hasSiteExclusion;
     const siteExclusionToggleStateL10nId = hasExclusion
-      ? "site-exclusion-toggle-disabled"
-      : "site-exclusion-toggle-enabled";
+      ? "site-exclusion-toggle-disabled-1"
+      : "site-exclusion-toggle-enabled-1";
     return html` <div id="site-exclusion-control">
-      <span id="site-exclusion-label-container">
-        <img
-          id="site-exclusion-icon"
-          src="chrome://browser/content/ipprotection/assets/shield-vpn-exceptions.svg"
-        />
-        <label
-          data-l10n-id="site-exclusion-toggle-label"
-          id="site-exclusion-label"
-          for="site-exclusion-toggle"
-        ></label>
-      </span>
       <moz-toggle
         data-l10n-id=${siteExclusionToggleStateL10nId}
         data-l10n-attrs="label"
         id="site-exclusion-toggle"
+        iconsrc="chrome://browser/content/ipprotection/assets/shield-vpn-exceptions.svg"
+        inputlayout="inline-end"
         ?pressed=${!hasExclusion}
         @toggle=${this.handleToggleUseVPN}
       >

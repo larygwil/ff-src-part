@@ -1,5 +1,3 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -100,6 +98,7 @@
 #include "nsString.h"
 #include "nsStyleConsts.h"
 #include "nsStyleStructInlines.h"
+#include "nsStyleTransformMatrix.h"
 #include "nsTableWrapperFrame.h"
 #include "nsTextControlFrame.h"
 #include "nsXULElement.h"
@@ -125,6 +124,9 @@
 
 #ifdef ACCESSIBILITY
 #  include "nsAccessibilityService.h"
+#endif
+#if defined(ACCESSIBILITY) && defined(MOZ_ENABLE_SKIA_PDF)
+#  include "mozilla/a11y/PdfStructTreeBuilder.h"
 #endif
 
 #include "ActiveLayerTracker.h"
@@ -2335,9 +2337,11 @@ already_AddRefed<ComputedStyle> nsIFrame::ComputeSelectionStyle(
   if (!element) {
     return nullptr;
   }
+  nsIFrame* primaryFrame = element->GetPrimaryFrame();
+  ComputedStyle* parentStyle = primaryFrame ? primaryFrame->Style() : Style();
   RefPtr<ComputedStyle> pseudoStyle =
       PresContext()->StyleSet()->ProbePseudoElementStyle(
-          *element, PseudoStyleType::Selection, nullptr, Style());
+          *element, PseudoStyleType::Selection, nullptr, parentStyle);
   if (!pseudoStyle) {
     return nullptr;
   }
@@ -2360,8 +2364,10 @@ already_AddRefed<ComputedStyle> nsIFrame::ComputeHighlightSelectionStyle(
   if (!element) {
     return nullptr;
   }
+  nsIFrame* primaryFrame = element->GetPrimaryFrame();
+  ComputedStyle* parentStyle = primaryFrame ? primaryFrame->Style() : Style();
   return PresContext()->StyleSet()->ProbePseudoElementStyle(
-      *element, PseudoStyleType::Highlight, aHighlightName, Style());
+      *element, PseudoStyleType::Highlight, aHighlightName, parentStyle);
 }
 
 already_AddRefed<ComputedStyle> nsIFrame::ComputeTargetTextStyle() const {
@@ -2369,8 +2375,10 @@ already_AddRefed<ComputedStyle> nsIFrame::ComputeTargetTextStyle() const {
   if (!element) {
     return nullptr;
   }
+  nsIFrame* primaryFrame = element->GetPrimaryFrame();
+  ComputedStyle* parentStyle = primaryFrame ? primaryFrame->Style() : Style();
   RefPtr pseudoStyle = PresContext()->StyleSet()->ProbePseudoElementStyle(
-      *element, PseudoStyleType::TargetText, nullptr, Style());
+      *element, PseudoStyleType::TargetText, nullptr, parentStyle);
   if (!pseudoStyle) {
     return nullptr;
   }
@@ -4263,10 +4271,21 @@ void nsIFrame::BuildDisplayListForChild(nsDisplayListBuilder* aBuilder,
   // for the same destination that entirely overlap each other, which adds
   // nothing useful to the final PDF.
   Maybe<nsDisplayListBuilder::Linkifier> linkifier;
-  if (StaticPrefs::print_save_as_pdf_links_enabled() &&
-      aBuilder->IsForPrinting()) {
-    linkifier.emplace(aBuilder, childOrOutOfFlow, aLists.Content());
-    linkifier->MaybeAppendLink(aBuilder, childOrOutOfFlow);
+  if (aBuilder->IsForPrinting()) {
+    if (StaticPrefs::print_save_as_pdf_links_enabled()) {
+      linkifier.emplace(aBuilder, childOrOutOfFlow, aLists.Content());
+      linkifier->MaybeAppendLink(aBuilder, childOrOutOfFlow);
+    }
+#if defined(ACCESSIBILITY) && defined(MOZ_ENABLE_SKIA_PDF)
+    auto [bcId, accId] = a11y::PdfStructTreeBuilder::GetAccId(childOrOutOfFlow);
+    if (bcId) {
+      // When generating tagged PDF, associate this content with the correct
+      // node in the structure tree.
+      auto* item = MakeDisplayItem<nsDisplayAccessibleId>(
+          aBuilder, childOrOutOfFlow, bcId, accId);
+      aLists.Content()->AppendToTop(item);
+    }
+#endif
   }
 
   nsIFrame* parent = childOrOutOfFlow->GetParent();
@@ -4773,10 +4792,10 @@ nsresult nsIFrame::GetDataForTableSelection(
   const Element* const independentSelectionLimiter =
       aFrameSelection->GetIndependentSelectionRootElement();
 
-  // If our content node is an ancestor of the limiting node,
+  // If our content node is not under the limiting node,
   // we should stop the search right now.
   if (independentSelectionLimiter &&
-      independentSelectionLimiter->IsInclusiveDescendantOf(GetContent())) {
+      !independentSelectionLimiter->Contains(GetContent())) {
     return NS_OK;
   }
 
@@ -4974,11 +4993,11 @@ nsresult nsIFrame::MoveCaretToEventPoint(nsPresContext* aPresContext,
   // We often get out of sync state issues with mousedown events that
   // get interrupted by alerts/dialogs.
   // Check with the ESM to see if we should process this one
-  if (!aPresContext->EventStateManager()->EventStatusOK(aMouseEvent)) {
+  EventStateManager* const esm = aPresContext->EventStateManager();
+  if (!esm->EventStatusOK(aMouseEvent)) {
     return NS_OK;
   }
 
-  EventStateManager* const esm = aPresContext->EventStateManager();
   if (nsIContent* dragGestureContent = esm->GetTrackingDragGestureContent()) {
     if (dragGestureContent != this->GetContent()) {
       // When the current tracked dragging gesture is different
@@ -5728,7 +5747,8 @@ static bool IsRelevantBlockFrame(const nsIFrame* aFrame) {
 }
 
 // Retrieve the content offsets of a frame
-static FrameContentRange GetRangeForFrame(const nsIFrame* aFrame) {
+static FrameContentRange GetRangeForFrame(const nsIFrame* aFrame,
+                                          bool includeReplaced = false) {
   nsIContent* content = aFrame->GetContent();
   if (!content) {
     NS_WARNING("Frame has no content");
@@ -5751,7 +5771,7 @@ static FrameContentRange GetRangeForFrame(const nsIFrame* aFrame) {
     content = content->GetParent();
   }
 
-  if (aFrame->IsReplaced()) {
+  if (!includeReplaced && aFrame->IsReplaced()) {
     if (auto* parent = content->GetParent()) {
       // TODO(emilio): Revise this in presence of Shadow DOM / display:
       // contents, it's likely that we don't want to just walk the light tree,
@@ -5793,7 +5813,9 @@ static bool SelfIsSelectable(nsIFrame* aFrame, nsIFrame* aParentFrame,
     return false;
   }
   if ((aFlags & nsIFrame::SKIP_HIDDEN) &&
-      !aFrame->StyleVisibility()->IsVisible()) {
+      (!aFrame->StyleVisibility()->IsVisible() ||
+       aFrame->IsHiddenByContentVisibilityOnAnyAncestor(
+           nsIFrame::IncludeContentVisibility::Hidden))) {
     return false;
   }
   if (aFrame->IsGeneratedContentFrame()) {
@@ -6209,7 +6231,8 @@ nsIFrame::ContentOffsets nsIFrame::GetContentOffsetsFromPoint(
   // calculation method
   if (closest.frameEdge) {
     ContentOffsets offsets;
-    FrameContentRange range = GetRangeForFrame(closest.frame);
+    bool includeReplaced = (aFlags & INCLUDE_REPLACED) != 0;
+    FrameContentRange range = GetRangeForFrame(closest.frame, includeReplaced);
     offsets.content = range.content;
     if (closest.afterFrame) {
       offsets.offset = range.end;
@@ -9098,7 +9121,8 @@ void nsIFrame::ListTextRuns(FILE* out, nsTHashSet<const void*>& aSeen) const {
 
 void nsIFrame::ListMatchedRules(FILE* out, const char* aPrefix) const {
   AutoTArray<StyleMatchingDeclarationBlock, 8> decls;
-  Servo_ComputedValues_GetMatchingDeclarations(Style(), &decls);
+  Servo_ComputedValues_GetMatchingDeclarations(
+      Style(), /* with_starting_style = */ false, &decls);
   for (const StyleMatchingDeclarationBlock& block : decls) {
     nsAutoCString ruleText;
     Servo_DeclarationBlock_GetCssText(block.block, &ruleText);
@@ -11516,6 +11540,9 @@ bool nsIFrame::IsFocusableDueToScrollFrame() {
   if (!mContent->IsHTMLElement()) {
     return false;
   }
+  if (Style()->IsPseudoElement()) {
+    return false;
+  }
   if (mContent->IsRootOfNativeAnonymousSubtree()) {
     return false;
   }
@@ -11633,21 +11660,14 @@ StyleDominantBaseline nsIFrame::DominantBaseline() const {
   if (dominantBaseline != StyleDominantBaseline::Auto) {
     return dominantBaseline;
   }
-
-  WritingMode writingMode = GetWritingMode();
-  StyleTextOrientation textOrientation = StyleVisibility()->mTextOrientation;
-
   // https://drafts.csswg.org/css-inline-3/#alignment-baseline-property
   // > Equivalent to alphabetic in horizontal writing modes and
   // > in vertical writing modes when text-orientation is sideways.
   // > Equivalent to central in vertical writing modes when
   // > text-orientation is mixed or upright.
-  if (writingMode.IsVertical() &&
-      textOrientation != StyleTextOrientation::Sideways) {
-    return StyleDominantBaseline::Central;
-  }
-
-  return StyleDominantBaseline::Alphabetic;
+  return GetWritingMode().IsCentralBaseline()
+             ? StyleDominantBaseline::Central
+             : StyleDominantBaseline::Alphabetic;
 }
 
 StyleAlignmentBaseline nsIFrame::AlignmentBaseline() const {

@@ -8,11 +8,11 @@ const lazy = {};
 
 ChromeUtils.defineESModuleGetters(lazy, {
   IPPProxyManager:
-    "moz-src:///browser/components/ipprotection/IPPProxyManager.sys.mjs",
+    "moz-src:///toolkit/components/ipprotection/IPPProxyManager.sys.mjs",
   IPProtectionService:
-    "moz-src:///browser/components/ipprotection/IPProtectionService.sys.mjs",
+    "moz-src:///toolkit/components/ipprotection/IPProtectionService.sys.mjs",
   IPProtectionStates:
-    "moz-src:///browser/components/ipprotection/IPProtectionService.sys.mjs",
+    "moz-src:///toolkit/components/ipprotection/IPProtectionService.sys.mjs",
 });
 
 /**
@@ -143,16 +143,32 @@ class IPProtectionInfobarManagerClass {
     // Convert bytes to GB for display, using same logic as bandwidth-usage component
     // Convert BigInt to Number first to avoid division errors
     const remainingGB = Number(usage.remaining) / BANDWIDTH.BYTES_IN_GB;
-    const formattedGB = Math.round(remainingGB).toString();
+
+    let usageLeft;
+    let l10nId;
+
+    if (threshold === 90 && remainingGB < 1) {
+      usageLeft = Math.floor(
+        Number(usage.remaining) / BANDWIDTH.BYTES_IN_MB
+      ).toString();
+      l10nId = "ip-protection-bandwidth-warning-infobar-message-90-mb";
+    } else if (threshold === 90) {
+      usageLeft = Math.round(remainingGB).toString();
+      l10nId = "ip-protection-bandwidth-warning-infobar-message-90";
+    } else {
+      // 75% threshold
+      usageLeft = remainingGB.toFixed(1);
+      l10nId = "ip-protection-bandwidth-warning-infobar-message-75";
+    }
 
     // Show the infobar with localized message
     win.gNotificationBox.appendNotification(
       notificationId,
       {
         label: {
-          "l10n-id": `ip-protection-bandwidth-warning-infobar-message-${threshold}`,
+          "l10n-id": l10nId,
           "l10n-args": {
-            usageLeft: formattedGB,
+            usageLeft,
           },
         },
         priority: win.gNotificationBox.PRIORITY_WARNING_HIGH,

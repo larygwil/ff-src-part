@@ -141,6 +141,7 @@ export default class IPProtectionStatusCard extends MozLitElement {
           data-l10n-id=${buttonL10nId}
           @click=${this.handleButtonClick}
           ?disabled=${buttonDisabled}
+          closemenu="none"
         ></moz-button>
       </ipprotection-status-box>
     `;
@@ -166,6 +167,7 @@ export default class IPProtectionStatusCard extends MozLitElement {
           type: "excluded",
           headerL10nId: "ipprotection-connection-status-excluded",
           buttonL10nId: "ipprotection-button-turn-vpn-off-excluded-site",
+          buttonType: "primary",
           iconSrc:
             "chrome://browser/content/ipprotection/assets/states/ipprotection-excluded.svg",
         })}
@@ -178,6 +180,7 @@ export default class IPProtectionStatusCard extends MozLitElement {
           type: "connected",
           headerL10nId: "ipprotection-connection-status-connected",
           buttonL10nId: "ipprotection-button-turn-vpn-off",
+          buttonType: "primary",
           iconSrc:
             "chrome://browser/content/ipprotection/assets/states/ipprotection-on.svg",
         })}

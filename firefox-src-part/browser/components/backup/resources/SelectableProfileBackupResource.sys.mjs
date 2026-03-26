@@ -11,6 +11,10 @@ ChromeUtils.defineESModuleGetters(lazy, {
     "resource:///modules/profiles/SelectableProfileService.sys.mjs",
 });
 
+ChromeUtils.defineLazyGetter(lazy, "l10n", () => {
+  return new Localization(["browser/backupSettings.ftl"]);
+});
+
 ChromeUtils.defineLazyGetter(lazy, "logConsole", function () {
   return console.createInstance({
     prefix: "SelectableProfileBackupResource",
@@ -90,6 +94,7 @@ export class SelectableProfileBackupResource extends BackupResource {
       theme: selectableProfile.theme,
       avatar: selectableProfile.avatar,
       hasCustomAvatar: selectableProfile.hasCustomAvatar,
+      deviceName: Services.sysinfo.get("device") || Services.dns.myHostName,
     };
 
     let metadataFile = PathUtils.join(
@@ -147,6 +152,22 @@ export class SelectableProfileBackupResource extends BackupResource {
     lazy.logConsole.debug(
       `Set the new profile's data with backed up metadata ${JSON.stringify(metadata)}`
     );
+
+    // Before we set the name, let's make sure it's unique
+    let profilesArray = await lazy.SelectableProfileService.getAllProfiles();
+    let isDupe = profilesArray.some(
+      p => p.id !== newProfile.id && p.name === metadata.name
+    );
+
+    if (isDupe) {
+      metadata.name = await lazy.l10n.formatValue(
+        "backup-restored-profile-name",
+        {
+          deviceName: metadata.deviceName || "backup",
+          date: Date.now(),
+        }
+      );
+    }
 
     await newProfile.setNameAsync(metadata.name);
     await newProfile.setThemeAsync(metadata.theme);

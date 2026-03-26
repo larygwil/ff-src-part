@@ -8,7 +8,10 @@ import {
   openAIEngine,
   renderPrompt,
   MODEL_FEATURES,
+  SERVICE_TYPES,
+  PURPOSES,
 } from "moz-src:///browser/components/aiwindow/models/Utils.sys.mjs";
+import { truncateUntrustedMetadata } from "moz-src:///browser/components/aiwindow/models/ChatUtils.sys.mjs";
 
 /**
  * Generate a default title from the first four words of a message.
@@ -46,10 +49,13 @@ export async function generateChatTitle(message, current_tab) {
     // Build the OpenAI engine
     const engine = await openAIEngine.build(
       MODEL_FEATURES.TITLE_GENERATION,
-      `${MODEL_FEATURES.TITLE_GENERATION}-engine`
+      `${MODEL_FEATURES.TITLE_GENERATION}-engine`,
+      SERVICE_TYPES.AI,
+      PURPOSES.TITLE_GENERATION
     );
 
     const tabInfo = current_tab || { url: "", title: "", description: "" };
+    tabInfo.title = truncateUntrustedMetadata(tabInfo.title);
 
     // Load and render the prompt with actual values
     const rawPrompt = await engine.loadPrompt(MODEL_FEATURES.TITLE_GENERATION);

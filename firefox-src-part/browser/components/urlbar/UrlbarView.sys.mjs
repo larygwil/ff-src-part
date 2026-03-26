@@ -2,7 +2,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { AppConstants } from "resource://gre/modules/AppConstants.sys.mjs";
 import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs";
 
 /**
@@ -230,10 +229,16 @@ export class UrlbarView {
    *   instead of adding to the input value.
    */
   shouldSpaceActivateSelectedElement() {
+    // We want SPACE to activate result menu always.
+    if (this.selectedElement?.dataset.name == "result-menu") {
+      return true;
+    }
+
     // We want SPACE to activate buttons only.
     if (this.selectedElement?.getAttribute("role") != "button") {
       return false;
     }
+
     // Make sure the input field is empty, otherwise the user might want to add
     // a space to the current search string. As it stands, selecting a button
     // should always clear the input field, so this is just an extra safeguard.
@@ -939,22 +944,10 @@ export class UrlbarView {
       detail: { target: anchor },
     });
 
-    if (AppConstants.platform == "macosx") {
-      // `openPopup(anchor)` doesn't use a native context menu, which is very
-      // noticeable on Mac. Use `openPopup()` with x and y coords instead. See
-      // bug 1831760 and bug 1710459.
-      let rect = getBoundsWithoutFlushing(anchor);
-      this.resultMenu.openPopup(null, {
-        x: rect.x,
-        y: rect.y + rect.height,
-        triggerEvent: event,
-      });
-    } else {
-      this.resultMenu.openPopup(anchor, {
-        position: "bottomright topright",
-        triggerEvent: event,
-      });
-    }
+    this.resultMenu.openPopup(anchor, {
+      position: "bottomright topright",
+      triggerEvent: event,
+    });
 
     anchor.toggleAttribute("open", true);
     let listener = event => {

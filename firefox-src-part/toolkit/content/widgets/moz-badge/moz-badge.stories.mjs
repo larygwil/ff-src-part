@@ -11,15 +11,17 @@ export default {
   argTypes: {
     type: {
       control: "select",
-      options: ["default", "new"],
+      options: ["default", "beta", "new"],
     },
   },
   parameters: {
     status: "in-development",
     fluent: `
 moz-badge =
-    .label = Beta
+    .label = Badge
     .title = Beta experiment
+moz-badge-beta = Beta
+moz-badge-new = New
 `,
   },
 };
@@ -29,7 +31,7 @@ const Template = ({ label, iconSrc, title, l10nId, type }) => html`
     label=${label}
     iconSrc=${ifDefined(iconSrc)}
     title=${ifDefined(title)}
-    data-l10n-id=${l10nId}
+    data-l10n-id=${ifDefined(l10nId)}
     type=${ifDefined(type)}
   ></moz-badge>
 `;
@@ -47,9 +49,12 @@ WithIcon.args = {
   l10nId: "moz-badge",
 };
 
+export const Beta = Template.bind({});
+Beta.args = {
+  type: "beta",
+};
+
 export const New = Template.bind({});
 New.args = {
-  label: "New",
   type: "new",
-  l10nId: "moz-badge",
 };

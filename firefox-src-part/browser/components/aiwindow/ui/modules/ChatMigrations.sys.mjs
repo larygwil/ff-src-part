@@ -59,9 +59,26 @@ async function applyV3(conn, version) {
   );
 }
 
+// Add page_history_deleted to flag if the page_url value for the message
+// has been removed due to a history delete type action
+async function applyV4(conn, version) {
+  if (version >= 4) {
+    return;
+  }
+
+  const columns = await getColumns(conn, "message");
+  if (columns.has("page_history_deleted")) {
+    return;
+  }
+
+  await conn.execute(
+    "ALTER TABLE message ADD COLUMN page_history_deleted BOOLEAN NOT NULL DEFAULT false"
+  );
+}
+
 /**
  * Array of migration functions to run in the order they should be run in.
  *
  * @returns {Array<Function>}
  */
-export const migrations = [applyV2, applyV3];
+export const migrations = [applyV2, applyV3, applyV4];

@@ -99,9 +99,6 @@ class ProviderContextualSearch extends ActionsProvider {
       l10nId: "urlbar-result-search-with",
       l10nArgs: { engine: engine.name || engine.title },
       icon,
-      onPick: (context, controller) => {
-        this.pickAction(context, controller);
-      },
     };
 
     if (type == INSTALLED_ENGINE) {
@@ -291,6 +288,10 @@ class ProviderContextualSearch extends ActionsProvider {
         lazy.PrivateBrowsingUtils.permanentPrivateBrowsing
       )
     );
+  }
+
+  onPick(queryContext, controller) {
+    this.pickAction(queryContext, controller);
   }
 
   async pickAction(queryContext, controller, _element) {

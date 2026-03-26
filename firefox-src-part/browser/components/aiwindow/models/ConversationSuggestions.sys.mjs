@@ -10,11 +10,15 @@ import {
   openAIEngine,
   renderPrompt,
   MODEL_FEATURES,
+  DEFAULT_ENGINE_ID,
+  SERVICE_TYPES,
+  PURPOSES,
 } from "moz-src:///browser/components/aiwindow/models/Utils.sys.mjs";
 
 import { MESSAGE_ROLE } from "moz-src:///browser/components/aiwindow/ui/modules/ChatStore.sys.mjs";
 
 import { MemoriesManager } from "moz-src:///browser/components/aiwindow/models/memories/MemoriesManager.sys.mjs";
+import { truncateUntrustedMetadata } from "moz-src:///browser/components/aiwindow/models/ChatUtils.sys.mjs";
 
 // Max number of memories to include in prompts
 const MAX_NUM_MEMORIES = 8;
@@ -176,7 +180,10 @@ export async function generateConversationStartersSidebar(
 
     // Format current tab (first in context or empty)
     const currentTab = contextTabs.length
-      ? formatJson({ title: contextTabs[0].title, url: contextTabs[0].url })
+      ? formatJson({
+          title: truncateUntrustedMetadata(contextTabs[0].title),
+          url: contextTabs[0].url,
+        })
       : "No current tab";
 
     // Format opened tabs
@@ -186,7 +193,10 @@ export async function generateConversationStartersSidebar(
         contextTabs.length === 1
           ? "Only current tab is open"
           : formatJson(
-              contextTabs.slice(1).map(t => ({ title: t.title, url: t.url }))
+              contextTabs.slice(1).map(t => ({
+                title: truncateUntrustedMetadata(t.title),
+                url: t.url,
+              }))
             );
     } else {
       openedTabs = "No tabs available";
@@ -194,7 +204,14 @@ export async function generateConversationStartersSidebar(
 
     // Build engine and load prompt
     const engineInstance = await openAIEngine.build(
-      MODEL_FEATURES.CONVERSATION_SUGGESTIONS_SIDEBAR_STARTER
+      MODEL_FEATURES.CONVERSATION_SUGGESTIONS_SIDEBAR_STARTER,
+      DEFAULT_ENGINE_ID,
+      SERVICE_TYPES.AI,
+      PURPOSES.CONVERSATION_STARTERS_SIDEBAR
+    );
+
+    const conversationStarterSystemPrompt = await engineInstance.loadPrompt(
+      MODEL_FEATURES.CONVERSATION_STARTERS_SIDEBAR_SYSTEM
     );
 
     const conversationStarterPrompt = await engineInstance.loadPrompt(
@@ -230,7 +247,7 @@ export async function generateConversationStartersSidebar(
       args: [
         {
           role: "system",
-          content: "Return only the requested suggestions, one per line.",
+          content: conversationStarterSystemPrompt,
         },
         { role: "user", content: filled },
       ],
@@ -270,12 +287,18 @@ export async function generateFollowupPrompts(
     const convo = trimConversation(conversationHistory);
     const currentTabStr =
       currentTab && Object.keys(currentTab).length
-        ? formatJson({ title: currentTab.title, url: currentTab.url })
+        ? formatJson({
+            title: truncateUntrustedMetadata(currentTab.title),
+            url: currentTab.url,
+          })
         : "No tab";
 
     // Build engine and load prompt
     const engineInstance = await openAIEngine.build(
-      MODEL_FEATURES.CONVERSATION_SUGGESTIONS_FOLLOWUP
+      MODEL_FEATURES.CONVERSATION_SUGGESTIONS_FOLLOWUP,
+      DEFAULT_ENGINE_ID,
+      SERVICE_TYPES.AI,
+      PURPOSES.CONVERSATION_STARTERS_SIDEBAR // no dedicated purpose for followup prompts, not currently used
     );
 
     const conversationFollowupPrompt = await engineInstance.loadPrompt(

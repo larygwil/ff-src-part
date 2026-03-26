@@ -36,9 +36,13 @@ import {
   MESSAGES_BY_DATE,
   MESSAGES_BY_DATE_AND_ROLE,
   DELETE_CONVERSATION_BY_ID,
+  DELETE_CONVERSATIONS_BY_DATE,
+  DELETE_ALL_CONVERSATIONS,
   CONVERSATIONS_OLDEST,
   CONVERSATION_HISTORY,
   ESCAPE_CHAR,
+  REMOVE_ALL_SITE_URLS_FROM_MESSAGES,
+  REMOVE_SITE_URL_FROM_MESSAGES,
   getConversationMessagesSql,
   getDeleteMessagesByIdsSql,
   getDeleteEmptyConversationsSql,
@@ -52,7 +56,7 @@ export {
   CONVERSATION_STATUS,
   MESSAGE_ROLE,
   MEMORIES_FLAG_SOURCE,
-} from "./ChatConstants.sys.mjs";
+} from "./AIWindowConstants.sys.mjs";
 
 import {
   CURRENT_SCHEMA_VERSION,
@@ -60,7 +64,7 @@ import {
   DB_FILE_NAME,
   PREF_BRANCH,
   CONVERSATION_STATUS,
-} from "./ChatConstants.sys.mjs";
+} from "./AIWindowConstants.sys.mjs";
 
 import {
   parseConversationRow,
@@ -187,6 +191,64 @@ class ChatStore {
       })
       .catch(e => {
         lazy.log.error("Transaction failed to execute", e.message, e.stack);
+        throw e;
+      });
+  }
+
+  /**
+   * Replaces all page_url entries with `null` for all messages .
+   * Additionally, the `page_history_deleted` column will be set to `true`.
+   *
+   */
+  async deleteAllUrlsFromMessages() {
+    await this.#ensureDatabase().catch(e => {
+      lazy.log.error(
+        "Could not ensure a database connection.",
+        e.message,
+        e.stack
+      );
+      throw e;
+    });
+
+    await this.#conn
+      .executeCached(REMOVE_ALL_SITE_URLS_FROM_MESSAGES)
+      .catch(e => {
+        lazy.log.error(
+          "Could not remove all site urls from messages",
+          e.message,
+          e.stack
+        );
+
+        throw e;
+      });
+  }
+
+  /**
+   * Replaces all page_url values that match the specific page_url with a
+   * `null` value. Additionally, the `page_history_deleted` column
+   * will be set to `true`.
+   *
+   * @param {string} page_url - A URL to remove from messages
+   */
+  async deleteUrlFromMessages(page_url) {
+    await this.#ensureDatabase().catch(e => {
+      lazy.log.error(
+        "Could not ensure a database connection.",
+        e.message,
+        e.stack
+      );
+      throw e;
+    });
+
+    await this.#conn
+      .executeCached(REMOVE_SITE_URL_FROM_MESSAGES, { page_url })
+      .catch(e => {
+        lazy.log.error(
+          `Could not remove 'page_url' entries for ${page_url}`,
+          e.message,
+          e.stack
+        );
+
         throw e;
       });
   }
@@ -368,6 +430,22 @@ class ChatStore {
     return parseMessageRows(rows);
   }
 
+  /**
+   * Search for messages for the most recent messages, optionally,
+   * filter the messages by a specific message role type.
+   *
+   * This is a wrapper around findMessagesByDate that defines the largest possible start and end date range.
+   *
+   * @param {MessageRole} [role=-1] - The message role type to filter by, one of 0|1|2|3
+   * as defined by the constant MESSAGE_ROLE
+   * @param {number} [limit=-1] - The max number of messages to retrieve
+   *
+   * @returns {Array<ChatMessage>} - An array of ChatMessage entries
+   */
+  async getMostRecentMessages(role = -1, limit = 5) {
+    return this.findMessagesByDate(new Date(0), new Date(), role, limit, -1);
+  }
+
   #escapeForLike(searchString) {
     return searchString
       .replaceAll(ESCAPE_CHAR, `${ESCAPE_CHAR}${ESCAPE_CHAR}`)
@@ -422,16 +500,17 @@ class ChatStore {
   }
 
   /**
-   * Searches for conversations where the conversation title, or the conversation
-   * contains a user message where the search string contains a partial match
-   * in the message.content.body field
+   * Searches for conversations where the conversation title or a user/assistant
+   * message contains a partial match of the search string in the
+   * message.content.body field.
    *
    * @param {string} searchString - The string to search with for conversations
    * @param {boolean} [includeMessages=true] - Whether to fetch messages for each conversation
    *
    * @returns {Array<ChatConversation>} - An array of conversations with or without messages
-   * that contain a message that matches the search string in the conversation
-   * titles
+   * that match the search string in title or message body. Each conversation may
+   * have a `matchingSnippet` property containing the raw markdown text of the
+   * first message body that matched the search string.
    */
   async search(searchString, includeMessages = true) {
     await this.#ensureDatabase().catch(e => {
@@ -455,7 +534,11 @@ class ChatStore {
       return [];
     }
 
-    const conversations = rows.map(parseConversationRow);
+    const conversations = rows.map(row => {
+      const conv = parseConversationRow(row);
+      conv.matchingSnippet = row.getResultByName("matching_snippet");
+      return conv;
+    });
 
     if (!includeMessages) {
       return conversations;
@@ -668,6 +751,45 @@ class ChatStore {
     await this.#conn.execute(DELETE_CONVERSATION_BY_ID, {
       conv_id: id,
     });
+  }
+
+  /**
+   * Deletes all conversations created within the given date range.
+   * Messages are cascade-deleted via foreign key constraints.
+   *
+   * @param {Date} startDate - The start date, inclusive
+   * @param {Date} endDate - The end date, inclusive
+   */
+  async deleteConversationsByDateRange(startDate, endDate) {
+    await this.#ensureDatabase().catch(e => {
+      lazy.log.error(
+        "Could not ensure a database connection.",
+        e.message,
+        e.stack
+      );
+      throw e;
+    });
+
+    await this.#conn.execute(DELETE_CONVERSATIONS_BY_DATE, {
+      start_date: startDate.getTime(),
+      end_date: endDate.getTime(),
+    });
+  }
+
+  /**
+   * Deletes all conversations and their messages.
+   */
+  async deleteAllConversations() {
+    await this.#ensureDatabase().catch(e => {
+      lazy.log.error(
+        "Could not ensure a database connection.",
+        e.message,
+        e.stack
+      );
+      throw e;
+    });
+
+    await this.#conn.execute(DELETE_ALL_CONVERSATIONS);
   }
 
   /**

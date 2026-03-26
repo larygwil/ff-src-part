@@ -117,7 +117,7 @@ export default class BandwidthUsageCustomElement extends MozLitElement {
       <div class="container">
         <h3
           id="bandwidth-header"
-          data-l10n-id="ip-protection-bandwidth-header"
+          data-l10n-id="ip-protection-bandwidth-header-1"
         ></h3>
         <div>
           <span

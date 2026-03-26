@@ -89,6 +89,7 @@ const lazy = XPCOMUtils.declareLazy({
 });
 
 const UNLIMITED_MAX_RESULTS = 99;
+const MAX_INPUT_LENGTH = 32000;
 
 let getBoundsWithoutFlushing = element =>
   element.ownerGlobal.windowUtils.getBoundsWithoutFlushing(element);
@@ -107,6 +108,8 @@ let px = number => number.toFixed(2) + "px";
  * @property {string} [iconSrc]
  *   Icon URI. When missing or empty, falls back to the favicon from Places
  *   via `getIconForUrl`.
+ * @property {boolean} [historyDeleted]
+ *   Whether the URL has been removed from browsing history.
  */
 
 const MAX_CONTEXT_WEBSITES = 5;
@@ -157,14 +160,13 @@ export class SmartbarInput extends HTMLElement {
         <moz-urlbar-slot name="site-info"> </moz-urlbar-slot>
         <moz-input-box tooltip="aHTMLTooltip"
                        class="urlbar-input-box"
-                       flex="1"
-                       role="combobox"
-                       aria-owns="urlbar-results">
+                       flex="1">
           <html:input id="urlbar-scheme"
                       required="required"/>
           <html:input id="urlbar-input"
                       class="urlbar-input textbox-input"
                       aria-controls="urlbar-results"
+                      role="combobox"
                       aria-autocomplete="both"
                       inputmode="mozAwesomebar"
                       data-l10n-id="smartbar-placeholder"/>
@@ -274,6 +276,9 @@ export class SmartbarInput extends HTMLElement {
   #compositionClosedPopup = false;
 
   #isSidebarMode = false;
+
+  /** @type {?string} */
+  #removedImplicitTabUrl = null;
 
   /**
    * @type {ContextWebsite[]}
@@ -668,6 +673,7 @@ export class SmartbarInput extends HTMLElement {
 
   #initSmartbarEditor() {
     const adapter = createEditor(this.inputField);
+    adapter.input.maxLength = MAX_INPUT_LENGTH;
     this.#smartbarInputController = new lazy.SmartbarInputController(adapter);
     this.inputField = adapter.input;
     this.#smartbarEditor = adapter.editor;
@@ -1315,7 +1321,13 @@ export class SmartbarInput extends HTMLElement {
       new CustomEvent("smartbar-commit", {
         bubbles: true,
         composed: true,
-        detail: { value: committedValue, event, action, contextMentions },
+        detail: {
+          value: committedValue,
+          event,
+          action,
+          contextMentions,
+          contextPageUrl: this.#getContextPageUrl(),
+        },
       })
     );
 
@@ -1724,11 +1736,6 @@ export class SmartbarInput extends HTMLElement {
       return;
     }
 
-    // This is handled by the provider internally.
-    if (result.type == lazy.UrlbarUtils.RESULT_TYPE.AI_CHAT) {
-      return;
-    }
-
     if (
       result.providerName == lazy.UrlbarProviderGlobalActions.name &&
       this.#providesSearchMode(result)
@@ -2097,6 +2104,19 @@ export class SmartbarInput extends HTMLElement {
           checkValue: false,
         });
 
+        return;
+      }
+      case lazy.UrlbarUtils.RESULT_TYPE.AI_CHAT: {
+        this.controller.engagementEvent.record(event, {
+          result,
+          element,
+          searchString: this._lastSearchString,
+          selType: this.controller.engagementEvent.typeFromElement(
+            result,
+            element
+          ),
+        });
+        this.#clearSmartbarInput();
         return;
       }
     }
@@ -2481,10 +2501,12 @@ export class SmartbarInput extends HTMLElement {
     resetSearchState = true,
     event,
   } = {}) {
-    // When mentions panel is open, skip queries triggered by input events
-    // since the mentions plugin will handle querying providers directly.
+    // When mentions panel is open, skip queries triggered by input events and
+    // close the suggestions view. The mentions plugin will handle querying
+    // providers directly.
     const isHandlingMentions = this.inputField.isHandlingMentions;
     if (isHandlingMentions && event) {
+      this.view.close();
       return;
     }
 
@@ -3551,6 +3573,8 @@ export class SmartbarInput extends HTMLElement {
         );
       case lazy.UrlbarUtils.RESULT_TYPE.RESTRICT:
         return result.payload.autofillKeyword + " ";
+      case lazy.UrlbarUtils.RESULT_TYPE.AI_CHAT:
+        return result.payload.query ?? "";
       case lazy.UrlbarUtils.RESULT_TYPE.TIP: {
         let value = element?.dataset.url || element?.dataset.input;
         if (value) {
@@ -5324,7 +5348,7 @@ export class SmartbarInput extends HTMLElement {
       }
     }
 
-    if (this.focusedViaMousedown) {
+    if (this.focusedViaMousedown && !this._permanentlySuppressStartQuery) {
       this.view.autoOpen({ event });
     } else {
       if (this._untrimOnFocusAfterKeydown) {
@@ -5489,6 +5513,13 @@ export class SmartbarInput extends HTMLElement {
         state.persist.shouldPersist = false;
         this.removeAttribute("persistsearchterms");
       }
+    }
+
+    // Suppress queries when there are inline mentions.
+    if (this.inputField.hasMention) {
+      this.suppressStartQuery();
+    } else if (!this._permanentlySuppressStartQuery) {
+      this.unsuppressStartQuery();
     }
 
     if (!value) {
@@ -5802,17 +5833,6 @@ export class SmartbarInput extends HTMLElement {
       // bar but we should not untrim in that case.
       this._untrimOnFocusAfterKeydown = !this.focused;
       return;
-    }
-
-    // When mentions panel is open don’t let key navigation select urlbar results.
-    if (this.inputField.isHandlingMentions) {
-      if (
-        event.keyCode === KeyEvent.DOM_VK_TAB ||
-        event.keyCode === KeyEvent.DOM_VK_DOWN ||
-        event.keyCode === KeyEvent.DOM_VK_UP
-      ) {
-        return;
-      }
     }
 
     if (
@@ -6212,6 +6232,24 @@ export class SmartbarInput extends HTMLElement {
   }
 
   /**
+   * Returns the page URL to associate with the next submitted message, or null
+   * if the implicit current-tab chip has been removed.
+   *
+   * @returns {?string}
+   */
+  #getContextPageUrl() {
+    if (!this.#isSidebarMode) {
+      return null;
+    }
+    const currentTabUrl =
+      this.window.gBrowser?.selectedTab?.linkedBrowser.currentURI?.spec;
+    if (currentTabUrl == this.#removedImplicitTabUrl) {
+      return null;
+    }
+    return currentTabUrl ?? null;
+  }
+
+  /**
    * Returns the resolved, deduped list of context websites including the
    * implicit current-tab entry when in sidebar mode.
    *
@@ -6223,16 +6261,16 @@ export class SmartbarInput extends HTMLElement {
 
     // Place the implicit current-tab website first (sidebar mode only) so the
     // "default" context is consistently visible and doesn't get pushed out by
-    // explicit chips.
+    // explicit chips, unless the user has explicitly removed it.
     if (this.#isSidebarMode) {
       const tab = this.window.gBrowser?.selectedTab;
       const url = tab?.linkedBrowser.currentURI?.spec;
-      if (url) {
+      if (url && url != this.#removedImplicitTabUrl) {
         candidates.unshift({
           type: "tab",
           url,
           label: tab.label || url,
-          iconSrc: tab.image || lazy.UrlbarUtils.getIconForUrl(url),
+          iconSrc: this.#resolveTabIconSrc(tab.image, url),
         });
       }
     }
@@ -6253,6 +6291,7 @@ export class SmartbarInput extends HTMLElement {
     const container = this.#findWebsiteContextChipsContainer();
     if (container) {
       container.websites = finalWebsites;
+      container.removable = true;
       container.hidden = !finalWebsites.length;
     }
   }
@@ -6263,6 +6302,22 @@ export class SmartbarInput extends HTMLElement {
    */
   updateContextChips() {
     this.#updateContextChips();
+  }
+
+  /**
+   * Resolves a tab favicon to a URL safe for use in both aiWindow.html and
+   * aiChatContent.html. Only chrome: URLs are passed through; all others
+   * (data:, moz-remote-image:, https:, etc.) fall back to page-icon: which
+   * works in both the chrome process and the privileged about content process.
+   *
+   * @param {string} tabImage
+   * @param {string} url
+   * @returns {string}
+   */
+  #resolveTabIconSrc(tabImage, url) {
+    return tabImage?.startsWith("chrome:")
+      ? tabImage
+      : lazy.UrlbarUtils.getIconForUrl(url);
   }
 
   /**
@@ -6307,6 +6362,7 @@ export class SmartbarInput extends HTMLElement {
    */
   setAndUpdateContextWebsites(websites) {
     this.#contextWebsites = websites;
+    this.#removedImplicitTabUrl = null;
     this.#updateContextChips();
   }
 
@@ -6325,7 +6381,13 @@ export class SmartbarInput extends HTMLElement {
     if (hasMention) {
       return;
     }
-    this.#contextWebsites = [...this.#contextWebsites, mention];
+
+    if (this.#removedImplicitTabUrl == mention.url) {
+      this.#removedImplicitTabUrl = null;
+      this.#contextWebsites = [mention, ...this.#contextWebsites];
+    } else {
+      this.#contextWebsites = [...this.#contextWebsites, mention];
+    }
     this.#updateContextChips();
   }
 
@@ -6339,7 +6401,15 @@ export class SmartbarInput extends HTMLElement {
     this.#contextWebsites = this.#contextWebsites.filter(
       site => site.url !== url
     );
-    if (this.#contextWebsites.length !== originalLength) {
+
+    const isCurrentTab =
+      this.#isSidebarMode &&
+      this.window.gBrowser.selectedTab.linkedBrowser.currentURI?.spec == url;
+    if (isCurrentTab) {
+      this.#removedImplicitTabUrl = url;
+    }
+
+    if (this.#contextWebsites.length !== originalLength || isCurrentTab) {
       this.#updateContextChips();
     }
   }

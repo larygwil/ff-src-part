@@ -277,7 +277,6 @@
     <ID>UndocumentedPublicClass:ExceptionsHeaderViewHolder.kt$ExceptionsHeaderViewHolder : ViewHolder</ID>
     <ID>UndocumentedPublicClass:FenixOnboarding.kt$FenixOnboarding : PreferencesHolder</ID>
     <ID>UndocumentedPublicClass:FenixTabCounterMenu.kt$FenixTabCounterMenu : TabCounterMenu</ID>
-    <ID>UndocumentedPublicClass:FirstSessionPing.kt$FirstSessionPing</ID>
     <ID>UndocumentedPublicClass:GeckoProvider.kt$GeckoProvider</ID>
     <ID>UndocumentedPublicClass:GroupableRadioButton.kt$GroupableRadioButton</ID>
     <ID>UndocumentedPublicClass:HistoryFragment.kt$HistoryFragment : LibraryPageFragmentUserInteractionHandlerMenuProvider</ID>
@@ -513,8 +512,6 @@
     <ID>UndocumentedPublicFunction:AppViewHolder.kt$AppViewHolder$fun bind(item: AppShareOption)</ID>
     <ID>UndocumentedPublicFunction:BackgroundServices.kt$BackgroundServices$@VisibleForTesting(otherwise = PRIVATE) fun makeAccountManager( context: Context, serverConfig: ServerConfig, deviceConfig: DeviceConfig, syncConfig: SyncConfig?, crashReporter: CrashReporter?, )</ID>
     <ID>UndocumentedPublicFunction:BackgroundServices.kt$BackgroundServices$fun defaultDeviceName(context: Context): String</ID>
-    <ID>UndocumentedPublicFunction:BrowserAnimator.kt$BrowserAnimator$fun beginAnimateInIfNecessary()</ID>
-    <ID>UndocumentedPublicFunction:BrowserAnimator.kt$BrowserAnimator.Companion$fun getToolbarNavOptions(context: Context): NavOptions</ID>
     <ID>UndocumentedPublicFunction:BrowserIcons.kt$fun BrowserIcons.loadIntoView(view: ImageView, url: String)</ID>
     <ID>UndocumentedPublicFunction:BrowserToolbarController.kt$BrowserToolbarController$fun handleReaderModePressed(enabled: Boolean)</ID>
     <ID>UndocumentedPublicFunction:BrowserToolbarController.kt$BrowserToolbarController$fun handleScroll(offset: Int)</ID>
