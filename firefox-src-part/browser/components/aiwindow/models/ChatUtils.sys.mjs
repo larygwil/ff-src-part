@@ -12,7 +12,8 @@
 const MAX_METADATA_LENGTH = 100;
 
 /**
- * Truncate untrusted metadata text to guard against prompt injection.
+ * Truncates and spotlights untrusted metadata text to guard against prompt injection by adding an
+ *  (Untrusted webpage data) tag.
  *
  * Important! Changing this function requires a security review.
  *
@@ -27,22 +28,40 @@ const MAX_METADATA_LENGTH = 100;
  * the security flags to NOT mark these as untrusted when the text is truncated.
  * This is useful since page titles are used very frequently in chat conversations.
  *
+ * In addition, spotlighting this text helps the model to identify webpage data is untrusted.
+ * We note that the spotlighting tokens added are are only a part of the delimiting. Prompts
+ * have also been updated to include instructions about how to treat untrusted data.
+ *
  * @param {string} text
+ * @param {boolean} truncateOnly
  * @returns {string}
  */
-export function truncateUntrustedMetadata(text) {
+export function sanitizeUntrustedContent(text, truncateOnly = false) {
   if (!text) {
     return "";
   }
-  if (text.length <= MAX_METADATA_LENGTH) {
-    return text;
+
+  let fixedText = text;
+  // truncating text with ...
+  if (text.length > MAX_METADATA_LENGTH) {
+    fixedText = fixedText.slice(0, MAX_METADATA_LENGTH) + "\u2026";
   }
-  return text.slice(0, MAX_METADATA_LENGTH) + "\u2026";
+  if (truncateOnly) {
+    return fixedText;
+  }
+
+  // light smoothing (escape "'s, collapse whitespace)
+  fixedText = fixedText
+    .replace(/\\/g, "\\\\")
+    .replace(/"/g, '\\"')
+    .replace(/\s+/g, " ");
+
+  // adding spotlighting tokens
+  return `"${fixedText}" (Untrusted webpage data)`;
 }
 
 const lazy = {};
 ChromeUtils.defineESModuleGetters(lazy, {
-  BrowserWindowTracker: "resource:///modules/BrowserWindowTracker.sys.mjs",
   MemoriesManager:
     "moz-src:///browser/components/aiwindow/models/memories/MemoriesManager.sys.mjs",
   renderPrompt: "moz-src:///browser/components/aiwindow/models/Utils.sys.mjs",
@@ -67,33 +86,27 @@ export function getLocalIsoTime() {
   }
 }
 
-function resolveTabMetadataDependencies(overrides = {}) {
-  return {
-    BrowserWindowTracker:
-      overrides.BrowserWindowTracker ?? lazy.BrowserWindowTracker,
-  };
-}
-
 /**
  * Get current tab metadata: url, title, description if available.
  *
- * @param {object} [depsOverride]
+ * @param {Array<ContextWebsite>} contextMentions
+ *
  * @returns {Promise<{url: string, title: string, description: string}>}
  */
-export async function getCurrentTabMetadata(depsOverride) {
-  const { BrowserWindowTracker } = resolveTabMetadataDependencies(depsOverride);
-  const win = BrowserWindowTracker.getTopWindow();
-  const browser = win?.gBrowser?.selectedBrowser;
-  if (!browser) {
+export async function getCurrentTabMetadata(contextMentions = []) {
+  const currentTab = contextMentions.find(
+    contextWebsite => contextWebsite.type === "currentTab"
+  );
+
+  if (!currentTab) {
     return { url: "", title: "", description: "" };
   }
 
-  const url = browser.currentURI?.spec || "";
-  const title = truncateUntrustedMetadata(
-    browser.contentTitle || browser.documentTitle || ""
-  );
-
   let description = "";
+
+  const url = currentTab.url || "";
+  const title = sanitizeUntrustedContent(currentTab.label || "");
+
   /**
    * TODO: BUG 2015574
    * Need to extract page description in PageExtractor
@@ -107,11 +120,15 @@ export async function getCurrentTabMetadata(depsOverride) {
  * the memories injection message and the user message in the conversation
  * messages list.
  *
- * @param {object} [depsOverride]
+ * @param {Array<ContextWebsite>} contextMentions
+ *
  * @returns {Promise<{url, title, description, locale, timezone, isoTimestamp, todayDate, hasTabInfo}>}
  */
-export async function constructRealTimeInfoInjectionMessage(depsOverride) {
-  const { url, title, description } = await getCurrentTabMetadata(depsOverride);
+export async function constructRealTimeInfoInjectionMessage(
+  contextMentions = []
+) {
+  const { url, title, description } =
+    await getCurrentTabMetadata(contextMentions);
   const isoTimestamp = getLocalIsoTime();
   const datePart = isoTimestamp?.split("T")[0] ?? "";
   const locale = Services.locale.appLocaleAsBCP47;

@@ -36,6 +36,8 @@ ChromeUtils.defineESModuleGetters(lazy, {
     "moz-src:///browser/components/aiwindow/ui/modules/ChatMessage.sys.mjs",
   getRoleLabel:
     "moz-src:///browser/components/aiwindow/ui/modules/ChatUtils.sys.mjs",
+  getCurrentTabUrl:
+    "moz-src:///browser/components/aiwindow/ui/modules/ChatUtils.sys.mjs",
   NewTabStarterGenerator:
     "moz-src:///browser/components/aiwindow/models/ConversationSuggestions.sys.mjs",
   generateConversationStartersSidebar:
@@ -74,6 +76,10 @@ ChromeUtils.defineLazyGetter(lazy, "log", function () {
  * @typedef {CustomEvent & {
  *   detail: TabStateEventDetail
  * }} TabStateEvent
+ */
+
+/**
+ * @typedef {"button" | "enter" | "follow-up" | "starter" | "suggestion"} ChatSubmitType
  */
 
 const MODE = {
@@ -393,6 +399,10 @@ export class AIWindow extends MozLitElement {
 
   get conversationId() {
     return this.#conversation?.id;
+  }
+
+  get conversationMessageCount() {
+    return this.#conversation.messageCount;
   }
 
   #registerSwapDocShellsListener(win) {
@@ -880,8 +890,6 @@ export class AIWindow extends MozLitElement {
    * @private
    */
   #handleSmartbarCommit = event => {
-    Glean.smartWindow.chatSubmit.record({ chat_id: this.conversationId });
-
     lazy.log.debug(
       "chatId[%s]: %s",
       this.#handleSmartbarCommit.name,
@@ -893,9 +901,10 @@ export class AIWindow extends MozLitElement {
       action,
       contextMentions = [],
       contextPageUrl,
+      event: triggeringEvent,
     } = event.detail;
     if (action === ACTION.CHAT) {
-      const { mergedMentions, allUrls } =
+      const { mergedMentions, allUrls, inlineMentions } =
         this.#calculateCurrentMentions(contextMentions);
 
       if (allUrls.size) {
@@ -906,8 +915,13 @@ export class AIWindow extends MozLitElement {
           }
         }
       }
-
-      this.submitChatMessage(value, mergedMentions, contextPageUrl);
+      this.submitChatMessage({
+        text: value,
+        contextMentions: mergedMentions,
+        contextPageUrl,
+        submitType: triggeringEvent?.type === "click" ? "button" : "enter",
+        inlineMentionsCount: inlineMentions.length,
+      });
     } else if (
       this.mode === MODE.SIDEBAR &&
       (action === ACTION.NAVIGATE || action === ACTION.SEARCH)
@@ -924,7 +938,7 @@ export class AIWindow extends MozLitElement {
    * by URL, and returns the combined list plus the full set of URLs.
    *
    * @param {ContextWebsite[]} contextMentions - Chip mentions from the smartbar
-   * @returns {{mergedMentions: ContextWebsite[], allUrls: Set<string>}}
+   * @returns {{mergedMentions: ContextWebsite[], allUrls: Set<string>, inlineMentions: Array}}
    */
   #calculateCurrentMentions(contextMentions) {
     const contextUrls = new Set();
@@ -949,7 +963,7 @@ export class AIWindow extends MozLitElement {
 
     const mergedMentions = [...contextMentions, ...atMentions];
 
-    return { mergedMentions, allUrls: contextUrls };
+    return { mergedMentions, allUrls: contextUrls, inlineMentions };
   }
 
   /**
@@ -966,29 +980,41 @@ export class AIWindow extends MozLitElement {
   }
 
   /**
-   * @param {string} text
-   * @param {ContextWebsite[]} [contextMentions]
-   * @param {string|null} [contextPageUrl] - Page URL string from the smartbar
-   * commit event. null means the user removed page context; undefined means
-   * fall back to the current tab URL.
+   * @param {object} options
+   * @param {string} options.text
+   * @param {ChatSubmitType} options.submitType - How the request was submitted
+   * @param {ContextWebsite[]} [options.contextMentions]
+   * @param {?URL} [options.contextPageUrl] - Page URL string from the smartbar's current
+   *   state. null means the user removed page context
+   * @param {number} [options.inlineMentionsCount] - Number of inline mentions
    */
-  submitChatMessage(text, contextMentions, contextPageUrl) {
+  submitChatMessage({
+    text,
+    submitType,
+    contextMentions = [],
+    contextPageUrl,
+    inlineMentionsCount = 0,
+  }) {
     const trimmed = String(text ?? "").trim();
     if (!trimmed) {
       return;
     }
 
-    let pageUrl;
-    if (contextPageUrl === undefined) {
-      pageUrl = this.#getCurrentPageUrl();
-    } else {
-      pageUrl = contextPageUrl ? URL.parse(contextPageUrl) : null;
-    }
+    Glean.smartWindow.chatSubmit.record({
+      chat_id: this.conversationId,
+      detected_intent: this.#smartbar.smartbarAction,
+      location: this.mode,
+      mentions: inlineMentionsCount,
+      message_seq: this.conversationMessageCount,
+      model: this.modelName,
+      submit_type: submitType,
+      tabs: contextMentions.length,
+    });
 
     this.#recordChatInteraction();
     this.#fetchAIResponse(trimmed, {
       ...this.#createUserRoleOpts(contextMentions),
-      pageUrl,
+      contextPageUrl,
     });
     this.#dispatchChromeEvent(
       "ai-window:smartbar-input",
@@ -1062,7 +1088,15 @@ export class AIWindow extends MozLitElement {
       message_seq: this.#conversation?.messageCount ?? 0,
       starter,
     });
-    this.submitChatMessage(text);
+
+    const { pageUrl, contextWebsites } = this.#smartbar.getCurrentContextData();
+
+    this.submitChatMessage({
+      text,
+      submitType: starter ? "starter" : "suggestion",
+      contextMentions: contextWebsites,
+      contextPageUrl: pageUrl,
+    });
   }
 
   onOpenLink() {
@@ -1164,19 +1198,6 @@ export class AIWindow extends MozLitElement {
   }
 
   /**
-   * Gets the current url of the loaded page.
-   *
-   * @returns {URL} The page URL
-   *
-   * @private
-   */
-  #getCurrentPageUrl() {
-    return URL.fromURI(
-      window.browsingContext.topChromeWindow.gBrowser.currentURI
-    );
-  }
-
-  /**
    * Fetches an AI response based on the current user prompt.
    * Validates the prompt, updates conversation state, streams the response,
    * and dispatches updates to the browser actor.
@@ -1223,10 +1244,6 @@ export class AIWindow extends MozLitElement {
       );
 
       if (formattedPrompt) {
-        if (pageUrl === undefined) {
-          pageUrl = this.#getCurrentPageUrl();
-        }
-
         await this.#conversation.generatePrompt(
           formattedPrompt,
           pageUrl,
@@ -1282,7 +1299,7 @@ export class AIWindow extends MozLitElement {
     return { duration, latency };
   }
 
-  #getModelName() {
+  get modelName() {
     const modelChoice = Services.prefs.getStringPref(
       "browser.smartwindow.firstrun.modelChoice",
       ""
@@ -1309,6 +1326,17 @@ export class AIWindow extends MozLitElement {
   #sendModelResponseTelemetryEvent(error, { duration, latency }) {
     const { lastMessage: lastAssistantMessage, messageCount } =
       this.#getConversationLastMessageAndCount(lazy.MESSAGE_ROLE.ASSISTANT);
+    const ERROR_CODE_TEXT = {
+      1: "Budget exceeded",
+      2: "Rate limit exceeded",
+      3: "Chat maximum length hit",
+      4: "Account error",
+    };
+    let errorText = "";
+
+    if (error) {
+      errorText = ERROR_CODE_TEXT[error] ?? "Generic error";
+    }
 
     Glean.smartWindow.modelResponse.record({
       location: this.mode === MODE.FULLPAGE ? "home" : MODE.SIDEBAR,
@@ -1320,8 +1348,8 @@ export class AIWindow extends MozLitElement {
       memories: lastAssistantMessage?.memoriesApplied?.length ?? 0,
       latency,
       duration,
-      error: error ?? "",
-      model: this.#getModelName(),
+      error: errorText,
+      model: this.modelName,
     });
   }
 
@@ -1351,19 +1379,15 @@ export class AIWindow extends MozLitElement {
   }
 
   #handleError(error, { latency, duration }) {
-    let errorMessage = error.error ?? error.metadata?.errorMessage;
+    let errorCode = error.error ?? error.metadata?.errorMessage;
     const newErrorMessage = {
       role: "",
       content: {
         isError: true,
-        error: errorMessage,
+        error: errorCode,
       },
     };
-
-    if (typeof errorMessage != "number") {
-      errorMessage = "Generic error";
-    }
-    this.#sendModelResponseTelemetryEvent(String(errorMessage), {
+    this.#sendModelResponseTelemetryEvent(errorCode ?? true, {
       latency,
       duration,
     });
@@ -1496,7 +1520,7 @@ export class AIWindow extends MozLitElement {
       detail: {
         input,
         mode: this.mode,
-        pageUrl: this.#getCurrentPageUrl(),
+        pageUrl: lazy.getCurrentTabUrl(window),
         conversationId: this.#getDataConvId(),
         tab: topChromeWindow?.gBrowser?.selectedTab,
         conversation: this.#conversation,

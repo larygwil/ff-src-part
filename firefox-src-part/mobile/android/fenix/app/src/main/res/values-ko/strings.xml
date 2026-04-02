@@ -19,6 +19,8 @@
   <string name="content_description_menu">옵션 더보기</string>
   <!-- Content description (not visible, for screen readers etc.): "Private Browsing" menu button. -->
   <string name="content_description_private_browsing">사생활 보호 모드</string>
+  <!-- Content description (not visible, for screen readers etc.): "Normal Browsing" menu button. -->
+  <string name="content_description_normal_browsing">일반 탐색</string>
   <!-- Placeholder text shown in the search bar before a user enters text for the default engine -->
   <string name="search_hint">검색어 또는 주소 입력</string>
   <!-- Placeholder text shown in the search bar before a user enters text for a general engine -->
@@ -448,7 +450,7 @@
 
     Description for learning more about our privacy notice.
   -->
-  <string name="juno_onboarding_privacy_notice_text" tools:ignore="BrandUsage">Firefox 개인정보 보호정책</string>
+  <string name="juno_onboarding_privacy_notice_text" tools:ignore="BrandUsage">Firefox 개인정보처리방침</string>
   <!-- Title for set firefox as default browser screen used by Nimbus experiments. -->
   <string name="juno_onboarding_default_browser_title_nimbus_2">우리는 사용자를 안전하게 지키는 것을 좋아합니다</string>
   <!-- Description for set firefox as default browser screen used by Nimbus experiments. -->
@@ -616,8 +618,12 @@
 
   <!-- "Continue" onboarding button. -->
   <string name="nova_onboarding_continue_button">계속</string>
+  <!-- "Continue browsing" onboarding button. -->
+  <string name="nova_onboarding_continue_browsing_button" tools:ignore="UnusedResources">계속 탐색</string>
   <!-- "Not now" onboarding button. -->
   <string name="nova_onboarding_negative_button">나중에</string>
+  <!-- "Skip" onboarding button. -->
+  <string name="nova_onboarding_skip_button" tools:ignore="UnusedResources">건너뛰기</string>
   <!-- Terms of use (ToU) onboarding title. -->
   <string name="nova_onboarding_tou_title" tools:ignore="UnusedResources">자유롭게 달릴 준비를 하세요</string>
   <!-- Terms of use (ToU) onboarding subtitle. -->
@@ -692,6 +698,24 @@
   <string name="nova_onboarding_add_search_widget_subtitle" tools:ignore="BrandUsage">모든 검색을 휴대폰의 홈 화면에서 시작하세요. Firefox의 자동 보호 기능이 여러분을 지켜줍니다.</string>
   <!-- "Add search widget" onboarding button. 'Firefox' is intentionally hardcoded. -->
   <string name="nova_onboarding_add_search_widget_button" tools:ignore="BrandUsage">Firefox 위젯 추가</string>
+  <!-- Customize prompt onboarding title. -->
+  <string name="nova_onboarding_customize_prompt_title" tools:ignore="UnusedResources">터치할 때마다 더 쉬운 맞춤 설정 및 더 강력한 개인 정보 보호</string>
+  <plurals name="nova_onboarding_customize_prompt_body" tools:ignore="UnusedResources">
+    <!--
+      Customize prompt onboarding body.
+      %1$s is replaced by the product name (for example "Firefox"),
+      %2$,d is replaced by the number of trackers blocked. The comma represents the thousand
+      separator (e.g. 1,000 in English), and it will automatically use the correct character
+      for your locale (don't change or remove it).
+    -->
+    <item quantity="other">웹 탐색 중에 %1$s가 %2$,d개의 추적기를 차단했습니다.</item>
+  </plurals>
+  <!-- Customize prompt onboarding positive button. -->
+  <string name="nova_onboarding_customize_prompt_positive_button" tools:ignore="UnusedResources">맞춤 설정 시작</string>
+  <!-- App icon onboarding title. -->
+  <string name="nova_onboarding_app_icon_prompt_title" tools:ignore="UnusedResources">사용자 지정 앱 아이콘 선택</string>
+  <!-- App icon onboarding body. -->
+  <string name="nova_onboarding_app_icon_prompt_body" tools:ignore="UnusedResources">홈 화면에 나만의 개성을 더해보세요.</string>
   <!-- ==== End of Project "Nova" onboarding strings ==== -->
 
   <!-- Onboarding header for the toolbar selection card, used by Nimbus experiments. -->
@@ -1505,12 +1529,8 @@
   <string name="studies_remove">삭제</string>
   <!-- Title of the active section on the studies list -->
   <string name="studies_active">활성화</string>
-  <!-- Description for studies -->
-  <string name="studies_description_3" moz:removedIn="148" tools:ignore="UnusedResources">기능과 아이디어가 공개되기 전에 미리 사용해 보세요.</string>
   <!-- Description for studies. Note: The word "Firefox" should NOT be translated -->
   <string name="studies_description_4" tools:ignore="BrandUsage">Firefox는 기능을 테스트할 사용자를 무작위로 선택하여, 모두를 위해 품질을 향상시킵니다.</string>
-  <!-- Title of the Studies data preference -->
-  <string name="studies_title" moz:removedIn="148" tools:ignore="UnusedResources">연구 설치 및 실행</string>
   <!-- Title of the Studies data preference -->
   <string name="studies_title_2">기능 연구 허용</string>
   <!-- Learn more link for studies, links to an article for more information about studies. -->
@@ -1661,6 +1681,27 @@
   <string name="create_tab_group_name_label">이름</string>
   <!-- Label for the tab group name field in the bottom sheet to create or edit a tab group. -->
   <string name="tab_group_name_label" tools:ignore="UnusedResources" moz:removedIn="150">이름</string>
+  <!-- Title for adding more tabs to a tab group. -->
+  <string name="add_to_tab_group_title">추가</string>
+  <!-- Content Description for closing the "Add to Tab Group" panel. -->
+  <string name="add_to_tab_group_bottom_sheet_close_content_description">탭 그룹에 추가 닫기</string>
+  <!-- Label for adding to a new tab group. -->
+  <string name="add_to_new_tab_group_title">새 탭 그룹</string>
+  <plurals name="tab_group_tabs_count_subtitle">
+    <!--
+      Subtitle for the number of tabs in a tab group.
+      %1$d is the number of tabs in a tab group.
+    -->
+    <item quantity="other">탭 %1$d개</item>
+  </plurals>
+  <!-- Title for the Delete tab group confirmation dialog. -->
+  <string name="delete_tab_group_confirmation_dialog_title">탭 그룹을 삭제하시겠습니까?</string>
+  <!-- Text shown in the body of the Delete tab group confirmation dialog. -->
+  <string name="delete_tab_group_confirmation_dialog_body">그룹을 영구적으로 삭제합니다.</string>
+  <!-- Text shown on the confirm button in the Delete tab group confirmation dialog. -->
+  <string name="delete_tab_group_confirmation_dialog_confirm">그룹 삭제</string>
+  <!-- Text shown on the cancel button in the Delete tab group confirmation dialog. -->
+  <string name="delete_tab_group_confirmation_dialog_cancel">취소</string>
   <!--
     History
 
@@ -2394,8 +2435,6 @@
   <string name="preference_accessibility_text_size_summary">웹 사이트의 텍스트를 더 크게 또는 더 작게 함</string>
   <!-- Title for Accessibility Text Size Scaling Preference -->
   <string name="preference_accessibility_font_size_title">글꼴 크기</string>
-  <!-- %d is the percentage of the slide bar for setting the text font size and %% will be announced as "percent". -->
-  <string name="a11y_preference_accessibility_font_size_percentage" tools:ignore="UnusedResources" moz:removedIn="148">%d %%.</string>
   <!-- Title for Accessibility Text Automatic Size Scaling Preference -->
   <string name="preference_accessibility_auto_size_2">자동 글꼴 크기 조정</string>
   <!-- Summary for Accessibility Text Automatic Size Scaling Preference -->
@@ -2758,7 +2797,7 @@
   <!-- About page link text to list of past crashes (like about:crashes on desktop) -->
   <string name="about_crashes">충돌</string>
   <!-- About page link text to open privacy notice link -->
-  <string name="about_privacy_notice">개인정보 보호정책</string>
+  <string name="about_privacy_notice">개인정보처리방침</string>
   <!-- About page link text to open know your rights link -->
   <string name="about_know_your_rights">권리 읽기</string>
   <!-- About page link text to open terms of use link -->
@@ -3337,6 +3376,8 @@
     Header text for a section on the home screen.
   -->
   <string name="pocket_stories_header_2">이야기</string>
+  <!-- Header text for the Stories screen. -->
+  <string name="stories_screen_text_news">뉴스</string>
   <!--
     Context description text for the "Discover more" button in the stories home screen section
     which navigates the user to a screen displaying more stories.
@@ -3429,7 +3470,9 @@
   <!-- The title of the warning card informs the user that the list of languages cannot be loaded. -->
   <string name="translation_error_could_not_load_languages_warning_text">언어를 로드할 수 없습니다. 인터넷 연결을 확인하고 다시 시도하세요.</string>
   <!-- The title of the warning card informs the user that a language is not supported. %1$s is the name of the language that is not supported. -->
-  <string name="translation_error_language_not_supported_warning_text">죄송합니다. 아직 %1$s 언어는 지원되지 않습니다.</string>
+  <string name="translation_error_language_not_supported_warning_text" tools:ignore="UnusedResources" moz:removedIn="150">죄송합니다. 아직 %1$s 언어는 지원되지 않습니다.</string>
+  <!-- The title of the warning card informs the user that translations from a language are not supported yet. %1$s is the name of the source language. -->
+  <string name="translation_error_language_not_supported_warning_text_2">죄송합니다. 아직 %1$s 번역은 지원하지 않습니다.</string>
   <!-- Snackbar title shown if the user closes the Translation Request dialogue and a translation is in progress. -->
   <string name="translation_in_progress_snackbar">번역 중…</string>
   <!--
@@ -3641,7 +3684,7 @@
   -->
   <string name="protection_panel_banner_protected_title">%s가 경계 중</string>
   <!-- Description text for the protection panel banner when tracking protection is enabled. -->
-  <string name="protection_panel_banner_protected_description">보호 중입니다. 무언가를 발견하면 알려드리겠습니다.</string>
+  <string name="protection_panel_banner_protected_description">보호 중입니다. 문제가 발견되면 알려드리겠습니다.</string>
   <!-- Label text for the Enhanced Tracking Protection toggle. -->
   <string name="protection_panel_etp_toggle_label">향상된 추적 방지 기능</string>
   <!-- Toggle if Enhanced Tracking Protection is turned on -->
@@ -3649,7 +3692,7 @@
   <!-- Toggle if Enhanced Tracking Protection is turned off -->
   <string name="protection_panel_etp_toggle_off">꺼짐</string>
   <!-- Description text for the Enhanced Tracking Protection toggle when tracking protection is enabled. -->
-  <string name="protection_panel_etp_toggle_enabled_description_2">이 사이트에서 뭔가 손상된 것처럼 보이면 이 기능을 꺼보세요.</string>
+  <string name="protection_panel_etp_toggle_enabled_description_2">이 사이트가 손상되어 보이면 이 기능을 꺼보세요.</string>
   <!-- Description text for the Enhanced Tracking Protection toggle when tracking protection is disabled. -->
   <string name="protection_panel_etp_toggle_disabled_description_2">추적 방지 기능을 켜는 것을 권장합니다.</string>
   <!--
@@ -3770,7 +3813,7 @@
   -->
   <string name="micro_survey_survey_header_2">설문 조사를 완료해 주세요</string>
   <!-- The privacy notice link -->
-  <string name="micro_survey_privacy_notice_2">개인정보 보호정책</string>
+  <string name="micro_survey_privacy_notice_2">개인정보처리방침</string>
   <!-- The submit button label text -->
   <string name="micro_survey_submit_button_label">보내기</string>
   <!-- The survey completion header -->

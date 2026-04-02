@@ -17,7 +17,7 @@ import {
   MESSAGE_ROLE,
 } from "moz-src:///browser/components/aiwindow/ui/modules/ChatStore.sys.mjs";
 import {
-  truncateUntrustedMetadata,
+  sanitizeUntrustedContent,
   isNewPageUrl,
 } from "moz-src:///browser/components/aiwindow/models/ChatUtils.sys.mjs";
 
@@ -250,7 +250,7 @@ export async function getOpenTabs(_params, securityProperties) {
         if (isAllowedURL(url) && !isNewPageUrl(url)) {
           tabs.push({
             url,
-            title: truncateUntrustedMetadata(title),
+            title: sanitizeUntrustedContent(title),
             lastAccessed: tab.lastAccessed,
           });
         }
@@ -721,9 +721,7 @@ export class GetPageContent {
         tab.linkedBrowser.browsingContext?.currentWindowContext;
 
       if (!currentWindowContext) {
-        // The tab may still be loading or is not accessible. Just tell the language
-        // model that the content is not accessible to not confuse it.
-        return `Cannot access content from the tab "${truncateUntrustedMetadata(tab.label)}" at ${url}.`;
+        return `Cannot access content from the following webpage:\n - Title: ${sanitizeUntrustedContent(tab.label)}\n - URL: ${url}.`;
       }
 
       // Extract page content using PageExtractor
@@ -733,7 +731,7 @@ export class GetPageContent {
       return GetPageContent.#runExtraction(
         pageExtractor,
         securityProperties,
-        `"${truncateUntrustedMetadata(tab.label)}" (${url})`
+        `${sanitizeUntrustedContent(tab.label)} (${url})`
       );
     }
 

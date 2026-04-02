@@ -3300,6 +3300,33 @@ export class BackupService extends EventTarget {
   }
 
   /**
+   * Extract the active theme ID from a legacy backup's prefs.js.
+   *
+   * @param {string} recoveryPath The path to the decompressed backup archive.
+   * @returns {string} The theme addon ID, or the default theme ID as fallback.
+   */
+  async #getLegacyThemeId(recoveryPath) {
+    const DEFAULT_THEME_ID = "default-theme@mozilla.org";
+    let prefsPath = PathUtils.join(
+      recoveryPath,
+      DefaultBackupResources.PreferencesBackupResource.key,
+      "prefs.js"
+    );
+    try {
+      let prefsBuffer = await IOUtils.read(prefsPath);
+      let prefs =
+        DefaultBackupResources.PreferencesBackupResource.getPrefsFromBuffer(
+          prefsBuffer,
+          ["extensions.activeThemeID"]
+        );
+      return prefs.get("extensions.activeThemeID") || DEFAULT_THEME_ID;
+    } catch (e) {
+      lazy.logConsole.warn("Could not read legacy theme from prefs.js", e);
+      return DEFAULT_THEME_ID;
+    }
+  }
+
+  /**
    * Iterates over each resource in the manifest and calls the recover() method
    * on each found BackupResource, passing in the associated ManifestEntry from
    * the backup manifest, and collects any post-recovery data from those
@@ -3569,15 +3596,11 @@ export class BackupService extends EventTarget {
         profile.path
       );
 
-      await this.#writePostRecoveryData(postRecovery, profile.path);
+      let isLegacyBackup = manifest.meta?.isSelectableProfile === false;
 
-      // Legacy backup --> Selectable profile replacement is the only case where we take
-      // the current profile's metadata
-      if (
-        manifest.meta?.isSelectableProfile === false &&
-        replaceCurrentProfile
-      ) {
-        // set the profile items to the newly created profile
+      if (replaceCurrentProfile && isLegacyBackup) {
+        // Legacy backup replacing a selectable profile: keep the current
+        // profile's name, avatar, and theme instead of the backup's.
         let currentSelectableProfile =
           lazy.SelectableProfileService.currentProfile;
 
@@ -3587,8 +3610,28 @@ export class BackupService extends EventTarget {
             ? await currentSelectableProfile.getAvatarFile()
             : currentSelectableProfile.avatar
         );
-        profile.theme = currentSelectableProfile.theme;
+
+        let currentTheme = currentSelectableProfile.theme;
+        await profile.setThemeAsync(currentTheme);
+
+        // The backup's addon data has the legacy theme active, so schedule
+        // enableTheme() via post-recovery to activate the correct one.
+        postRecovery[
+          DefaultBackupResources.SelectableProfileBackupResource.key
+        ] = { themeId: currentTheme.themeId };
+      } else if (!replaceCurrentProfile && isLegacyBackup) {
+        // Adding a legacy backup as a new profile: use the backup's theme.
+        let themeId = await this.#getLegacyThemeId(recoveryPath);
+        let { themeFg, themeBg } =
+          lazy.SelectableProfileService.getColorsForDefaultTheme();
+        await profile.setThemeAsync({
+          themeId,
+          themeFg,
+          themeBg,
+        });
       }
+
+      await this.#writePostRecoveryData(postRecovery, profile.path);
 
       if (shouldLaunch) {
         // TODO (see Bug 2011302) - if the user is recovering a legacy profile
@@ -3684,7 +3727,14 @@ export class BackupService extends EventTarget {
           lazy.logConsole.debug(
             `Running post-recovery step for ${resourceKey}`
           );
-          await new resourceClass().postRecovery(postRecoveryEntry);
+          try {
+            await new resourceClass().postRecovery(postRecoveryEntry);
+          } catch (e) {
+            lazy.logConsole.error(
+              `Post-recovery step for ${resourceKey} failed`,
+              e
+            );
+          }
           lazy.logConsole.debug(`Done post-recovery step for ${resourceKey}`);
         }
       }

@@ -4240,6 +4240,30 @@ static bool ShouldSkipFrame(nsDisplayListBuilder* aBuilder,
          aFrame->StyleUIReset()->mMozSubtreeHiddenOnlyVisually;
 }
 
+#if defined(ACCESSIBILITY) && defined(MOZ_ENABLE_SKIA_PDF)
+// Bug 2025119: If this is inlined in nsIFrame::BuildDisplayListForChild on
+// Win32, we end up with crashes when there is deep recursion due to the
+// increased stack size caused by the additional variables here. Work around
+// this by having this code in its own function and ensuring it is never inlined
+// on Win32.
+#  if defined(XP_WIN) && !defined(_WIN64)
+MOZ_NEVER_INLINE
+#  endif
+static void MaybeAddAccId(nsIFrame* aChildOrOutOfFlow,
+                          nsDisplayListBuilder* aBuilder,
+                          const nsDisplayListSet& aLists) {
+  auto [bcId, accId] = a11y::PdfStructTreeBuilder::GetAccId(aChildOrOutOfFlow);
+  if (!bcId) {
+    return;
+  }
+  // When generating tagged PDF, associate this content with the correct
+  // node in the structure tree.
+  auto* item = MakeDisplayItem<nsDisplayAccessibleId>(
+      aBuilder, aChildOrOutOfFlow, bcId, accId);
+  aLists.Content()->AppendToTop(item);
+}
+#endif
+
 void nsIFrame::BuildDisplayListForChild(nsDisplayListBuilder* aBuilder,
                                         nsIFrame* aChild,
                                         const nsDisplayListSet& aLists,
@@ -4277,14 +4301,7 @@ void nsIFrame::BuildDisplayListForChild(nsDisplayListBuilder* aBuilder,
       linkifier->MaybeAppendLink(aBuilder, childOrOutOfFlow);
     }
 #if defined(ACCESSIBILITY) && defined(MOZ_ENABLE_SKIA_PDF)
-    auto [bcId, accId] = a11y::PdfStructTreeBuilder::GetAccId(childOrOutOfFlow);
-    if (bcId) {
-      // When generating tagged PDF, associate this content with the correct
-      // node in the structure tree.
-      auto* item = MakeDisplayItem<nsDisplayAccessibleId>(
-          aBuilder, childOrOutOfFlow, bcId, accId);
-      aLists.Content()->AppendToTop(item);
-    }
+    MaybeAddAccId(childOrOutOfFlow, aBuilder, aLists);
 #endif
   }
 

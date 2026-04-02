@@ -2432,10 +2432,6 @@ radiogroup:focus-visible > .subviewradio[focused="true"] {
   color: var(--text-color-deemphasized);
 }
 
-#ipprotection-header-button {
-  list-style-image: url(chrome://global/skin/icons/help.svg);
-}
-
 #confirmation-hint[data-message-id="confirmation-hint-ipprotection-navigated-to-excluded-site"] {
   #confirmation-hint-checkmark-animation-container {
     display: none;

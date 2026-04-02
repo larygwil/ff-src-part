@@ -18,7 +18,7 @@ import {
 import { MESSAGE_ROLE } from "moz-src:///browser/components/aiwindow/ui/modules/ChatStore.sys.mjs";
 
 import { MemoriesManager } from "moz-src:///browser/components/aiwindow/models/memories/MemoriesManager.sys.mjs";
-import { truncateUntrustedMetadata } from "moz-src:///browser/components/aiwindow/models/ChatUtils.sys.mjs";
+import { sanitizeUntrustedContent } from "moz-src:///browser/components/aiwindow/models/ChatUtils.sys.mjs";
 
 // Max number of memories to include in prompts
 const MAX_NUM_MEMORIES = 8;
@@ -181,7 +181,7 @@ export async function generateConversationStartersSidebar(
     // Format current tab (first in context or empty)
     const currentTab = contextTabs.length
       ? formatJson({
-          title: truncateUntrustedMetadata(contextTabs[0].title),
+          title: sanitizeUntrustedContent(contextTabs[0].title),
           url: contextTabs[0].url,
         })
       : "No current tab";
@@ -194,7 +194,7 @@ export async function generateConversationStartersSidebar(
           ? "Only current tab is open"
           : formatJson(
               contextTabs.slice(1).map(t => ({
-                title: truncateUntrustedMetadata(t.title),
+                title: sanitizeUntrustedContent(t.title),
                 url: t.url,
               }))
             );
@@ -288,7 +288,7 @@ export async function generateFollowupPrompts(
     const currentTabStr =
       currentTab && Object.keys(currentTab).length
         ? formatJson({
-            title: truncateUntrustedMetadata(currentTab.title),
+            title: sanitizeUntrustedContent(currentTab.title),
             url: currentTab.url,
           })
         : "No tab";

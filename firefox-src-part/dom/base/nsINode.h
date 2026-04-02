@@ -1788,12 +1788,9 @@ class nsINode : public mozilla::dom::EventTarget {
    * this is in its native anonymous subtree.  I.e., this returns anonymous
    * `<div>` element of a `TextEditor`. Note that this can be used only for
    * getting root content of `<input>` or `<textarea>`.  I.e., this method
-   * doesn't support HTML editors. Note that this may create a `TextEditor`
-   * instance, and it means that the `TextEditor` may modify its native
-   * anonymous subtree and may run selection listeners.
+   * doesn't support HTML editors.
    */
-  MOZ_CAN_RUN_SCRIPT mozilla::dom::Element* GetAnonymousRootElementOfTextEditor(
-      mozilla::TextEditor** aTextEditor = nullptr);
+  mozilla::dom::Element* GetAnonymousRootElementOfTextEditor();
 
   enum class IgnoreOwnIndependentSelection : bool { No, Yes };
   using AllowCrossShadowBoundary = mozilla::dom::AllowRangeCrossShadowBoundary;
@@ -1814,7 +1811,7 @@ class nsINode : public mozilla::dom::EventTarget {
    *                    return the document's selection root if "No" or return
    *                    the native anonymous <div> if "Yes".
    */
-  MOZ_CAN_RUN_SCRIPT nsIContent* GetSelectionRootContent(
+  nsIContent* GetSelectionRootContent(
       mozilla::PresShell* aPresShell,
       IgnoreOwnIndependentSelection aIgnoreOwnIndependentSelection,
       AllowCrossShadowBoundary aAllowCrossShadowBoundary);

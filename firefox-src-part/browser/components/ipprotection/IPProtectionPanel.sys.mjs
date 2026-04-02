@@ -140,6 +140,28 @@ export class IPProtectionPanel {
   initiatedUpgrade = false;
   #window = null;
   #lastDismissedUsageState = "none";
+  #panelView = null;
+  // Bug 2020733: Adds a key listener at the panel level
+  //  since moz-button (header button) traps key events in its shadow DOM.
+  //  This also avoids duplicate listeners across panel components.
+  #panelKeyListener = e => {
+    let { code } = e;
+    if (code !== "ArrowDown" && code !== "ArrowUp") {
+      return;
+    }
+    e.stopPropagation();
+    e.preventDefault();
+    let direction =
+      code === "ArrowDown"
+        ? Services.focus.MOVEFOCUS_FORWARD
+        : Services.focus.MOVEFOCUS_BACKWARD;
+    Services.focus.moveFocus(
+      e.target.ownerGlobal,
+      null,
+      direction,
+      Services.focus.FLAG_BYKEY
+    );
+  };
 
   /**
    * Gets the gBrowser from the weak reference to the window.
@@ -421,6 +443,11 @@ export class IPProtectionPanel {
 
     contentEl.dataset.capturesFocus = "true";
 
+    this.#panelView = panelView;
+    panelView.addEventListener("keydown", this.#panelKeyListener, {
+      capture: true,
+    });
+
     this.#addPanelListeners(ownerDocument);
 
     let contentArea = panelView.querySelector(
@@ -430,11 +457,14 @@ export class IPProtectionPanel {
   }
 
   #createHeaderButton(ownerDocument) {
-    const headerButton = ownerDocument.createXULElement("toolbarbutton");
+    const headerButton = ownerDocument.createElement("moz-button");
 
     headerButton.id = IPProtectionPanel.HEADER_BUTTON_ID;
     headerButton.className = "panel-info-button";
     headerButton.dataset.capturesFocus = "true";
+    headerButton.type = "ghost";
+    headerButton.iconSrc = "chrome://global/skin/icons/info.svg";
+    headerButton.size = "small";
 
     ownerDocument.l10n.setAttributes(headerButton, "ipprotection-help-button");
     headerButton.addEventListener("click", IPProtectionPanel.showHelpPage);
@@ -538,6 +568,10 @@ export class IPProtectionPanel {
   destroy() {
     if (this.panel) {
       const doc = this.panel.ownerDocument;
+      this.#panelView?.removeEventListener("keydown", this.#panelKeyListener, {
+        capture: true,
+      });
+      this.#panelView = null;
       this.panel.remove();
       this.#removePanelListeners(doc);
       this.panel = null;

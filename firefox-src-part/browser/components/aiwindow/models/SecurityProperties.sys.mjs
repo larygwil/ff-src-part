@@ -44,4 +44,43 @@ export class SecurityProperties {
     this.#newPrivateData = false;
     this.#newUntrustedInput = false;
   }
+
+  /**
+   * Serializes committed flag state for persistence. Staged flags are
+   * runtime coordination state and are not included.
+   *
+   * @returns {{ privateData: boolean, untrustedInput: boolean }}
+   */
+  toJSON() {
+    return {
+      privateData: this.#privateData,
+      untrustedInput: this.#untrustedInput,
+    };
+  }
+
+  /**
+   * Restores a SecurityProperties instance from a persisted JSON object.
+   * Returns a clean default instance if input is null or undefined.
+   *
+   * Migration behavior: Conversations created before securityProperties
+   * persistence existed have no stored flag payload. Those conversations
+   * restore as false/false and will only become tainted again if later
+   * conversation activity sets and commits the flags.
+   *
+   * @param {object|null} obj - Parsed JSON from SQLite
+   * @returns {SecurityProperties}
+   */
+  static fromJSON(obj) {
+    const props = new SecurityProperties();
+    if (!obj) {
+      return props;
+    }
+    if (obj.privateData) {
+      props.#privateData = true;
+    }
+    if (obj.untrustedInput) {
+      props.#untrustedInput = true;
+    }
+    return props;
+  }
 }

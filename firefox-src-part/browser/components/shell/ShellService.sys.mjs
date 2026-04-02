@@ -320,7 +320,7 @@ let ShellServiceInternal = {
         );
       } catch (err) {
         telemetryResult = "ErrOther";
-        this._handleWDBAResult(err.result || Cr.NS_ERROR_FAILURE);
+        this._throwForWDBAResult(err.result || Cr.NS_ERROR_FAILURE);
       }
       telemetryResult = "Success";
     } catch (ex) {
@@ -339,30 +339,14 @@ let ShellServiceInternal = {
       throw new Error("Windows-only");
     }
 
-    let telemetryResult = "ErrOther";
-
+    const aumi = lazy.XreDirProvider.getInstallHash();
     try {
-      const aumi = lazy.XreDirProvider.getInstallHash();
-      try {
-        this.defaultAgent.setDefaultExtensionHandlersUserChoice(aumi, [
-          ".pdf",
-          "FirefoxPDF",
-        ]);
-      } catch (err) {
-        telemetryResult = "ErrOther";
-        this._handleWDBAResult(err.result || Cr.NS_ERROR_FAILURE);
-      }
-      telemetryResult = "Success";
-    } catch (ex) {
-      if (ex instanceof WDBAError) {
-        telemetryResult = ex.telemetryResult;
-      }
-
-      throw ex;
-    } finally {
-      Glean.browser.setDefaultPdfHandlerUserChoiceResult[telemetryResult].add(
-        1
-      );
+      this.defaultAgent.setDefaultExtensionHandlersUserChoice(aumi, [
+        ".pdf",
+        "FirefoxPDF",
+      ]);
+    } catch (err) {
+      this._throwForWDBAResult(err.result || Cr.NS_ERROR_FAILURE);
     }
   },
 
@@ -440,8 +424,14 @@ let ShellServiceInternal = {
 
     try {
       await this.setAsDefaultPDFHandlerUserChoice();
+      Glean.browser.setDefaultPdfHandlerUserChoiceResult.Success.add(1);
       return;
     } catch (e) {
+      const telemetryResult =
+        e instanceof WDBAError ? e.telemetryResult : "ErrOther";
+      Glean.browser.setDefaultPdfHandlerUserChoiceResult[telemetryResult].add(
+        1
+      );
       lazy.log.debug(
         "Setting default by user-choice failed, falling through to open with launcher",
         e
@@ -454,8 +444,10 @@ let ShellServiceInternal = {
 
     try {
       winShell.launchOpenWithDefaultPickerForFileType(".pdf");
+      Glean.browser.setDefaultPdfHandlerOpenWithResult.Success.add(1);
       return;
     } catch (e) {
+      Glean.browser.setDefaultPdfHandlerOpenWithResult.Failure.add(1);
       lazy.log.debug(
         "Setting default by open with launcher failed, possibly falling through to modern settings",
         e
@@ -466,7 +458,9 @@ let ShellServiceInternal = {
     if (this._isWindows11()) {
       try {
         winShell.launchModernSettingsDialogDefaultApps();
+        Glean.browser.setDefaultPdfHandlerModernSettingsResult.Success.add(1);
       } catch (e) {
+        Glean.browser.setDefaultPdfHandlerModernSettingsResult.Failure.add(1);
         lazy.log.debug(
           "Last attempt to set as default PDF failed through modern settings",
           e
@@ -644,7 +638,7 @@ let ShellServiceInternal = {
     }
   },
 
-  _handleWDBAResult(exitCode) {
+  _throwForWDBAResult(exitCode) {
     if (exitCode != Cr.NS_OK) {
       const telemetryResult =
         new Map([
@@ -656,6 +650,10 @@ let ShellServiceInternal = {
 
       throw new WDBAError(exitCode, telemetryResult);
     }
+
+    throw new Error(
+      `_throwForWDBAResult called with unexpected exit code: ${exitCode}`
+    );
   },
 
   get shortcutIconType() {

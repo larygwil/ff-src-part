@@ -165,6 +165,7 @@ class ChatStore {
           updated_date: conversation.updatedDate,
           status: conversation.status,
           active_branch_tip_message_id: conversation.activeBranchTipMessageId,
+          security_properties: toJSONOrNull(conversation.securityProperties),
         });
 
         const messages = conversation.messages.map(m => ({

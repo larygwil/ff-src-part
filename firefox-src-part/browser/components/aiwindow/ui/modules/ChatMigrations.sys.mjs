@@ -76,9 +76,25 @@ async function applyV4(conn, version) {
   );
 }
 
+// Persist securityProperties flags to conversation table (Bug 2019693)
+async function applyV5(conn, version) {
+  if (version >= 5) {
+    return;
+  }
+
+  const columns = await getColumns(conn, "conversation");
+  if (columns.has("security_properties_jsonb")) {
+    return;
+  }
+
+  await conn.execute(
+    "ALTER TABLE conversation ADD COLUMN security_properties_jsonb BLOB"
+  );
+}
+
 /**
  * Array of migration functions to run in the order they should be run in.
  *
  * @returns {Array<Function>}
  */
-export const migrations = [applyV2, applyV3, applyV4];
+export const migrations = [applyV2, applyV3, applyV4, applyV5];

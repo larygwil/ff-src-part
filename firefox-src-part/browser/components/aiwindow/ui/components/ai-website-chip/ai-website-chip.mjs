@@ -33,6 +33,8 @@ export class AIWebsiteChip extends MozLitElement {
     removable: { type: Boolean },
   };
 
+  #parentHost = null;
+
   constructor() {
     super();
     this.type = "in-line";
@@ -40,6 +42,30 @@ export class AIWebsiteChip extends MozLitElement {
     this.iconSrc = "";
     this.href = "";
     this.removable = false;
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    this.#parentHost = this.getRootNode()?.host;
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    // Dispatch only when the parent is still connected: Chip was removed by
+    // the user and not due to the parent unmounting.
+    if (this.#parentHost?.isConnected) {
+      this.#parentHost.dispatchEvent(
+        new CustomEvent("ai-website-chip:disconnected", {
+          bubbles: true,
+          composed: true,
+          detail: {
+            label: this.label,
+            type: this.type,
+          },
+        })
+      );
+    }
+    this.#parentHost = null;
   }
 
   get #isEmpty() {

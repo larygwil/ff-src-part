@@ -26,7 +26,11 @@ const lazy = XPCOMUtils.declareLazy({
   GenAI: "resource:///modules/GenAI.sys.mjs",
   MemoryStore:
     "moz-src:///browser/components/aiwindow/services/MemoryStore.sys.mjs",
+  MODELS:
+    "moz-src:///browser/components/aiwindow/ui/modules/AIWindowConstants.sys.mjs",
 });
+
+let previousAssistantModel = "No model";
 
 Preferences.addAll([
   // browser.ai.control.* prefs defined in main.js
@@ -78,7 +82,9 @@ Preferences.addSetting({ id: "sidebarChatbotFieldset" });
 Preferences.addSetting({
   id: "aiBlockedMessage",
   deps: ["aiControlDefaultToggle"],
-  visible: deps => deps.aiControlDefaultToggle.value,
+  visible: deps => {
+    return deps.aiControlDefaultToggle.value;
+  },
 });
 
 const AiControlStates = Object.freeze({
@@ -101,10 +107,10 @@ function updateAiControlDefault(state) {
   for (let feature of Object.values(OnDeviceModelManager.features)) {
     if (isBlocked) {
       // Reset to default (blocked) state unless it was already blocked.
-      OnDeviceModelManager.disable(feature);
+      OnDeviceModelManager.block(feature);
     } else if (!isBlocked && !OnDeviceModelManager.isEnabled(feature)) {
       // Reset to default (available) state unless it was manually enabled.
-      OnDeviceModelManager.reset(feature);
+      OnDeviceModelManager.makeAvailable(feature);
     }
   }
   if (isBlocked) {
@@ -348,11 +354,11 @@ function makeAiControlSetting({
     },
     set(prefVal) {
       if (prefVal == AiControlStates.available) {
-        OnDeviceModelManager.reset(feature);
+        OnDeviceModelManager.makeAvailable(feature);
       } else if (prefVal == AiControlStates.enabled) {
         OnDeviceModelManager.enable(feature);
       } else if (prefVal == AiControlStates.blocked) {
-        OnDeviceModelManager.disable(feature);
+        OnDeviceModelManager.block(feature);
       }
       return prefVal;
     },
@@ -444,11 +450,11 @@ Preferences.addSetting(
     },
     set(inputVal, deps) {
       if (inputVal == AiControlStates.blocked) {
-        OnDeviceModelManager.disable(this.feature);
+        OnDeviceModelManager.block(this.feature);
         return inputVal;
       }
       if (inputVal == AiControlStates.available) {
-        OnDeviceModelManager.reset(this.feature);
+        OnDeviceModelManager.makeAvailable(this.feature);
         return inputVal;
       }
       if (inputVal) {
@@ -610,6 +616,9 @@ Preferences.addSetting({
     return null;
   },
   set(value, deps) {
+    const prev = deps.smartWindowFirstRunModelChoice.value;
+    previousAssistantModel = prev ? lazy.MODELS[prev].modelName : "No model";
+
     // Save model selection
     // Preset models save pref immediately, "Custom" waits for clicking the Save button
     if (value !== "0") {
@@ -625,6 +634,18 @@ Preferences.addSetting({
 
     // Write index to firstrun.modelChoice
     deps.smartWindowFirstRunModelChoice.value = value;
+  },
+  onUserChange(value, _) {
+    // sending telemetry only for the preset models
+    // custom model telemetry is sent after user hits the save button
+    if (value !== "0") {
+      const new_model = lazy.MODELS[value].modelName;
+      Glean.smartWindow.settingsModel.record({
+        previous_model: previousAssistantModel,
+        new_model,
+      });
+      previousAssistantModel = value;
+    }
   },
 });
 
@@ -728,6 +749,13 @@ Preferences.addSetting({
       return;
     }
 
+    const new_model = lazy.MODELS["0"].modelName;
+    Glean.smartWindow.settingsModel.record({
+      previous_model: previousAssistantModel,
+      new_model,
+    });
+    previousAssistantModel = new_model;
+
     // custom uses .model pref
     deps.smartWindowModel.value = modelName;
     deps.smartWindowEndpoint.value = modelEndpoint;
@@ -742,17 +770,35 @@ Preferences.addSetting({ id: "learnFromBrowsingActivityWrapper" });
 Preferences.addSetting({
   id: "learnFromChatActivity",
   pref: "browser.smartwindow.memories.generateFromConversation",
+  onUserChange(val) {
+    Glean.smartWindow.settingsMemories.record({
+      type: "chat",
+      enabled: val,
+    });
+  },
 });
 Preferences.addSetting({
   id: "learnFromBrowsingActivity",
   pref: "browser.smartwindow.memories.generateFromHistory",
+  onUserChange(val) {
+    Glean.smartWindow.settingsMemories.record({
+      type: "browsing",
+      enabled: val,
+    });
+  },
 });
 
 Preferences.addSetting({
   id: "manageMemoriesButton",
-  onUserClick(e) {
+  async onUserClick(e) {
     e.preventDefault();
     window.gotoPref("manageMemories");
+
+    const memories = await lazy.MemoryStore.getMemories();
+    Glean.smartWindow.memoriesPanelDisplayed.record({
+      source: "settings",
+      memories: memories?.length ?? 0,
+    });
   },
 });
 
@@ -808,6 +854,7 @@ Preferences.addSetting({
     );
 
     if (result.get("buttonNumClicked") === 0) {
+      Glean.smartWindow.memoriesNuke.record();
       for (const memory of memories) {
         try {
           await lazy.MemoryStore.hardDeleteMemory(memory.id, "settings");
@@ -1136,7 +1183,8 @@ SettingGroupManager.registerGroups({
         supportPage: "smart-window",
         controlAttrs: {
           headinglevel: 2,
-          badge: "new",
+          iconsrc: "chrome://browser/skin/smart-window-mono.svg",
+          badge: "beta",
         },
         items: [
           {
@@ -1223,17 +1271,23 @@ SettingGroupManager.registerGroups({
           {
             value: "1",
             l10nId: "smart-window-model-fast",
-            l10nArgs: { modelName: "gemini-flash-lite" },
+            get l10nArgs() {
+              return lazy.MODELS["1"];
+            },
           },
           {
             value: "2",
             l10nId: "smart-window-model-flexible",
-            l10nArgs: { modelName: "Qwen3-235B-A22B-throughput" },
+            get l10nArgs() {
+              return lazy.MODELS["2"];
+            },
           },
           {
             value: "3",
             l10nId: "smart-window-model-personal",
-            l10nArgs: { modelName: "gpt-oss-120b" },
+            get l10nArgs() {
+              return lazy.MODELS["3"];
+            },
           },
           {
             value: "0",

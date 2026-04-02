@@ -2,6 +2,7 @@
  This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs";
 
 const lazy = {};
 ChromeUtils.defineESModuleGetters(lazy, {
@@ -15,6 +16,12 @@ ChromeUtils.defineESModuleGetters(lazy, {
     "moz-src:///browser/components/aiwindow/ui/modules/SmartWindowTelemetry.sys.mjs",
   SessionStore: "resource:///modules/sessionstore/SessionStore.sys.mjs",
 });
+
+XPCOMUtils.defineLazyPreferenceGetter(
+  lazy,
+  "hasFirstrunCompleted",
+  "browser.smartwindow.firstrun.hasCompleted"
+);
 
 const SESSION_STORE_KEY = "ai-window-tab-state";
 
@@ -61,6 +68,10 @@ export class AIWindowTabStatesManager {
    * Promise that resolves when the initial sidebar restore is complete
    */
   #restorePromise;
+  /**
+   * True once #restoreInitialTabSidebar has completed
+   */
+  #restoreCompleted = false;
 
   constructor(win) {
     this.#init(win);
@@ -128,7 +139,9 @@ export class AIWindowTabStatesManager {
 
     this.#setUpInitialTabs();
     this.#addWindowEventListeners();
-    this.#restorePromise = this.#restoreInitialTabSidebar();
+    this.#restorePromise = this.#restoreInitialTabSidebar().then(() => {
+      this.#restoreCompleted = true;
+    });
   }
 
   /**
@@ -274,6 +287,15 @@ export class AIWindowTabStatesManager {
    * Handles TabSelect events from a new browser tab to
    * update the state of the sidebar.
    *
+   * Sidebar behavior logic:
+   * - shouldOpenSidebar defaults to true when no explicit state is set
+   * - keepSidebarOpen can be explicitly set to false to close sidebar
+   * - When shouldOpenSidebar is true, openSidebar is called with the tab's conversation
+   * - If conversation is null/undefined, openSidebar will kick off creating a new conversation
+   * - AI Window tabs (AIWINDOW_URL) always close the sidebar regardless of state
+   * - If no convisationId is present but restore hasn't completed, we wait for restore to complete
+   *   and re-check state in case the conversationId is from a restored
+   *
    * @param {Event} event
    *
    * @private
@@ -287,14 +309,16 @@ export class AIWindowTabStatesManager {
     const tab = this.#selectedTab;
 
     const tabState = this.#getTabState(tab);
+    const keepSidebarOpen =
+      tabState?.state?.keepSidebarOpen ?? lazy.hasFirstrunCompleted;
     const convId = tabState?.state?.conversationId;
     const tabUrl = tab.linkedBrowser?.currentURI?.spec ?? "";
     const isAIWindowTab = tabUrl === lazy.AIWINDOW_URL;
-    const shouldKeepSidebar = tabState?.state?.keepSidebarOpen ?? !!convId;
+    const shouldKeepSidebar = keepSidebarOpen !== false;
 
     // AI Window tab doesn't need sidebar
     if (isAIWindowTab) {
-      lazy.AIWindowUI.restoreMemoriesState(this.#window, this.#selectedTab);
+      lazy.AIWindowUI.restoreMemoriesState(this.#window, tab);
       lazy.AIWindowUI.closeSidebar(this.#window);
       return;
     }
@@ -304,18 +328,34 @@ export class AIWindowTabStatesManager {
       return;
     }
 
-    const conversation = await this.#computeConversation(tab, tabState);
+    let conversation = tabState?.state?.conversation ?? null;
 
-    // Bail if the user switched tabs while we were awaiting the DB lookup.
-    if (this.#selectedTab !== tab) {
-      return;
+    if (convId && !conversation) {
+      conversation = await this.#computeConversation(tab, tabState);
+
+      // Bail if the user switched tabs while we were awaiting the DB lookup.
+      if (this.#selectedTab !== tab) {
+        return;
+      }
+    } else if (!convId && !this.#restoreCompleted) {
+      // Restore hasn't completed yet so we wait and re-read state in case this
+      // tab had a saved conversation that hasn't been loaded yet.
+      await this.#restorePromise;
+
+      if (this.#selectedTab !== tab) {
+        return;
+      }
+
+      conversation = this.#getTabState(tab)?.state?.conversation ?? null;
     }
 
     lazy.AIWindowUI.openSidebar(this.#window, conversation);
-    lazy.AIWindowUI.updateSidebarInput(
-      this.#window,
-      tabState.state.input ?? ""
-    );
+    if (tabState?.state) {
+      lazy.AIWindowUI.updateSidebarInput(
+        this.#window,
+        tabState.state.input ?? ""
+      );
+    }
   }
 
   /**

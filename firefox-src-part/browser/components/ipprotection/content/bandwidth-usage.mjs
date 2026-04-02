@@ -137,7 +137,7 @@ export default class BandwidthUsageCustomElement extends MozLitElement {
           <progress
             id="progress-bar"
             max=${this.maxGB}
-            value=${this.maxGB - this.remainingGB}
+            value=${parseFloat(this.bandwidthUsedGB.toFixed(1))}
             percent=${this.bandwidthPercent}
           ></progress>
           <div id="min-progress"></div>

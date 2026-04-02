@@ -553,12 +553,8 @@ bool nsINode::IsSelected(const uint32_t aStartOffset, const uint32_t aEndOffset,
   return false;
 }
 
-Element* nsINode::GetAnonymousRootElementOfTextEditor(
-    TextEditor** aTextEditor) {
-  if (aTextEditor) {
-    *aTextEditor = nullptr;
-  }
-  RefPtr<TextControlElement> textControlElement;
+Element* nsINode::GetAnonymousRootElementOfTextEditor() {
+  TextControlElement* textControlElement = nullptr;
   if (IsInNativeAnonymousSubtree()) {
     textControlElement = TextControlElement::FromNodeOrNull(
         GetClosestNativeAnonymousSubtreeRootParentOrHost());
@@ -568,20 +564,7 @@ Element* nsINode::GetAnonymousRootElementOfTextEditor(
   if (!textControlElement) {
     return nullptr;
   }
-  RefPtr<TextEditor> textEditor = textControlElement->GetTextEditor();
-  if (!textEditor) {
-    // The found `TextControlElement` may be an input element which is not a
-    // text control element.  In this case, such element must not be in a
-    // native anonymous tree of a `TextEditor` so this node is not in any
-    // `TextEditor`.
-    return nullptr;
-  }
-
-  Element* rootElement = textEditor->GetRoot();
-  if (aTextEditor) {
-    textEditor.forget(aTextEditor);
-  }
-  return rootElement;
+  return textControlElement->GetTextEditorRoot();
 }
 
 void nsINode::QueueDevtoolsAnonymousEvent(bool aIsRemove) {
@@ -3906,8 +3889,10 @@ already_AddRefed<nsINode> nsINode::CloneAndAdopt(
         JSAutoRealm ar(cx, wrapper);
         UpdateReflectorGlobal(cx, wrapper, aError);
         if (aError.Failed()) {
+          bool needsRollBack = false;
           if (wasRegistered) {
-            newDoc->UnregisterActivityObserver(aNode->AsElement());
+            needsRollBack =
+                newDoc->UnregisterActivityObserver(aNode->AsElement());
           }
           if (hadProperties) {
             // NOTE: When it fails it removes all properties for the node
@@ -3917,7 +3902,7 @@ already_AddRefed<nsINode> nsINode::CloneAndAdopt(
           }
           aNode->mNodeInfo.swap(newNodeInfo);
           aNode->NodeInfoChanged(newDoc);
-          if (wasRegistered) {
+          if (needsRollBack) {
             oldDoc->RegisterActivityObserver(aNode->AsElement());
           }
           return nullptr;

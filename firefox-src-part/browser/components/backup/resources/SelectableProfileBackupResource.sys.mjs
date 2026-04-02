@@ -196,6 +196,25 @@ export class SelectableProfileBackupResource extends BackupResource {
     return null;
   }
 
+  async postRecovery(postRecoveryEntry) {
+    let themeId = postRecoveryEntry?.themeId;
+    if (!themeId) {
+      return;
+    }
+
+    try {
+      await lazy.SelectableProfileService.enableTheme(themeId);
+    } catch (e) {
+      lazy.logConsole.warn(
+        "Failed to enable theme, falling back to default",
+        e
+      );
+      await lazy.SelectableProfileService.enableTheme(
+        "default-theme@mozilla.org"
+      );
+    }
+  }
+
   async measure(_profilePath) {
     // No measurements needed here
   }

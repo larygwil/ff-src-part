@@ -4,7 +4,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-import { truncateUntrustedMetadata } from "moz-src:///browser/components/aiwindow/models/ChatUtils.sys.mjs";
+import { sanitizeUntrustedContent } from "moz-src:///browser/components/aiwindow/models/ChatUtils.sys.mjs";
 
 const lazy = {};
 ChromeUtils.defineESModuleGetters(lazy, {
@@ -80,7 +80,7 @@ function buildHistoryRow(row, fromNode = false) {
   }
 
   return {
-    title: truncateUntrustedMetadata(title || url),
+    title: sanitizeUntrustedContent(title || url),
     url,
     visitDate: visitDateIso, // ISO timestamp format
     visitCount: visitCount || 0,

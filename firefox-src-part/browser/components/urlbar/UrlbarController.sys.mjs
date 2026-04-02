@@ -7,6 +7,7 @@ import { AppConstants } from "resource://gre/modules/AppConstants.sys.mjs";
 /**
  * @import {BrowserSearchTelemetry} from "moz-src:///browser/components/search/BrowserSearchTelemetry.sys.mjs"
  * @import {ProvidersManager} from "moz-src:///browser/components/urlbar/UrlbarProvidersManager.sys.mjs"
+ * @import {SapLocation, SmartbarInput} from "moz-src:///browser/components/urlbar/content/SmartbarInput.mjs"
  * @import {UrlbarView} from "moz-src:///browser/components/urlbar/UrlbarView.sys.mjs"
  */
 
@@ -889,6 +890,9 @@ class TelemetryEvent {
    *   One of "unknown", "autofill", "visiturl", "bookmark", "help", "history",
    *   "keyword", "searchengine", "searchsuggestion", "switchtab", "remotetab",
    *   "extension", "oneoff", "dismiss".
+   * @property {SapLocation} [location]
+   *   The location where the interaction occurred.
+   *   Required when sap is "smartbar".
    */
 
   /**
@@ -1029,6 +1033,8 @@ class TelemetryEvent {
       searchMode: internalDetails.searchMode,
       selIndex: internalDetails.selIndex,
       selType: internalDetails.selType,
+      location: internalDetails.location,
+      ...this.#getOptionalSmartbarTelemetry(internalDetails.searchSource),
     });
 
     if (!internalDetails.isSessionOngoing) {
@@ -1070,7 +1076,7 @@ class TelemetryEvent {
    *
    * @param {string} searchSource
    *   The search source string to convert.
-   * @returns {null|"urlbar"|"searchbar"|"handoff"|"urlbar_newtab"|"urlbar_addonpage"}
+   * @returns {null|"urlbar"|"searchbar"|"smartbar"|"handoff"|"urlbar_newtab"|"urlbar_addonpage"}
    *   The sap value for urlbar.* telemetry or null if the browser window
    *   already started closing. In that case, no telemetry should be recorded.
    */
@@ -1079,8 +1085,12 @@ class TelemetryEvent {
     if (searchSource === "urlbar_handoff") {
       return "handoff";
     }
+    // TODO (bug 2024630): Ideally, we would not add every new SAP here.
     if (searchSource === "searchbar") {
       return "searchbar";
+    }
+    if (searchSource === "smartbar") {
+      return "smartbar";
     }
     if (browserWindow.closed) {
       // If the browser window has already started closing, then we bail-out.
@@ -1129,6 +1139,16 @@ class TelemetryEvent {
    *   "extension", "oneoff", "dismiss".
    * @param {number} [details.viewTime]
    *   The length of the view time in milliseconds.
+   * @param {SapLocation} [details.location]
+   *   The location where the interaction occurred.
+   *   Required when sap is "smartbar".
+   * @param {string} [details.chatId]
+   *   UUID for this smart window session. Unique identifier for each chat
+   *   conversation. Only set when sap is `smartbar`.
+   * @param {string} [details.intent]
+   *   The detected intent for the input. Only set when sap is `smartbar`.
+   * @param {string} [details.model]
+   *   Model selected by the user. Only set when sap is `smartbar`.
    */
   #recordSearchEngagementTelemetry(
     method,
@@ -1144,11 +1164,22 @@ class TelemetryEvent {
       selIndex,
       selType,
       viewTime = 0,
+      location = null,
+      chatId = "",
+      intent = "",
+      model = "",
     }
   ) {
     let sap = this.#searchSourceToSap(searchSource);
     if (!sap) {
       return;
+    }
+    // The extra_key `location` is optional, but required for the smartbar.
+    // TODO (bug 2024631): Support location for all SAPs.
+    if (this._controller.input.sapName === "smartbar" && !location) {
+      throw new Error(
+        "Telemetry extra_key `location` is required for smartbar"
+      );
     }
     searchMode = searchMode ?? this._controller.input.searchMode;
 
@@ -1224,6 +1255,9 @@ class TelemetryEvent {
           results,
           actions,
           available_semantic_sources,
+          ...(sap === "smartbar"
+            ? { location, chat_id: chatId, intent, model }
+            : {}),
         };
         lazy.logger.info(`engagement event:`, eventInfo);
         Glean.urlbar.engagement.record(eventInfo);
@@ -1243,6 +1277,9 @@ class TelemetryEvent {
           results,
           actions,
           available_semantic_sources,
+          ...(sap === "smartbar"
+            ? { location, chat_id: chatId, intent, model }
+            : {}),
         };
         lazy.logger.info(`abandonment event:`, eventInfo);
         Glean.urlbar.abandonment.record(eventInfo);
@@ -1271,6 +1308,9 @@ class TelemetryEvent {
           selected_result,
           results,
           feature: "suggest",
+          ...(sap === "smartbar"
+            ? { location, chat_id: chatId, intent, model }
+            : {}),
         };
         lazy.logger.info(`disable event:`, eventInfo);
         Glean.urlbar.disable.record(eventInfo);
@@ -1299,6 +1339,9 @@ class TelemetryEvent {
           threshold: lazy.UrlbarPrefs.get(
             "events.bounce.maxSecondsFromLastSearch"
           ),
+          ...(sap === "smartbar"
+            ? { location, chat_id: chatId, intent, model }
+            : {}),
         };
         lazy.logger.info(`bounce event:`, eventInfo);
         Glean.urlbar.bounce.record(eventInfo);
@@ -1308,6 +1351,30 @@ class TelemetryEvent {
         console.error(`Unknown telemetry event method: ${method}`);
       }
     }
+  }
+
+  /**
+   * Returns Smart Window telemetry data for SAP `smartbar`.
+   *
+   * @param {string} searchSource
+   *   The search source identifier.
+   * @returns {{ chatId: string, intent: string, model: string } | null}
+   *   Telemetry for the smartbar.
+   */
+  #getOptionalSmartbarTelemetry(searchSource) {
+    const isSmartbar = this.#searchSourceToSap(searchSource) === "smartbar";
+    if (!isSmartbar) {
+      return null;
+    }
+    // If SAP is `smartbar` we can safely cast to type `SmartbarInput`.
+    const input = /** @type {SmartbarInput} */ (
+      /** @type {unknown} */ (this._controller.input)
+    );
+    return {
+      chatId: input.conversationTelemetryInfo?.chat_id ?? "",
+      intent: input.smartbarAction ?? "",
+      model: input.modelName ?? "",
+    };
   }
 
   /**
@@ -1848,6 +1915,8 @@ class TelemetryEvent {
       searchMode: details.searchMode,
       selIndex: details.selIndex,
       selType: details.selType,
+      location: details.location,
+      ...this.#getOptionalSmartbarTelemetry(details.searchSource),
     });
 
     this._lastSearchDetailsForDisableSuggestTracking = null;
@@ -1988,6 +2057,8 @@ class TelemetryEvent {
       selIndex: details.selIndex,
       selType: details.selType,
       viewTime: viewTime / 1000,
+      location: details.location,
+      ...this.#getOptionalSmartbarTelemetry(details.searchSource),
     });
   }
 }
