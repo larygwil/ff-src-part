@@ -10,22 +10,15 @@ import { ToolRoleOpts } from "moz-src:///browser/components/aiwindow/ui/modules/
 import { openAIEngine } from "moz-src:///browser/components/aiwindow/models/Utils.sys.mjs";
 import {
   toolsConfig,
-  getOpenTabs,
-  searchBrowsingHistory,
+  toolFns,
   GetPageContent,
   RunSearch,
-  getUserMemories,
   GET_OPEN_TABS,
   SEARCH_BROWSING_HISTORY,
   GET_PAGE_CONTENT,
   RUN_SEARCH,
   GET_USER_MEMORIES,
 } from "moz-src:///browser/components/aiwindow/models/Tools.sys.mjs";
-import { extractValidUrls } from "moz-src:///browser/components/aiwindow/models/ChatUtils.sys.mjs";
-import {
-  extractMarkdownLinks,
-  validateCitedUrls,
-} from "moz-src:///browser/components/aiwindow/models/CitationParser.sys.mjs";
 import { compactMessages } from "moz-src:///browser/components/aiwindow/models/PromptOptimizer.sys.mjs";
 
 // Hard limit on how many times run_search can execute per conversation turn.
@@ -37,7 +30,15 @@ const lazy = {};
 ChromeUtils.defineESModuleGetters(lazy, {
   AIWindow:
     "moz-src:///browser/components/aiwindow/ui/modules/AIWindow.sys.mjs",
+  SearchService: "moz-src:///toolkit/components/search/SearchService.sys.mjs",
 });
+
+ChromeUtils.defineLazyGetter(lazy, "console", () =>
+  console.createInstance({
+    prefix: "Conversation",
+    maxLogLevelPref: "browser.smartwindow.conversation.logLevel",
+  })
+);
 
 /**
  * @import { ChatConversation } from "moz-src:///browser/components/aiwindow/ui/modules/ChatConversation.sys.mjs"
@@ -56,13 +57,6 @@ XPCOMUtils.defineLazyPreferenceGetter(
 );
 
 Object.assign(Chat, {
-  toolMap: {
-    get_open_tabs: getOpenTabs,
-    search_browsing_history: searchBrowsingHistory,
-    get_page_content: GetPageContent.getPageContent,
-    run_search: RunSearch.runSearch.bind(RunSearch),
-    get_user_memories: getUserMemories,
-  },
   lastUsage: null,
 
   /**
@@ -71,12 +65,23 @@ Object.assign(Chat, {
    * we execute them locally, append results to the conversation, and continue
    * streaming the model's follow-up answer. Repeats until no more tool calls.
    *
-   * @param {ChatConversation} conversation
-   * @param {openAIEngine} engineInstance
-   * @param {object} [context]
-   * @param {BrowsingContext} [context.browsingContext]
+   * @param {object} options
+   * @param {ChatConversation} options.conversation
+   * @param {openAIEngine} options.engineInstance
+   * @param {BrowsingContext} options.browsingContext - Omitted for tests only.
+   * @param {"fullpage" | "sidebar" | "urlbar"} options.mode - See the MODE in ai-window.mjs
    */
-  async fetchWithHistory(conversation, engineInstance, context = {}) {
+  async fetchWithHistory({
+    conversation,
+    engineInstance,
+    browsingContext,
+    mode,
+  }) {
+    if (!browsingContext && !Cu.isInAutomation) {
+      throw new Error(
+        "The browsingContext must exist for fetchWithHistory unless we're in automation."
+      );
+    }
     const fxAccountToken = await openAIEngine.getFxAccountToken();
     if (!fxAccountToken) {
       console.error("fetchWithHistory Account Token null or undefined");
@@ -102,20 +107,21 @@ Object.assign(Chat, {
       isVerbatimQuery = false;
     }
 
-    const allAllowedUrls = new Set();
-    await this._collectInitialAllowedUrls(conversation, allAllowedUrls);
-
-    let fullResponseText = "";
     const searchExecuted = conversation._searchExecutedTurn === currentTurn;
     let blockedSearchAttempts = 0;
 
     const streamModelResponse = () => {
       const rawMessages = conversation.getMessagesInOpenAiFormat();
+      lazy.console.log(
+        `Request (${conversation.securityProperties.getLogText()})`,
+        rawMessages.at(-1)
+      );
       const compactedMessages = compactMessages(rawMessages);
 
       return engineInstance.runWithGenerator({
         streamOptions: { enabled: true },
         fxAccountToken,
+        chatId: conversation.id,
         tool_choice: "auto",
         tools: chatToolsConfig,
         args: compactedMessages,
@@ -131,8 +137,11 @@ Object.assign(Chat, {
         const response = await conversation.receiveResponse(
           streamModelResponse()
         );
-        fullResponseText = response.fullResponseText;
         pendingToolCalls = response.pendingToolCalls;
+        lazy.console.log("Response", {
+          fullResponseText: response.fullResponseText,
+          pendingToolCalls,
+        });
 
         if (response.usage) {
           this.lastUsage = response.usage;
@@ -143,7 +152,6 @@ Object.assign(Chat, {
       }
 
       if (!pendingToolCalls || pendingToolCalls.length === 0) {
-        this._validateCitations(fullResponseText, allAllowedUrls);
         return;
       }
 
@@ -243,54 +251,71 @@ Object.assign(Chat, {
           delete toolParams.query;
         }
 
-        let result, searchHandoffBrowser;
+        // Capture the embedder element before running tools, as navigation during
+        // a tool call such as search handoff can replace the browsing context.
+        const originalEmbedderElement = browsingContext?.embedderElement;
+
+        // Dispatch the required arguments to different tool calls. Wrap this in a
+        // try/catch so the conversation can be updated for failed calls.
+        let result;
         try {
-          const toolFunc = this.toolMap[toolName];
-          if (typeof toolFunc !== "function") {
-            throw new Error(`No such tool: ${toolName}`);
-          }
-
-          const hasParams = toolParams && !!Object.keys(toolParams).length;
-          const params = hasParams ? toolParams : undefined;
-          const secProps = conversation.securityProperties;
-
-          if (toolName === RUN_SEARCH) {
-            if (!context.browsingContext) {
-              console.error(
-                "run_search: No browsingContext provided, aborting search handoff"
+          switch (toolName) {
+            case GET_PAGE_CONTENT: {
+              const startTime = new Date();
+              result = await GetPageContent.getPageContent(
+                toolParams,
+                conversation
               );
-              return;
+              Glean.smartWindow.getPageContent.record({
+                location: mode,
+                chat_id: conversation.id,
+                message_seq: conversation.messageCount,
+                length: result.reduce(
+                  (acc, curr) => acc + (curr?.length || 0),
+                  0
+                ),
+                time: new Date() - startTime,
+              });
+              break;
             }
-            searchHandoffBrowser = context.browsingContext.embedderElement;
-            result = await toolFunc(params ?? {}, context, secProps);
-            conversation._searchExecutedTurn = currentTurn;
-          } else if (toolName === GET_PAGE_CONTENT) {
-            const startTime = new Date();
-            result = await toolFunc(params, allAllowedUrls, secProps);
-            Glean.smartWindow.getPageContent.record({
-              location: context?.telemetry?.location,
-              chat_id: conversation.id,
-              message_seq: conversation.messageCount,
-              length: result.reduce(
-                (acc, curr) => acc + (curr?.length || 0),
-                0
-              ),
-              time: new Date() - startTime,
-            });
-          } else {
-            result = await toolFunc(params, secProps);
+            case RUN_SEARCH: {
+              result = await RunSearch.runSearch(
+                toolParams,
+                browsingContext,
+                conversation
+              );
+              const engine = await lazy.SearchService.getDefault();
+              Glean.smartWindow.searchHandoff.record({
+                location: mode,
+                chat_id: conversation.id,
+                message_seq: conversation.messageCount,
+                provider: engine.name ?? "unknown",
+                model: engineInstance?.model,
+              });
+              conversation._searchExecutedTurn = currentTurn;
+              break;
+            }
+            case GET_OPEN_TABS:
+              result = await toolFns.getOpenTabs(conversation);
+              break;
+            case SEARCH_BROWSING_HISTORY:
+              result = await toolFns.searchBrowsingHistory(
+                toolParams,
+                conversation
+              );
+              break;
+            case GET_USER_MEMORIES:
+              result = await toolFns.getUserMemories(conversation);
+              break;
+            default:
+              throw new Error(`No such tool: ${toolName}`);
           }
-
-          this._collectAllowedUrlsFromToolCall(
-            toolName,
-            result,
-            allAllowedUrls
-          );
 
           const content = { tool_call_id: id, body: result, name: toolName };
           conversation.addToolCallMessage(content, currentTurn, toolRoleOpts);
-        } catch (e) {
-          result = { error: `Tool execution failed: ${String(e)}` };
+        } catch (error) {
+          console.error(error);
+          result = { error: `Tool execution failed: ${String(error)}` };
           const content = { tool_call_id: id, body: result };
           conversation.addToolCallMessage(content, currentTurn, toolRoleOpts);
         }
@@ -299,12 +324,16 @@ Object.assign(Chat, {
           ?.updateConversation(conversation)
           .catch(() => {});
 
+        // Perform the search handoff if the RUN_SEARCH tool was run.
         if (toolName === RUN_SEARCH) {
           // Commit here because we return early below and never reach the
           // post-loop commit.
           conversation.securityProperties.commit();
+          lazy.console.log(
+            `Security commit ${conversation.securityProperties.getLogText()}`
+          );
 
-          const win = searchHandoffBrowser?.ownerGlobal;
+          const win = originalEmbedderElement?.ownerGlobal;
           if (!win || win.closed) {
             console.error(
               "run_search: Associated window not available or closed, aborting search handoff"
@@ -312,8 +341,9 @@ Object.assign(Chat, {
             return;
           }
 
-          const searchHandoffTab =
-            win.gBrowser.getTabForBrowser(searchHandoffBrowser);
+          const searchHandoffTab = win.gBrowser.getTabForBrowser(
+            originalEmbedderElement
+          );
           if (!searchHandoffTab) {
             console.error(
               "run_search: Original tab no longer exists, aborting search handoff"
@@ -335,94 +365,9 @@ Object.assign(Chat, {
       // Commit flags once all tool calls in this batch have finished so that
       // no tool call can observe flags staged by a sibling call.
       conversation.securityProperties.commit();
-    }
-  },
-
-  /**
-   * Pre-populate allowed URLs from open tabs and @mentioned URLs.
-   *
-   * @param {ChatConversation} conversation
-   * @param {Set<string>} allAllowedUrls - Set to populate
-   */
-  async _collectInitialAllowedUrls(conversation, allAllowedUrls) {
-    const openTabs = await this.toolMap.get_open_tabs(
-      undefined,
-      conversation.securityProperties
-    );
-    for (const url of extractValidUrls(openTabs)) {
-      allAllowedUrls.add(url);
-    }
-
-    // Add @mentioned URLs from conversation history
-    for (const mentionURL of conversation.getAllMentionURLs()) {
-      allAllowedUrls.add(mentionURL);
-    }
-  },
-
-  /**
-   * Collect allowed URLs from tool results for citation validation.
-   *
-   * @param {string} toolName - Name of the tool
-   * @param {*} result - Tool result
-   * @param {Set<string>} allAllowedUrls - Set to add URLs to
-   */
-  _collectAllowedUrlsFromToolCall(toolName, result, allAllowedUrls) {
-    if (toolName === GET_OPEN_TABS && Array.isArray(result)) {
-      for (const url of extractValidUrls(result)) {
-        allAllowedUrls.add(url);
-      }
-    } else if (toolName === SEARCH_BROWSING_HISTORY) {
-      let parsed = result;
-      if (typeof result === "string") {
-        try {
-          parsed = JSON.parse(result);
-        } catch {
-          return;
-        }
-      }
-      if (parsed?.results && Array.isArray(parsed.results)) {
-        for (const url of extractValidUrls(parsed.results)) {
-          allAllowedUrls.add(url);
-        }
-      }
-    }
-  },
-
-  /**
-   * Validate citations in the response against allowed URLs.
-   *
-   * @param {string} responseText - Full response text
-   * @param {Set<string>} allAllowedUrls - Set of allowed URLs
-   */
-  _validateCitations(responseText, allAllowedUrls) {
-    if (!responseText) {
-      return null;
-    }
-
-    const links = extractMarkdownLinks(responseText);
-    if (links.length === 0) {
-      return null;
-    }
-
-    const citedUrls = links.map(link => link.url);
-
-    if (allAllowedUrls.size === 0) {
-      console.warn(
-        `Citation validation: 0 valid, ${citedUrls.length} invalid ` +
-          `(no tool sources provided)`
-      );
-      return null;
-    }
-
-    const validation = validateCitedUrls(citedUrls, [...allAllowedUrls]);
-
-    if (validation.invalid.length) {
-      console.warn(
-        `Citation validation: ${validation.valid.length} valid, ` +
-          `${validation.invalid.length} invalid (rate: ${(validation.validationRate * 100).toFixed(1)}%)`
+      lazy.console.log(
+        `Security commit ${conversation.securityProperties.getLogText()}`
       );
     }
-
-    return validation;
   },
 });

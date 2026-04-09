@@ -316,6 +316,8 @@
   <string name="browser_menu_edit_bookmark">Embosako’i techaukaha</string>
   <!-- Browser menu label that the saves the currently visited page as a PDF -->
   <string name="browser_menu_save_as_pdf_2">Eñongatu PDF ramo</string>
+  <!-- Browser menu label for moving the current private tab to a non-private tab -->
+  <string name="browser_menu_move_to_non_private_tab">Emongu’e tendayke hekoñemi’ỹvape</string>
   <!-- Browser menu label for navigating to the translation feature, which provides language translation options the current visited page -->
   <string name="browser_menu_translate_page_2">Emoñe’ẽasa kuatiarogue</string>
   <!-- Browser menu label for navigating to the summarization feature, which provides site summarization for the current visited page -->
@@ -784,6 +786,10 @@
   <string name="preferences_category_about">Péva rehegua</string>
   <!-- Preference category for settings related to changing the default search engine -->
   <string name="preferences_category_select_default_search_engine">Eiporavo peteĩ</string>
+  <!-- Preference category for settings related to changing the private browsing search engine -->
+  <string name="preferences_category_select_private_search_engine">Jehekaha ypyguáva kundahára ñemiguáva</string>
+  <!-- Option to set the private browsing mode to use the normal default search engine -->
+  <string name="search_engine_use_default">Eiporu peteĩ jehekaka ñeikundaha ñemi rehegua</string>
   <!-- Preference for settings related to managing search shortcuts for the quick search menu -->
   <string name="preferences_manage_search_shortcuts_2">Eñangareko jehekaha ykepeguávare</string>
   <!-- Summary for preference for settings related to managing search shortcuts for the quick search menu -->
@@ -1000,6 +1006,15 @@
   <string name="preference_downloads_folder_permission_lost" tools:ignore="UnusedResources">Noñemoneĩri ndéve eiporu hag̃ua ko marandurenda. Eiporavokuaa ambuéva.</string>
   <!-- Preference title for choosing an app to handle downloads -->
   <string name="preferences_choose_app_for_downloads">Eñangareko ñemboguejýre ambue tembiporu’i ndive</string>
+  <!-- Preference category for deleting or removing downloads -->
+  <string name="preferences_category_delete_or_remove_downloads">Embogue térã emboguete mboguejy</string>
+  <string name="preferences_downloads_delete_from_device">Embogue mba’e’okágui</string>
+  <string name="preferences_downloads_delete_from_device_description">Marandurenda ogue mba’e’okágui ha oguete mboguejy rembiasakuégui</string>
+  <string name="preferences_downloads_remove_from_download_history">Embogue mboguejy rembiasakuégui</string>
+  <string name="preferences_downloads_remove_from_download_history_description">Marandurenda oguete mboguejy rembiasakuégui, hákatu oĩ gueteri mba’e’okápe</string>
+  <string name="preferences_downloads_ask_when_to_delete_files">Eporandu emboguévo marandurenda</string>
+  <!-- Preference for downloads -->
+  <string name="preferences_downloads_2">Mboguejy ñemboheko</string>
   <!-- Title for the setting to automatically clean up downloaded files. %s is the name of the app (for example "Firefox"). -->
   <string name="preferences_downloads_settings_clean_up_files_title">Embogue %s ha mba’e’okágui</string>
   <!-- Summary for the setting to automatically clean up downloaded files -->
@@ -1696,6 +1711,14 @@
     <item quantity="one">%1$d tendayke</item>
     <item quantity="other">%1$d tendaykeita</item>
   </plurals>
+  <!-- Title for the Delete tab group confirmation dialog. -->
+  <string name="delete_tab_group_confirmation_dialog_title">¿Embogue tendayke aty?</string>
+  <!-- Text shown in the body of the Delete tab group confirmation dialog. -->
+  <string name="delete_tab_group_confirmation_dialog_body">Emboguete aty opaite árape g̃uarã.</string>
+  <!-- Text shown on the confirm button in the Delete tab group confirmation dialog. -->
+  <string name="delete_tab_group_confirmation_dialog_confirm">Emboguete aty</string>
+  <!-- Text shown on the cancel button in the Delete tab group confirmation dialog. -->
+  <string name="delete_tab_group_confirmation_dialog_cancel">Eheja</string>
   <!--
     History
 
@@ -1774,6 +1797,11 @@
     This button will dismiss the dialog.
   -->
   <string name="download_file_has_not_enough_storage_dialog_cancel_button_text">Heja</string>
+  <plurals name="downloads_delete_dialog_title">
+    <!-- Title for the download deletion confirmation dialog. The message changes depending on how many files are selected. %d is the number of files to be deleted. -->
+    <item quantity="one">¿Embogue marandurenda?</item>
+    <item quantity="other">¿Embogue %d marandurenda?</item>
+  </plurals>
   <!-- Text for the button to delete a single downloaded file item -->
   <string name="download_delete_item">Mboguete</string>
   <!-- Content description for the toolbar "Navigate back" button -->
@@ -1805,6 +1833,14 @@
   <string name="download_delete_multi_select_dialog_confirm">Mboguete</string>
   <!-- Alert dialog confirmation before deleting multiple download items, this is the negative action. -->
   <string name="download_delete_multi_select_dialog_cancel">Heja</string>
+  <!-- Alert dialog confirmation before deleting a single download item or many download items, this is one of the radio buttons within the dialog box for the user to select. -->
+  <string name="download_delete_dialog_from_device">Embogue mba’e’okágui</string>
+  <!-- Alert dialog confirmation before deleting a single download item or many download items, this is one of the radio buttons within the dialog box for the user to select. -->
+  <string name="download_delete_dialog_from_history">Embogue mboguejy rembiasakuégui año</string>
+  <!-- Alert dialog confirmation before deleting a single download item or many download items, this is the negative action. -->
+  <string name="download_delete_dialog_cancel">Eheja</string>
+  <!-- Alert dialog confirmation before deleting a single download item or many download items, this is the positive action. -->
+  <string name="download_delete_dialog_confirm">Emoneĩ</string>
   <!-- Title for the alert dialog confirmation before renaming a download item. -->
   <string name="download_rename_dialog_title">Emboherajey marandurenda</string>
   <!-- Label for the name field in the alert dialog confirmation before renaming a download item. -->
@@ -1902,6 +1938,16 @@
   <string name="download_content_type_filter_document">Kuatiaite</string>
   <!-- Text for the filter button to show all other file types in the downloads list -->
   <string name="download_content_type_filter_other_1">Ambue</string>
+  <!--
+    Title for the alert dialog to rename a file and/or change its download location before downloading it.
+    %s is the formatted size of the file (e.g., "12.5 MB").
+  -->
+  <string name="download_rename_and_change_location_dialog_title">¿Emboguejy marandurenda?\n(%s)</string>
+  <!--
+    Title for the alert dialog to rename a file and/or change its download location
+    when the file size is not available before downloading it.
+  -->
+  <string name="download_rename_and_change_location_dialog_title_with_unknown_size">¿Emboguejy marandurenda?</string>
   <!--
     WebCompat Reporter
 
@@ -2091,7 +2137,11 @@
   <string name="bookmark_delete_single_item" tools:ignore="UnusedResources" moz:removedIn="150">Mboguete %s</string>
   <!-- Bookmark snackbar message for deleting multiple items. %s is the number of items being deleted -->
   <string name="bookmark_delete_multiple_items" tools:ignore="UnusedResources" moz:removedIn="150">Mba’eporu mboguepyre: %s</string>
-  <!-- Content description for the bookmark navigation bar back button -->
+  <!--
+    Bookmark undo button for deletion snackbar action
+
+    Content description for the bookmark navigation bar back button
+  -->
   <string name="bookmark_navigate_back_button_content_description">Eikundaha tapykuévo</string>
   <!-- Content description for the bookmark list new folder navigation bar button -->
   <string name="bookmark_add_new_folder_button_content_description">Embojuaju ñongatuha pyahu</string>
@@ -2300,6 +2350,24 @@
   <string name="menu_print">Mbokuatia</string>
   <!-- Sub-header in the dialog to share a link to another sync device -->
   <string name="share_device_subheader">Emondo mba’e’okápe</string>
+  <!-- Content description for the drag handle that dismisses the Send to Device bottom sheet -->
+  <string name="send_to_devices_bottom_sheet_close_content_description">Emboty Mba’e’okápe Ñemondo</string>
+  <!-- Text for the QR code action in the native share sheet -->
+  <string name="share_qr_code">QR ayvu</string>
+  <!-- Title shown in the QR code display screen -->
+  <string name="qr_code_display_title">QR ayvu</string>
+  <!-- Content description for the close button in the QR code display screen -->
+  <string name="qr_code_display_close">Mboty</string>
+  <!-- Heading on the QR code display screen -->
+  <string name="qr_code_display_share_nearby">Emoherakuã juajuha ag̃uíva</string>
+  <!-- Body text on the QR code display screen instructing the user to have others scan the code -->
+  <string name="qr_code_display_instructions">Emoherakuã hag̃ua ko juajuha tapicha ag̃uívandi, ejerure tomoha’ãnga QR ayvu.</string>
+  <!-- Label for the download button on the QR code display screen -->
+  <string name="qr_code_display_download">Emboguejy</string>
+  <!-- Toast shown when the QR code is successfully saved to Downloads -->
+  <string name="qr_code_download_success">QR ayvu Mboguejýpe ñongatupyre</string>
+  <!-- Toast shown when saving the QR code to Downloads fails -->
+  <string name="qr_code_download_failure">Ojavy eñongatúvo QR ayvu</string>
   <!-- Sub-header in the dialog to share a link to an app from the full list -->
   <string name="share_link_all_apps_subheader">Opaite tembiaporã</string>
   <!-- Sub-header in the dialog to share a link to an app from the most-recent sorted list -->

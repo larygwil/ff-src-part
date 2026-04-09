@@ -240,6 +240,9 @@ export class IPProtectionPanel {
       bandwidthUsage: this.#getBandwidthUsage(),
       isActivating:
         lazy.IPPProxyManager.state === lazy.IPPProxyStates.ACTIVATING,
+      isCheckingEntitlement:
+        lazy.IPPEnrollAndEntitleManager.isEnrolling ||
+        lazy.IPPEnrollAndEntitleManager.isCheckingEntitlement,
     };
 
     // The progress listener to listen for page navigations.
@@ -857,6 +860,9 @@ export class IPProtectionPanel {
         error: errorType,
         isActivating:
           lazy.IPPProxyManager.state === lazy.IPPProxyStates.ACTIVATING,
+        isCheckingEntitlement:
+          lazy.IPPEnrollAndEntitleManager.isEnrolling ||
+          lazy.IPPEnrollAndEntitleManager.isCheckingEntitlement,
         bandwidthUsage: this.#getBandwidthUsage(),
         bandwidthWarning:
           lazy.IPProtectionService.state === lazy.IPProtectionStates.READY

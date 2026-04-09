@@ -9,6 +9,10 @@ import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs";
 
 const ONE_HOUR_MS = 60 * 60 * 1000;
 const PREF_MODEL_CHOICE = "browser.smartwindow.firstrun.modelChoice";
+const PREF_MEMORIES_FROM_CONVERSATION =
+  "browser.smartwindow.memories.generateFromConversation";
+const PREF_MEMORIES_FROM_HISTORY =
+  "browser.smartwindow.memories.generateFromHistory";
 const lazy = {};
 
 XPCOMUtils.defineLazyPreferenceGetter(
@@ -17,6 +21,22 @@ XPCOMUtils.defineLazyPreferenceGetter(
   PREF_MODEL_CHOICE,
   "",
   () => SmartWindowTelemetry.updateModelMetric()
+);
+
+XPCOMUtils.defineLazyPreferenceGetter(
+  lazy,
+  "memoriesFromConversation",
+  PREF_MEMORIES_FROM_CONVERSATION,
+  false,
+  () => SmartWindowTelemetry.updateMemoriesFromConversationMetric()
+);
+
+XPCOMUtils.defineLazyPreferenceGetter(
+  lazy,
+  "memoriesFromHistory",
+  PREF_MEMORIES_FROM_HISTORY,
+  false,
+  () => SmartWindowTelemetry.updateMemoriesFromHistoryMetric()
 );
 
 ChromeUtils.defineESModuleGetters(lazy, {
@@ -35,6 +55,22 @@ export const SmartWindowTelemetry = {
     this._initialized = true;
 
     this.updateModelMetric();
+    this.updateMemoriesFromConversationMetric();
+    this.updateMemoriesFromHistoryMetric();
+  },
+
+  updateMemoriesFromConversationMetric() {
+    const memoriesFromConversation = lazy.memoriesFromConversation;
+    Glean.smartWindow.memoriesOptin.generate_from_conversation.set(
+      memoriesFromConversation
+    );
+  },
+
+  updateMemoriesFromHistoryMetric() {
+    const memoriesFromHistory = lazy.memoriesFromHistory;
+    Glean.smartWindow.memoriesOptin.generate_from_history.set(
+      memoriesFromHistory
+    );
   },
 
   updateModelMetric() {

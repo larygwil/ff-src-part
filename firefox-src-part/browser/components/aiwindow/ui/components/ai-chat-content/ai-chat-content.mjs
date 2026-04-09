@@ -26,12 +26,8 @@ export class AIChatContent extends MozLitElement {
     errorObj: { type: Object },
     isSearching: { type: Boolean },
     tokens: { type: Object },
-    /**
-     * Trusted URLs for link validation, pushed from parent via child actor.
-     * Passed down to ai-chat-message for synchronous validation during render.
-     * Array type for Xray wrapper compatibility.
-     */
-    trustedUrls: { type: Array, attribute: false },
+    seenUrls: { type: Object },
+    conversationId: { type: String },
   };
 
   #lastScrollReq = null;
@@ -43,7 +39,21 @@ export class AIChatContent extends MozLitElement {
     this.followUpSuggestions = [];
     this.errorObj = null;
     this.isSearching = false;
-    this.trustedUrls = null;
+
+    /**
+     * The set of URLs that have been seen by the conversation. Used for determining
+     * if a URL will be unfurled or not.
+     *
+     * @type {Set<string>}
+     */
+    this.seenUrls = new Set();
+
+    /**
+     * The current conversationId for the seenUrls.
+     *
+     * @type {null | string}
+     */
+    this.conversationId = null;
   }
 
   connectedCallback() {
@@ -90,8 +100,8 @@ export class AIChatContent extends MozLitElement {
     );
 
     this.addEventListener(
-      "aiChatContentActor:trustedUrlsUpdated",
-      this.#handleTrustedUrlsUpdated.bind(this)
+      "aiChatContentActor:seen-urls",
+      this.#handleSeenUrls.bind(this)
     );
 
     this.addEventListener(
@@ -175,9 +185,21 @@ export class AIChatContent extends MozLitElement {
     );
   }
 
-  #handleTrustedUrlsUpdated(event) {
-    const { trustedUrls } = event.detail;
-    this.trustedUrls = Array.isArray(trustedUrls) ? [...trustedUrls] : [];
+  /**
+   * Add new seen URLs to the current conversation.
+   *
+   * @param {object} event
+   * @param {object} event.detail
+   * @param {string} event.detail.conversationId
+   * @param {Set<string>} event.detail.seenUrls
+   */
+  #handleSeenUrls({ detail: { conversationId, seenUrls } }) {
+    if (this.conversationId == conversationId) {
+      this.seenUrls = this.seenUrls.union(seenUrls);
+    } else {
+      this.conversationId = conversationId;
+      this.seenUrls = seenUrls;
+    }
   }
 
   messageEvent(event) {
@@ -450,7 +472,8 @@ export class AIChatContent extends MozLitElement {
           .role=${msg.role}
           .messageId=${msg.messageId}
           .searchTokens=${msg.searchTokens || []}
-          .trustedUrls=${this.trustedUrls}
+          .conversationId=${this.conversationId}
+          .seenUrls=${this.seenUrls}
         ></ai-chat-message>
         ${msg.role === "assistant"
           ? html`

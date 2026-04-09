@@ -6698,7 +6698,11 @@ function ensureExists(item, message = "Item did not exist") {
  * @returns {ShadowRoot | null}
  */
 function getShadowRoot(node) {
-  return asElement(node)?.openOrClosedShadowRoot ?? null;
+  let root = asElement(node)?.openOrClosedShadowRoot;
+  if (!root || root.isUAWidget()) {
+    return null;
+  }
+  return root;
 }
 
 /**

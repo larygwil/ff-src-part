@@ -17,15 +17,23 @@ ChromeUtils.defineLazyGetter(
 
 export const Spotlight = {
   _dialog: null,
+  _dialogWindow: null,
 
   get isOpen() {
     return !!this._dialog;
   },
 
-  close() {
-    let dialog = this._dialog;
-    this._dialog = null;
-    dialog?.close();
+  close(window) {
+    if (!this._dialog) {
+      return;
+    }
+    // Only close if no window specified or if the window owns the dialog
+    if (!window || this._dialogWindow === window) {
+      let dialog = this._dialog;
+      this._dialog = null;
+      this._dialogWindow = null;
+      dialog.close();
+    }
   },
 
   sendUserEventTelemetry(event, message, dispatch) {
@@ -71,6 +79,12 @@ export const Spotlight = {
     this.sendUserEventTelemetry("IMPRESSION", message, dispatchCFRAction);
     dispatchCFRAction({ type: "IMPRESSION", data: message });
 
+    let unloadHandler = () => {
+      this._dialog = null;
+      this._dialogWindow = null;
+    };
+    win.addEventListener("unload", unloadHandler, { once: true });
+
     try {
       if (message.content?.modal === "tab") {
         let { closedPromise, dialog } = win.gBrowser
@@ -84,14 +98,18 @@ export const Spotlight = {
             message.content
           );
         this._dialog = dialog;
+        this._dialogWindow = win;
         await closedPromise;
       } else {
         let openPromise = win.gDialogBox.open(spotlight_url, message.content);
         this._dialog = win.gDialogBox.dialog;
+        this._dialogWindow = win;
         await openPromise;
       }
     } finally {
+      win.removeEventListener("unload", unloadHandler);
       this._dialog = null;
+      this._dialogWindow = null;
     }
 
     // If dismissed report telemetry and exit

@@ -45,6 +45,7 @@ export function makeGuid() {
  * @returns {ChatConversation} The parsed conversation object.
  */
 export function parseConversationRow(row) {
+  const seenUrlsArray = parseJSONOrNull(row.getResultByName("seen_urls"));
   return new ChatConversation({
     id: row.getResultByName("conv_id"),
     title: row.getResultByName("title"),
@@ -57,6 +58,7 @@ export function parseConversationRow(row) {
     securityProperties: parseJSONOrNull(
       row.getResultByName("security_properties")
     ),
+    seenUrls: Array.isArray(seenUrlsArray) ? seenUrlsArray : [],
   });
 }
 

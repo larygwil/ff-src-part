@@ -316,6 +316,8 @@
   <string name="browser_menu_edit_bookmark">עריכת סימנייה</string>
   <!-- Browser menu label that the saves the currently visited page as a PDF -->
   <string name="browser_menu_save_as_pdf_2">שמירה כ־PDF</string>
+  <!-- Browser menu label for moving the current private tab to a non-private tab -->
+  <string name="browser_menu_move_to_non_private_tab">העברה ללשונית שאינה פרטית</string>
   <!-- Browser menu label for navigating to the translation feature, which provides language translation options the current visited page -->
   <string name="browser_menu_translate_page_2">תרגום הדף</string>
   <!-- Browser menu label for navigating to the summarization feature, which provides site summarization for the current visited page -->
@@ -785,6 +787,10 @@
   <string name="preferences_category_about">על אודות</string>
   <!-- Preference category for settings related to changing the default search engine -->
   <string name="preferences_category_select_default_search_engine">יש לבחור אחד</string>
+  <!-- Preference category for settings related to changing the private browsing search engine -->
+  <string name="preferences_category_select_private_search_engine">מנוע חיפוש ברירת מחדל לגלישה פרטית</string>
+  <!-- Option to set the private browsing mode to use the normal default search engine -->
+  <string name="search_engine_use_default">שימוש באותו מנוע החיפוש כמו בגלישה רגילה</string>
   <!-- Preference for settings related to managing search shortcuts for the quick search menu -->
   <string name="preferences_manage_search_shortcuts_2">ניהול מנועי חיפוש חלופיים</string>
   <!-- Summary for preference for settings related to managing search shortcuts for the quick search menu -->
@@ -1001,6 +1007,15 @@
   <string name="preference_downloads_folder_permission_lost" tools:ignore="UnusedResources">אין לך הרשאה להשתמש בתיקייה הזו. נא לנסות לבחור בתיקייה אחרת.</string>
   <!-- Preference title for choosing an app to handle downloads -->
   <string name="preferences_choose_app_for_downloads">ניהול הורדות באמצעות יישומון אחר</string>
+  <!-- Preference category for deleting or removing downloads -->
+  <string name="preferences_category_delete_or_remove_downloads">מחיקה או הסרה של הורדות</string>
+  <string name="preferences_downloads_delete_from_device">מחיקה מהמכשיר</string>
+  <string name="preferences_downloads_delete_from_device_description">הקובץ נמחק מהמכשיר שלך ומוסר מהיסטוריית ההורדות</string>
+  <string name="preferences_downloads_remove_from_download_history">הסרה מהיסטוריית ההורדות</string>
+  <string name="preferences_downloads_remove_from_download_history_description">הקובץ מוסר מהיסטוריית ההורדות שלך, אך עדיין נשמר במכשיר שלך</string>
+  <string name="preferences_downloads_ask_when_to_delete_files">לשאול בעת מחיקת קבצים</string>
+  <!-- Preference for downloads -->
+  <string name="preferences_downloads_2">הגדרות הורדות</string>
   <!-- Title for the setting to automatically clean up downloaded files. %s is the name of the app (for example "Firefox"). -->
   <string name="preferences_downloads_settings_clean_up_files_title">מחיקה מ־%s ומהמכשיר</string>
   <!-- Summary for the setting to automatically clean up downloaded files -->
@@ -1698,6 +1713,14 @@
     <item quantity="two">%1$d לשוניות</item>
     <item quantity="other">%1$d לשוניות</item>
   </plurals>
+  <!-- Title for the Delete tab group confirmation dialog. -->
+  <string name="delete_tab_group_confirmation_dialog_title">למחוק את קבוצת הלשוניות?</string>
+  <!-- Text shown in the body of the Delete tab group confirmation dialog. -->
+  <string name="delete_tab_group_confirmation_dialog_body">פעולה זו תמחק את הקבוצה לצמיתות.</string>
+  <!-- Text shown on the confirm button in the Delete tab group confirmation dialog. -->
+  <string name="delete_tab_group_confirmation_dialog_confirm">מחיקת הקבוצה</string>
+  <!-- Text shown on the cancel button in the Delete tab group confirmation dialog. -->
+  <string name="delete_tab_group_confirmation_dialog_cancel">ביטול</string>
   <!--
     History
 
@@ -1776,6 +1799,12 @@
     This button will dismiss the dialog.
   -->
   <string name="download_file_has_not_enough_storage_dialog_cancel_button_text">ביטול</string>
+  <plurals name="downloads_delete_dialog_title">
+    <!-- Title for the download deletion confirmation dialog. The message changes depending on how many files are selected. %d is the number of files to be deleted. -->
+    <item quantity="one">למחוק את הקובץ?</item>
+    <item quantity="two">למחוק %d קבצים?</item>
+    <item quantity="other">למחוק %d קבצים?</item>
+  </plurals>
   <!-- Text for the button to delete a single downloaded file item -->
   <string name="download_delete_item">מחיקה</string>
   <!-- Content description for the toolbar "Navigate back" button -->
@@ -1807,6 +1836,14 @@
   <string name="download_delete_multi_select_dialog_confirm">מחיקה</string>
   <!-- Alert dialog confirmation before deleting multiple download items, this is the negative action. -->
   <string name="download_delete_multi_select_dialog_cancel">ביטול</string>
+  <!-- Alert dialog confirmation before deleting a single download item or many download items, this is one of the radio buttons within the dialog box for the user to select. -->
+  <string name="download_delete_dialog_from_device">מחיקה מהמכשיר</string>
+  <!-- Alert dialog confirmation before deleting a single download item or many download items, this is one of the radio buttons within the dialog box for the user to select. -->
+  <string name="download_delete_dialog_from_history">הסרה מהיסטוריית ההורדות בלבד</string>
+  <!-- Alert dialog confirmation before deleting a single download item or many download items, this is the negative action. -->
+  <string name="download_delete_dialog_cancel">ביטול</string>
+  <!-- Alert dialog confirmation before deleting a single download item or many download items, this is the positive action. -->
+  <string name="download_delete_dialog_confirm">אישור</string>
   <!-- Title for the alert dialog confirmation before renaming a download item. -->
   <string name="download_rename_dialog_title">שינוי שם קובץ</string>
   <!-- Label for the name field in the alert dialog confirmation before renaming a download item. -->
@@ -1904,6 +1941,16 @@
   <string name="download_content_type_filter_document">מסמכים</string>
   <!-- Text for the filter button to show all other file types in the downloads list -->
   <string name="download_content_type_filter_other_1">אחר</string>
+  <!--
+    Title for the alert dialog to rename a file and/or change its download location before downloading it.
+    %s is the formatted size of the file (e.g., "12.5 MB").
+  -->
+  <string name="download_rename_and_change_location_dialog_title">להוריד את הקובץ?\n(%s)</string>
+  <!--
+    Title for the alert dialog to rename a file and/or change its download location
+    when the file size is not available before downloading it.
+  -->
+  <string name="download_rename_and_change_location_dialog_title_with_unknown_size">להוריד את הקובץ?</string>
   <!--
     WebCompat Reporter
 
@@ -2093,7 +2140,11 @@
   <string name="bookmark_delete_single_item" tools:ignore="UnusedResources" moz:removedIn="150">נמחק %s</string>
   <!-- Bookmark snackbar message for deleting multiple items. %s is the number of items being deleted -->
   <string name="bookmark_delete_multiple_items" tools:ignore="UnusedResources" moz:removedIn="150">הפריטים נמחקו: %s</string>
-  <!-- Content description for the bookmark navigation bar back button -->
+  <!--
+    Bookmark undo button for deletion snackbar action
+
+    Content description for the bookmark navigation bar back button
+  -->
   <string name="bookmark_navigate_back_button_content_description">ניווט אחורה</string>
   <!-- Content description for the bookmark list new folder navigation bar button -->
   <string name="bookmark_add_new_folder_button_content_description">הוספת תיקייה חדשה</string>
@@ -2302,6 +2353,24 @@
   <string name="menu_print">הדפסה</string>
   <!-- Sub-header in the dialog to share a link to another sync device -->
   <string name="share_device_subheader">שליחה למכשיר</string>
+  <!-- Content description for the drag handle that dismisses the Send to Device bottom sheet -->
+  <string name="send_to_devices_bottom_sheet_close_content_description">סגירת החלונית לשליחה למכשיר</string>
+  <!-- Text for the QR code action in the native share sheet -->
+  <string name="share_qr_code">קוד QR</string>
+  <!-- Title shown in the QR code display screen -->
+  <string name="qr_code_display_title">קוד QR</string>
+  <!-- Content description for the close button in the QR code display screen -->
+  <string name="qr_code_display_close">סגירה</string>
+  <!-- Heading on the QR code display screen -->
+  <string name="qr_code_display_share_nearby">שיתוף קישור עם אנשים בקרבת מקום</string>
+  <!-- Body text on the QR code display screen instructing the user to have others scan the code -->
+  <string name="qr_code_display_instructions">כדי לשתף קישור זה עם אנשים בקרבת מקום, יש לבקש מהם לסרוק את קוד ה־QR שלהלן.</string>
+  <!-- Label for the download button on the QR code display screen -->
+  <string name="qr_code_display_download">הורדה</string>
+  <!-- Toast shown when the QR code is successfully saved to Downloads -->
+  <string name="qr_code_download_success">קוד ה־QR נשמר להורדות</string>
+  <!-- Toast shown when saving the QR code to Downloads fails -->
+  <string name="qr_code_download_failure">כישלון בשמירת קוד ה־QR</string>
   <!-- Sub-header in the dialog to share a link to an app from the full list -->
   <string name="share_link_all_apps_subheader">כל הפעולות</string>
   <!-- Sub-header in the dialog to share a link to an app from the most-recent sorted list -->
@@ -3537,7 +3606,7 @@
 
     Preference option for offering to translate. Radio button title text.
   -->
-  <string name="automatic_translation_option_offer_to_translate_title_preference">להציע לתרגם (ברירת מחדלץ)</string>
+  <string name="automatic_translation_option_offer_to_translate_title_preference">להציע לתרגם (ברירת מחדל)</string>
   <!-- Preference option for offering to translate. Radio button summary text. %1$s is the name of the app (for example "Firefox"). -->
   <string name="automatic_translation_option_offer_to_translate_summary_preference">‏%1$s יציע לתרגם אתרים בשפה זו.</string>
   <!-- Preference option for always translate. Radio button title text. -->

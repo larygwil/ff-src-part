@@ -19,26 +19,14 @@ const lazy = XPCOMUtils.declareLazy({
       prefix: "PageExtractorChild",
       maxLogLevelPref: "browser.ml.logLevel",
     }),
+  collapseWhitespace:
+    "moz-src:///toolkit/components/pageextractor/DOMExtractor.sys.mjs",
 });
 
 /**
  * Extract a variety of content from pages for use in a smart window.
  */
 export class PageExtractorParent extends JSWindowActorParent {
-  /**
-   * Returns ReaderMode content when the page passes the `isProbablyReaderable` check.
-   * The check can be bypassed to force page content to be retrieved by setting `force`
-   * to true.
-   *
-   * @see PageExtractorChild#getReaderModeContent
-   *
-   * @param {boolean} force - Bypass the `isProbablyReaderable` check.
-   * @returns {Promise<ExtractionResult>}
-   */
-  getReaderModeContent(force = false) {
-    return this.sendQuery("PageExtractorParent:GetReaderModeContent", force);
-  }
-
   /**
    * Waits for DOMContentLoaded.
    *
@@ -67,7 +55,7 @@ export class PageExtractorParent extends JSWindowActorParent {
    * @see PageExtractorChild#getText
    *
    * @param {Partial<GetTextOptions>} options
-   * @returns {Promise<ExtractionResult>}
+   * @returns {Promise<ExtractionResult | null>}
    */
   async getText(options = {}) {
     if (options._forceRemoveBoilerplate && !Cu.isInAutomation) {
@@ -77,51 +65,39 @@ export class PageExtractorParent extends JSWindowActorParent {
     }
 
     if (this.#isPDF()) {
-      const text = await this.browsingContext.currentWindowGlobal
-        .getActor("Pdfjs")
-        .getTextContent();
-      return { text, links: [], canvasSnapshots: [] };
-    }
-
-    if (options.removeBoilerplate) {
-      // Boilerplate removal is done by fetching the content in Reader Mode. If that
-      // fails then fallback to getting all of the content.
-      const response = await this.getReaderModeContent(
-        options._forceRemoveBoilerplate // This is a test-only option.
-      );
-      if (options._forceRemoveBoilerplate && !response.text) {
-        throw new Error(
-          "Expected to get text back when using the test-only _forceRemoveBoilerplate."
-        );
-      }
-      if (response.text) {
-        // Reader mode content was found.
-        if (
-          options.sufficientLength &&
-          response.text.length > options.sufficientLength
-        ) {
-          // Try to cut at a sentence boundary within the last 100 characters of the
-          // end.
-          //
-          // TODO(Bug 2023932) Make this internationalized, splitting on a "." only works
-          // in certain scripts like Latin.
-          const truncatePoint = response.text.lastIndexOf(
-            ".",
-            options.sufficientLength
-          );
-          if (truncatePoint > options.sufficientLength - 100) {
-            response.text = response.text.substring(0, truncatePoint + 1);
-          } else {
-            response.text =
-              response.text.substring(0, options.sufficientLength) + "…";
-          }
-        }
-
-        return response;
-      }
+      return this.#getTextFromPDF(options);
     }
 
     return this.sendQuery("PageExtractorParent:GetText", options);
+  }
+
+  /**
+   * Call out to pdf.js to get the text content and apply the GetTextOptions.
+   *
+   * @param {GetTextOptions} options
+   */
+  async #getTextFromPDF(options) {
+    let text = await this.browsingContext.currentWindowGlobal
+      .getActor("Pdfjs")
+      .getTextContent();
+
+    if (options.sufficientLength && text.length > options.sufficientLength) {
+      // Try to cut at a sentence boundary within the last 100 characters of the
+      // end.
+      //
+      // TODO(Bug 2023932) Make this internationalized, splitting on a "." only works
+      // in certain scripts like Latin.
+      const truncatePoint = text.lastIndexOf(".", options.sufficientLength);
+      if (truncatePoint > options.sufficientLength - 100) {
+        text = text.substring(0, truncatePoint + 1);
+      } else {
+        text = text.substring(0, options.sufficientLength) + "…";
+      }
+    }
+
+    text = lazy.collapseWhitespace(text).trim();
+
+    return { text, links: [], canvasSnapshots: [] };
   }
 
   #isPDF() {

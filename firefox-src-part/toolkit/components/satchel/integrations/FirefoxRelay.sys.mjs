@@ -379,14 +379,14 @@ async function showReusableMasksAsync(browser, origin, error) {
       .forEach(mask => {
         const button = document.createElement("button");
 
+        const maskDescription = document.createElement("span");
+        const raw = mask.description || mask.generated_for || mask.used_on;
+        maskDescription.textContent = URL.parse(raw)?.hostname ?? raw ?? "";
+        button.appendChild(maskDescription);
+
         const maskFullAddress = document.createElement("span");
         maskFullAddress.textContent = mask.full_address;
         button.appendChild(maskFullAddress);
-
-        const maskDescription = document.createElement("span");
-        maskDescription.textContent =
-          mask.description || mask.generated_for || mask.used_on;
-        button.appendChild(maskDescription);
 
         button.addEventListener(
           "click",

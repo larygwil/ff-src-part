@@ -17,6 +17,7 @@ ChromeUtils.defineESModuleGetters(lazy, {
     "moz-src:///toolkit/components/ipprotection/IPProtectionService.sys.mjs",
   IPPProxyStates:
     "moz-src:///toolkit/components/ipprotection/IPPProxyManager.sys.mjs",
+  ERRORS: "moz-src:///toolkit/components/ipprotection/IPPProxyManager.sys.mjs",
 });
 
 XPCOMUtils.defineLazyPreferenceGetter(
@@ -238,6 +239,10 @@ export class IPProtectionToolbarButton {
     let hasProxyError =
       lazy.IPPProxyManager.state === lazy.IPPProxyStates.ERROR;
 
+    let isNetworkError =
+      options?.error === lazy.ERRORS.NETWORK ||
+      (hasProxyError && lazy.IPPProxyManager.errorType === lazy.ERRORS.NETWORK);
+
     let isError = hasProxyError || !!options.error;
 
     const showConfirmationHint = options.showConfirmationHint ?? true;
@@ -259,6 +264,7 @@ export class IPProtectionToolbarButton {
     this.updateIconStatus(toolbaritem, {
       isActive,
       isError,
+      isNetworkError,
       isExcluded,
     });
   }
@@ -317,24 +323,36 @@ export class IPProtectionToolbarButton {
    */
   updateIconStatus(
     toolbaritem,
-    status = { isActive: false, isError: false, isExcluded: false }
+    status = {
+      isActive: false,
+      isError: false,
+      isExcluded: false,
+      isNetworkError: false,
+    }
   ) {
     if (!toolbaritem) {
       return;
     }
 
     let isActive = status.isActive;
-    let isError = status.isError;
+    let isNetworkError = status.isNetworkError;
+    let isError = status.isError && !isNetworkError;
     let isExcluded = status.isExcluded && this.isExceptionsFeatureEnabled;
-    let l10nId = isError ? "ipprotection-button-error" : "ipprotection-button";
+    let l10nId =
+      isError || isNetworkError
+        ? "ipprotection-button-error"
+        : "ipprotection-button";
 
     toolbaritem.classList.remove(
       "ipprotection-on",
+      "ipprotection-network-error",
       "ipprotection-error",
       "ipprotection-excluded"
     );
 
-    if (isError) {
+    if (isNetworkError) {
+      toolbaritem.classList.add("ipprotection-network-error");
+    } else if (isError) {
       toolbaritem.classList.add("ipprotection-error");
     } else if (isExcluded && isActive) {
       toolbaritem.classList.add("ipprotection-excluded");

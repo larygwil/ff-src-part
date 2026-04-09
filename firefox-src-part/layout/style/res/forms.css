@@ -873,51 +873,53 @@ textarea:autofill {
   color: FieldText !important;
 }
 
-/* https://drafts.csswg.org/css-forms/#basic-appearance-stylesheet */
-/* See https://github.com/w3c/csswg-drafts/pull/13658 for divergences.
+/* stylelint-disable-next-line media-query-no-invalid */
+@media -moz-pref("layout.css.appearance-base.enabled") {
+  /* https://drafts.csswg.org/css-forms/#basic-appearance-stylesheet */
+  /* See https://github.com/w3c/csswg-drafts/pull/13658 for divergences.
  * Other divergences are due to us not supporting calc-size(). */
-/* stylelint-disable-next-line at-rule-no-unknown */
-@appearance-base {
-  input,
-  textarea,
-  button,
-  ::file-selector-button,
-  select,
-  meter,
-  progress {
-    color: inherit;
-    font: inherit;
-    /* XXX: Redundant at least for <select> */
-    box-sizing: border-box;
-    background-color: transparent;
-  }
+  /* stylelint-disable-next-line at-rule-no-unknown */
+  @appearance-base {
+    input,
+    textarea,
+    button,
+    ::file-selector-button,
+    select,
+    meter,
+    progress {
+      color: inherit;
+      font: inherit;
+      /* XXX: Redundant at least for <select> */
+      box-sizing: border-box;
+      background-color: transparent;
+    }
 
-  input:not([type="file"], [type="range"], [type="checkbox"][switch]),
-  textarea,
-  button,
-  ::file-selector-button,
-  ::slider-track,
-  select {
-    border: 1px solid currentColor;
-    background-color: transparent;
-  }
-  button,
-  ::file-selector-button,
-  select,
-  input:is([type="color"], [type="button"], [type="reset"], [type="submit"]) {
-    border: 1px solid currentColor;
-    background-color: transparent;
-    color: inherit;
-    /* Padding prevents the text from sticking to the borders.
+    input:not([type="file"], [type="range"], [type="checkbox"][switch]),
+    textarea,
+    button,
+    ::file-selector-button,
+    ::slider-track,
+    select {
+      border: 1px solid currentColor;
+      background-color: transparent;
+    }
+    button,
+    ::file-selector-button,
+    select,
+    input:is([type="color"], [type="button"], [type="reset"], [type="submit"]) {
+      border: 1px solid currentColor;
+      background-color: transparent;
+      color: inherit;
+      /* Padding prevents the text from sticking to the borders.
      * optically centered to account for half leading */
-    padding-block: 0.25em;
-    padding-inline: 0.5em;
+      padding-block: 0.25em;
+      padding-inline: 0.5em;
 
-    /* <select>s and <button>s should have border-radius to be
+      /* <select>s and <button>s should have border-radius to be
      * distinct from <input>s: https://github.com/w3c/csswg-drafts/issues/10857#issuecomment-2520875011*/
-    border-radius: 0.5em;
+      border-radius: 0.5em;
 
-    /* These min-size rules ensure accessibility by following WCAG rules:
+      /* These min-size rules ensure accessibility by following WCAG rules:
      * https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum.html
      * The 1lh is there to make sure that options without text don't change
      * the block size of the button.
@@ -925,40 +927,41 @@ textarea:autofill {
     min-block-size: calc-size(auto, max(size, 24px, 1lh));
     min-inline-size: calc-size(auto, max(size, 24px)); */
 
-    /* box-sizing comes from existing UA styles which happen to
+      /* box-sizing comes from existing UA styles which happen to
      * already be interoperable. */
-    /* box-sizing: border-box; */
+      /* box-sizing: border-box; */
 
-    /* Push picker icon to the right of the box and have some space
+      /* Push picker icon to the right of the box and have some space
      * in between it and the text. */
-    display: inline-flex;
-    gap: 0.5em;
+      display: inline-flex;
+      gap: 0.5em;
 
-    user-select: none;
+      user-select: none;
 
-    text-transform: initial;
-    text-align: initial;
-    text-indent: initial;
-  }
+      text-transform: initial;
+      text-align: initial;
+      text-indent: initial;
+    }
 
-  button:enabled:hover,
-  select:enabled:hover,
-  input:is([type="color"], [type="button"], [type="reset"], [type="submit"]):enabled:hover,
-  input[type="file"]:enabled::file-selector-button:hover {
-    background-color: color-mix(currentColor 10%, transparent);
-  }
+    button:enabled:hover,
+    select:enabled:hover,
+    input:is([type="color"], [type="button"], [type="reset"], [type="submit"]):enabled:hover,
+    input[type="file"]:enabled::file-selector-button:hover {
+      background-color: color-mix(currentColor 10%, transparent);
+    }
 
-  button:enabled:active,
-  select:enabled:active,
-  input:is([type="color"], [type="button"], [type="reset"], [type="submit"]):enabled:active,
-  input[type="file"]:enabled::file-selector-button:active {
-    background-color: color-mix(currentColor 20%, transparent);
-  }
+    button:enabled:active,
+    select:enabled:active,
+    input:is([type="color"], [type="button"], [type="reset"], [type="submit"]):enabled:active,
+    input[type="file"]:enabled::file-selector-button:active {
+      background-color: color-mix(currentColor 20%, transparent);
+    }
 
-  button:disabled,
-  select:disabled,
-  input:is([type="color"], [type="button"], [type="reset"], [type="submit"]):disabled,
-  input[type="file"]:disabled::file-selector-button {
-    color: color-mix(currentColor 50%, transparent);
+    button:disabled,
+    select:disabled,
+    input:is([type="color"], [type="button"], [type="reset"], [type="submit"]):disabled,
+    input[type="file"]:disabled::file-selector-button {
+      color: color-mix(currentColor 50%, transparent);
+    }
   }
 }

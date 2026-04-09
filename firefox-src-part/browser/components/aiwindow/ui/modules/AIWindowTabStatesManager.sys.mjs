@@ -49,12 +49,6 @@ export class AIWindowTabStatesManager {
    */
   #window;
   /**
-   * The currently selected browser tab
-   *
-   * @type {MozTabbrowserTab}
-   */
-  #selectedTab;
-  /**
    * A map of tabs and their states
    *
    * @type {WeakMap<MozTabbrowserTab, TabState>}
@@ -84,7 +78,7 @@ export class AIWindowTabStatesManager {
    */
 
   getActiveConversation() {
-    const tab = this.#selectedTab ?? this.#window?.gBrowser.selectedTab;
+    const tab = this.#window?.gBrowser.selectedTab;
     return this.#tabStates.get(tab)?.state?.conversation ?? null;
   }
 
@@ -135,7 +129,7 @@ export class AIWindowTabStatesManager {
     tabContainer.addEventListener("TabClose", this);
 
     this.#tabsListener = this.#getTabsListener();
-    this.#window.gBrowser.addTabsProgressListener(this.#tabsListener);
+    this.#window.gBrowser.addProgressListener(this.#tabsListener);
 
     this.#setUpInitialTabs();
     this.#addWindowEventListeners();
@@ -153,11 +147,10 @@ export class AIWindowTabStatesManager {
     tabContainer.removeEventListener("TabSelect", this);
     tabContainer.removeEventListener("TabClose", this);
 
-    this.#window.gBrowser.removeTabsProgressListener(this.#tabsListener);
+    this.#window.gBrowser.removeProgressListener(this.#tabsListener);
     this.#removeWindowEventListeners();
     this.#tabsListener = null;
     this.#tabStates = null;
-    this.#selectedTab = null;
     this.#window = null;
   }
 
@@ -305,8 +298,7 @@ export class AIWindowTabStatesManager {
       return;
     }
 
-    this.#selectedTab = event.target;
-    const tab = this.#selectedTab;
+    const tab = event.target;
 
     const tabState = this.#getTabState(tab);
     const keepSidebarOpen =
@@ -334,7 +326,7 @@ export class AIWindowTabStatesManager {
       conversation = await this.#computeConversation(tab, tabState);
 
       // Bail if the user switched tabs while we were awaiting the DB lookup.
-      if (this.#selectedTab !== tab) {
+      if (this.#window?.gBrowser.selectedTab !== tab) {
         return;
       }
     } else if (!convId && !this.#restoreCompleted) {
@@ -342,7 +334,7 @@ export class AIWindowTabStatesManager {
       // tab had a saved conversation that hasn't been loaded yet.
       await this.#restorePromise;
 
-      if (this.#selectedTab !== tab) {
+      if (this.#window?.gBrowser.selectedTab !== tab) {
         return;
       }
 
@@ -433,7 +425,16 @@ export class AIWindowTabStatesManager {
     }
 
     const { mode, pageUrl, conversationId, tab } = event.detail;
-    const tabState = this.#getTabState(tab, { mode, pageUrl });
+    const stateUpdate = { pageUrl };
+    // When a fullpage conversation moves to the sidebar, the sidebar's
+    // ai-window also fires this event with mode "sidebar". Writing that
+    // to the tab state would break onLocationChange, which uses the mode
+    // to decide if it should auto-open/close the sidebar during navigation.
+    if (mode === "fullpage") {
+      stateUpdate.mode = mode;
+    }
+
+    const tabState = this.#getTabState(tab, stateUpdate);
     if (!tabState.state?.conversationId) {
       this.#getTabState(tab, { conversationId });
     }
@@ -445,8 +446,10 @@ export class AIWindowTabStatesManager {
       await lazy.ChatStore.findConversationById(storedConversationId);
     const isAIWindow = pageUrl === lazy.AIWINDOW_URL;
 
+    const selectedTab = this.#window?.gBrowser.selectedTab;
+
     const needsSidebar =
-      this.#selectedTab === tab &&
+      selectedTab === tab &&
       mode === "fullpage" &&
       !isAIWindow &&
       input &&
@@ -463,7 +466,7 @@ export class AIWindowTabStatesManager {
     }
 
     // Update the sidebar input when the sidebar ai-window connects
-    if (mode === "sidebar" && this.#selectedTab === tab) {
+    if (mode === "sidebar" && selectedTab === tab) {
       lazy.AIWindowUI.updateSidebarInput(
         this.#window,
         tabState.state.input ?? ""
@@ -501,7 +504,7 @@ export class AIWindowTabStatesManager {
 
     const { conversationId, keepSidebarOpen } = restoredState ?? {};
 
-    if (!conversationId || !keepSidebarOpen) {
+    if (!conversationId || keepSidebarOpen === false) {
       return;
     }
 
@@ -566,7 +569,7 @@ export class AIWindowTabStatesManager {
       this.#tabStates.set(tab, tabState);
 
       const { conversationId, keepSidebarOpen } = tabState.state;
-      if (conversationId && keepSidebarOpen) {
+      if (conversationId && keepSidebarOpen !== false) {
         lazy.SessionStore.setCustomTabValue(
           tab,
           SESSION_STORE_KEY,
@@ -599,12 +602,19 @@ export class AIWindowTabStatesManager {
   #onConversationOpened = event => {
     const { mode, conversationId, tab, conversation } = event.detail;
 
-    this.#getTabState(tab, {
-      mode,
+    const stateUpdate = {
       conversation,
       conversationId,
       keepSidebarOpen: true,
-    });
+    };
+    // When a fullpage conversation moves to the sidebar, the sidebar's
+    // ai-window also fires this event with mode "sidebar". Writing that
+    // to the tab state would break onLocationChange, which uses the mode
+    // to decide if it should auto-open/close the sidebar during navigation.
+    if (mode === "fullpage") {
+      stateUpdate.mode = mode;
+    }
+    this.#getTabState(tab, stateUpdate);
   };
 
   /**
@@ -639,7 +649,9 @@ export class AIWindowTabStatesManager {
     const { tab, isOpen, source } = event.detail;
     const currentTabState = this.#getTabState(tab);
 
-    if (currentTabState?.state) {
+    // Only update the keepSidebarOpen state if the sidebar was
+    // toggled by a user action.
+    if (currentTabState?.state && source === "toggle") {
       this.#getTabState(tab, {
         ...currentTabState.state,
         keepSidebarOpen: isOpen,
@@ -671,8 +683,7 @@ export class AIWindowTabStatesManager {
   };
 
   /**
-   * Gets a global progress listener for all tabs. The callbacks from
-   * addTabsProgressListener prepend a browser argument.
+   * Gets a progress listener for the selected tab.
    */
   #getTabsListener() {
     return {
@@ -682,34 +693,40 @@ export class AIWindowTabStatesManager {
       ]),
 
       onLocationChange: async (
-        _browser,
         webProgress,
         _request,
         locationURI,
-        _flags
+        _flags,
+        isTabSwitch
       ) => {
-        if (!webProgress.isTopLevel || !this.#tabStates) {
+        // tabbrowser.updateCurrentBrowser synthesizes onLocationChange on tab
+        // switch, but we already have onTabSelect with separate logic for now
+        if (!webProgress.isTopLevel || isTabSwitch || !this.#tabStates) {
           return;
         }
 
-        const browser = webProgress.browsingContext?.embedderElement;
-        const tab = this.#window.gBrowser.getTabForBrowser(browser);
+        const tab = this.#window.gBrowser.selectedTab;
         let tabState = this.#tabStates.get(tab);
 
         lazy.AIWindowUI.updateStarterPrompts(this.#window);
 
-        if (!tabState || !tabState?.state?.conversationId) {
+        if (!tabState || !tabState.state?.conversationId) {
           return;
         }
 
+        // If the new URL is going away from fullpage mode
         const isAiWindowUrl = locationURI.spec === lazy.AIWINDOW_URL;
-        const isSidebarOpen = lazy.AIWindowUI.isSidebarOpen(this.#window);
-        const isFullPageMode = tabState.state.mode === "fullpage";
-        const shouldKeepSidebarOpen = tabState.state.keepSidebarOpen ?? true;
 
         if (!isAiWindowUrl) {
           lazy.SmartWindowTelemetry.recordUriLoad();
         }
+
+        const isSidebarOpen = lazy.AIWindowUI.isSidebarOpen(this.#window);
+        const isFullPageMode = tabState.state.mode === "fullpage";
+
+        // keepSidebarOpen is only set to false by an explicit user action
+        // (clicking the Ask button), so it defaults to true when unset.
+        const shouldKeepSidebarOpen = tabState.state.keepSidebarOpen !== false;
 
         if (isFullPageMode && isAiWindowUrl && isSidebarOpen) {
           lazy.AIWindowUI.closeSidebar(this.#window);

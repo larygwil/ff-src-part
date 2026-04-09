@@ -14,37 +14,55 @@ import "chrome://browser/content/aiwindow/components/ai-chat-search-button.mjs";
 const SERIALIZER = DOMSerializer.fromSchema(defaultMarkdownParser.schema);
 
 /**
- * A custom element for managing AI Chat Content
+ * A custom element for rendering a single chat message, either a user message or an
+ * assistant message. It handles the markdown rendering and any custom link handling.
  */
 export class AIChatMessage extends MozLitElement {
   #lastMessage = null;
   #lastMessageElement = "";
-  #lastTrustedUrlsRef = null;
 
   /**
-   * Built from trustedUrls array in willUpdate().
+   * Track if link unfurling needs to re-run, as it needs to manually manipulate
+   * the rendered element.
+   *
+   * @param {boolean}
+   */
+  #unfurledUrlsNeedUpdating = true;
+
+  /**
+   * Track which unseen URLs are in the message to avoid unnecessary re-renders when the
+   * seen URLs change.
    *
    * @type {Set<string>}
    */
-  #trustedUrlSet = new Set();
+  #urlsUnfurledInMessage = new Set();
 
   static properties = {
     role: { type: String }, // "user" | "assistant"
     message: { type: String },
     messageId: { type: String, reflect: true, attribute: "data-message-id" },
     searchTokens: { type: Array },
-    /**
-     * Trusted URLs for link validation, pushed from parent via ai-chat-content.
-     * Array type for Xray wrapper compatibility.
-     * Converted to internal Set in willUpdate().
-     */
-    trustedUrls: { type: Array, attribute: false },
+    seenUrls: { type: Object, attribute: false },
+    conversationId: { type: String },
   };
 
   constructor() {
     super();
     this.searchTokens = [];
-    this.trustedUrls = null;
+
+    /**
+     * The URLs seen in the conversation, used for link unfurling.
+     *
+     * @type {Set<string>}
+     */
+    this.seenUrls = new Set();
+
+    /**
+     * Invalidate the unfurled URL rendering when the conversation ID changes.
+     *
+     * @type {string}
+     */
+    this.conversationId = "";
   }
 
   connectedCallback() {
@@ -84,21 +102,24 @@ export class AIChatMessage extends MozLitElement {
   }
 
   /**
-   * Lit lifecycle hook called before each render.
-   * Converts trustedUrls array to internal Set.
+   * Link unfurling for unseen URLs may need to re-run.
    *
-   * @param {Map} changed - Map of changed properties with previous values
+   * @param {Map} changed
    */
   willUpdate(changed) {
-    super.willUpdate?.(changed);
-    // Rebuild Set if trustedUrls changed, OR if Set is empty but array has values
-    // (handles case where trustedUrls was set before Lit started tracking)
     if (
-      changed.has("trustedUrls") ||
-      (this.#trustedUrlSet.size === 0 && this.trustedUrls?.length > 0)
+      changed.has("seenUrls") &&
+      this.#urlsUnfurledInMessage.intersection(this.seenUrls).size
     ) {
-      const list = Array.isArray(this.trustedUrls) ? this.trustedUrls : [];
-      this.#trustedUrlSet = new Set(list);
+      // A link that was unfurled is now in the "seen" set of URLs and needs updating.
+      // The "seen" set of URLs can only grow, never shrink.
+      this.#unfurledUrlsNeedUpdating = true;
+    }
+
+    if (changed.has("conversationId")) {
+      // The conversation changed. The unfurled URLs need to be recomputed as the seen
+      // urls can be completely different.
+      this.#unfurledUrlsNeedUpdating = true;
     }
   }
 
@@ -188,27 +209,24 @@ export class AIChatMessage extends MozLitElement {
   }
 
   /**
-   * Processes http/https links for security validation.
-   *
-   * For each anchor:
-   * - Trusted: strips fragment and enables href
-   * - Untrusted: formatted for disclosure via #formatUntrustedLink
-   * - Non-http(s) schemes: removes href entirely
-   *
-   * Fragments are stripped to prevent fragment-based data exfiltration
-   * via prompt injection.
+   * This functions handles unfurling links that have not been seen by the conversation.
+   * Language models can hallucinate URLs and can be forced by untrusted content to
+   * generate URLs. We unfurl these unseen links so that the user has a disclosure as
+   * to the contents of the links. Unseen link text is no longer clickable (but dash
+   * underlined) while the link is fully displayed as an underlined and clickable link
+   * surrounded by parentheses. If the text is just a raw link, then the unfurling is
+   * skipped.
    *
    * @param {Element} root - The element containing rendered markdown
    */
-  #processLinks(root) {
-    // Security validation is not active if null
-    // i.e., browser.smartwindow.checkSecurityFlags is disabled
-    if (this.trustedUrls === null) {
-      return;
-    }
+  #unfurlUnseenLinks(root) {
+    this.#urlsUnfurledInMessage = new Set();
 
-    const anchors = root.querySelectorAll("a[href]");
-    for (const anchor of anchors) {
+    // Go through each link in the rendered markdown. It's important to do this after
+    // the markdown library renders the links, so we don't have to manually extract
+    // the links from the text. If we did this, then there may be a disagreement between
+    // what is considered a link by the library and what we think is a link.
+    for (const anchor of root.querySelectorAll("a[href]")) {
       const parsed = URL.parse(anchor.href);
 
       if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
@@ -216,50 +234,33 @@ export class AIChatMessage extends MozLitElement {
         continue;
       }
 
-      parsed.hash = "";
-      const href = parsed.href;
-      if (this.#trustedUrlSet.has(href)) {
-        // TODO Bug 2022066: Allow fragments when full URL+fragment matches ledger.
-        anchor.href = href;
-      } else {
-        this.#formatUntrustedLink(anchor, href);
+      if (!this.seenUrls.has(anchor.href)) {
+        // Track every URL present in the message.
+        this.#urlsUnfurledInMessage.add(anchor.href);
+
+        const { textContent, href } = anchor;
+        const textUrl = URL.parse(textContent.trim());
+        if (textUrl) {
+          // This is just a raw URL, no disclosure is needed.
+          continue;
+        }
+
+        const doc = anchor.ownerDocument;
+
+        const label = doc.createElement("span");
+        label.className = "untrusted-link-label";
+        label.textContent = textContent;
+
+        const link = doc.createElement("a");
+        link.href = href;
+        link.textContent = href;
+
+        const disclosure = doc.createElement("span");
+        disclosure.append(" (", link, ")");
+
+        anchor.replaceWith(label, disclosure);
       }
     }
-  }
-
-  /**
-   * Formats an untrusted link for disclosure. Bare links (text matches URL)
-   * remain clickable as-is. Text links are expanded to show the label with
-   * a dashed underline followed by the clickable URL in parentheses.
-   *
-   * @param {HTMLAnchorElement} anchor
-   * @param {string} href - Fragment-stripped URL string
-   */
-  #formatUntrustedLink(anchor, href) {
-    const rawText = anchor.textContent;
-    const textUrl = URL.parse(rawText.trim());
-    if (textUrl) {
-      textUrl.hash = "";
-      if (textUrl.href === href) {
-        anchor.href = href;
-        return;
-      }
-    }
-
-    const doc = anchor.ownerDocument;
-
-    const label = doc.createElement("span");
-    label.className = "untrusted-link-label";
-    label.textContent = rawText;
-
-    const link = doc.createElement("a");
-    link.href = href;
-    link.textContent = href;
-
-    const disclosure = doc.createElement("span");
-    disclosure.append(" (", link, ")");
-
-    anchor.replaceWith(label, disclosure);
   }
 
   /**
@@ -292,40 +293,46 @@ export class AIChatMessage extends MozLitElement {
   }
 
   /**
-   * Ensure our message element is up to date. This gets called from
-   * render and memoizes based on `this.message` and `this.trustedUrls`
-   * to avoid unnecessary re-renders while still updating when trust changes.
+   * Render the assistant message by parsing parsing the markdown and then manually
+   * unfurl any unseen links. This function is memoized based on the message contents
+   * and seen links Set to guard against unneccessary re-renders.
    *
-   * @returns {Element} HTML element containing the parsed markdown
+   * @returns {HTMLElement}
    */
   getAssistantMessage() {
-    // Re-render if message changed OR trustedUrls reference changed
-    if (
-      this.message == this.#lastMessage &&
-      this.trustedUrls === this.#lastTrustedUrlsRef
-    ) {
+    if (this.message == this.#lastMessage && !this.#unfurledUrlsNeedUpdating) {
+      // The message is the same and the seen URLs haven't changed.
       return this.#lastMessageElement;
     }
 
     let messageElement = this.ownerDocument.createElement("div");
     messageElement.className = "message-" + this.role;
     if (!this.message) {
+      // There is no message to show. Use an empty message element.
       this.#lastMessage = this.message;
       this.#lastMessageElement = messageElement;
-      this.#lastTrustedUrlsRef = this.trustedUrls;
       return messageElement;
     }
 
+    // Parse the message into markdown, and unfurl any unseen links.
     this.parseMarkdown(this.message, messageElement);
-    this.#processLinks(messageElement);
+    this.#unfurlUnseenLinks(messageElement);
 
+    // Track the properties for memoization.
     this.#lastMessage = this.message;
     this.#lastMessageElement = messageElement;
-    this.#lastTrustedUrlsRef = this.trustedUrls;
+    this.#unfurledUrlsNeedUpdating = false;
 
     return messageElement;
   }
 
+  /**
+   * Parse the markdown in a user's message. No link unfurling is necessary since
+   * the contents don't come from untrusted content. This function is memoized
+   * based on the message contents.
+   *
+   * @returns {HTMLElement}
+   */
   getUserMessage() {
     const messageElement = this.ownerDocument.createElement("div");
     messageElement.className = "message-" + this.role;

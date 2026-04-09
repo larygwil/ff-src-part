@@ -1251,7 +1251,7 @@ this.tabs = class extends ExtensionAPIPersistent {
                 // Unsplit tab to prepare for moving other tabs in between.
                 gBrowser.unsplitTabs(splitview);
                 splitview = splitviewTabs = null;
-              } else {
+              } else if (isSameWindow) {
                 // Other tab in split was not specified, but the index points
                 // to the same split view. Reverse if needed:
                 wantReversedSplit = otherTabInSplit._tPos === insertionPoint;

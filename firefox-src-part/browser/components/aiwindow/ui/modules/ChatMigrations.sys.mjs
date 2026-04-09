@@ -92,9 +92,25 @@ async function applyV5(conn, version) {
   );
 }
 
+// Persist seen URLs to conversation table (Bug 2023001)
+async function applyV6(conn, version) {
+  if (version >= 6) {
+    return;
+  }
+
+  const columns = await getColumns(conn, "conversation");
+  if (columns.has("seen_urls_jsonb")) {
+    return;
+  }
+
+  await conn.execute(
+    "ALTER TABLE conversation ADD COLUMN seen_urls_jsonb BLOB"
+  );
+}
+
 /**
  * Array of migration functions to run in the order they should be run in.
  *
  * @returns {Array<Function>}
  */
-export const migrations = [applyV2, applyV3, applyV4, applyV5];
+export const migrations = [applyV2, applyV3, applyV4, applyV5, applyV6];

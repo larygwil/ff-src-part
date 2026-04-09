@@ -142,9 +142,7 @@ export class UrlbarInput extends HTMLElement {
                        flex="1">
           <html:input id="urlbar-scheme"
                       required="required"/>
-          <html:input id="urlbar-input"
-                      class="urlbar-input textbox-input"
-                      aria-controls="urlbar-results"
+          <html:input class="urlbar-input textbox-input"
                       role="combobox"
                       aria-autocomplete="both"
                       inputmode="mozAwesomebar"
@@ -162,8 +160,7 @@ export class UrlbarInput extends HTMLElement {
             tooltip="aHTMLTooltip">
         <html:div class="urlbarView-body-outer">
           <html:div class="urlbarView-body-inner">
-            <html:div id="urlbar-results"
-                      class="urlbarView-results"
+            <html:div class="urlbarView-results"
                       role="listbox"/>
           </html:div>
         </html:div>
@@ -329,14 +326,22 @@ export class UrlbarInput extends HTMLElement {
     }
 
     this.panel = this.querySelector(".urlbarView");
+    this._inputContainer = this.querySelector(".urlbar-input-container");
     this.inputField = /** @type {HTMLInputElement} */ (
       this.querySelector(".urlbar-input")
     );
+
+    let resultListboxId = this.#sapName + "-results";
+    this.querySelector(".urlbarView-results").id = resultListboxId;
+    this.inputField.setAttribute("aria-controls", resultListboxId);
+
+    if (this.#isAddressbar) {
+      this.inputField.id = "urlbar-input";
+    }
     if (this.#sapName == "searchbar") {
       // This adds a native clear button.
       this.inputField.setAttribute("type", "search");
     }
-    this._inputContainer = this.querySelector(".urlbar-input-container");
 
     this.controller = new lazy.UrlbarController({ input: this });
     this.view = new lazy.UrlbarView(this);
@@ -582,8 +587,11 @@ export class UrlbarInput extends HTMLElement {
   #onContextMenuRebuilt() {
     this._initStripOnShare();
     this._initPasteAndGo();
-    if (AppConstants.platform == "macosx") {
+    if (this.#isAddressbar && AppConstants.platform == "macosx") {
       this.#initShareURL();
+    }
+    if (this.sapName == "searchbar") {
+      this.#initClearSearchHistory();
     }
   }
 
@@ -4392,6 +4400,10 @@ export class UrlbarInput extends HTMLElement {
     insertLocation.insertAdjacentElement("afterend", pasteAndGo);
   }
 
+  /**
+   * Initializes the share URL context menu item.
+   * This is only shown on the addressbar and only on macOS.
+   */
   #initShareURL() {
     let contextMenu = this.querySelector("moz-input-box").menupopup;
     let insertLocation = this.#findMenuItemLocation("cmd_selectAll");
@@ -4404,6 +4416,27 @@ export class UrlbarInput extends HTMLElement {
       if (browser) {
         lazy.SharingUtils.updateShareURLMenuItem(browser, null, separator);
       }
+    });
+  }
+
+  /**
+   * Initializes the clear search history context menu item.
+   * This is only shown on the searchbar.
+   */
+  #initClearSearchHistory() {
+    let insertLocation = this.#findMenuItemLocation("cmd_selectAll");
+
+    let separator = this.document.createXULElement("menuseparator");
+    insertLocation.after(separator);
+
+    let clearHistory = this.document.createXULElement("menuitem");
+    separator.after(clearHistory);
+
+    clearHistory.setAttribute("anonid", "clear-search-history");
+    this.document.l10n.setAttributes(clearHistory, "clear-search-history");
+    clearHistory.addEventListener("command", () => {
+      lazy.UrlbarUtils.clearFormHistory();
+      this.handleRevert();
     });
   }
 

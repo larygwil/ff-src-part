@@ -3799,7 +3799,7 @@ function WindowIsClosing(event) {
   const { Spotlight } = ChromeUtils.importESModule(
     "resource:///modules/asrouter/Spotlight.sys.mjs"
   );
-  Spotlight.close();
+  Spotlight.close(window);
 
   // In theory we should exit here and the Window's internal Close
   // method should trigger canClose on BrowserDOMWindow. However, by

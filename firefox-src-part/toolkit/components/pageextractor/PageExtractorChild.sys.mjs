@@ -32,9 +32,6 @@ const lazy = XPCOMUtils.declareLazy({
   isProbablyReaderable: "resource://gre/modules/Readerable.sys.mjs",
 });
 
-/** @type {ExtractionResult} */
-const EMPTY_EXTRACTION_RESULT = { text: "", links: [], canvasSnapshots: [] };
-
 /**
  * Extract a variety of content from pages for use in a smart window.
  */
@@ -50,21 +47,7 @@ export class PageExtractorChild extends JSWindowActorChild {
    */
   async receiveMessage({ name, data }) {
     switch (name) {
-      case "PageExtractorParent:GetReaderModeContent":
-        if (this.isAboutReader()) {
-          const text = this.getAboutReaderContent();
-          return { text: text ?? "", links: [], canvasSnapshots: [] };
-        }
-        return this.getReaderModeContent(data);
       case "PageExtractorParent:GetText":
-        if (this.isAboutReader()) {
-          const text = this.getAboutReaderContent();
-          return {
-            text: text ?? "",
-            links: [],
-            canvasSnapshots: [],
-          };
-        }
         await this.waitForPageReady();
         return this.getText(data);
       case "PageExtractorParent:WaitForPageReady":
@@ -72,7 +55,8 @@ export class PageExtractorChild extends JSWindowActorChild {
       case "PageExtractorParent:GetPageMetadata":
         if (this.isAboutReader()) {
           const document = this.browsingContext?.window?.document;
-          const text = this.getAboutReaderContent() ?? "";
+          const result = await this.getText({ removeBoilerplate: true });
+          const text = result?.text ?? "";
           const language = document?.querySelector(".container")?.lang ?? "";
           const wordCount = this.#getWordCount(language, text);
 
@@ -217,59 +201,87 @@ export class PageExtractorChild extends JSWindowActorChild {
   }
 
   /**
-   * @see PageExtractorParent#getReaderModeContent for docs
-   *
-   * @param {boolean} force
-   * @returns {Promise<ExtractionResult>}
-   */
-  async getReaderModeContent(force) {
-    const window = this.browsingContext?.window;
-    const document = window?.document;
-
-    if (!force && (!document || !lazy.isProbablyReaderable(document))) {
-      return EMPTY_EXTRACTION_RESULT;
-    }
-
-    if (!document) {
-      return EMPTY_EXTRACTION_RESULT;
-    }
-
-    /** @type {ReaderModeDocument} */
-    const readerModeDocument = await lazy.ReaderMode.parseDocument(document);
-    if (!readerModeDocument) {
-      return EMPTY_EXTRACTION_RESULT;
-    }
-
-    const { textContent, title } = readerModeDocument;
-
-    let text = collapseWhitespace(textContent);
-
-    if (title) {
-      text = title + "\n\n" + text;
-    }
-
-    lazy.console.log("GetReaderModeContent", { force });
-    lazy.console.debug(text);
-
-    return { text, links: [], canvasSnapshots: [] };
-  }
-
-  /**
    * @see PageExtractorParent#getText for docs
    *
    * @param {GetTextOptions} options
-   * @returns {Promise<ExtractionResult>}
+   * @returns {Promise<ExtractionResult | null>}
    */
   async getText(options = {}) {
     const window = this.browsingContext?.window;
-    const document = window?.document;
+    /** @type {Document} */
+    let document = window?.document;
+    /** @type {HTMLElement} */
+    let rootNode;
 
-    if (!document) {
-      return EMPTY_EXTRACTION_RESULT;
+    if (this.isAboutReader()) {
+      // If about:reader is loaded, find the proper rootNode so that we just get the
+      // content and not any of the UI. This will get passed to DOMExtractor so that
+      // the rest of the GetTextOptions can be applied.
+
+      lazy.console.log("Extracting content from about:reader");
+      // TODO - Explain what's different between this document and the browsing context.
+      document = this.manager.contentWindow.document;
+
+      if (!document) {
+        lazy.console.log("No content document was available");
+        return null;
+      }
+
+      /** @type {HTMLElement?} */
+      rootNode = document.querySelector(".container");
+      if (!rootNode) {
+        lazy.console.log("No container was found in reader mode.");
+        return null;
+      }
+    } else if (options.removeBoilerplate) {
+      // Boilerplate removal is requested. See if reader mode can be applied, and then
+      // use that for boilerplate removal.
+
+      if (
+        (document && lazy.isProbablyReaderable(document)) ||
+        options._forceRemoveBoilerplate
+      ) {
+        // Run the document through reader mode, and use the DOMParser version of the
+        // content.
+        /** @type {ReaderModeDocument | null} */
+        const readerModeDocument =
+          await lazy.ReaderMode.parseDocument(document);
+        if (readerModeDocument) {
+          lazy.console.log("Document is readerable");
+          const { content } = readerModeDocument;
+          const parser = new DOMParser();
+          document = parser.parseFromString(content, "text/html");
+          rootNode = document.body;
+        } else {
+          lazy.console.log(
+            "Document is not readerable, boilerplate will not be removed"
+          );
+        }
+      } else {
+        lazy.console.log(
+          "Document is not readerable, boilerplate will not be removed"
+        );
+      }
     }
 
+    if (!document || !rootNode) {
+      lazy.console.log("Extracting content without boilerplate removal.");
+      // No document or no root node is here, we should use the default extraction
+      // strategy, of getting content directly from the hpage.
+      document = window?.document;
+      rootNode = document.body;
+    }
+
+    if (!document) {
+      lazy.console.log("No document was found.");
+      return null;
+    }
+
+    // All of the content gets extracted using the DOMExtractor, which knows how
+    // to apply certain settings in GetTextOptions.
     const { text, links, canvases } = lazy.extractTextFromDOM(
       document,
+      rootNode,
       options
     );
 
@@ -282,38 +294,6 @@ export class PageExtractorChild extends JSWindowActorChild {
     lazy.console.debug({ text, links, canvasSnapshots });
 
     return { text, links, canvasSnapshots };
-  }
-
-  /**
-   * Special case extracting text from Reader Mode. The original article content is not
-   * retained once reader mode is activated. It is rendered out to the page. Rather
-   * than cache an additional copy of the article, just extract the text from the
-   * actual reader mode DOM.
-   *
-   * @returns {string | null}
-   */
-  getAboutReaderContent() {
-    lazy.console.log("Using special text extraction strategy for about:reader");
-    const document = this.manager.contentWindow.document;
-
-    if (!document) {
-      return null;
-    }
-    /** @type {HTMLElement?} */
-    const titleEl = document.querySelector(".reader-title");
-    /** @type {HTMLElement?} */
-    const contentEl = document.querySelector(".moz-reader-content");
-
-    const title = titleEl?.innerText;
-    const content = contentEl?.innerText;
-    if (!title && !content) {
-      return null;
-    }
-
-    if (title) {
-      return `${title}\n\n${content}`.trim();
-    }
-    return content.trim();
   }
 
   /**
@@ -340,14 +320,9 @@ export class PageExtractorChild extends JSWindowActorChild {
   async #captureCanvases(canvases, options) {
     const maxDimension = options.maxCanvasDimension ?? 1024;
     const quality = options.canvasQuality ?? 0.8;
-    const window = this.browsingContext?.window;
-
-    if (!window) {
-      return [];
-    }
 
     const results = await Promise.all(
-      canvases.map(c => this.#captureCanvas(c, maxDimension, quality, window))
+      canvases.map(c => this.#captureCanvas(c, maxDimension, quality))
     );
     return results.filter(Boolean);
   }
@@ -361,10 +336,10 @@ export class PageExtractorChild extends JSWindowActorChild {
    * @param {HTMLCanvasElement} canvas
    * @param {number} maxDimension
    * @param {number} quality
-   * @param {Window} window
    * @returns {Promise<CanvasSnapshot | null>}
    */
-  async #captureCanvas(canvas, maxDimension, quality, window) {
+  async #captureCanvas(canvas, maxDimension, quality) {
+    const window = canvas.ownerGlobal;
     const { width: originalWidth, height: originalHeight } = canvas;
 
     try {
@@ -422,76 +397,4 @@ export class PageExtractorChild extends JSWindowActorChild {
       return null;
     }
   }
-}
-
-/**
- * Reader mode provides the textContent of the HTMLElement and not the innerText so the
- * whitespace is not de-duplicated. This algorithm maintains at most 2 newlines in
- * some whitespace, or 1 whitespace character. Only "\n" and " " are retained. This is
- * similar to the whitespace collapsing behavior of rendered HTML. Note that this
- * algorithm ignores Unicode whitespace characters, which are a larger set of potential
- * characters.
- *
- * https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Text/Whitespace
- *
- * So:
- *   "\t\n \t"       => "\n"
- *   "\t\n \t\n\n\n" => "\n\n"
- *   "example     text" => "example text"
- *   "\n\r"      => ""
- *
- * @param {string} textContent
- * @returns {string}
- */
-function collapseWhitespace(textContent) {
-  textContent = textContent.trim();
-  let text = "";
-  let prevWasWhitespace = false;
-  let newLinesCount = 0;
-
-  for (let i = 0; i < textContent.length; i++) {
-    const ch = textContent[i];
-
-    if (
-      // Is this a whitespace character that is used in HTML whitespace collapsing?
-      ch === " " ||
-      ch === "\n" ||
-      ch === "\t" ||
-      ch === "\r"
-    ) {
-      // Remember that there was whitespace and count the newlines.
-      if (ch === "\n") {
-        newLinesCount++;
-      }
-      prevWasWhitespace = true;
-    } else {
-      // There is a character that needs to be added. Also add any whitespace that
-      // was encountered.
-
-      if (prevWasWhitespace) {
-        // Add the collapsed version of the whitespace.
-        if (newLinesCount == 0) {
-          text += " ";
-        } else if (newLinesCount == 1) {
-          text += "\n";
-        } else {
-          text += "\n\n";
-        }
-        // Reset the whitespace tracking varaibles.
-        newLinesCount = 0;
-        prevWasWhitespace = false;
-      }
-
-      // Add the next character.
-      text += ch;
-    }
-  }
-
-  if (prevWasWhitespace) {
-    throw new Error(
-      "Expected all of the trailing whitespace to be handled by String#trim"
-    );
-  }
-
-  return text;
 }

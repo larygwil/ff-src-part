@@ -82,7 +82,12 @@ class IPProtectionInfobarManagerClass {
       // Calculate what percentage of bandwidth remains
       const remainingPercent = Number(usage.remaining) / Number(usage.max);
 
-      if (remainingPercent === 0) {
+      /* Covers the cases where bandwidth hits max or is reset
+         Could check for remainingPercent = 1, but there is a chance
+         of not having exactly 100% left when this is called, and we
+         want to clear the infobar if it's showing and there is less than
+         75% usage */
+      if (remainingPercent === 0 || remainingPercent > 0.25) {
         this.#hideInfobar(75);
         this.#hideInfobar(90);
         return;

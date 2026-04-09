@@ -340,6 +340,16 @@
     }
   }
 
+  &.ipprotection-network-error {
+    list-style-image: url("chrome://browser/content/logos/ipprotection-info.svg");
+    stroke: var(--icon-color-information);
+
+    &:is([overflowedItem="true"], [cui-areatype="panel"]) {
+      list-style-image: url("chrome://global/skin/icons/info-filled.svg");
+      fill: var(--icon-color-information);
+    }
+  }
+
   &.ipprotection-error {
     list-style-image: url("chrome://browser/content/logos/ipprotection-error.svg");
     stroke: var(--icon-color-critical);
