@@ -229,7 +229,10 @@ export class AIChatMessage extends MozLitElement {
     for (const anchor of root.querySelectorAll("a[href]")) {
       const parsed = URL.parse(anchor.href);
 
-      if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+      if (
+        !parsed ||
+        (parsed.protocol !== "http:" && parsed.protocol !== "https:")
+      ) {
         anchor.removeAttribute("href");
         continue;
       }

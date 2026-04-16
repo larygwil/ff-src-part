@@ -702,10 +702,27 @@
   <string name="nova_onboarding_add_search_widget_button" tools:ignore="BrandUsage">إضافة أداة Firefox</string>
   <!-- Customize prompt onboarding title. -->
   <string name="nova_onboarding_customize_prompt_title" tools:ignore="UnusedResources">سهل التخصيص وأكثر خصوصية مع كل نقرة</string>
+  <plurals name="nova_onboarding_customize_prompt_body" tools:ignore="UnusedResources">
+    <!--
+      Customize prompt onboarding body.
+      %1$s is replaced by the product name (for example "Firefox"),
+      %2$,d is replaced by the number of trackers blocked. The comma represents the thousand
+      separator (e.g. 1,000 in English), and it will automatically use the correct character
+      for your locale (don't change or remove it).
+    -->
+    <item quantity="zero">%1$s حظر %2$,d متعقّب بينما كنت تتصفح في الوِب.</item>
+    <item quantity="one">%1$s حظر %2$,d متعقّب بينما كنت تتصفح في الوِب.</item>
+    <item quantity="two">%1$s حظر متعقّبين بينما كنت تتصفح في الوِب.</item>
+    <item quantity="few">%1$s حظر %2$,d متعقّبات بينما كنت تتصفح في الوِب.</item>
+    <item quantity="many">%1$s حظر %2$,d متعقّبًا بينما كنت تتصفح في الوِب.</item>
+    <item quantity="other">%1$s حظر %2$,d متعقّب بينما كنت تتصفح في الوِب.</item>
+  </plurals>
   <!-- Customize prompt onboarding positive button. -->
   <string name="nova_onboarding_customize_prompt_positive_button" tools:ignore="UnusedResources">ابدأ بالتخصيص</string>
   <!-- App icon onboarding title. -->
   <string name="nova_onboarding_app_icon_prompt_title" tools:ignore="UnusedResources">اختر أيقونة مخصّصة للتطبيق</string>
+  <!-- App icon onboarding body. -->
+  <string name="nova_onboarding_app_icon_prompt_body" tools:ignore="UnusedResources">اعطِ الصفحة الرئيسية لمستك الخاصة.</string>
   <!-- ==== End of Project "Nova" onboarding strings ==== -->
 
   <!-- Onboarding header for the toolbar selection card, used by Nimbus experiments. -->
@@ -773,6 +790,8 @@
   <string name="preferences_category_about">عن</string>
   <!-- Preference category for settings related to changing the default search engine -->
   <string name="preferences_category_select_default_search_engine">اختر واحدة</string>
+  <!-- Preference category for settings related to changing the default search engine -->
+  <string name="preferences_category_select_default_search_engine_2">محرك بحث المبدئي للتصفح العادي</string>
   <!-- Preference category for settings related to changing the private browsing search engine -->
   <string name="preferences_category_select_private_search_engine">محرك بحث المبدئي للتصفح الخاص</string>
   <!-- Option to set the private browsing mode to use the normal default search engine -->
@@ -1364,6 +1383,8 @@
   <string name="toolbar_customize_shortcut_homepage">الصفحة الرئيسية</string>
   <!-- Back shortcut in toolbar customization -->
   <string name="toolbar_customize_shortcut_back">رجوع</string>
+  <!-- Label for choosing in toolbar customization settings to not use any custom shortcut button. -->
+  <string name="toolbar_customize_shortcut_none">لا شيء</string>
   <!--
     App icon Preferences
 
@@ -1669,6 +1690,8 @@
     Title for the create tab group bottom sheet
   -->
   <string name="create_tab_group_title">أنشئ مجموعة لسان</string>
+  <!-- Title for the edit tab group bottom sheet -->
+  <string name="edit_tab_group_title">حرّر على المجموعة</string>
   <string name="create_tab_group_save_button">احفظ</string>
   <string name="edit_tab_group_bottom_sheet_close_content_description">أغلِق تحرير مجموعة اللسان</string>
   <!-- Default tab group name when creating a tab group -->
@@ -1688,6 +1711,18 @@
   <string name="add_to_tab_group_bottom_sheet_close_content_description">أغلِق الإضافة إلى مجموعة اللسان</string>
   <!-- Label for adding to a new tab group. -->
   <string name="add_to_new_tab_group_title">مجموعة لسان جديدة</string>
+  <plurals name="tab_group_tabs_count_subtitle">
+    <!--
+      Subtitle for the number of tabs in a tab group.
+      %1$d is the number of tabs in a tab group.
+    -->
+    <item quantity="zero">لا لسان</item>
+    <item quantity="one">لسان</item>
+    <item quantity="two">لسانان</item>
+    <item quantity="few">%1$d ألسنة</item>
+    <item quantity="many">%1$d لسانًا</item>
+    <item quantity="other">%1$d لسان</item>
+  </plurals>
   <!-- Title for the Delete tab group confirmation dialog. -->
   <string name="delete_tab_group_confirmation_dialog_title">حذف مجموعة اللسان؟</string>
   <!-- Text shown in the body of the Delete tab group confirmation dialog. -->
@@ -1774,6 +1809,15 @@
     This button will dismiss the dialog.
   -->
   <string name="download_file_has_not_enough_storage_dialog_cancel_button_text">إلغاء</string>
+  <plurals name="downloads_delete_dialog_title">
+    <!-- Title for the download deletion confirmation dialog. The message changes depending on how many files are selected. %d is the number of files to be deleted. -->
+    <item quantity="zero">لا ملف للحذف</item>
+    <item quantity="one">حذف ملف؟</item>
+    <item quantity="two">حذف ملفين؟</item>
+    <item quantity="few">حذف %d ملفات؟</item>
+    <item quantity="many">حذف %d ملفًا؟</item>
+    <item quantity="other">حذف %d ملف؟</item>
+  </plurals>
   <!-- Text for the button to delete a single downloaded file item -->
   <string name="download_delete_item">الحذف</string>
   <!-- Content description for the toolbar "Navigate back" button -->
@@ -2590,6 +2634,19 @@
   <string name="preference_enhanced_tracking_protection_explanation_2">تحميك %s من العديد من المتعقّبات المعروفة التي تتعقب أنشطتك على الإنترنت.</string>
   <!-- Text displayed that links to website about enhanced tracking protection -->
   <string name="preference_enhanced_tracking_protection_explanation_learn_more">اطّلع على المزيد</string>
+  <plurals name="trackers_blocked_count">
+    <!--
+      Trackers blocked card on homepage
+
+      Text shown on the trackers blocked card. %d is the number of trackers blocked.
+    -->
+    <item quantity="zero">حُظر %d متعقّب</item>
+    <item quantity="one">حُظر %d متعقّب</item>
+    <item quantity="two">حُظر متعقّبين</item>
+    <item quantity="few">حُظر %d متعقّبات</item>
+    <item quantity="many">حُظر %d متعقّبًا</item>
+    <item quantity="other">حُظر %d متعقّب</item>
+  </plurals>
   <!-- Text shown on the trackers blocked card when no trackers have been blocked yet -->
   <string name="trackers_blocked_empty">أنت محمي</string>
   <!-- Preference for enhanced tracking protection for the standard protection settings -->
@@ -3304,6 +3361,8 @@
     which navigates the user to a screen displaying all the shortcuts.
   -->
   <string name="homepage_shortcuts_show_all_content_description">عرض كل الاختصارات</string>
+  <!-- Label for the "Add shortcut" button displayed as a tile. -->
+  <string name="homepage_shortcuts_add_shortcut">أضِف اختصارًا</string>
   <!-- Title text displayed in the dialog when shortcuts limit is reached. -->
   <string name="shortcut_max_limit_title">بلغت أقصى حدّ للاختصارات</string>
   <!-- Content description text displayed in the dialog when shortcut limit is reached. -->

@@ -21,8 +21,8 @@
  */
 
 /**
- * pdfjsVersion = 5.6.98
- * pdfjsBuild = 977e4f2c4
+ * pdfjsVersion = 5.6.110
+ * pdfjsBuild = a1cc75126
  */
 /******/ // The require scope
 /******/ var __webpack_require__ = {};
@@ -40936,6 +40936,14 @@ class Catalog {
     }
     return shadow(this, "attachments", attachments);
   }
+  get rawEmbeddedFiles() {
+    const obj = this.#catDict.get("Names");
+    if (!(obj instanceof Dict) || !obj.has("EmbeddedFiles")) {
+      return null;
+    }
+    const nameTree = new NameTree(obj.getRaw("EmbeddedFiles"), this.xref);
+    return nameTree.getAll(true);
+  }
   get xfaImages() {
     const obj = this.#catDict.get("Names");
     let xfaImages = null;
@@ -60196,7 +60204,7 @@ async function writeValue(value, buffer, transform) {
     }
     buffer.push(`(${escapeString(value)})`);
   } else if (typeof value === "number") {
-    buffer.push(value.toString());
+    buffer.push(value.toFixed(10).replace(/\.?0+$/, ""));
   } else if (typeof value === "boolean") {
     buffer.push(value.toString());
   } else if (value instanceof Dict) {
@@ -60557,6 +60565,7 @@ class DocumentData {
     this.hasSignatureAnnotations = false;
     this.fieldToParent = new RefSetCache();
     this.outline = null;
+    this.embeddedFiles = null;
   }
 }
 class XRefWrapper {
@@ -60582,6 +60591,7 @@ class XRefWrapper {
 }
 class PDFEditor {
   hasSingleFile = false;
+  isSingleFile = false;
   #newAnnotationsParams = null;
   currentDocument = null;
   oldPages = [];
@@ -60609,6 +60619,7 @@ class PDFEditor {
   acroFormCalculationOrder = null;
   acroFormQ = 0;
   outlineItems = null;
+  embeddedFiles = new Map();
   constructor({
     useObjectStreams = true,
     title = "",
@@ -60894,6 +60905,7 @@ class PDFEditor {
   async extractPages(pageInfos, annotationStorage, handler, task) {
     const promises = [];
     let newIndex = 0;
+    this.isSingleFile = pageInfos.length === 1 || pageInfos.every(info => info.document === pageInfos[0].document);
     this.hasSingleFile = pageInfos.length === 1;
     const allDocumentData = [];
     if (annotationStorage) {
@@ -61004,6 +61016,7 @@ class PDFEditor {
     await this.#mergeStructTrees(allDocumentData);
     await this.#mergeAcroForms(allDocumentData);
     this.#buildOutline(allDocumentData);
+    await this.#collectEmbeddedFiles(allDocumentData);
     return this.writePDF();
   }
   async #collectDocumentData(documentData) {
@@ -61013,7 +61026,7 @@ class PDFEditor {
         xref
       }
     } = documentData;
-    await Promise.all([pdfManager.ensureCatalog("destinations").then(destinations => documentData.destinations = destinations), pdfManager.ensureCatalog("rawPageLabels").then(pageLabels => documentData.pageLabels = pageLabels), pdfManager.ensureCatalog("structTreeRoot").then(structTreeRoot => documentData.structTreeRoot = structTreeRoot), pdfManager.ensureCatalog("acroForm").then(acroForm => documentData.acroForm = acroForm), pdfManager.ensureCatalog("documentOutlineForEditor").then(outline => documentData.outline = outline)]);
+    await Promise.all([pdfManager.ensureCatalog("destinations").then(destinations => documentData.destinations = destinations), pdfManager.ensureCatalog("rawPageLabels").then(pageLabels => documentData.pageLabels = pageLabels), pdfManager.ensureCatalog("structTreeRoot").then(structTreeRoot => documentData.structTreeRoot = structTreeRoot), pdfManager.ensureCatalog("acroForm").then(acroForm => documentData.acroForm = acroForm), pdfManager.ensureCatalog("documentOutlineForEditor").then(outline => documentData.outline = outline), pdfManager.ensureCatalog("rawEmbeddedFiles").then(ef => documentData.embeddedFiles = ef)]);
     const structTreeRoot = documentData.structTreeRoot;
     if (structTreeRoot) {
       const rootDict = structTreeRoot.dict;
@@ -62028,7 +62041,7 @@ class PDFEditor {
         newAnnots = newAnnotations;
       }
     }
-    const newAnnotations = this.#newAnnotationsParams?.newAnnotationsByPage.get(pageIndex);
+    const newAnnotations = this.#newAnnotationsParams?.newAnnotationsByPage?.get(pageIndex);
     if (newAnnotations) {
       const {
         handler,
@@ -62125,16 +62138,20 @@ class PDFEditor {
     const [treeRef, treeDict] = this.newDict;
     const stack = [{
       dict: treeDict,
-      entries: allEntries
+      entries: allEntries,
+      isRoot: true
     }];
     const valueType = areNames ? "Names" : "Nums";
     while (stack.length > 0) {
       const {
         dict,
-        entries
+        entries,
+        isRoot
       } = stack.pop();
       if (entries.length <= maxLeaves) {
-        dict.set("Limits", [entries[0][0], entries.at(-1)[0]]);
+        if (!isRoot) {
+          dict.set("Limits", [entries[0][0], entries.at(-1)[0]]);
+        }
         dict.set(valueType, entries.flat());
         continue;
       }
@@ -62169,6 +62186,51 @@ class PDFEditor {
     } = this;
     const pageLabelsRef = this.#makeNameNumTree(this.pageLabels, false);
     rootDict.set("PageLabels", pageLabelsRef);
+  }
+  async #collectEmbeddedFiles(allDocumentData) {
+    const {
+      embeddedFiles
+    } = this;
+    for (const documentData of allDocumentData) {
+      const {
+        embeddedFiles: docEmbeddedFiles,
+        document: {
+          xref
+        }
+      } = documentData;
+      if (!docEmbeddedFiles?.size) {
+        continue;
+      }
+      this.currentDocument = documentData;
+      for (const [key, valueRef] of docEmbeddedFiles) {
+        let name = key;
+        if (embeddedFiles.has(name)) {
+          const displayName = stringToPDFString(key, true);
+          for (let i = 1;; i++) {
+            const deduped = `${displayName}_${i}`;
+            if (!embeddedFiles.has(deduped)) {
+              name = deduped;
+              break;
+            }
+          }
+        }
+        embeddedFiles.set(name, await this.#collectDependencies(valueRef, true, xref));
+      }
+      this.currentDocument = null;
+    }
+  }
+  #makeEmbeddedFilesTree() {
+    const {
+      embeddedFiles
+    } = this;
+    if (embeddedFiles.size === 0) {
+      return;
+    }
+    if (!this.namesDict) {
+      [this.namesRef, this.namesDict] = this.newDict;
+      this.rootDict.set("Names", this.namesRef);
+    }
+    this.namesDict.set("EmbeddedFiles", this.#makeNameNumTree(Array.from(embeddedFiles.entries()), true));
   }
   #makeDestinationsTree() {
     const {
@@ -62279,13 +62341,14 @@ class PDFEditor {
     this.#makeAcroForm();
     this.#makePageTree();
     this.#makePageLabelsTree();
+    this.#makeEmbeddedFilesTree();
     this.#makeDestinationsTree();
     this.#makeStructTree();
     await this.#makeOutline();
   }
   #makeInfo() {
     const infoMap = new Map();
-    if (this.hasSingleFile) {
+    if (this.isSingleFile) {
       const {
         xref: {
           trailer
@@ -62314,7 +62377,7 @@ class PDFEditor {
     return infoMap;
   }
   async #makeEncrypt() {
-    if (!this.hasSingleFile) {
+    if (!this.isSingleFile) {
       return [null, null, null];
     }
     const {
@@ -62391,9 +62454,9 @@ class PDFEditor {
     const infoMap = this.#makeInfo();
     const [encryptRef, encrypt, fileIds] = await this.#makeEncrypt();
     const [changes, xrefTableRef] = await this.#createChanges();
-    const header = [...`%PDF-${this.version}\n%`.split("").map(c => c.charCodeAt(0)), 0xfa, 0xde, 0xfa, 0xce];
+    const header = stringToBytes(`%PDF-${this.version}\n%\xfa\xde\xfa\xce`);
     return incrementalUpdate({
-      originalData: new Uint8Array(header),
+      originalData: header,
       changes,
       xrefInfo: {
         startXRef: null,
@@ -62641,7 +62704,7 @@ class WorkerMessageHandler {
       docId,
       apiVersion
     } = docParams;
-    const workerVersion = "5.6.98";
+    const workerVersion = "5.6.110";
     if (apiVersion !== workerVersion) {
       throw new Error(`The API version "${apiVersion}" does not match ` + `the Worker version "${workerVersion}".`);
     }

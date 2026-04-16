@@ -89,6 +89,39 @@
   user-select: none;
 }
 
+/* These colors are duplicated from `.message-assistant a` styles in
+ * `ai-chat-message.css` to ensure the disclaimer links have the same color
+ *  and behavior as assistant message links, even outside of the chat message
+ * context. We can consider centralizing these styles if we find more use cases
+ * for assistant-styled links outside of chat messages and the disclaimer.
+ */
+.disclaimer a {
+  --smartwindow-assistant-link-color: light-dark(var(--color-violet-50), var(--color-violet-20));
+  --smartwindow-assistant-link-color-hover: light-dark(var(--color-violet-90), var(--color-violet-50));
+  --smartwindow-assistant-link-color-visited: light-dark(var(--color-violet-70), var(--color-violet-40));
+  --smartwindow-assistant-link-color-active: light-dark(var(--color-violet-90), var(--color-violet-50));
+  --smartwindow-assistant-accent-color-focus: light-dark(var(--color-violet-70), var(--color-violet-40));
+  color: var(--smartwindow-assistant-link-color);
+}
+
+.disclaimer a:visited {
+  color: var(--smartwindow-assistant-link-color-visited);
+}
+
+.disclaimer a:hover {
+  color: var(--smartwindow-assistant-link-color-hover);
+}
+
+.disclaimer a:active {
+  color: var(--smartwindow-assistant-link-color-active);
+}
+
+.disclaimer a:focus-visible {
+  outline: var(--focus-outline);
+  outline-offset: var(--focus-outline-offset);
+  accent-color: var(--smartwindow-assistant-accent-color-focus);
+}
+
 :host([mode="fullpage"]) #ai-window-smartbar {
   top: 0;
 }

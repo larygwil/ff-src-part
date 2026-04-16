@@ -78,6 +78,46 @@ function sendGleanPing(reason, annotations) {
   ));
 }
 
+/*
+ * Clean up pending Glean pings.
+ *
+ * We don't care about synchronizing with lastSendPing here because this will
+ * only occur once per application session, and the crashreporter already
+ * handles its own exclusive locking.
+ *
+ * Returns whether the crashreporter exited without error.
+ */
+async function cleanupPings() {
+  const uAppDataPath = Services.dirsvc.get("UAppData", Ci.nsIFile).path;
+  const crashDataPath = PathUtils.join(uAppDataPath, "Crash Reports");
+  const telemetryEnabled = Services.prefs.getBoolPref(
+    "datareporting.healthreport.uploadEnabled",
+    true
+  );
+
+  const process = await lazy.Subprocess.call({
+    command: lazy.CrashServiceUtils.getCrashReporterPath().path,
+    arguments: ["--ping-cleanup", crashDataPath, telemetryEnabled.toString()],
+  });
+
+  const blocker = () => process.kill();
+
+  lazy.AsyncShutdown.profileBeforeChange.addBlocker(
+    "CrashManager: killing ping cleanup process",
+    blocker
+  );
+
+  await process.stdin.close();
+  // This is best-effort: we don't care about failure.
+  const { exitCode } = await process.wait();
+  lazy.AsyncShutdown.profileBeforeChange.removeBlocker(blocker);
+  while ((await process.stdout.read()).byteLength) {
+    // Flush stdout to avoid leaking buffered data.
+  }
+
+  return exitCode === 0;
+}
+
 /**
  * A gateway to crash-related data.
  *
@@ -398,15 +438,43 @@ CrashManager.prototype = Object.freeze({
     })();
   },
 
+  async sendUnsubmittedPings() {
+    let store = await this._getStore();
+    if (!store) {
+      return;
+    }
+
+    const crashes = store.crashesWithoutPingSubmissions();
+    for (const crash of crashes) {
+      this._sendCrashPing(
+        store,
+        crash.id,
+        "crash",
+        crash.processType,
+        crash.crashDate,
+        crash.metadata
+      );
+    }
+    await store.save();
+  },
+
   /**
    * Run tasks that should be periodically performed.
    */
   runMaintenanceTasks() {
     return (async () => {
       await this.aggregateEventsFiles();
+      await this.sendUnsubmittedPings();
 
       let offset = this.PURGE_OLDER_THAN_DAYS * MILLISECONDS_IN_DAY;
       await this.pruneOldCrashes(new Date(Date.now() - offset));
+
+      if (AppConstants.platform !== "android" && !this._disableGleanPing) {
+        this._cleanupPingsResult = await cleanupPings().catch(error => {
+          console.error(`failed to cleanup Glean crash pings: ${error}`);
+          return false;
+        });
+      }
     })();
   },
 
@@ -453,7 +521,17 @@ CrashManager.prototype = Object.freeze({
       }
 
       let store = await this._getStore();
-      if (store && store.addCrash(processType, crashType, id, date, metadata)) {
+      let needSave = false;
+
+      if (store) {
+        needSave = store.addCrash(processType, crashType, id, date, metadata);
+      }
+
+      if (this.isPingAllowed(processType)) {
+        this._sendCrashPing(store, id, "crash", processType, date, metadata);
+      }
+
+      if (needSave) {
         await store.save();
       }
 
@@ -462,10 +540,6 @@ CrashManager.prototype = Object.freeze({
       if (deferred) {
         this._crashPromises.delete(id);
         deferred.resolve();
-      }
-
-      if (this.isPingAllowed(processType)) {
-        this._sendCrashPing("crash", id, processType, date, metadata);
       }
     })();
 
@@ -692,18 +766,33 @@ CrashManager.prototype = Object.freeze({
   /**
    * Send a crash ping.
    *
-   * @param {string} reason - the reason for the crash ping, one of: "crash", "event_found"
+   * @param {object} store - The crash store.
    * @param {string} crashId - the crash identifier
+   * @param {string} reason - the reason for the crash ping, one of: "crash", "event_found"
    * @param {string} type - the process type (from {@link processTypes})
    * @param {DateTime} date - the time of the crash (or the closest time after it)
    * @param {object} metadata - Telemetry crash metadata
    */
-  _sendCrashPing(reason, crashId, type, date, metadata = {}) {
+  _sendCrashPing(store, crashId, reason, type, date, metadata = {}) {
+    // If we're shutting down, do nothing (we'll send the ping later, see
+    // `sendUnsubmittedPings`).
+    if (Services.startup.shuttingDown) {
+      return;
+    }
+
     // Glean crash pings should not be sent on Android: they are handled
     // separately in lib-crash for Fenix (and potentially other GeckoView
     // users).
     this._gleanPingPromise = null;
-    if (AppConstants.platform !== "android" && !this._disableGleanPing) {
+    const telemetryEnabled = Services.prefs.getBoolPref(
+      "datareporting.healthreport.uploadEnabled",
+      true
+    );
+    if (
+      telemetryEnabled &&
+      AppConstants.platform !== "android" &&
+      !this._disableGleanPing
+    ) {
       const pingMeta = Cu.cloneInto(metadata, {});
       // Delete unused fields from legacy telemetry
       delete pingMeta.TelemetryEnvironment;
@@ -715,6 +804,13 @@ CrashManager.prototype = Object.freeze({
         console.error(`failed to send Glean crash ping: ${error}`);
         throw error;
       });
+    }
+    if (store) {
+      // Consider the ping submitted, which means that the crashreporter client
+      // is passed the ping data (if applicable). This _doesn't_ mean the ping
+      // was received by the telemetry server. We rely on the crashreporter
+      // client's Glean instance to handle reliable delivery.
+      store.setPingSubmitted(crashId);
     }
   },
 
@@ -742,8 +838,9 @@ CrashManager.prototype = Object.freeze({
         );
 
         this._sendCrashPing(
-          "event_found",
+          store,
           crashID,
+          "event_found",
           this.processTypes[Ci.nsIXULRuntime.PROCESS_TYPE_DEFAULT],
           date,
           metadata
@@ -761,6 +858,10 @@ CrashManager.prototype = Object.freeze({
             crashID,
             date
           );
+
+          // We consider the crash to have already had a ping sent by the
+          // crashreporter client.
+          store.setPingSubmitted(crashID);
 
           let submissionID = this.generateSubmissionID();
           let succeeded = result === "true";
@@ -1235,6 +1336,22 @@ CrashStore.prototype = Object.freeze({
   },
 
   /**
+   * All tracked crashes that haven't had a ping submitted.
+   *
+   * This is an array of CrashRecord.
+   */
+  crashesWithoutPingSubmissions() {
+    let crashes = [];
+    for (let [, crash] of this._data.crashes) {
+      if (crash.pingPending) {
+        crashes.push(new CrashRecord(crash));
+      }
+    }
+
+    return crashes;
+  },
+
+  /**
    * Obtain a particular crash from its ID.
    *
    * A CrashRecord will be returned if the crash exists. null will be returned
@@ -1317,6 +1434,7 @@ CrashStore.prototype = Object.freeze({
         submissions: new Map(),
         classifications: [],
         metadata,
+        pingPending: true,
       });
     }
 
@@ -1358,6 +1476,23 @@ CrashStore.prototype = Object.freeze({
     }
 
     crash.remoteID = remoteID;
+    return true;
+  },
+
+  /**
+   * The pingSubmitted field indicates whether a ping was submitted to the
+   * crashreporter for upload. Whether the crashreporter succeeds in sending the
+   * ping or not is not relevant here: this is used to ensure each crash has a
+   * ping attempted.
+   *
+   * @return boolean True if the pingSubmitted field was set, and false if not.
+   */
+  setPingSubmitted(crashID) {
+    let crash = this._data.crashes.get(crashID);
+    if (!crash) {
+      return false;
+    }
+    delete crash.pingPending;
     return true;
   },
 
@@ -1496,6 +1631,14 @@ CrashRecord.prototype = Object.freeze({
 
   get type() {
     return this._o.type;
+  },
+
+  get processType() {
+    const index = this.type.lastIndexOf("-");
+    if (index !== -1) {
+      return this.type.slice(0, index);
+    }
+    return this.type;
   },
 
   isOfType(processType, crashType) {

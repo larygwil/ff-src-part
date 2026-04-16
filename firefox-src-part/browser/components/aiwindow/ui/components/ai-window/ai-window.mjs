@@ -125,6 +125,8 @@ export class AIWindow extends MozLitElement {
   #conversation = null;
   #memoriesButton = null;
   #memoriesToggled = null;
+  #reportLink =
+    "https://connect.mozilla.org/t5/discussions/smart-window-beta-feedback/td-p/122365";
   #visibilityChangeHandler;
 
   #starters = [];
@@ -726,7 +728,12 @@ export class AIWindow extends MozLitElement {
           this.#memoriesToggled ?? this.#memoriesIconShown;
 
         const sidebarStarters = await lazy
-          .generateConversationStartersSidebar(contextTabs, 2, memoriesEnabled)
+          .generateConversationStartersSidebar(
+            contextTabs,
+            2,
+            memoriesEnabled,
+            this.conversationId
+          )
           .catch(e => {
             lazy.log.error("[Prompts] Failed to generate sidebar starters:", e);
             return null;
@@ -1190,7 +1197,9 @@ export class AIWindow extends MozLitElement {
         url: firstUserMessage?.pageUrl?.href || "",
         title: this.#conversation.pageMeta?.title || "",
         description: this.#conversation.pageMeta?.description || "",
-      }
+      },
+      undefined,
+      this.conversationId
     );
     const title = await this.#conversation.titlePromise;
     delete this.#conversation.titlePromise;
@@ -1274,7 +1283,8 @@ export class AIWindow extends MozLitElement {
         lazy.MODEL_FEATURES.CHAT,
         lazy.DEFAULT_ENGINE_ID,
         lazy.SERVICE_TYPES.AI,
-        lazy.PURPOSES.CHAT
+        lazy.PURPOSES.CHAT,
+        this.conversationId
       );
 
       if (inputText) {
@@ -1903,10 +1913,13 @@ export class AIWindow extends MozLitElement {
           `
         : ""}
       ${this.showDisclaimer
-        ? html`<div
-            data-l10n-id="smartwindow-disclaimer"
-            class="disclaimer"
-          ></div>`
+        ? html`<div data-l10n-id="smartwindow-disclaimer" class="disclaimer">
+            <a
+              data-l10n-name="report-link"
+              href=${this.#reportLink}
+              target="_blank"
+            ></a>
+          </div>`
         : ""}
       ${this.showFooter ? html`<smartwindow-footer></smartwindow-footer>` : ""}
     `;

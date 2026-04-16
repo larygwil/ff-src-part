@@ -32,6 +32,15 @@
   }
 }
 
+.paused {
+  background-color: var(--background-color-box-info);
+
+  ::slotted([slot="image"]) {
+    -moz-context-properties: fill;
+    fill: var(--icon-color);
+  }
+}
+
 .connecting {
   background-color: var(--background-color-box-info);
 
@@ -42,17 +51,18 @@
 }
 
 .network-error {
-  background-color: var(--background-color-critical);
+  background-color: var(--background-color-information);
 
   ::slotted([slot="image"]) {
     -moz-context-properties: fill;
-    fill: var(--icon-color-critical);
+    fill: var(--icon-color-information);
   }
 }
 
 #content-container {
   display: flex;
   flex-direction: column;
+  border: var(--border-width) solid var(--border-color);
   border-radius: var(--border-radius-medium);
   padding: var(--space-medium);
 }
@@ -60,6 +70,7 @@
 #header {
   display: flex;
   justify-content: space-between;
+  gap: var(--space-medium);
 }
 
 #title {

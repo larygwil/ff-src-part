@@ -178,6 +178,24 @@ export const FEATURES = {
   "smart-intent": {
     engineId: "smart-intent",
   },
+  chat: {
+    engineId: "smart-openai",
+  },
+  "title-generation": {
+    engineId: "title-generation-engine",
+  },
+  "conversation-suggestions-sidebar-starter": {
+    engineId: "smart-openai",
+  },
+  "conversation-suggestions-followup": {
+    engineId: "smart-openai",
+  },
+  "memories-initial-generation-system": {
+    engineId: "smart-openai-memories-generation",
+  },
+  "memories-message-classification-system": {
+    engineId: "smart-openai-memories-usage",
+  },
 };
 
 /**
@@ -809,6 +827,7 @@ export class PipelineOptions {
       "timeoutMS",
       "modelId",
       "modelRevision",
+      "flowId",
       "tokenizerId",
       "tokenizerRevision",
       "processorId",
@@ -957,6 +976,7 @@ export class PipelineOptions {
       timeoutMS: this.timeoutMS,
       modelId: this.modelId,
       modelRevision: this.modelRevision,
+      flowId: this.flowId,
       tokenizerId: this.tokenizerId,
       tokenizerRevision: this.tokenizerRevision,
       processorId: this.processorId,
@@ -1187,6 +1207,7 @@ export async function createEngine(
       engineId: options.engineId || "",
       modelId: options.modelId || "",
       featureId: options.featureId || "",
+      flow_id: options.flowId || "",
       taskName: options.taskName || "",
       error: e.constructor.name || "",
     });

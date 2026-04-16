@@ -189,7 +189,7 @@ export const toolsConfig = [
     function: {
       name: GET_PAGE_CONTENT,
       description:
-        "Retrieve cleaned text content of all the provided browser page URLs in the list.",
+        "Retrieve cleaned text content of all the provided browser page URL Tokens in the list.",
       parameters: {
         type: "object",
         properties: {
@@ -198,12 +198,11 @@ export const toolsConfig = [
             items: {
               type: "string",
               description:
-                "The complete URL of the page to fetch content from. This must exactly match " +
-                "a URL from the current conversation context. Use the full URL including " +
-                "protocol (http/https). Example: 'https://www.example.com/article'.",
+                "A URL token that appeared in the conversation, formatted as §url_token: DOMAIN_TLD_PATH_n§. " +
+                "Do NOT fabricate tokens. Only use tokens from user messages and tool results.",
             },
             minItems: 1,
-            description: "List of URLs to fetch content from.",
+            description: "List of URL tokens to fetch content from.",
           },
         },
         required: ["url_list"],

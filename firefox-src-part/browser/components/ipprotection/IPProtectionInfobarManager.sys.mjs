@@ -4,6 +4,9 @@
 
 import { BANDWIDTH } from "chrome://browser/content/ipprotection/ipprotection-constants.mjs";
 
+const BANDWIDTH_WARNING_DISMISSED_PREF =
+  "browser.ipProtection.bandwidthWarningDismissedThreshold";
+
 const lazy = {};
 
 ChromeUtils.defineESModuleGetters(lazy, {
@@ -88,6 +91,7 @@ class IPProtectionInfobarManagerClass {
          want to clear the infobar if it's showing and there is less than
          75% usage */
       if (remainingPercent === 0 || remainingPercent > 0.25) {
+        Services.prefs.setIntPref(BANDWIDTH_WARNING_DISMISSED_PREF, 0);
         this.#hideInfobar(75);
         this.#hideInfobar(90);
         return;
@@ -138,6 +142,13 @@ class IPProtectionInfobarManagerClass {
       return;
     }
 
+    if (
+      Services.prefs.getIntPref(BANDWIDTH_WARNING_DISMISSED_PREF, 0) >=
+      threshold
+    ) {
+      return;
+    }
+
     // Skip if this window already has the notification
     const existing =
       win.gNotificationBox.getNotificationWithValue(notificationId);
@@ -177,6 +188,20 @@ class IPProtectionInfobarManagerClass {
           },
         },
         priority: win.gNotificationBox.PRIORITY_WARNING_HIGH,
+        eventCallback: event => {
+          if (event === "dismissed") {
+            const current = Services.prefs.getIntPref(
+              BANDWIDTH_WARNING_DISMISSED_PREF,
+              0
+            );
+            if (threshold > current) {
+              Services.prefs.setIntPref(
+                BANDWIDTH_WARNING_DISMISSED_PREF,
+                threshold
+              );
+            }
+          }
+        },
       },
       [],
       false,

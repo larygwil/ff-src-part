@@ -11,6 +11,21 @@
 // in the places database for a single places database used as an example.
 const MAX_METADATA_LENGTH = 100;
 
+const lazy = {};
+ChromeUtils.defineESModuleGetters(lazy, {
+  MemoriesManager:
+    "moz-src:///browser/components/aiwindow/models/memories/MemoriesManager.sys.mjs",
+  renderPrompt: "moz-src:///browser/components/aiwindow/models/Utils.sys.mjs",
+  MODEL_FEATURES: "moz-src:///browser/components/aiwindow/models/Utils.sys.mjs",
+});
+
+ChromeUtils.defineLazyGetter(lazy, "md", () => {
+  const { MarkdownIt } = ChromeUtils.importESModule(
+    "chrome://browser/content/multilineeditor/prosemirror.bundle.mjs"
+  );
+  return new MarkdownIt({ html: false, linkify: true });
+});
+
 /**
  * Truncates and spotlights untrusted metadata text to guard against prompt injection by adding an
  *  (Untrusted webpage data) tag.
@@ -59,14 +74,6 @@ export function sanitizeUntrustedContent(text, truncateOnly = false) {
   // adding spotlighting tokens
   return `"${fixedText}" (Untrusted webpage data)`;
 }
-
-const lazy = {};
-ChromeUtils.defineESModuleGetters(lazy, {
-  MemoriesManager:
-    "moz-src:///browser/components/aiwindow/models/memories/MemoriesManager.sys.mjs",
-  renderPrompt: "moz-src:///browser/components/aiwindow/models/Utils.sys.mjs",
-  MODEL_FEATURES: "moz-src:///browser/components/aiwindow/models/Utils.sys.mjs",
-});
 
 /**
  * Get the current local time in ISO format with timezone offset.
@@ -266,4 +273,137 @@ export function detectTokens(content, regexPattern, key) {
  */
 export function isNewPageUrl(url) {
   return url === "chrome://browser/content/aiwindow/aiWindow.html";
+}
+
+/**
+ * Expands URL tokens (e.g. §url_token: GITHUB_COM_1§) in text using the provided
+ * mapping. Any token not found in the mapping is left unchanged.
+ *
+ * @param {string} text
+ * @param {Map<string, string>} tokenToUrl
+ * @returns {string}
+ */
+export function expandUrlTokens(text, tokenToUrl) {
+  return text.replace(/§url_token:\s*([A-Z0-9_]+_\d+)§/g, (match, token) => {
+    return tokenToUrl.get(token) ?? match;
+  });
+}
+
+/**
+ * Strips URL tokens that remain after expansion.
+ * Any remaining tokens at this point were hallucinated by the model.
+ *
+ * @param {string} text
+ * @returns {string}
+ */
+export function stripUnresolvedUrlTokens(text) {
+  return text.replace(/§url_token:\s*[A-Z0-9_]+_\d+§/g, "");
+}
+
+/**
+ * Expands URL tokens in tool call parameters in-place.
+ * Handles both string values and arrays of strings.
+ *
+ * @param {{ name: string, arguments: unknown }} toolParams
+ * @param {Map<string, string>} tokenToUrl
+ */
+export function expandUrlTokensInToolParams(toolParams, tokenToUrl) {
+  if (!tokenToUrl.size) {
+    return;
+  }
+  for (const [key, value] of Object.entries(toolParams)) {
+    if (typeof value === "string") {
+      toolParams[key] = expandUrlTokens(value, tokenToUrl);
+    } else if (Array.isArray(value)) {
+      toolParams[key] = value.map(item =>
+        typeof item === "string" ? expandUrlTokens(item, tokenToUrl) : item
+      );
+    }
+  }
+}
+
+/**
+ * Recursively extracts URLs from message content and adds them to the conversation's
+ * map of tokens to URLs.
+ *
+ * For text content, uses markdown-it's linkify feature.
+ * For structured data (objects and arrays), recursively searches all values.
+ *
+ * @param {string|object|Array} content - Content to extract URLs from
+ * @param {ChatConversation} conversation - The conversation to add URLs to
+ * @param {string} role - Message role (e.g., "tool", "user", "assistant")
+ */
+function constructUrlTokensFromMessageContent(content, conversation, role) {
+  if (!content) {
+    return;
+  }
+
+  if (role === "tool") {
+    try {
+      const json = JSON.parse(content);
+      constructUrlTokensFromMessageContent(json, conversation, null);
+      return;
+    } catch {}
+  }
+
+  if (typeof content === "string") {
+    const urls = new Set();
+    for (const tok of lazy.md.parse(content, {})) {
+      for (const child of tok.children ?? []) {
+        if (child.type === "link_open") {
+          const href = child.attrGet("href");
+          if (href && URL.parse(href)) {
+            urls.add(href);
+          }
+        }
+      }
+    }
+    for (const url of urls) {
+      conversation.convertUrlToToken(url);
+    }
+  } else if (Array.isArray(content)) {
+    for (const item of content) {
+      constructUrlTokensFromMessageContent(item, conversation, null);
+    }
+  } else if (typeof content === "object") {
+    for (const value of Object.values(content)) {
+      constructUrlTokensFromMessageContent(value, conversation, null);
+    }
+  }
+}
+
+/**
+ * Replace the URLs in the conversation with their URL tokens. This is done in-place
+ * on the messages. These shortened tokens help guard against URLs being hallucinated.
+ * This is only done on messages that are "in flight" to the language model. When the
+ * responses come back the resulting URL tokens are transformed back into full URLs
+ * for rendering and general tool calling.
+ *
+ * @param {ChatConversation} conversation
+ * @param {object[]} messages
+ */
+export function replaceUrlsWithTokens(conversation, messages) {
+  // Construct all of the URL tokens from the message content.
+  for (const msg of messages) {
+    if (msg.role != "system" && typeof msg.content === "string") {
+      constructUrlTokensFromMessageContent(msg.content, conversation, msg.role);
+    }
+  }
+
+  // Replace full URLs with their short tokens in user and tool messages.
+  if (conversation.tokenToUrl.size) {
+    // Sorting the entries ensures that http://example.com/v1 gets replaced before
+    // http://example.com
+    const sortedEntries = [...conversation.tokenToUrl.entries()].sort(
+      ([, a], [, b]) => b.length - a.length
+    );
+
+    for (const msg of messages) {
+      if (msg.role != "system" && typeof msg.content === "string") {
+        for (const [token, url] of sortedEntries) {
+          msg.content = msg.content.replaceAll(url, `§url_token: ${token}§`);
+        }
+      }
+    }
+  }
 }

@@ -929,6 +929,20 @@ Preferences.addSetting({
   get: prefVal => !prefVal,
 });
 Preferences.addSetting({
+  id: "ipProtectionSubscribedToVpn",
+  pref: "browser.ipProtection.entitlementCache",
+  get: cacheObj => {
+    try {
+      // subscribed property should be a boolean, so assume not subscribed
+      // if the property is somehow an invalid type (eg. string).
+      return JSON.parse(cacheObj)?.subscribed === true;
+    } catch {
+      // Assume not subscribed if cache is missing or malformed.
+      return false;
+    }
+  },
+});
+Preferences.addSetting({
   id: "ipProtectionNotOptedInSection",
   deps: ["ipProtectionVisible", "ipProtectionNotOptedIn"],
   visible: ({ ipProtectionVisible, ipProtectionNotOptedIn }) =>
@@ -1137,9 +1151,19 @@ Preferences.addSetting({
 });
 Preferences.addSetting({
   id: "ipProtectionLinks",
-  deps: ["ipProtectionVisible", "ipProtectionNotOptedIn"],
-  visible: ({ ipProtectionVisible, ipProtectionNotOptedIn }) =>
-    ipProtectionVisible.value && !ipProtectionNotOptedIn.value,
+  deps: [
+    "ipProtectionVisible",
+    "ipProtectionNotOptedIn",
+    "ipProtectionSubscribedToVpn",
+  ],
+  visible: ({
+    ipProtectionVisible,
+    ipProtectionNotOptedIn,
+    ipProtectionSubscribedToVpn,
+  }) =>
+    ipProtectionVisible.value &&
+    !ipProtectionNotOptedIn.value &&
+    !ipProtectionSubscribedToVpn.value,
 });
 
 // Study opt out

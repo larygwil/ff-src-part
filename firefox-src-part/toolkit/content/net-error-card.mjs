@@ -15,6 +15,7 @@ import {
   getFailedCertificatesAsPEMString,
   handleNSSFailure,
   recordSecurityUITelemetry,
+  getFilePath,
   gOffline,
   gNoConnectivity,
   retryThis,
@@ -93,14 +94,12 @@ export class NetErrorCard extends MozLitElement {
 
     initializeRegistry();
 
-    let errorInfo;
+    let errorInfo = { errorCodeString: "" };
     try {
       errorInfo = gIsCertError
         ? document.getFailedCertSecurityInfo()
         : document.getNetErrorInfo();
-    } catch {
-      return false;
-    }
+    } catch {}
 
     const id = NetErrorCard.getCustomErrorID(
       errorInfo.errorCodeString || gErrorCode
@@ -155,6 +154,7 @@ export class NetErrorCard extends MozLitElement {
     document.dispatchEvent(
       new CustomEvent("AboutNetErrorLoad", { bubbles: true })
     );
+    this.focusTryAgainButton();
   }
 
   shouldHideExceptionButton() {
@@ -291,6 +291,21 @@ export class NetErrorCard extends MozLitElement {
     this.focusPrefResetButton();
   }
 
+  async focusTryAgainButton() {
+    await this.getUpdateComplete();
+
+    if (window.top != window) {
+      return;
+    }
+
+    if (!this.tryAgainButton) {
+      return;
+    }
+
+    await this.tryAgainButton.updateComplete;
+    this.tryAgainButton.focus();
+  }
+
   async focusPrefResetButton() {
     await this.getUpdateComplete();
 
@@ -328,9 +343,13 @@ export class NetErrorCard extends MozLitElement {
   }
 
   getErrorInfo() {
-    return gIsCertError
-      ? document.getFailedCertSecurityInfo()
-      : document.getNetErrorInfo();
+    try {
+      return gIsCertError
+        ? document.getFailedCertSecurityInfo()
+        : document.getNetErrorInfo();
+    } catch {
+      return { errorCodeString: gErrorCode };
+    }
   }
 
   getErrorConfig() {
@@ -343,6 +362,7 @@ export class NetErrorCard extends MozLitElement {
       cssClass: getCSSClass(),
       domainMismatchNames: this.domainMismatchNames,
       offline: gOffline,
+      filePath: getFilePath(),
     });
 
     if (errorConfig.customNetError) {
@@ -1017,7 +1037,11 @@ export class NetErrorCard extends MozLitElement {
         rel="stylesheet"
         href="chrome://global/skin/aboutNetError.css"
       />
-      <article class="felt-privacy-container">
+      <article
+        class="felt-privacy-container"
+        aria-labelledby="error-title"
+        aria-describedby="error-intro whatCanYouDo"
+      >
         <div class="img-container">
           <img src=${src} data-l10n-id=${alt} data-l10n-attrs="alt" />
         </div>

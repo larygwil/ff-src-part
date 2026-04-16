@@ -141,7 +141,7 @@ export const DEFAULT_MODEL = Object.freeze({
  * - Old clients will continue using old major version
  */
 export const FEATURE_MAJOR_VERSIONS = Object.freeze({
-  [MODEL_FEATURES.CHAT]: 2,
+  [MODEL_FEATURES.CHAT]: 3,
   [MODEL_FEATURES.TITLE_GENERATION]: 1,
   [MODEL_FEATURES.CONVERSATION_STARTERS_SIDEBAR_SYSTEM]: 1,
   [MODEL_FEATURES.CONVERSATION_SUGGESTIONS_SIDEBAR_STARTER]: 2,
@@ -333,6 +333,20 @@ export class openAIEngine {
    * @type {string | null}
    */
   #purpose = null;
+
+  /**
+   * Feature name passed to PipelineOptions as featureId for telemetry.
+   *
+   * @type {string | null}
+   */
+  #feature = null;
+
+  /**
+   * Flow ID for correlating frontend and backend telemetry.
+   *
+   * @type {string | null}
+   */
+  #flowId = null;
 
   /**
    * Gets the Remote Settings client for AI window configurations.
@@ -570,6 +584,8 @@ export class openAIEngine {
    * @param {string} purpose
    *   The purpose of the request, used for telemetry tracking.
    *   Defaults to PURPOSES.CHAT.
+   * @param {string | null} [flowId]
+   *   Flow ID for correlating frontend and backend telemetry.
    * @returns {Promise<object>}
    *   Promise that will resolve to the configured engine instance.
    */
@@ -577,7 +593,8 @@ export class openAIEngine {
     feature,
     engineId = DEFAULT_ENGINE_ID,
     serviceType = SERVICE_TYPES.AI,
-    purpose = PURPOSES.CHAT
+    purpose = PURPOSES.CHAT,
+    flowId = null
   ) {
     const engine = new openAIEngine();
 
@@ -586,12 +603,16 @@ export class openAIEngine {
     engine.#engineId = engineId;
     engine.#serviceType = serviceType;
     engine.#purpose = purpose;
+    engine.#feature = feature;
+    engine.#flowId = flowId;
 
     engine.engineInstance = await openAIEngine.#createOpenAIEngine(
       engineId,
       serviceType,
       purpose,
-      engine.model
+      engine.model,
+      flowId,
+      feature
     );
 
     return engine;
@@ -622,13 +643,17 @@ export class openAIEngine {
    * @param {string} serviceType  The type of message to be sent ("ai", "memories", "s2s")
    * @param {string} purpose      The purpose of the request, used for telemetry tracking
    * @param {string | null} modelId  The resolved model ID (already contains fallback logic)
+   * @param {string | null} flowId   Flow ID for correlating frontend and backend telemetry
+   * @param {string | null} featureId  Feature name passed to PipelineOptions
    * @returns {Promise<object>}   The configured engine instance
    */
   static async #createOpenAIEngine(
     engineId,
     serviceType,
     purpose,
-    modelId = null
+    modelId = null,
+    flowId = null,
+    featureId = null
   ) {
     const extraHeadersPref = Services.prefs.getStringPref(
       "browser.smartwindow.extraHeaders",
@@ -648,6 +673,8 @@ export class openAIEngine {
         backend: "openai",
         baseURL: Services.prefs.getStringPref(ENDPOINT_PREF, ""),
         engineId,
+        featureId,
+        flowId,
         modelId,
         modelRevision: "main",
         taskName: "text-generation",
@@ -738,7 +765,9 @@ export class openAIEngine {
       this.#engineId,
       this.#serviceType,
       this.#purpose,
-      this.model
+      this.model,
+      this.#flowId,
+      this.#feature
     );
   }
 

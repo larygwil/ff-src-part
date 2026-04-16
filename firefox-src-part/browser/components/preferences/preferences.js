@@ -259,7 +259,7 @@ const CONFIG_PANES = Object.freeze({
     l10nId: "ai-window-personalize-header",
     iconSrc: "chrome://browser/skin/smart-window-mono.svg",
     badge: "beta",
-    groupIds: ["assistantModelGroup", "memoriesGroup"],
+    groupIds: ["assistantDefaultGroup", "assistantModelGroup", "memoriesGroup"],
     module: "chrome://browser/content/preferences/config/aiFeatures.mjs",
   },
   translations: {

@@ -549,7 +549,6 @@
       this.#suggestionsOptin.addEventListener("MlModelOptinConfirm", () => {
         this.#handleMLOptinTelemetry("step1-optin-confirmed");
         Services.prefs.setBoolPref("browser.tabs.groups.smart.optin", true);
-        this.#suggestionsOptinContainer.hidden = true;
         this.#handleFirstDownloadAndSuggest();
       });
 

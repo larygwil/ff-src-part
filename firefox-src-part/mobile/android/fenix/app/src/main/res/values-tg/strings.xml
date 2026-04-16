@@ -786,6 +786,12 @@
   <string name="preferences_category_about">Дар бораи барнома</string>
   <!-- Preference category for settings related to changing the default search engine -->
   <string name="preferences_category_select_default_search_engine">Интихоб намоед</string>
+  <!-- Preference category for settings related to changing the default search engine -->
+  <string name="preferences_category_select_default_search_engine_2">Низоми ҷустуҷӯии пешфарз барои тамошобинии муқаррар</string>
+  <!-- Preference category for settings related to changing the private browsing search engine -->
+  <string name="preferences_category_select_private_search_engine">Низоми ҷустуҷӯии пешфарз барои тамошобинии хусусӣ</string>
+  <!-- Option to set the private browsing mode to use the normal default search engine -->
+  <string name="search_engine_use_default">Истифода аз низоми ҷустуҷӯии ягона мувофиқи тамошобинии муқаррар</string>
   <!-- Preference for settings related to managing search shortcuts for the quick search menu -->
   <string name="preferences_manage_search_shortcuts_2">Идоракунии низомҳои ҷустуҷӯии иловагӣ</string>
   <!-- Summary for preference for settings related to managing search shortcuts for the quick search menu -->
@@ -1002,7 +1008,15 @@
   <string name="preference_downloads_folder_permission_lost" tools:ignore="UnusedResources">Шумо барои истифода кардани ин ҷузвдон иҷозат надоред. Кӯшиш кунед, ки ҷузвдони дигареро интихоб намоед.</string>
   <!-- Preference title for choosing an app to handle downloads -->
   <string name="preferences_choose_app_for_downloads">Идоракунии боргириҳо тавассути барномаи дигар</string>
+  <!-- Preference category for deleting or removing downloads -->
+  <string name="preferences_category_delete_or_remove_downloads">Нест ё тоза кардани боргириҳо</string>
   <string name="preferences_downloads_delete_from_device">Нест кардан аз дастгоҳ</string>
+  <string name="preferences_downloads_delete_from_device_description">Файл аз дастгоҳи шумо нест карда шуд ва аз таърихи боргириҳо тоза карда шуд</string>
+  <string name="preferences_downloads_remove_from_download_history">Тоза кардан аз таърихи боргириҳо</string>
+  <string name="preferences_downloads_remove_from_download_history_description">Файл аз таърихи боргириҳо тоза карда шуд, аммо дастгоҳи шумо онро то ҳол нигоҳ медорад</string>
+  <string name="preferences_downloads_ask_when_to_delete_files">Бояд пурсида шавад вақте файлҳоро нест мекунам</string>
+  <!-- Preference for downloads -->
+  <string name="preferences_downloads_2">Танзимоти боргирӣ</string>
   <!-- Title for the setting to automatically clean up downloaded files. %s is the name of the app (for example "Firefox"). -->
   <string name="preferences_downloads_settings_clean_up_files_title">Нест кардан аз «%s» ва дастгоҳ</string>
   <!-- Summary for the setting to automatically clean up downloaded files -->
@@ -1365,6 +1379,8 @@
   <string name="toolbar_customize_shortcut_homepage">Саҳифаи асосӣ</string>
   <!-- Back shortcut in toolbar customization -->
   <string name="toolbar_customize_shortcut_back">Ба қафо</string>
+  <!-- Label for choosing in toolbar customization settings to not use any custom shortcut button. -->
+  <string name="toolbar_customize_shortcut_none">Ҳеҷ</string>
   <!--
     App icon Preferences
 
@@ -1785,6 +1801,11 @@
     This button will dismiss the dialog.
   -->
   <string name="download_file_has_not_enough_storage_dialog_cancel_button_text">Бекор кардан</string>
+  <plurals name="downloads_delete_dialog_title">
+    <!-- Title for the download deletion confirmation dialog. The message changes depending on how many files are selected. %d is the number of files to be deleted. -->
+    <item quantity="one">Файлро нест мекунед?</item>
+    <item quantity="other">%d файлро нест мекунед?</item>
+  </plurals>
   <!-- Text for the button to delete a single downloaded file item -->
   <string name="download_delete_item">Нест кардан</string>
   <!-- Content description for the toolbar "Navigate back" button -->
@@ -1816,6 +1837,10 @@
   <string name="download_delete_multi_select_dialog_confirm">Нест кардан</string>
   <!-- Alert dialog confirmation before deleting multiple download items, this is the negative action. -->
   <string name="download_delete_multi_select_dialog_cancel">Бекор кардан</string>
+  <!-- Alert dialog confirmation before deleting a single download item or many download items, this is one of the radio buttons within the dialog box for the user to select. -->
+  <string name="download_delete_dialog_from_device">Нест кардан аз дастгоҳ</string>
+  <!-- Alert dialog confirmation before deleting a single download item or many download items, this is one of the radio buttons within the dialog box for the user to select. -->
+  <string name="download_delete_dialog_from_history">Тоза кардан танҳо аз таърихи боргириҳо</string>
   <!-- Alert dialog confirmation before deleting a single download item or many download items, this is the negative action. -->
   <string name="download_delete_dialog_cancel">Бекор кардан</string>
   <!-- Alert dialog confirmation before deleting a single download item or many download items, this is the positive action. -->
@@ -2337,8 +2362,16 @@
   <string name="qr_code_display_title">Рамзи «QR»</string>
   <!-- Content description for the close button in the QR code display screen -->
   <string name="qr_code_display_close">Пӯшидан</string>
+  <!-- Heading on the QR code display screen -->
+  <string name="qr_code_display_share_nearby">Мубодилаи пайванди «Дар наздикӣ»</string>
+  <!-- Body text on the QR code display screen instructing the user to have others scan the code -->
+  <string name="qr_code_display_instructions">Барои мубодилаи ин пайванд бо одамон дар наздикӣ, аз онҳо дархост кунед, ки рамзи «QR»-и зеринро аксбардорӣ намоянд.</string>
   <!-- Label for the download button on the QR code display screen -->
   <string name="qr_code_display_download">Боргирӣ кардан</string>
+  <!-- Toast shown when the QR code is successfully saved to Downloads -->
+  <string name="qr_code_download_success">Рамзи «QR» дар «Боргириҳо» нигоҳ дошта шуд</string>
+  <!-- Toast shown when saving the QR code to Downloads fails -->
+  <string name="qr_code_download_failure">Рамзи «QR» нигоҳ дошта нашуд</string>
   <!-- Sub-header in the dialog to share a link to an app from the full list -->
   <string name="share_link_all_apps_subheader">Ҳамаи амалҳо</string>
   <!-- Sub-header in the dialog to share a link to an app from the most-recent sorted list -->
@@ -3312,6 +3345,8 @@
     which navigates the user to a screen displaying all the shortcuts.
   -->
   <string name="homepage_shortcuts_show_all_content_description">Намоиш додани ҳамаи миёнбурҳо</string>
+  <!-- Label for the "Add shortcut" button displayed as a tile. -->
+  <string name="homepage_shortcuts_add_shortcut">Илова кардани миёнбур</string>
   <!-- Title text displayed in the dialog when shortcuts limit is reached. -->
   <string name="shortcut_max_limit_title">Ба ҳудуди шумораи миёнбурҳо расид</string>
   <!-- Content description text displayed in the dialog when shortcut limit is reached. -->

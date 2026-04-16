@@ -21,8 +21,8 @@
  */
 
 /**
- * pdfjsVersion = 5.6.98
- * pdfjsBuild = 977e4f2c4
+ * pdfjsVersion = 5.6.110
+ * pdfjsBuild = a1cc75126
  */
 /******/ // The require scope
 /******/ var __webpack_require__ = {};
@@ -4618,7 +4618,11 @@ class PDFFindController {
       this.#savedPageData = null;
       return;
     }
-    this.#onFindBarClose();
+    if (this._findTimeout) {
+      clearTimeout(this._findTimeout);
+      this._findTimeout = null;
+    }
+    this._resumePageIdx = null;
     this._dirtyMatch = true;
     const prevPromises = this._extractTextPromises;
     const prevContents = this._pageContents;
@@ -4644,11 +4648,7 @@ class PDFFindController {
       hasDiacritics.push(prevDiacritics[prevPageNumber - 1] ?? false);
     }
     if (this.#state) {
-      this._eventBus.dispatch("find", {
-        source: this,
-        type: "",
-        ...this.#state
-      });
+      this.#nextMatch();
     }
   }
   #onFindBarClose(evt) {
@@ -8635,7 +8635,7 @@ class PDFViewer {
   #savedPageViews = null;
   #deletedPageNumbers = null;
   constructor(options) {
-    const viewerVersion = "5.6.98";
+    const viewerVersion = "5.6.110";
     if (version !== viewerVersion) {
       throw new Error(`The API version "${version}" does not match the Viewer version "${viewerVersion}".`);
     }

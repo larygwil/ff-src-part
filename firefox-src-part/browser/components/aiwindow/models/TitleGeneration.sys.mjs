@@ -42,16 +42,24 @@ function generateDefaultTitle(message) {
  *
  * @param {string} message - The user's message
  * @param {object} current_tab - Object containing current tab information
+ * @param {string} [assistantResponse] - The first assistant response
+ * @param {string | null} [flowId] - Flow ID for correlating with firefox_ai_runtime telemetry
  * @returns {Promise<string>} The generated chat title
  */
-export async function generateChatTitle(message, current_tab) {
+export async function generateChatTitle(
+  message,
+  current_tab,
+  assistantResponse,
+  flowId = null
+) {
   try {
     // Build the OpenAI engine
     const engine = await openAIEngine.build(
       MODEL_FEATURES.TITLE_GENERATION,
       `${MODEL_FEATURES.TITLE_GENERATION}-engine`,
       SERVICE_TYPES.AI,
-      PURPOSES.TITLE_GENERATION
+      PURPOSES.TITLE_GENERATION,
+      flowId
     );
 
     const tabInfo = current_tab || { url: "", title: "", description: "" };

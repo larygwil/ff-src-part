@@ -293,7 +293,7 @@ export const MemoryStore = {
    * hard delete (remove from array).
    *
    * @param {string} id
-   * @param {boolean} trigger
+   * @param {string} trigger
    * @returns {Promise<boolean>}
    */
   async hardDeleteMemory(id, trigger = "other") {

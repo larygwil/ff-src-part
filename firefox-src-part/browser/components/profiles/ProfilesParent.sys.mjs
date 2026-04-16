@@ -107,6 +107,7 @@ export class ProfilesParent extends JSWindowActorParent {
       }
       case "Profiles:GetEditProfileContent": {
         Glean.profilesExisting.displayed.record();
+        await lazy.BackupService.init().postRecoveryComplete;
         let isDark = gBrowser.selectedBrowser.ownerGlobal.matchMedia(
           "(-moz-system-dark-theme)"
         ).matches;

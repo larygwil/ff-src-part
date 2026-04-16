@@ -11,6 +11,7 @@ import { IPPNimbusHelper } from "moz-src:///toolkit/components/ipprotection/IPPN
 import { IPProtectionServerlist } from "moz-src:///toolkit/components/ipprotection/IPProtectionServerlist.sys.mjs";
 import { IPPSignInWatcher } from "moz-src:///toolkit/components/ipprotection/IPPSignInWatcher.sys.mjs";
 import { IPPStartupCache } from "moz-src:///toolkit/components/ipprotection/IPPStartupCache.sys.mjs";
+import { IPPSessionPrefManager } from "moz-src:///toolkit/components/ipprotection/IPPSessionPrefManager.sys.mjs";
 
 const coreHelpers = [
   IPPStartupCache,
@@ -18,6 +19,7 @@ const coreHelpers = [
   IPProtectionServerlist,
   IPPEnrollAndEntitleManager,
   IPPProxyManager,
+  IPPSessionPrefManager,
   IPPAutoRestoreHelper,
   ...IPPAutoStartHelpers,
   IPPNimbusHelper,

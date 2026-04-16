@@ -21,8 +21,8 @@
  */
 
 /**
- * pdfjsVersion = 5.6.98
- * pdfjsBuild = 977e4f2c4
+ * pdfjsVersion = 5.6.110
+ * pdfjsBuild = a1cc75126
  */
 /******/ // The require scope
 /******/ var __webpack_require__ = {};
@@ -6089,7 +6089,11 @@ class PDFFindController {
       this.#savedPageData = null;
       return;
     }
-    this.#onFindBarClose();
+    if (this._findTimeout) {
+      clearTimeout(this._findTimeout);
+      this._findTimeout = null;
+    }
+    this._resumePageIdx = null;
     this._dirtyMatch = true;
     const prevPromises = this._extractTextPromises;
     const prevContents = this._pageContents;
@@ -6115,11 +6119,7 @@ class PDFFindController {
       hasDiacritics.push(prevDiacritics[prevPageNumber - 1] ?? false);
     }
     if (this.#state) {
-      this._eventBus.dispatch("find", {
-        source: this,
-        type: "",
-        ...this.#state
-      });
+      this.#nextMatch();
     }
   }
   #onFindBarClose(evt) {
@@ -8973,6 +8973,7 @@ class PDFThumbnailViewer {
   #undoCloseButton = null;
   #isInPasteMode = false;
   #hasUndoBarVisible = false;
+  #newBadge = null;
   constructor({
     container,
     eventBus,
@@ -9019,6 +9020,7 @@ class PDFThumbnailViewer {
         newSpan.setAttribute("data-l10n-id", "pdfjs-new-badge-content");
         newSpan.classList.add("newBadge");
         button.parentElement.before(newSpan);
+        this.#newBadge = newSpan;
       }
       this.eventBus.on("pagesloaded", () => {
         button.disabled = false;
@@ -9325,6 +9327,7 @@ class PDFThumbnailViewer {
     this.#currentScrollBottom = this.#currentScrollTop + this.scrollableContainer.clientHeight;
     this.#dragAC = new AbortController();
     this.container.classList.add("isDragging");
+    this.#newBadge?.classList.add("hidden");
     const startPageNumber = parseInt(draggedThumbnail.getAttribute("page-number"), 10);
     this.#lastDraggedOverIndex = startPageNumber - 1;
     if (!this.#selectedPages?.has(startPageNumber)) {
@@ -9369,6 +9372,7 @@ class PDFThumbnailViewer {
     this.#dragMarker = null;
     this.#dragAC.abort();
     this.#dragAC = null;
+    this.#newBadge?.classList.remove("hidden");
     this.container.classList.remove("isDragging");
     for (const selected of this.#selectedPages) {
       const thumbnail = this._thumbnails[selected - 1];
@@ -9398,7 +9402,7 @@ class PDFThumbnailViewer {
       const currentPageNumber = isNaN(this.#pageNumberToRemove) ? pagesToMove[0] : this.#pageNumberToRemove;
       pagesMapper.movePages(selectedPages, pagesToMove, newIndex);
       this.#updateCurrentPage(this.#updateThumbnails(currentPageNumber));
-      this.#computeThumbnailsPosition();
+      this.#thumbnailsPositions = null;
       selectedPages.clear();
       this.#pageNumberToRemove = NaN;
       this.#toggleMenuEntries(false);
@@ -9450,6 +9454,8 @@ class PDFThumbnailViewer {
     }
     this.#isCut = false;
     if (this.#savedThumbnails) {
+      const currentThumb = this._thumbnails[this._currentPageNumber - 1];
+      currentThumb?.toggleCurrent(false);
       const fragment = document.createDocumentFragment();
       for (let i = 1, ii = this.#savedThumbnails.length; i <= ii; i++) {
         const thumbnail = this.#savedThumbnails[i - 1];
@@ -9460,6 +9466,9 @@ class PDFThumbnailViewer {
       this.container.replaceChildren(fragment);
       this._thumbnails = this.#savedThumbnails;
       this.#savedThumbnails = null;
+      const newIdx = currentThumb ? this._thumbnails.indexOf(currentThumb) : -1;
+      this._currentPageNumber = newIdx + 1;
+      currentThumb?.toggleCurrent(newIdx !== -1);
       this.#pagesMapper.cancelDelete();
       this.eventBus.dispatch("pagesedited", {
         source: this,
@@ -9528,6 +9537,7 @@ class PDFThumbnailViewer {
     });
     this.#clearSelection();
     this.#toggleMenuEntries(false);
+    this.#updateStatus("select");
   }
   #copyPages(clearSelection = true) {
     if (!this.#isCut) {
@@ -9576,7 +9586,7 @@ class PDFThumbnailViewer {
     pagesMapper.pastePages(index);
     this.#updateThumbnails(currentPageNumber);
     this.#updateCurrentPage(index + 1, true);
-    this.#computeThumbnailsPosition();
+    this.#thumbnailsPositions = null;
     this.eventBus.dispatch("pagesedited", {
       source: this,
       pagesMapper,
@@ -9605,6 +9615,7 @@ class PDFThumbnailViewer {
     const pagesToDelete = this.#deletedPageNumbers = Uint32Array.from(selectedPages).sort((a, b) => a - b);
     pagesMapper.deletePages(pagesToDelete);
     this.#updateCurrentPage(this.#updateThumbnails(currentPageNumber));
+    this.#thumbnailsPositions = null;
     selectedPages.clear();
     this.#updateMenuEntries();
     this.eventBus.dispatch("pagesedited", {
@@ -9630,11 +9641,13 @@ class PDFThumbnailViewer {
     if (type === "select") {
       this.#statusLabel.setAttribute("data-l10n-id", count ? "pdfjs-views-manager-pages-status-action-label" : "pdfjs-views-manager-pages-status-none-action-label");
       if (count) {
+        this.#newBadge?.classList.add("hidden");
         this.#statusLabel.setAttribute("data-l10n-args", JSON.stringify({
           count
         }));
         this.#deselectButton.classList.toggle("hidden", false);
       } else {
+        this.#newBadge?.classList.remove("hidden");
         this.#statusLabel.removeAttribute("data-l10n-args");
         this.#deselectButton.classList.toggle("hidden", true);
       }
@@ -12789,7 +12802,7 @@ class PDFViewer {
   #savedPageViews = null;
   #deletedPageNumbers = null;
   constructor(options) {
-    const viewerVersion = "5.6.98";
+    const viewerVersion = "5.6.110";
     if (version !== viewerVersion) {
       throw new Error(`The API version "${version}" does not match the Viewer version "${viewerVersion}".`);
     }
@@ -16102,7 +16115,7 @@ class ViewsManager extends Sidebar {
       attachmentsTitle: "pdfjs-views-manager-attachments-title",
       layersTitle: "pdfjs-views-manager-layers-title1",
       notificationButton: "pdfjs-toggle-views-manager-notification-button",
-      toggleButton: "pdfjs-toggle-views-manager-button"
+      toggleButton: "pdfjs-toggle-views-manager-button1"
     });
     this.#addEventListeners();
   }

@@ -101,6 +101,15 @@
     <string name="pref_key_crash_pull_never_show_again" translatable="false">pref_key_crash_pull_never_show_again</string>
     <string name="pref_key_crash_pull_dont_show_before" translatable="false">pref_key_crash_pull_dont_show_before</string>
     <string name="pref_key_privacy_notice_banner_last_displayed_time" translatable="false">pref_key_privacy_notice_banner_last_displayed_time</string>
+    <string name="pref_cfr_popups_enabled" translatable="false">pref_cfr_popups_enabled</string>
+    <string name="pref_in_app_messages_enabled" translatable="false">pref_in_app_messages_enabled</string>
+    <string name="pref_key_onboarding_completed_timestamp" translatable="false">pref_key_onboarding_completed_timestamp</string>
+
+    <!-- Continuous onboarding -->
+    <string name="pref_key_continuous_onboarding_enabled" translatable="false">pref_key_continuous_onboarding_enabled</string>
+    <string name="pref_key_continuous_onboarding_day_two_completed_timestamp" translatable="false">pref_key_continuous_onboarding_day_two_completed_timestamp</string>
+    <string name="pref_key_continuous_onboarding_day_three_completed_timestamp" translatable="false">pref_key_continuous_onboarding_day_three_completed_timestamp</string>
+    <string name="pref_key_continuous_onboarding_day_seven_completed_timestamp" translatable="false">pref_key_continuous_onboarding_day_seven_completed_timestamp</string>
 
     <!-- Data Choices -->
     <string name="pref_key_telemetry" translatable="false">pref_key_telemetry</string>

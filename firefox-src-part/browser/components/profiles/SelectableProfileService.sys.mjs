@@ -22,6 +22,8 @@ const DAU_GROUPID_PREF_NAME = "datareporting.dau.cachedUsageProfileGroupID";
 ChromeUtils.defineESModuleGetters(lazy, {
   AddonManager: "resource://gre/modules/AddonManager.sys.mjs",
   ClientID: "resource://gre/modules/ClientID.sys.mjs",
+  LightweightThemeManager:
+    "resource://gre/modules/LightweightThemeManager.sys.mjs",
   CryptoUtils: "moz-src:///services/crypto/modules/utils.sys.mjs",
   DownloadPaths: "resource://gre/modules/DownloadPaths.sys.mjs",
   EveryWindow: "resource:///modules/EveryWindow.sys.mjs",
@@ -1010,6 +1012,17 @@ class SelectableProfileServiceClass extends EventEmitter {
       await theme.enable();
     } else {
       console.warn(`enableTheme: could not find or install theme ${themeId}`);
+    }
+
+    // If the theme was already active, theme.enable() is a no-op and the
+    // themeObserver won't fire. Re-send the notification so that the
+    // observer picks up the correct colors.
+    let data = lazy.LightweightThemeManager.themeData;
+    if (data?.theme) {
+      Services.obs.notifyObservers(
+        { wrappedJSObject: data },
+        "lightweight-theme-styling-update"
+      );
     }
   }
 

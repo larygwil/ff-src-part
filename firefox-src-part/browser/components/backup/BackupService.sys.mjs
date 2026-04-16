@@ -3624,11 +3624,13 @@ export class BackupService extends EventTarget {
         let themeId = await this.#getLegacyThemeId(recoveryPath);
         let { themeFg, themeBg } =
           lazy.SelectableProfileService.getColorsForDefaultTheme();
-        await profile.setThemeAsync({
-          themeId,
-          themeFg,
-          themeBg,
-        });
+        await profile.setThemeAsync({ themeId, themeFg, themeBg });
+
+        // Schedule enableTheme() via post-recovery so that the correct
+        // theme colors are computed from the recovered profile's window.
+        postRecovery[
+          DefaultBackupResources.SelectableProfileBackupResource.key
+        ] = { themeId };
       }
 
       await this.#writePostRecoveryData(postRecovery, profile.path);
