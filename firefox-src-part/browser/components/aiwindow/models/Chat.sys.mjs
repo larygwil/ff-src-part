@@ -7,7 +7,11 @@
 import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs";
 
 import { ToolRoleOpts } from "moz-src:///browser/components/aiwindow/ui/modules/ChatMessage.sys.mjs";
-import { openAIEngine } from "moz-src:///browser/components/aiwindow/models/Utils.sys.mjs";
+import {
+  openAIEngine,
+  DEFAULT_MODEL,
+  MODEL_FEATURES,
+} from "moz-src:///browser/components/aiwindow/models/Utils.sys.mjs";
 import {
   toolsConfig,
   toolFns,
@@ -18,6 +22,7 @@ import {
   GET_PAGE_CONTENT,
   RUN_SEARCH,
   GET_USER_MEMORIES,
+  GET_NAVIGATION_INFO,
 } from "moz-src:///browser/components/aiwindow/models/Tools.sys.mjs";
 import {
   expandUrlTokensInToolParams,
@@ -67,8 +72,40 @@ XPCOMUtils.defineLazyPreferenceGetter(
   Chat,
   "modelId",
   "browser.smartwindow.model",
-  "qwen3-235b-a22b-instruct-2507-maas"
+  DEFAULT_MODEL[MODEL_FEATURES.CHAT]
 );
+
+/**
+ * Log chat stream traffic.
+ * Automatically formats the output and is controlled by the logLevel pref.
+ * Data is wrapped in an array to keep the console output flat and clickable.
+ *
+ * @param {number} turn
+ * @param {string} action
+ * @param {object | Array} [data]
+ * @param {string} [extraText]
+ */
+function logConversationStream(turn, action, data = null, extraText = "") {
+  try {
+    let prefix = `[Chat][Turn ${turn}][${action.padEnd(10)}]`;
+
+    if (extraText) {
+      prefix += ` ${extraText}`;
+    }
+
+    if (data) {
+      lazy.console.debug(prefix, [data]);
+    } else {
+      lazy.console.debug(prefix);
+    }
+  } catch (err) {
+    // Failsafe: If logging ever breaks, print a raw error but DO NOT crash the stream
+    lazy.console.error("[Chat] Debug logger failed to format:", err, {
+      turn,
+      action,
+    });
+  }
+}
 
 Object.assign(Chat, {
   lastUsage: null,
@@ -84,12 +121,14 @@ Object.assign(Chat, {
    * @param {openAIEngine} options.engineInstance
    * @param {BrowsingContext} options.browsingContext - Omitted for tests only.
    * @param {"fullpage" | "sidebar" | "urlbar"} options.mode - See the MODE in ai-window.mjs
+   * @param {AbortSignal} [options.signal]
    */
   async fetchWithHistory({
     conversation,
     engineInstance,
     browsingContext,
     mode,
+    signal,
   }) {
     if (!browsingContext && !Cu.isInAutomation) {
       throw new Error(
@@ -121,6 +160,7 @@ Object.assign(Chat, {
       isVerbatimQuery = false;
     }
 
+    let fullResponseText = "";
     const searchExecuted = conversation._searchExecutedTurn === currentTurn;
     let blockedSearchAttempts = 0;
 
@@ -135,6 +175,9 @@ Object.assign(Chat, {
       // This is done in-place on the messages.
       replaceUrlsWithTokens(conversation, messages);
 
+      // Debug logging: Record only the latest message being sent to the model
+      logConversationStream(currentTurn, "CHAT SEND", messages.at(-1));
+
       return engineInstance.runWithGenerator({
         streamOptions: { enabled: true },
         fxAccountToken,
@@ -142,6 +185,7 @@ Object.assign(Chat, {
         tool_choice: "auto",
         tools: chatToolsConfig,
         args: messages,
+        signal,
         ...inferenceParams,
       });
     };
@@ -155,10 +199,14 @@ Object.assign(Chat, {
         const response = await conversation.receiveResponse(
           streamModelResponse()
         );
+        fullResponseText = response.fullResponseText;
         pendingToolCalls = response.pendingToolCalls;
-        lazy.console.log("Response", {
-          fullResponseText: response.fullResponseText,
-          pendingToolCalls,
+        lazy.console.log("Response", { fullResponseText, pendingToolCalls });
+
+        // Debug logging: Record the raw text and requested tool calls from the model
+        logConversationStream(currentTurn, "CHAT RECV", {
+          text: fullResponseText,
+          toolCalls: pendingToolCalls,
         });
 
         if (response.usage) {
@@ -170,6 +218,13 @@ Object.assign(Chat, {
       }
 
       if (!pendingToolCalls || pendingToolCalls.length === 0) {
+        // Debug logging: Mark the end of the streaming loop for this turn
+        logConversationStream(currentTurn, "STREAM END");
+        return;
+      }
+
+      if (signal?.aborted) {
+        logConversationStream(currentTurn, "STREAM END", null, "aborted");
         return;
       }
 
@@ -334,9 +389,20 @@ Object.assign(Chat, {
             case GET_USER_MEMORIES:
               result = await toolFns.getUserMemories(conversation);
               break;
+            case GET_NAVIGATION_INFO:
+              result = await toolFns.getNavigationInfo(toolParams);
+              break;
             default:
               throw new Error(`No such tool: ${toolName}`);
           }
+
+          // Debug logging: Record the data returned by the tool before feeding it to the model
+          logConversationStream(
+            currentTurn,
+            "TOOL EXEC",
+            { arguments: toolParams, result },
+            toolName
+          );
 
           const content = { tool_call_id: id, body: result, name: toolName };
           conversation.addToolCallMessage(content, currentTurn, toolRoleOpts);

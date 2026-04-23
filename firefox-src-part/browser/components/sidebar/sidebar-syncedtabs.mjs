@@ -64,29 +64,91 @@ class SyncedTabsInSidebar extends SidebarPage {
     this.removeSidebarFocusedListeners();
   }
 
-  handleContextMenuEvent(e) {
-    this.triggerNode =
-      this.findTriggerNode(e, "sidebar-tab-row") ||
-      this.findTriggerNode(e, "moz-input-search");
-    if (!this.triggerNode) {
-      e.preventDefault();
-      return;
+  #setContextMenuItemsVisibility(
+    contextMenu,
+    selectorsToShow = [],
+    selectorsToHide = []
+  ) {
+    for (let selector of selectorsToShow) {
+      contextMenu.querySelector(selector).hidden = false;
     }
-    const contextMenu = this._contextMenu;
-    const closeTabMenuItem = contextMenu.querySelector(
-      "#sidebar-context-menu-close-remote-tab"
-    );
-    closeTabMenuItem.setAttribute(
-      "data-l10n-args",
-      this.triggerNode.secondaryL10nArgs
-    );
-    // Enable the feature only if the device supports it
-    closeTabMenuItem.disabled = !this.triggerNode.canClose;
+    for (let selector of selectorsToHide) {
+      contextMenu.querySelector(selector).hidden = true;
+    }
+    // Fix up separators, ensuring we only show them if there's visible items
+    // before and after
+    let visibleItemBefore = false,
+      lastSeparator = null;
+    for (let menuChild of contextMenu.children) {
+      if (menuChild.localName == "menuseparator") {
+        menuChild.hidden = true;
+        // hide the separators intially, but mark for possible un-hiding if
+        // a visible element follows
+        if (visibleItemBefore) {
+          lastSeparator = menuChild;
+          visibleItemBefore = false;
+        }
+      } else if (!menuChild.hidden) {
+        visibleItemBefore = true;
+        if (lastSeparator) {
+          lastSeparator.hidden = false;
+        }
+      }
+    }
+  }
 
-    let privateWindowMenuItem = contextMenu.querySelector(
-      "#sidebar-synced-tabs-context-open-in-private-window"
-    );
-    privateWindowMenuItem.hidden = !lazy.PrivateBrowsingUtils.enabled;
+  handleContextMenuEvent(e) {
+    const contextMenu = this._contextMenu;
+    const tabItemSelectors = [
+      "#sidebar-synced-tabs-context-open-in-window",
+      "#sidebar-synced-tabs-context-open-in-private-window",
+      "#sidebar-context-menu-close-remote-tab",
+      "#sidebar-synced-tabs-context-bookmark-tab",
+      "#sidebar-synced-tabs-context-copy-link",
+    ];
+    const deviceItemSelectors = [
+      "#sidebar-synced-tabs-context-open-all-in-tabs",
+      "#sidebar-synced-tabs-context-connect-another-device",
+      "#sidebar-synced-tabs-context-manage-this-device",
+    ];
+
+    let triggerNode = this.findTriggerNode(e, "sidebar-tab-row");
+    if (triggerNode) {
+      this.triggerNode = triggerNode;
+      const closeTabMenuItem = contextMenu.querySelector(
+        "#sidebar-context-menu-close-remote-tab"
+      );
+      closeTabMenuItem.setAttribute(
+        "data-l10n-args",
+        this.triggerNode.secondaryL10nArgs
+      );
+      // Enable the feature only if the device supports it
+      closeTabMenuItem.disabled = !this.triggerNode.canClose;
+      // Show the context menu items for tab-row items and hide the device ones
+      this.#setContextMenuItemsVisibility(
+        contextMenu,
+        tabItemSelectors,
+        deviceItemSelectors
+      );
+
+      let privateWindowMenuItem = contextMenu.querySelector(
+        "#sidebar-synced-tabs-context-open-in-private-window"
+      );
+      privateWindowMenuItem.hidden = !lazy.PrivateBrowsingUtils.enabled;
+    } else if ((triggerNode = e.composedTarget.closest("summary"))) {
+      this.triggerNode = triggerNode;
+      // Show the context menu items device ones and hide the tab-row ones
+      this.#setContextMenuItemsVisibility(
+        contextMenu,
+        deviceItemSelectors,
+        tabItemSelectors
+      );
+    } else {
+      this.triggerNode = this.findTriggerNode(e, "moz-input-search");
+      if (!this.triggerNode) {
+        e.preventDefault();
+      }
+    }
   }
 
   handleCommandEvent(e) {
@@ -98,10 +160,32 @@ class SyncedTabsInSidebar extends SidebarPage {
           this.triggerNode.secondaryActionClass
         );
         break;
+      case "sidebar-synced-tabs-context-open-all-in-tabs":
+        this.openAllSyncedTabs(e);
+        break;
+      case "sidebar-synced-tabs-context-connect-another-device":
+        this.topWindow.gSync.openConnectAnotherDevice("syncedtabs-sidebar");
+        break;
+      case "sidebar-synced-tabs-context-manage-this-device":
+        this.topWindow.gSync.openDevicesManagementPage("syncedtabs-sidebar");
+        break;
       default:
         super.handleCommandEvent(e);
         break;
     }
+  }
+
+  openAllSyncedTabs() {
+    let card = this.triggerNode.getRootNode().host;
+    let tabList = card.querySelector("sidebar-tab-list");
+    let urls = tabList?.tabItems?.map(item => item.url).filter(Boolean);
+    if (!urls?.length) {
+      return;
+    }
+    this.topWindow.gBrowser.loadTabs(urls, {
+      replace: false,
+      triggeringPrincipal: Services.scriptSecurityManager.getSystemPrincipal(),
+    });
   }
 
   handleSidebarFocusedEvent() {
@@ -112,7 +196,7 @@ class SyncedTabsInSidebar extends SidebarPage {
     navigateToLink(e);
     // TO DO: update the below to handle multiple links opened at once. Bug 2024639
     Glean.sidebar.link.synced_tabs.add(1);
-    this.treeView.clearSelection();
+    this.treeView.resetSelection();
   }
 
   onSecondaryAction(e) {

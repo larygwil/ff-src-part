@@ -31,10 +31,6 @@
   <string name="tab_search_hint">Таблардан эзләү</string>
   <!-- Placeholder text shown in the search bar when using application search engines -->
   <string name="application_search_hint">Эзләнәсе сүзләрне кертү</string>
-  <!-- No Open Tabs Message Description -->
-  <string name="no_open_tabs_description" tools:ignore="UnusedResources" moz:removedIn="149">Сезнең ачык таблар монда күрсәтеләчәк.</string>
-  <!-- No Private Tabs Message Description -->
-  <string name="no_private_tabs_description" tools:ignore="UnusedResources" moz:removedIn="149">Сезнең хосусый таблар монда күрсәтеләчәк.</string>
   <!-- Tab tray multi select title in app bar. %1$d is the number of tabs selected -->
   <string name="tab_tray_multi_select_title">%1$d сайланган</string>
   <!-- Label of button in create collection dialog for creating a new collection -->
@@ -45,8 +41,8 @@
   <string name="tab_tray_select_collection">Җыентыкны сайлау</string>
   <!-- Content description for close button while in multiselect mode in tab tray -->
   <string name="tab_tray_close_multiselect_content_description">Күп сайлау режимыннан чыгу</string>
-  <!-- Content description for save to collection button while in multiselect mode in tab tray -->
-  <string name="tab_tray_collection_button_multiselect_content_description" tools:ignore="UnusedResources" moz:removedIn="149">Сайланган табларны җыентыкка өстәү</string>
+  <!-- The action text displayed on the synced tabs page when the user is not logged into an account, prompting the user to sign into their account. When clicked, it takes the user to the account sign-in flow. -->
+  <string name="tab_manager_empty_synced_tabs_page_sign_in_cta">Керү</string>
   <!--
     Home - Bookmarks
 
@@ -175,18 +171,12 @@
   <string name="browser_menu_no_extensions_installed_description">Кабызылган киңәйтүләр юк</string>
   <!-- Browser menu button that opens account settings -->
   <string name="browser_menu_account_settings">Хисап турында мәгълүмат</string>
-  <!-- Browser menu button that sends a user to help articles -->
-  <string name="browser_menu_help" tools:ignore="UnusedResources" moz:removedIn="149">Ярдәм</string>
-  <!-- Browser menu button that sends a to a the what's new article -->
-  <string name="browser_menu_whats_new" tools:ignore="UnusedResources" moz:removedIn="149">Яңалыклар</string>
   <!-- Browser menu button that opens the settings menu -->
   <string name="browser_menu_settings">Көйләүләр</string>
   <!-- Browser menu button that opens a user's library -->
   <string name="browser_menu_library">Китапханә</string>
   <!-- Browser menu toggle that requests a desktop site -->
   <string name="browser_menu_desktop_site">Сайтның компьютер версиясе</string>
-  <!-- Browser menu button that reopens a private tab as a regular tab -->
-  <string name="browser_menu_open_in_regular_tab" tools:ignore="UnusedResources" moz:removedIn="149">Гадәти табта ачу</string>
   <!-- Browser menu toggle that adds a shortcut to the site on the device home screen. -->
   <string name="browser_menu_add_to_homescreen">Өй экранына өстәү</string>
   <!-- Content description (not visible, for screen readers etc.) for the Resync tabs button -->
@@ -208,11 +198,6 @@
     Browser menu text shown in custom tabs to indicate this is a Fenix tab
     %1$s is the name of the app (for example "Firefox").
   -->
-  <string name="browser_menu_powered_by" tools:ignore="UnusedResources" moz:removedIn="149">%1$s НИГЕЗЕНДӘ</string>
-  <!--
-    Browser menu text shown in custom tabs to indicate this is a Fenix tab
-    %1$s is the name of the app (for example "Firefox").
-  -->
   <string name="browser_menu_powered_by2">%1$s нигезендә</string>
   <!-- Browser menu button to put the current page in reader mode -->
   <string name="browser_menu_read">Уку режимы</string>
@@ -221,15 +206,7 @@
   <!-- Browser menu button to open the current page in an external app -->
   <string name="browser_menu_open_app_link">Кушымтада ачу</string>
   <!-- Browser menu button to show reader view appearance controls e.g. the used font type and size -->
-  <string name="browser_menu_customize_reader_view" tools:ignore="UnusedResources" moz:removedIn="149">Уку режимын яраклаштыру</string>
-  <!-- Browser menu button to show reader view appearance controls e.g. the used font type and size -->
   <string name="browser_menu_customize_reader_view_2">Уку режимын көйләү</string>
-  <!-- Browser menu label for adding a bookmark -->
-  <string name="browser_menu_add" tools:ignore="UnusedResources" moz:removedIn="149">Өстәү</string>
-  <!-- Browser menu label for editing a bookmark -->
-  <string name="browser_menu_edit" tools:ignore="UnusedResources" moz:removedIn="149">Үзгәртү</string>
-  <!-- Button shown on the home page that opens the Customize home settings -->
-  <string name="browser_menu_customize_home_1" tools:ignore="UnusedResources" moz:removedIn="149">Баш битне көйләү</string>
   <!-- Browser menu label to sign in to sync on the device using Mozilla accounts -->
   <string name="browser_menu_sign_in">Керү</string>
   <!-- Browser menu label to sign back in to sync on the device when the user's account needs to be reauthenticated -->
@@ -358,6 +335,8 @@
   <string name="onboarding_preferences_dialog_crash_reporting_title">Ватылу турында хәбәрләрне автоматик рәвештә җибәрү</string>
   <!-- Learn more link for the crash reporting option in the privacy preferences dialog shown during onboarding. -->
   <string name="onboarding_preferences_dialog_crash_reporting_learn_more_2">Күбрәк белү</string>
+  <!-- Button text to continue and not send a startup crash report -->
+  <string name="startup_crash_negative">Юк, рәхмәт</string>
   <string name="onboarding_preferences_dialog_usage_data_learn_more_2">Күбрәк белү</string>
   <!-- Positive button label for the privacy preferences dialog shown during onboarding. -->
   <string name="onboarding_preferences_dialog_positive_button">Әзер</string>
@@ -371,6 +350,12 @@
   <string name="onboarding_term_of_service_line_two_link_text">Хосусыйлык аңлатмасы</string>
   <!-- Used as text for the link in onboarding_term_of_service_line_three. -->
   <string name="onboarding_term_of_service_line_three_link_text">Идарә итү</string>
+  <!-- Used as text for the link in onboarding_redesign_tou_body_one. -->
+  <string name="onboarding_redesign_tou_body_one_link_text" tools:ignore="BrandUsage,UnusedResources">Firefox куллану шартлары</string>
+  <!-- Terms of use (ToU) onboarding page continue button label. -->
+  <string name="onboarding_redesign_tou_agree_and_continue_button_label" tools:ignore="UnusedResources">Дәвам итү</string>
+  <!-- Onboarding label for 'Continue' button. -->
+  <string name="onboarding_redesign_continue_button" tools:ignore="UnusedResources">Дәвам итү</string>
   <!-- ==== Project "Nova" onboarding strings ==== -->
 
   <!-- ==== End of Project "Nova" onboarding strings ==== -->
@@ -648,6 +633,22 @@
   <string name="wallpapers_onboarding_dialog_body_text">Сезгә ошаган фон рәсемен сайлагыз.</string>
   <!-- Wallpaper onboarding dialog learn more button text. The button navigates to the wallpaper settings screen. -->
   <string name="wallpapers_onboarding_dialog_explore_more_button_text">Башка фон рәсемнәрен карау</string>
+  <!-- Title for the "Red" alternative app icon variant in the icon picker screen. -->
+  <string name="alternative_app_icon_option_red">Кызыл</string>
+  <!-- Title for the "Green" alternative app icon variant in the icon picker screen. -->
+  <string name="alternative_app_icon_option_green">Яшел</string>
+  <!-- Title for the "Blue" alternative app icon variant in the icon picker screen. -->
+  <string name="alternative_app_icon_option_blue">Зәңгәр</string>
+  <!-- Title for the "Retro 2004" themed alternative app icon variant in the icon picker screen. This app icon uses the classic Firefox logo from 2004. -->
+  <string name="alternative_app_icon_option_retro_2004">Ретро 2004</string>
+  <!-- Title for the "Pride" themed alternative app icon variant in the icon picker screen. The app icon incorporates a rainbow color scheme in support of the LGBTQ+ community. -->
+  <string name="alternative_app_icon_option_pride">Pride</string>
+  <!-- Title for the "Momo" themed alternative app icon variant in the icon picker screen. The app icon was created by artist @heyheymomodraws and features a unique hand-drawn style with a friendly fox. -->
+  <string name="alternative_app_icon_option_momo">Момо</string>
+  <!-- Title for the "Gradients" group of alternative app icon variants in the icon picker screen. This group contains icons with gradient backgrounds inspired by natural light conditions. -->
+  <string name="alternative_app_icon_group_gradients">Градиентлар</string>
+  <!-- Dialog button text for cancelling app icon change -->
+  <string name="restart_warning_dialog_button_negative">Баш тарту</string>
   <!--
     Add-ons general availability nimbus message
 
@@ -871,6 +872,8 @@
   <string name="close_tabs_after_one_month">Бер айдан соң</string>
   <!-- Title of preference that allows a user to specify the auto-close settings for open tabs -->
   <string name="preference_auto_close_tabs" tools:ignore="UnusedResources">Ачык табларны автматик рәвештә оябу</string>
+  <!-- Content description (not visible, for screen readers etc.): Close tab button -->
+  <string name="tab_manager_close_tabs">Ябу</string>
   <!--
     Opening screen
 
@@ -913,30 +916,24 @@
   <string name="studies_active">Актив</string>
   <!-- Learn more link for studies, links to an article for more information about studies. -->
   <string name="studies_learn_more">Күбрәк белү</string>
+  <!-- Learn more link for remote improvements, links to an article for more information about rollouts. -->
+  <string name="remote_improvements_learn_more">Күбрәк белү</string>
+  <!-- Text for the tabs header synced tabs -->
+  <string name="tabs_header_synced_tabs_title">Синхронлау</string>
   <!-- Content description (not visible, for screen readers etc.): Add tab button. Adds a news tab when pressed -->
   <string name="add_tab">Таб өстәү</string>
   <!-- Content description (not visible, for screen readers etc.): Add tab button. Adds a news tab when pressed -->
   <string name="add_private_tab">Хосусый таб өстәү</string>
-  <!-- Text for the new tab button to indicate adding a new private tab in the tab -->
-  <string name="tab_drawer_fab_content" tools:ignore="UnusedResources" moz:removedIn="149">Хосусый</string>
-  <!-- Text for the new tab button to indicate syncing command on the synced tabs page -->
-  <string name="tab_drawer_fab_sync" tools:ignore="UnusedResources" moz:removedIn="149">Синхронлау</string>
-  <!-- Text shown in the menu for sharing all tabs -->
-  <string name="tab_tray_menu_item_share" tools:ignore="UnusedResources" moz:removedIn="149">Барлык табларны уртаклашу</string>
   <!-- Text shown in the menu to view recently closed tabs -->
   <string name="tab_tray_menu_recently_closed">Күптән түгел ябылган таблар</string>
-  <!-- Text shown in the tabs tray inactive tabs section -->
-  <string name="tab_tray_inactive_recently_closed" tools:ignore="UnusedResources" moz:removedIn="149">Күптән түгел ябылган</string>
   <!-- Text shown in the menu to view account settings -->
   <string name="tab_tray_menu_account_settings">Хисап көйләүләре</string>
   <!-- Text shown in the menu to view tab settings -->
   <string name="tab_tray_menu_tab_settings">Таб көйләүләре</string>
   <!-- Text shown in the menu for closing all tabs -->
   <string name="tab_tray_menu_item_close">Барлык табларны да ябу</string>
-  <!-- Text shown in the multiselect menu for bookmarking selected tabs. -->
-  <string name="tab_tray_multiselect_menu_item_bookmark" tools:ignore="UnusedResources" moz:removedIn="149">Кыстыргыч</string>
-  <!-- Text shown in the multiselect menu for closing selected tabs. -->
-  <string name="tab_tray_multiselect_menu_item_close" tools:ignore="UnusedResources" moz:removedIn="149">Ябу</string>
+  <!-- Text shown on the cancel button in the Close all tabs confirmation dialog -->
+  <string name="tab_manager_close_all_tabs_dialog_cancel">Баш тарту</string>
   <!-- Content description for tabs tray multiselect share button -->
   <string name="tab_tray_multiselect_share_content_description" tools:ignore="UnusedResources" moz:removedIn="149">Сайланган табларны уртаклашу</string>
   <!-- Content description for tabs tray multiselect menu -->
@@ -967,6 +964,13 @@
   <string name="delete_from_history">Тарихтан бетерү</string>
   <!-- Postfix for private WebApp titles. %1$s is the name of the app (for example "Firefox"). -->
   <string name="pwa_site_controls_title_private">%1$s (Хосусый режим)</string>
+  <string name="create_tab_group_save_button">Саклау</string>
+  <!-- Label for the tab group name field in the bottom sheet to create or edit a tab group. -->
+  <string name="create_tab_group_name_label">Исем</string>
+  <!-- Label for the tab group name field in the bottom sheet to create or edit a tab group. -->
+  <string name="tab_group_name_label" tools:ignore="UnusedResources" moz:removedIn="150">Исем</string>
+  <!-- Text shown on the cancel button in the Delete tab group confirmation dialog. -->
+  <string name="delete_tab_group_confirmation_dialog_cancel">Баш тарту</string>
   <!--
     History
 
@@ -998,17 +1002,41 @@
   <string name="history_older">Искерәк</string>
   <!-- Text shown when no history exists -->
   <string name="history_empty_message">Тарих юк</string>
+  <!-- Text for the snackbar action button to open a completed download. -->
+  <string name="download_completed_snackbar_action_open">Ачу</string>
   <!--
     History multi select title in app bar
     %1$d is the number of downloads selected
   -->
   <string name="download_multi_select_title">%1$d сайланган</string>
   <!--
+    Text for the cancel button in the dialog that is shown when there is not enough storage space to download a file.
+    This button will dismiss the dialog.
+  -->
+  <string name="download_file_has_not_enough_storage_dialog_cancel_button_text">Баш тарту</string>
+  <!-- Alert dialog confirmation before deleting multiple download items, this is the negative action. -->
+  <string name="download_delete_multi_select_dialog_cancel">Баш тарту</string>
+  <!-- Label for the name field in the alert dialog confirmation before renaming a download item. -->
+  <string name="download_rename_dialog_label">Исем</string>
+  <string name="download_rename_dialog_confirm_button">Саклау</string>
+  <string name="download_rename_dialog_cancel_button">Баш тарту</string>
+  <string name="change_file_extension_cancel_button">Баш тарту</string>
+  <!--
+    Time period headers for downloads
+
+    Text for the header that groups the downloads for today
+  -->
+  <string name="download_time_period_today">Бүген</string>
+  <!-- Text for the filter button to show only video files in the downloads list -->
+  <string name="download_content_type_filter_video">Видеолар</string>
+  <!--
     WebCompat Reporter
 
     The title of the Web Compat Reporter feature. This is displayed in the top app bar.
   -->
   <string name="webcompat_reporter_screen_title">Ватык сайт турында хәбәр итү</string>
+  <!-- The button text for navigating to the SUMO link to learn more about reporting a broken site. -->
+  <string name="webcompat_reporter_learn_more">Күбрәк белү</string>
   <!-- The text field label of the URL text field. This is displayed above the user-inputted URL. -->
   <string name="webcompat_reporter_label_url">URL</string>
   <!-- The button text for the cancel button to leave the Web Compat Reporter feature. -->
@@ -1031,8 +1059,11 @@
   <string name="unsubmitted_crash_dialog_checkbox_label">Ватылу турындагы хәбәрләрне автоматик рәвештә җибәрү</string>
   <!-- Unsubmitted crash dialog negative button to dismiss the dialog -->
   <string name="unsubmitted_crash_dialog_negative_button">Ябу</string>
+  <!-- Unsubmitted crash dialog negative button to dismiss the dialog -->
+  <string name="unsubmitted_crash_dialog_negative_button_2">ЯБУ</string>
   <!-- Unsubmitted crash dialog positive button to submit crash report -->
   <string name="unsubmitted_crash_dialog_positive_button">Ватылу турында хәбәр җибәрү</string>
+  <string name="unsubmitted_crash_dialog_learn_more">Күбрәк белү</string>
   <!-- Text for the cancel button on delete bookmark dialog -->
   <string name="bookmark_delete_negative">Баш тарту</string>
   <!-- Screen title for adding a bookmarks folder -->
@@ -1041,6 +1072,8 @@
   <string name="bookmark_saved_in_folder_snackbar">«%s» эчендә сакланды</string>
   <!-- Snackbar edit button shown after a bookmark has been created. -->
   <string name="edit_bookmark_snackbar_action">ҮЗГӘРТҮ</string>
+  <!-- Bookmark menu select button -->
+  <string name="bookmark_menu_select_button">Cайлау</string>
   <!-- Bookmark menu move button -->
   <string name="bookmark_menu_move_button">Күчерү</string>
   <!-- Bookmark overflow menu edit button -->
@@ -1412,8 +1445,6 @@
   <string name="preferences_delete_browsing_data_on_quit">Чыкканда гизү мәгълүматларын бетерү</string>
   <!-- Summary for the Delete browsing data on quit preference. "Quit" translation should match delete_browsing_data_on_quit_action translation. -->
   <string name="preference_summary_delete_browsing_data_on_quit_2">Төп менюдан \"Чыгу\"-ны сайлаганда, гизү мәгълүматларын автоматик рәвештә бетерә</string>
-  <!-- Action item in menu for the Delete browsing data on quit feature -->
-  <string name="delete_browsing_data_on_quit_action" tools:ignore="UnusedResources" moz:removedIn="149">Чыгу</string>
   <!-- Title text of a delete browsing data dialog. -->
   <string name="delete_history_prompt_title">Бетерү өчен вакыт диапазоны</string>
   <!-- Radio button in the delete browsing data dialog to delete history items for the last hour. -->
@@ -1556,6 +1587,20 @@
   <string name="etp_known_fingerprinters_title">Билгеле бармак эзләрен җыючылар</string>
   <!-- Text displayed that links to website about enhanced tracking protection SmartBlock -->
   <string name="preference_etp_smartblock_learn_more">Күбрәк белү</string>
+  <!-- Used as text for the link in `preference_doh_title`, points to documentation about "DNS over HTTPS" -->
+  <string name="preference_doh_learn_more">Күбрәк белү</string>
+  <!-- Text displayed above provider textfield under "DNS over HTTPS" -->
+  <string name="preference_doh_provider_custom_dialog_textfield">Провайдер</string>
+  <!-- Cancel button text for provider textfield under "DNS over HTTPS" -->
+  <string name="preference_doh_provider_custom_dialog_cancel">Баш тарту</string>
+  <!-- Add button text for provider textfield under "DNS over HTTPS" -->
+  <string name="preference_doh_provider_custom_dialog_add">Өстәү</string>
+  <!-- Text displayed above the input field when adding exceptions for "DNS over HTTPS". -->
+  <string name="preference_doh_exceptions_add_site">Сайт</string>
+  <!-- Placeholder URL displayed in the input field when adding exceptions for "DNS over HTTPS". -->
+  <string name="preference_doh_exceptions_add_placeholder">example.com</string>
+  <!-- Text displayed on the button within the input field for adding exceptions to "DNS over HTTPS" -->
+  <string name="preference_doh_exceptions_add_save">Саклау</string>
   <!-- About page link text to open support link -->
   <string name="about_support">Техник ярдәм</string>
   <!-- About page link text to list of past crashes (like about:crashes on desktop) -->
@@ -1564,6 +1609,8 @@
   <string name="about_privacy_notice">Хосусыйлык аңлатмасы</string>
   <!-- About page link text to open know your rights link -->
   <string name="about_know_your_rights">Хокукларыгызны белегез</string>
+  <!-- About page link text to open terms of use link -->
+  <string name="about_terms_of_use" tools:ignore="UnusedResources">Куллану шартлары</string>
   <!-- About page link text to open licensing information link -->
   <string name="about_licensing_information">Лицензия турында мәгълүмат</string>
   <!-- About page link text to open a screen with libraries that are used -->
@@ -1672,6 +1719,8 @@
   <string name="saved_logins_sort_strategy_last_used">Соңгы кулланылган</string>
   <!-- Content description (not visible, for screen readers etc.) -->
   <string name="saved_logins_menu_dropdown_chevron_icon_content_description_2">Серсүзләрне тәртипкә китерү менюсы</string>
+  <!-- Text that links to additional information about the Email Masks -->
+  <string name="preferences_email_masks_suggest_learn_more">Күбрәк белү</string>
   <!--
     Autofill
 
@@ -1762,6 +1811,10 @@
   <string name="addresses_phone">Телефон</string>
   <!-- The header for the email of an address -->
   <string name="addresses_email">Эл. почта</string>
+  <!-- Label for an address field (e.g. mailing address) used as part of the form autofill feature. The Island field, used in places like the Cayman Islands and the Bahamas if an address is located on a specific island. -->
+  <string name="addresses_island" tools:ignore="UnusedResources">Утрау</string>
+  <!-- Label for an address field (e.g. mailing address) used as part of the form autofill feature. the Eircode field, specific to Ireland is a unique postal code system that helps in precise location identification. -->
+  <string name="addresses_eircode" tools:ignore="UnusedResources">Eircode</string>
   <!-- The text for the "Save" button for saving an address -->
   <string name="addresses_save_button">Саклау</string>
   <!-- The text for the "Cancel" button for cancelling adding, updating or deleting an address -->
@@ -1845,20 +1898,12 @@
     the certificate authority that verified the ticket
   -->
   <string name="certificate_info_verified_by">Раслаучы: %1$s</string>
-  <!-- Login overflow menu delete button -->
-  <string name="login_menu_delete_button" tools:ignore="UnusedResources" moz:removedIn="149">Бетерү</string>
-  <!-- Login overflow menu edit button -->
-  <string name="login_menu_edit_button" tools:ignore="UnusedResources" moz:removedIn="149">Үзгәртү</string>
   <!-- Message in delete confirmation dialog for password -->
   <string name="login_deletion_confirmation_2">Бу серсүзне бетерүне раслыйсызмы?</string>
   <!-- Positive action of a dialog asking to delete -->
   <string name="dialog_delete_positive">Бетерү</string>
   <!-- Negative action of a dialog asking to delete login -->
   <string name="dialog_delete_negative">Баш тарту</string>
-  <!-- The saved password options menu description. -->
-  <string name="login_options_menu_2" tools:ignore="UnusedResources" moz:removedIn="149">Серсүз көйләүләре</string>
-  <!-- The button description to save changes to an edited password. -->
-  <string name="save_changes_to_login_2" tools:ignore="UnusedResources" moz:removedIn="149">Үзгәрешләрне саклау.</string>
   <!-- The page title for editing a saved password. -->
   <string name="edit_2">Серсүзне үзгәртү</string>
   <!-- The page title for adding new password. -->
@@ -1979,6 +2024,8 @@
   <string name="radio_preference_info_content_description">Күбрәк белү өчен басыгыз</string>
   <!-- Content description for the action bar "up" button -->
   <string name="action_bar_up_description">Югарыга</string>
+  <!-- Header text for the Stories screen. -->
+  <string name="stories_screen_text_news">Яңалыклар</string>
   <!-- Text indicating that the Pocket story that also displays this text is a sponsored story by other 3rd party entity. -->
   <string name="pocket_stories_sponsor_indication">Спонсорланган</string>
   <!-- Snackbar message for enrolling in a Nimbus experiment from the secret settings when Studies preference is Off. -->
@@ -2168,6 +2215,14 @@
   <!-- Label text for the Enhanced Tracking Protection toggle. -->
   <string name="protection_panel_etp_toggle_label">Күзәтелүдән Көчәйтелгән Саклау</string>
   <!--
+    Text for displaying the number of trackers blocked for a specific tracker category in the trackers blocked panel.
+    %s is a placeholder for the name of the tracker category.
+    %d is a placeholder for the number of trackers blocked.
+  -->
+  <string name="trackers_blocked_panel_categorical_num_trackers_blocked">%s: %d</string>
+  <!-- Button text on the clear site data dialog to allow users to cancel the action and not clear the site data. -->
+  <string name="clear_site_data_dialog_negative_button_text">Баш тарту</string>
+  <!--
     Debug drawer
 
     The user-facing title of the Debug Drawer feature.
@@ -2282,6 +2337,12 @@
   -->
   <string name="debug_drawer_addresses_title">Адреслар</string>
   <!--
+    Debug drawer credit cards
+
+    The title of the credit cards feature in the Debug Drawer.
+  -->
+  <string name="debug_drawer_credit_cards_title">Кредит карталары</string>
+  <!--
     Debug drawer "contextual feature recommendation" (CFR) tools
 
     The title of the CFR Tools feature in the Debug Drawer
@@ -2315,11 +2376,30 @@
     Text shown as a label or tag to indicate a feature or area is still undergoing active development. Note that here "Beta" should not be translated, as it is used as an icon styled element.
   -->
   <string name="beta_feature">BETA</string>
+  <!--
+    Root certificate expiration warnings
+
+    These strings for homepage cards and push notifications to be pushed to users running outdated versions of Firefox. We want to encourage these users to update to the latest version so their extensions and other features don't stop working when Firefox's old root certificate expires on 2025-03-14. For more information, see this SUMO article: https://support.mozilla.org/kb/root-certificate-expiration !
+
+    Homepage card button to open Google Play Store. "Update" is a verb.
+  -->
+  <string name="certificate_warning_homepage_card_update_now_button" tools:ignore="UnusedResources">Хәзер яңарту</string>
   <!-- TextField Design System Component -->
 
+  <!-- Negative button text for the contextual feature recommendation (CFR) dismissing the screen lock suggestion -->
+  <string name="private_tab_cfr_negative">Юк, рәхмәт</string>
   <!-- ==== Terms of use pop up prompt ==== -->
 
+  <!-- Terms of use link in the pop up prompt message that links to the terms of use -->
+  <string name="terms_of_use_prompt_link_terms_of_use">Куллану шартлары</string>
+  <!-- Learn more link in the pop up prompt message that links to a site with more information about the terms of use -->
+  <string name="terms_of_use_prompt_link_learn_more">Күбрәк белү</string>
+  <!-- Label for a button to accept the terms of use -->
+  <string name="terms_of_use_prompt_accept">Кабул итү</string>
   <!-- ==== Experiment strings. ==== -->
 
   <!-- ==== End of Terms of use popup prompt. ==== -->
+
+  <!-- The second active link used in privacy_notice_updated_homepage_message -->
+  <string name="privacy_notice_updated_homepage_message_learn_more" tools:ignore="UnusedResources">Күбрәк белү</string>
 </resources>

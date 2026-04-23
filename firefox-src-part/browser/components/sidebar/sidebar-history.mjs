@@ -20,7 +20,10 @@ ChromeUtils.defineESModuleGetters(lazy, {
   Sanitizer: "resource:///modules/Sanitizer.sys.mjs",
   SidebarTreeView:
     "moz-src:///browser/components/sidebar/SidebarTreeView.sys.mjs",
+  OpenInTabsUtils:
+    "moz-src:///browser/components/tabbrowser/OpenInTabsUtils.sys.mjs",
   PlacesUtils: "resource://gre/modules/PlacesUtils.sys.mjs",
+  PlacesUIUtils: "moz-src:///browser/components/places/PlacesUIUtils.sys.mjs",
   PrivateBrowsingUtils: "resource://gre/modules/PrivateBrowsingUtils.sys.mjs",
 });
 
@@ -49,6 +52,10 @@ export class SidebarHistory extends SidebarPage {
 
   connectedCallback() {
     super.connectedCallback();
+    PlacesObservers.addListener(
+      ["page-removed", "history-cleared"],
+      this.#placesRemovedObserver
+    );
     const { document: doc } = this.topWindow;
     this._menu = doc.getElementById("sidebar-history-menu");
     this._menuSortByDate = doc.getElementById("sidebar-history-sort-by-date");
@@ -69,6 +76,10 @@ export class SidebarHistory extends SidebarPage {
 
   disconnectedCallback() {
     super.disconnectedCallback();
+    PlacesObservers.removeListener(
+      ["page-removed", "history-cleared"],
+      this.#placesRemovedObserver
+    );
     this._menu.removeEventListener("command", this);
     this._menu.removeEventListener("popuphidden", this.handlePopupEvent);
     this._contextMenu.removeEventListener("popupshowing", this);
@@ -86,8 +97,12 @@ export class SidebarHistory extends SidebarPage {
     }
   }
 
+  #placesRemovedObserver = () => {
+    this.treeView.resetSelection();
+  };
+
   get isMultipleRowsSelected() {
-    return !!this.treeView.selectedLists.size;
+    return this.treeView.getSelectedTabItems().length > 1;
   }
 
   /**
@@ -95,19 +110,20 @@ export class SidebarHistory extends SidebarPage {
    */
   updateContextMenu() {
     for (const child of this._contextMenu.children) {
+      let shouldHide = false;
       const isMultiSelectCommand = child.classList.contains(
         "sidebar-history-multiselect-command"
       );
-      if (this.isMultipleRowsSelected) {
-        child.hidden = !isMultiSelectCommand;
-      } else {
-        child.hidden = isMultiSelectCommand;
+      const isPrivateWindowMenuItem =
+        child.id === "sidebar-history-context-open-in-private-window";
+      if (this.isMultipleRowsSelected !== isMultiSelectCommand) {
+        shouldHide = true;
       }
+      if (isPrivateWindowMenuItem && !lazy.PrivateBrowsingUtils.enabled) {
+        shouldHide = true;
+      }
+      child.hidden = shouldHide;
     }
-    let privateWindowMenuItem = this._contextMenu.querySelector(
-      "#sidebar-history-context-open-in-private-window"
-    );
-    privateWindowMenuItem.hidden = !lazy.PrivateBrowsingUtils.enabled;
   }
 
   handleContextMenuEvent(e) {
@@ -116,6 +132,25 @@ export class SidebarHistory extends SidebarPage {
       this.findTriggerNode(e, "moz-input-search");
     if (!this.triggerNode) {
       e.preventDefault();
+      return;
+    }
+    // If the right-clicked row is not already part of the selection, move
+    // the selection and anchor to it so the context menu operates on the
+    // correct item.
+    if (this.triggerNode.localName === "sidebar-tab-row") {
+      const row = this.triggerNode;
+      const list = row.getRootNode().host;
+      if (!list.isTabItemSelected(row)) {
+        this.treeView.resetSelection();
+        this.treeView.selectRowInList(row, list);
+        list.dispatchEvent(
+          new CustomEvent("set-anchor", {
+            bubbles: true,
+            composed: true,
+            detail: { guid: row.guid },
+          })
+        );
+      }
     }
   }
 
@@ -136,6 +171,9 @@ export class SidebarHistory extends SidebarPage {
       case "sidebar-history-clear":
         lazy.Sanitizer.showUI(this.topWindow);
         break;
+      case "sidebar-history-context-open-all-in-tabs":
+        this.#openAllInTabs(e);
+        break;
       case "sidebar-history-context-delete-page":
         this.controller.deleteFromHistory().catch(console.error);
         break;
@@ -149,14 +187,31 @@ export class SidebarHistory extends SidebarPage {
   }
 
   #changeSortOption(e, sortOption) {
+    this.treeView.resetSelection();
     Services.prefs.setStringPref(SORT_OPTION_PREF, sortOption);
     this.controller.onChangeSortOption(e, sortOption);
   }
 
+  #openAllInTabs(e) {
+    const urls = this.treeView.getSelectedTabItems().map(item => item.url);
+    if (!lazy.OpenInTabsUtils.confirmOpenInTabs(urls.length, this.topWindow)) {
+      return;
+    }
+    const tabset = [];
+    for (const uri of urls) {
+      // The only reason to know if a url is bookmarked is for calling
+      // markPageAsFollowedBookmark, that will annotate the visit with TRANSITION_BOOKMARK.
+      // But the new frecency doesn't need that info, it can derive it iself,
+      // so we can just pass isBookmark: false and lose nothing
+      tabset.push({ uri, isBookmark: false });
+    }
+    lazy.PlacesUIUtils.openTabset(tabset, e, this.topWindow);
+  }
+
   #deleteMultipleFromHistory() {
-    const pageGuids = [...this.treeView.selectedLists].flatMap(
-      ({ selectedGuids }) => [...selectedGuids]
-    );
+    const pageGuids = this.treeView
+      .getSelectedTabItems()
+      .map(item => item.guid);
     return lazy.PlacesUtils.history.remove(pageGuids);
   }
 
@@ -172,17 +227,41 @@ export class SidebarHistory extends SidebarPage {
   }
 
   handleNavigateToLink(e) {
-    if (this.isMultipleRowsSelected) {
-      // Avoid opening multiple links at once.
-      return;
-    }
     navigateToLink(e, e.originalTarget.url, { forceNewTab: false });
-    // TO DO: update the below to handle multiple links opened at once. Bug 2024639
     Glean.sidebar.link.history.add(1);
-    this.treeView.clearSelection();
+    this.treeView.resetSelection();
+    this.treeView.selectRowInList(e.originalTarget, e.currentTarget);
   }
 
   onPrimaryAction(e) {
+    const { originalEvent } = e.detail;
+    const list = e.currentTarget;
+    const row = e.originalTarget;
+    if (originalEvent.shiftKey) {
+      list.dispatchEvent(
+        new CustomEvent("shift-select", {
+          bubbles: true,
+          composed: true,
+          detail: { row },
+        })
+      );
+      return;
+    }
+    const anchorEvent = new CustomEvent("set-anchor", {
+      bubbles: true,
+      composed: true,
+      detail: { guid: row.guid },
+    });
+    if (
+      (originalEvent.type === "click" &&
+        originalEvent.getModifierState("Accel")) ||
+      (originalEvent.type === "keydown" && originalEvent.code === "Space")
+    ) {
+      list.toggleRowSelection(row.guid);
+      list.dispatchEvent(anchorEvent);
+      return;
+    }
+    list.dispatchEvent(anchorEvent);
     this.handleNavigateToLink(e);
   }
 
@@ -193,6 +272,17 @@ export class SidebarHistory extends SidebarPage {
 
   onMiddleClickAction(e) {
     this.handleNavigateToLink(e);
+  }
+
+  onKeyDown(e) {
+    if (
+      (e.code === "Delete" || e.code === "Backspace") &&
+      e.composedTarget.localName === "sidebar-tab-row"
+    ) {
+      e.preventDefault();
+      this.triggerNode = e.composedTarget;
+      this.controller.deleteFromHistory().catch(console.error);
+    }
   }
 
   /**
@@ -367,6 +457,7 @@ export class SidebarHistory extends SidebarPage {
       @fxview-tab-list-primary-action=${this.onPrimaryAction}
       @fxview-tab-list-secondary-action=${this.onSecondaryAction}
       @fxview-tab-list-middleclick-action=${this.onMiddleClickAction}
+      @keydown=${this.onKeyDown}
     >
     </sidebar-tab-list>`;
   }

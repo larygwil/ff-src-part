@@ -9,6 +9,7 @@ import { AppConstants } from "resource://gre/modules/AppConstants.sys.mjs";
  * @import {ProvidersManager} from "moz-src:///browser/components/urlbar/UrlbarProvidersManager.sys.mjs"
  * @import {SapLocation, SmartbarInput} from "moz-src:///browser/components/urlbar/content/SmartbarInput.mjs"
  * @import {UrlbarView} from "moz-src:///browser/components/urlbar/UrlbarView.sys.mjs"
+ * @import {WindowMode} from "moz-src:///browser/components/urlbar/content/UrlbarInput.mjs"
  */
 
 const lazy = {};
@@ -630,10 +631,9 @@ export class UrlbarController {
   }
 
   /**
-   * Triggers a "dismiss" engagement for the selected result if one is selected
-   * and it's not the heuristic. Providers that can respond to dismissals of
-   * their results should implement `onEngagement()`, handle the
-   * dismissal, and call `controller.removeResult()`.
+   * Triggers a "dismiss" engagement for the selected result if one is selected.
+   * Providers that can respond to dismissals of their results should implement
+   * `onEngagement()`, handle the dismissal, and call `controller.removeResult()`.
    *
    * @param {Event} event
    *   The event that triggered dismissal.
@@ -657,7 +657,10 @@ export class UrlbarController {
     }
 
     let result = this.input.view.selectedResult;
-    if (!result || result.heuristic) {
+    if (!result) {
+      return false;
+    }
+    if (result.heuristic && !result.autofill) {
       return false;
     }
 
@@ -893,6 +896,8 @@ class TelemetryEvent {
    * @property {SapLocation} [location]
    *   The location where the interaction occurred.
    *   Required when sap is "smartbar".
+   * @property {WindowMode} [windowMode]
+   *   The window mode: classic, private, or smartwindow.
    */
 
   /**
@@ -1034,6 +1039,7 @@ class TelemetryEvent {
       selIndex: internalDetails.selIndex,
       selType: internalDetails.selType,
       location: internalDetails.location,
+      windowMode: internalDetails.windowMode,
       ...this.#getOptionalSmartbarTelemetry(internalDetails.searchSource),
     });
 
@@ -1142,6 +1148,8 @@ class TelemetryEvent {
    * @param {SapLocation} [details.location]
    *   The location where the interaction occurred.
    *   Required when sap is "smartbar".
+   * @param {WindowMode} [details.windowMode]
+   *   The window mode: classic, private, or smartwindow.
    * @param {string} [details.chatId]
    *   UUID for this smart window session. Unique identifier for each chat
    *   conversation. Only set when sap is `smartbar`.
@@ -1168,6 +1176,7 @@ class TelemetryEvent {
       chatId = "",
       intent = "",
       model = "",
+      windowMode,
     }
   ) {
     let sap = this.#searchSourceToSap(searchSource);
@@ -1255,6 +1264,7 @@ class TelemetryEvent {
           results,
           actions,
           available_semantic_sources,
+          window_mode: windowMode,
           ...(sap === "smartbar"
             ? { location, chat_id: chatId, intent, model }
             : {}),
@@ -1277,6 +1287,7 @@ class TelemetryEvent {
           results,
           actions,
           available_semantic_sources,
+          window_mode: windowMode,
           ...(sap === "smartbar"
             ? { location, chat_id: chatId, intent, model }
             : {}),
@@ -1308,6 +1319,7 @@ class TelemetryEvent {
           selected_result,
           results,
           feature: "suggest",
+          window_mode: windowMode,
           ...(sap === "smartbar"
             ? { location, chat_id: chatId, intent, model }
             : {}),
@@ -1339,6 +1351,7 @@ class TelemetryEvent {
           threshold: lazy.UrlbarPrefs.get(
             "events.bounce.maxSecondsFromLastSearch"
           ),
+          window_mode: windowMode,
           ...(sap === "smartbar"
             ? { location, chat_id: chatId, intent, model }
             : {}),
@@ -1621,6 +1634,11 @@ class TelemetryEvent {
     }
     if (event.type === "tabswitch") {
       return "tab_switch";
+    }
+    // dismiss_autofill temporarily blocks autofill suggestions rather than
+    // removing history, but we still want to report it "dismiss" in telemetry.
+    if (details.element?.dataset.command === "dismiss_autofill") {
+      return "dismiss";
     }
     if (
       details.element?.dataset.command &&
@@ -1916,6 +1934,7 @@ class TelemetryEvent {
       selIndex: details.selIndex,
       selType: details.selType,
       location: details.location,
+      windowMode: details.windowMode,
       ...this.#getOptionalSmartbarTelemetry(details.searchSource),
     });
 
@@ -2058,6 +2077,7 @@ class TelemetryEvent {
       selType: details.selType,
       viewTime: viewTime / 1000,
       location: details.location,
+      windowMode: details.windowMode,
       ...this.#getOptionalSmartbarTelemetry(details.searchSource),
     });
   }

@@ -33,10 +33,6 @@
   <string name="tab_search_hint">Беттерден іздеу</string>
   <!-- Placeholder text shown in the search bar when using application search engines -->
   <string name="application_search_hint">Іздеу жолын енгізіңіз</string>
-  <!-- No Open Tabs Message Description -->
-  <string name="no_open_tabs_description" tools:ignore="UnusedResources" moz:removedIn="149">Сіздің ашық беттеріңіз осында көрсетілетін болады.</string>
-  <!-- No Private Tabs Message Description -->
-  <string name="no_private_tabs_description" tools:ignore="UnusedResources" moz:removedIn="149">Сіздің жекелік беттеріңіз осында көрсетілетін болады.</string>
   <!-- The header text displayed on the private tabs page when no private tabs are open -->
   <string name="tab_manager_empty_private_tabs_page_header">Жекелік шолу</string>
   <!-- The supplementary text displayed on the private tabs page when no private tabs are open. %1$s is the name of the app (for example "Firefox") -->
@@ -55,8 +51,6 @@
   <string name="tab_tray_select_collection">Жинақты таңдау</string>
   <!-- Content description for close button while in multiselect mode in tab tray -->
   <string name="tab_tray_close_multiselect_content_description">Көп таңдау режимінен шығу</string>
-  <!-- Content description for save to collection button while in multiselect mode in tab tray -->
-  <string name="tab_tray_collection_button_multiselect_content_description" tools:ignore="UnusedResources" moz:removedIn="149">Таңдалған беттерді жинаққа сақтау</string>
   <!-- The header text displayed on the synced tabs page when the user is not logged into an account. -->
   <string name="tab_manager_empty_synced_tabs_page_header">Кез келген құрылғыдан беттерді алу</string>
   <!-- The supplementary text displayed on the synced tabs page when the user is not logged into an account. -->
@@ -202,8 +196,6 @@
   <string name="browser_menu_stop">Тоқтату</string>
   <!-- Browser menu button that opens the extensions manager -->
   <string name="browser_menu_extensions">Кеңейтулер</string>
-  <!-- Browser menu banner header text for extensions onboarding when all installed extensions have been disabled. -->
-  <string name="browser_menu_disabled_extensions_banner_onboarding_header" tools:ignore="UnusedResources" moz:removedIn="149">Сізде орнатылған, бірақ іске қосылмаған кеңейтулер бар</string>
   <!-- Browser menu button that opens the extensions manager -->
   <string name="browser_menu_manage_extensions">Кеңейтулерді басқару</string>
   <!-- Browser menu group that contains additional settings in collapsed state -->
@@ -223,18 +215,12 @@
   <string name="browser_menu_try_a_recommended_extension_description">Ұсынылған кеңейтуді қолданып көріңіз</string>
   <!-- Browser menu button that opens account settings -->
   <string name="browser_menu_account_settings">Тіркелгі ақпараты</string>
-  <!-- Browser menu button that sends a user to help articles -->
-  <string name="browser_menu_help" tools:ignore="UnusedResources" moz:removedIn="149">Көмек</string>
-  <!-- Browser menu button that sends a to a the what's new article -->
-  <string name="browser_menu_whats_new" tools:ignore="UnusedResources" moz:removedIn="149">Не жаңалық</string>
   <!-- Browser menu button that opens the settings menu -->
   <string name="browser_menu_settings">Баптаулар</string>
   <!-- Browser menu button that opens a user's library -->
   <string name="browser_menu_library">Кітапхана</string>
   <!-- Browser menu toggle that requests a desktop site -->
   <string name="browser_menu_desktop_site">Жұмыс үстелі сайты</string>
-  <!-- Browser menu button that reopens a private tab as a regular tab -->
-  <string name="browser_menu_open_in_regular_tab" tools:ignore="UnusedResources" moz:removedIn="149">Қалыпты бетте ашу</string>
   <!-- Browser menu toggle that adds a shortcut to the site on the device home screen. -->
   <string name="browser_menu_add_to_homescreen">Үй экранына қосу</string>
   <!-- Browser menu toggle that adds a PWA of the site on the device home screen. -->
@@ -262,11 +248,6 @@
     Browser menu text shown in custom tabs to indicate this is a Fenix tab
     %1$s is the name of the app (for example "Firefox").
   -->
-  <string name="browser_menu_powered_by" tools:ignore="UnusedResources" moz:removedIn="149">%1$s қозғалтқышы негізінде</string>
-  <!--
-    Browser menu text shown in custom tabs to indicate this is a Fenix tab
-    %1$s is the name of the app (for example "Firefox").
-  -->
   <string name="browser_menu_powered_by2">%1$s қозғалтқышы негізінде</string>
   <!-- Browser menu button to put the current page in reader mode -->
   <string name="browser_menu_read">Оқу көрінісі</string>
@@ -275,15 +256,7 @@
   <!-- Browser menu button to open the current page in an external app -->
   <string name="browser_menu_open_app_link">Қолданбада ашу</string>
   <!-- Browser menu button to show reader view appearance controls e.g. the used font type and size -->
-  <string name="browser_menu_customize_reader_view" tools:ignore="UnusedResources" moz:removedIn="149">Оқу режимін баптау</string>
-  <!-- Browser menu button to show reader view appearance controls e.g. the used font type and size -->
   <string name="browser_menu_customize_reader_view_2">Оқу режимін баптау</string>
-  <!-- Browser menu label for adding a bookmark -->
-  <string name="browser_menu_add" tools:ignore="UnusedResources" moz:removedIn="149">Қосу</string>
-  <!-- Browser menu label for editing a bookmark -->
-  <string name="browser_menu_edit" tools:ignore="UnusedResources" moz:removedIn="149">Түзету</string>
-  <!-- Button shown on the home page that opens the Customize home settings -->
-  <string name="browser_menu_customize_home_1" tools:ignore="UnusedResources" moz:removedIn="149">Үй бетін баптау</string>
   <!-- Browser menu label to sign in to sync on the device using Mozilla accounts -->
   <string name="browser_menu_sign_in">Кіру</string>
   <!-- Browser menu caption label for the "Sign in" browser menu item described in `browser_menu_sign_in` -->
@@ -302,12 +275,6 @@
   <string name="browser_close_main_menu_handlebar_content_description">Мәзірді жабу</string>
   <!-- Content description (not visible, for screen readers etc.) for main menu navigation header. -->
   <string name="browser_main_menu_content_description_navigation_header">Навигация</string>
-  <!-- Content description (not visible, for screen readers etc.) for bottom sheet handlebar extensions menu. -->
-  <string name="browser_extensions_menu_handlebar_content_description" tools:ignore="UnusedResources" moz:removedIn="149">Кеңейтулер мәзір парағын жабу</string>
-  <!-- Content description (not visible, for screen readers etc.) for bottom sheet handlebar save menu. -->
-  <string name="browser_save_menu_handlebar_content_description" tools:ignore="UnusedResources" moz:removedIn="149">Сақтау мәзір парағын жабу</string>
-  <!-- Content description (not visible, for screen readers etc.) for bottom sheet handlebar tools menu. -->
-  <string name="browser_tools_menu_handlebar_content_description" tools:ignore="UnusedResources" moz:removedIn="149">Құралдар мәзір парағын жабу</string>
   <!-- Content description (not visible, for screen readers etc.) for bottom sheet handlebar custom tab menu. -->
   <string name="browser_custom_tab_menu_handlebar_content_description">Таңдауыңызша бет мәзір парағын жабу</string>
   <!-- Browser menu label that bookmarks the currently visited page -->
@@ -390,6 +357,58 @@
   <string name="translation_toolbar_expand_action">Аудармалар парағын ашу</string>
   <!-- Content description for the translate toolbar action that closes the translations toolbar. -->
   <string name="translation_toolbar_close_action">Хабарламаны елемеу</string>
+  <!--
+    Page summaries
+
+    Toolbar title for the Page summaries settings fragment
+  -->
+  <string name="preferences_page_summaries">Беттер қорытындылары</string>
+  <!--
+    AI Controls settings
+
+    Label for the secret settings preference to enable AI controls
+  -->
+  <string name="preferences_debug_settings_ai_controls">ЖИ басқару элементтерін іске қосу</string>
+  <!-- Title for the AI controls settings screen -->
+  <string name="preferences_ai_controls">ЖИ басқару элементтері</string>
+  <!-- Headline text for the AI controls banner. %s is the name of the app (for example "Firefox"). -->
+  <string name="ai_controls_banner_headline">%s ішінде сізде әрқашан таңдау мүмкіндігіңіз бар</string>
+  <!-- Supporting text for the AI controls banner -->
+  <string name="ai_controls_banner_supporting_text">Бұған ЖИ жақсартылған мүмкіндіктерді пайдалану керек пе, жоқ па деген сұрақ кіреді.</string>
+  <!-- Link text for learning more about AI controls -->
+  <string name="ai_controls_learn_more">Көбірек білу</string>
+  <!-- Title for the block AI enhancements toggle -->
+  <string name="ai_controls_block_ai_title">ЖИ жақсартуларын бұғаттау</string>
+  <!-- Description for the block AI enhancements toggle. %s is the name of the app (for example "Firefox"). -->
+  <string name="ai_controls_block_ai_description">Бұғаттау дегеніміз, %s ішінде жаңа немесе ағымдағы ЖИ жақсартуларын немесе олар туралы қалқымалы терезелерді көрмейтініңізді білдіреді.</string>
+  <!-- Link text to see what AI enhancements are and aren’t included -->
+  <string name="ai_controls_see_whats_included">Не кіретінін және не кірмейтінін қарау</string>
+  <!-- Banner text shown when AI enhancements are blocked -->
+  <string name="ai_controls_blocked_info_banner">Жаңа және ағымдағы ЖИ жақсартулары үнсіз келісім бойынша бұғатталады. Белгілі бір мүмкіндікті төменде бұғаттан шығаруға болады.</string>
+  <!-- Section header for the AI-powered features list -->
+  <string name="ai_controls_ai_powered_features">ЖИ-негізіндегі мүмкіндіктер</string>
+  <!-- Title for the translations AI feature toggle -->
+  <string name="ai_controls_translations_title">Аудармалар</string>
+  <!-- Description for the translations AI feature toggle -->
+  <string name="ai_controls_translations_description">Барлық аудармалар құрылғыңызда жеке болып сақталады.</string>
+  <!-- Link text to navigate to more translations settings -->
+  <string name="ai_controls_more_translations_settings">Көбірек аударма баптаулары</string>
+  <!-- Link text to navigate to more page summary settings -->
+  <string name="ai_controls_more_page_summary_settings">Беттерді қорытындылаудың қосымша баптаулары</string>
+  <!-- Title for the voice search AI feature toggle -->
+  <string name="ai_controls_voice_search_title">Дауыстық іздеу</string>
+  <!-- Description for the voice search AI feature toggle -->
+  <string name="ai_controls_voice_search_description">Аудио мәтінге Google Speech Services арқылы түрлендіріледі.</string>
+  <!-- Title for the block AI enhancements confirmation dialog -->
+  <string name="ai_controls_block_dialog_title">ЖИ жақсартуларын бұғаттау керек пе?</string>
+  <!-- Body text for the block AI enhancements confirmation dialog. %1$s is the name of the app (for example "Firefox"). -->
+  <string name="ai_controls_block_dialog_body">Сіз %1$s ішінде жаңа немесе ағымдағы ЖИ жақсартуларын немесе олар туралы қалқымалы терезелерді көрмейсіз. Содан кейін, пайдалануды жалғастырғыңыз келетін кез келген нәрсені бұғаттан босата аласыз.\n\nСонымен қатар, бұғаттау %1$s ұсынған ЖИ қолданатын барлық кеңейтулерге әсер етеді.</string>
+  <!-- Label shown above the list of features that will be blocked in the block AI dialog -->
+  <string name="ai_controls_block_dialog_what_will_be_blocked">Не бұғатталады:</string>
+  <!-- Cancel button text in the block AI enhancements confirmation dialog -->
+  <string name="ai_controls_block_dialog_cancel">Бас тарту</string>
+  <!-- Block button text in the block AI enhancements confirmation dialog -->
+  <string name="ai_controls_block_dialog_block">Блоктау</string>
   <!--
     Locale Settings Fragment
 
@@ -1417,6 +1436,8 @@
   <string name="preference_gestures_swipe_toolbar_show_tabs">Беттерді ашу үшін құралдар тақтасын жоғары қарай сырғытыңыз</string>
   <!-- Preference for switching tabs by swiping horizontally on the addressbar -->
   <string name="preference_gestures_swipe_toolbar_switch_tabs_2">Беттерді ауыстыру үшін адрестік жолақты сырғытыңыз</string>
+  <!-- Preference for switching for the shake to summarize toggle in page summaries and customize settings -->
+  <string name="preferences_shake_to_summarize">Қорытындылау үшін сілкіңіз</string>
   <!--
     Library
 
@@ -1579,6 +1600,14 @@
     The %1$s will be replaced by the number of opened private tabs
   -->
   <string name="tabs_header_private_tabs_counter_title">Жекелік ашық беттер: %1$s. Беттерді ауыстыру үшін шертіңіз.</string>
+  <plurals name="tabs_header_tab_group_counter_title">
+    <!--
+      Title for the list of tab groups used by a11y services
+      The %1$d will be replaced by the number of opened tab groups
+    -->
+    <item quantity="one">%1$d беттер тобы ашық. Беттерді ауыстыру үшін шертіңіз.</item>
+    <item quantity="other">%1$d беттер тобы ашық. Беттерді ауыстыру үшін шертіңіз.</item>
+  </plurals>
   <!--
     Title for the list of tabs in the synced tabs used by a11y services
     The %1$s will be replaced by the number of opened synced tabs
@@ -1600,18 +1629,10 @@
   <string name="add_tab">Жаңа бетті қосу</string>
   <!-- Content description (not visible, for screen readers etc.): Add tab button. Adds a news tab when pressed -->
   <string name="add_private_tab">Жекелік бетін қосу</string>
-  <!-- Text for the new tab button to indicate adding a new private tab in the tab -->
-  <string name="tab_drawer_fab_content" tools:ignore="UnusedResources" moz:removedIn="149">Жеке</string>
-  <!-- Text for the new tab button to indicate syncing command on the synced tabs page -->
-  <string name="tab_drawer_fab_sync" tools:ignore="UnusedResources" moz:removedIn="149">Синхрондау</string>
   <!-- Text for the tab search bar placeholder -->
   <string name="tab_manager_search_bar_placeholder">Беттер ішінен іздеу</string>
-  <!-- Text shown in the menu for sharing all tabs -->
-  <string name="tab_tray_menu_item_share" tools:ignore="UnusedResources" moz:removedIn="149">Барлық беттермен бөлісу</string>
   <!-- Text shown in the menu to view recently closed tabs -->
   <string name="tab_tray_menu_recently_closed">Жуырда жабылған беттер</string>
-  <!-- Text shown in the tabs tray inactive tabs section -->
-  <string name="tab_tray_inactive_recently_closed" tools:ignore="UnusedResources" moz:removedIn="149">Жақында жабылған</string>
   <!-- Text shown in the menu to view account settings -->
   <string name="tab_tray_menu_account_settings">Тіркелгі баптаулары</string>
   <!-- Text shown in the menu to view tab settings -->
@@ -1626,12 +1647,8 @@
   <string name="tab_manager_close_all_tabs_dialog_confirm">Беттерді жабу</string>
   <!-- Text shown on the cancel button in the Close all tabs confirmation dialog -->
   <string name="tab_manager_close_all_tabs_dialog_cancel">Бас тарту</string>
-  <!-- Text shown in the multiselect menu for bookmarking selected tabs. -->
-  <string name="tab_tray_multiselect_menu_item_bookmark" tools:ignore="UnusedResources" moz:removedIn="149">Бетбелгілерге қосу</string>
   <!-- Content description (not visible, for screen readers etc.): Bookmarks selected tabs. -->
   <string name="tab_manager_multiselect_menu_item_bookmark_content_description">Таңдалған беттерді бетбелгілерге қосу</string>
-  <!-- Text shown in the multiselect menu for closing selected tabs. -->
-  <string name="tab_tray_multiselect_menu_item_close" tools:ignore="UnusedResources" moz:removedIn="149">Жабу</string>
   <!-- Content description (not visible, for screen readers etc.): Closes selected tabs. -->
   <string name="tab_manager_multiselect_menu_item_close_content_description">Таңдалған беттерді жабу</string>
   <!-- Text shown in the multiselect menu for sharing selected tabs. -->
@@ -1680,6 +1697,10 @@
   <string name="pwa_site_controls_title_private">%1$s (жекелік режимі)</string>
   <!-- Content description (not visible, for screen readers etc.) for the button to open the Tab Search feature to search through tabs. -->
   <string name="tab_manager_open_tab_search">Ашық беттерден іздеу</string>
+  <!-- The header text displayed on the tab groups page when no tab groups are open -->
+  <string name="tab_manager_empty_tab_groups_page_header">Айналдыруды азайтып, көбірек жұмыс істеу үшін беттер топтарын қолданып көріңіз</string>
+  <!-- The description displayed on the tab groups page when no tab groups are open -->
+  <string name="tab_manager_empty_tab_groups_page_description">Топты жасау үшін беттерді таңдаңыз. Олар осында сақталады және сізге керек болған кезде дайын болады.</string>
   <!--
     Tab Group
 
@@ -1689,6 +1710,8 @@
   <!-- Title for the edit tab group bottom sheet -->
   <string name="edit_tab_group_title">Топты түзету</string>
   <string name="create_tab_group_save_button">Сақтау</string>
+  <!-- Description for the handle at the top of a bottom sheet, used to drag the sheet up or down. -->
+  <string name="edit_tab_group_bottom_sheet_grabber_content_description">Жаңа топ, сүйреп апару тұтқасын жию</string>
   <string name="edit_tab_group_bottom_sheet_close_content_description">Беттер тобын түзетуді жабу</string>
   <!-- Default tab group name when creating a tab group -->
   <string name="create_tab_group_default_name" tools:ignore="UnusedResources" moz:removedIn="150">Топ</string>
@@ -1704,6 +1727,10 @@
   <!-- Title for adding more tabs to a tab group. -->
   <string name="add_to_tab_group_title">Қайда қосу</string>
   <!-- Content Description for closing the "Add to Tab Group" panel. -->
+  <string name="add_to_tab_group_bottom_sheet_grabber_content_description">Беттер тобына қосу, сүйреп апару тұтқасын жию</string>
+  <!-- Content Description for "New tab group" panel. -->
+  <string name="add_to_new_tab_group_content_description">Жаңа беттер тобына қосу</string>
+  <!-- Content Description for closing the "Add to Tab Group" panel. -->
   <string name="add_to_tab_group_bottom_sheet_close_content_description">Беттер тобына қосуды жабу</string>
   <!-- Label for adding to a new tab group. -->
   <string name="add_to_new_tab_group_title">Жаңа беттер тобы</string>
@@ -1715,6 +1742,33 @@
     <item quantity="one">%1$d бет</item>
     <item quantity="other">%1$d бет</item>
   </plurals>
+  <plurals name="add_to_exiting_tab_group_content_description">
+    <!--
+      Accessibility description for add to existing tab group.
+      %1$s is the group name, %2$d is the number of tabs, %3$s is the color name.
+    -->
+    <item quantity="one">%1$s беттер тобына қосу, %2$d бет, түс %3$s</item>
+    <item quantity="other">%1$s беттер тобына қосу, %2$d бет, түс %3$s</item>
+  </plurals>
+  <plurals name="share_tab_group_button_content_description">
+    <!--
+      Content Description for share tab group button.
+      %1$s is the name of the tab group.
+      %2$d is the number of tabs in a tab group.
+    -->
+    <item quantity="one">%2$d беті бар %1$s беттер тобын бөлісу.</item>
+    <item quantity="other">%2$d беті бар %1$s беттер тобын бөлісу.</item>
+  </plurals>
+  <!-- Content description for the grabber/handle of the tab group bottom sheet. -->
+  <string name="tab_group_sheet_dismiss_description">Беттер тобын қарау, сүйреп апару тұтқасын жию</string>
+  <plurals name="expanded_tab_group_header_description">
+    <!--
+      Accessibility description for the header of an expanded tab group.
+      %1$s is the group name, %2$d is the number of tabs, %3$s is the color name.
+    -->
+    <item quantity="one">%2$d беті бар %1$s беттер тобы, түс %3$s</item>
+    <item quantity="other">%2$d беті бар %1$s беттер тобы, түс %3$s</item>
+  </plurals>
   <!-- Title for the Delete tab group confirmation dialog. -->
   <string name="delete_tab_group_confirmation_dialog_title">Беттер тобын өшіру керек пе?</string>
   <!-- Text shown in the body of the Delete tab group confirmation dialog. -->
@@ -1723,6 +1777,30 @@
   <string name="delete_tab_group_confirmation_dialog_confirm">Топты өшіру</string>
   <!-- Text shown on the cancel button in the Delete tab group confirmation dialog. -->
   <string name="delete_tab_group_confirmation_dialog_cancel">Бас тарту</string>
+  <!--
+    Color labels for tab groups, used for accessibility and selection UI.
+
+    Tab group color: Yellow
+  -->
+  <string name="tab_group_color_yellow">Сары</string>
+  <!-- Tab group color: Orange -->
+  <string name="tab_group_color_orange">Қызғылт сары</string>
+  <!-- Tab group color: Red -->
+  <string name="tab_group_color_red">Қызыл</string>
+  <!-- Tab group color: Pink -->
+  <string name="tab_group_color_pink">Қызғылт</string>
+  <!-- Tab group color: Purple -->
+  <string name="tab_group_color_purple">Қызыл көк</string>
+  <!-- Tab group color: Violet -->
+  <string name="tab_group_color_violet">Күлгін</string>
+  <!-- Tab group color: Blue -->
+  <string name="tab_group_color_blue">Көк</string>
+  <!-- Tab group color: Cyan -->
+  <string name="tab_group_color_cyan">Көгілдір</string>
+  <!-- Tab group color: Green -->
+  <string name="tab_group_color_green">Жасыл</string>
+  <!-- Tab group color: Grey -->
+  <string name="tab_group_color_grey">Сұр</string>
   <!--
     History
 
@@ -2382,8 +2460,6 @@
   <string name="toast_copy_link_to_clipboard">Алмасу буферіне көшірілді</string>
   <!-- An option from the share dialog to sign into sync -->
   <string name="sync_sign_in">Синхрондау ішіне кіру</string>
-  <!-- An option from the three dot menu to sign in -->
-  <string name="sync_menu_sign_in" tools:ignore="UnusedResources" moz:removedIn="149">Кіру</string>
   <!-- An option from the share dialog to send link to all other sync devices -->
   <string name="sync_send_to_all">Барлық құрылғыларға жіберу</string>
   <!-- An option from the share dialog to reconnect to sync -->
@@ -2540,8 +2616,6 @@
   <string name="preferences_delete_browsing_data_on_quit">Шығу кезінде шолу деректерін өшіру</string>
   <!-- Summary for the Delete browsing data on quit preference. "Quit" translation should match delete_browsing_data_on_quit_action translation. -->
   <string name="preference_summary_delete_browsing_data_on_quit_2">Негізгі мәзірден \"Шығу\" таңдау кезінде, шолу деректерін автоматты түрде өшіреді</string>
-  <!-- Action item in menu for the Delete browsing data on quit feature -->
-  <string name="delete_browsing_data_on_quit_action" tools:ignore="UnusedResources" moz:removedIn="149">Шығу</string>
   <!-- Title text of a delete browsing data dialog. -->
   <string name="delete_history_prompt_title">Жойылатын деректер мерзімі</string>
   <!-- Body text of a delete browsing data dialog. -->
@@ -2643,10 +2717,6 @@
   <string name="preference_enhanced_tracking_protection_strict">Қатаң</string>
   <!-- Preference description for enhanced tracking protection for the strict protection settings -->
   <string name="preference_enhanced_tracking_protection_strict_description_4">Бақылаудан күшейтілген қорғаныс және жылдамырақ жұмыс істеу, бірақ кейбір сайттар дұрыс жұмыс істемеуі мүмкін.</string>
-  <!-- Preference description for the checkbox setting for "baseline" exceptions (a set of content blocking exceptions applied to fix major website breakage). %1$s is the name of the application (e.g. Fenix). -->
-  <string name="preference_enhanced_tracking_protection_allow_list_baseline" tools:ignore="UnusedResources" moz:removedIn="144">Веб-сайттың қатаң бұзылуларын болдырмау мақсатында %1$s үшін қажет ережеден тыс жағдайларды автоматты түрде іске асыруды рұқсат ету.</string>
-  <!-- Preference description for the checkbox setting for "convenience" exceptions (a set of content blocking exceptions applied to fix convenience site features). -->
-  <string name="preference_enhanced_tracking_protection_allow_list_convenience" tools:ignore="UnusedResources" moz:removedIn="144">Шағын мәселелерді шешу және ыңғайлылық мүмкіндіктерін қолжетімді ету үшін ғана қажет болатын ережеден тыс жағдайларды автоматты түрде іске асыру.</string>
   <!-- Preference label for the enhanced tracking protection option to fix major site issues caused by tracker blocking -->
   <string name="preference_enhanced_tracking_protection_allow_list_baseline_2">Сайттардың негізгі мәселелерін түзету (ұсынылады)</string>
   <!-- Preference label for the enhanced tracking protection option to fix minor site issues caused by tracker blocking -->
@@ -3034,6 +3104,61 @@
   <!-- The message displayed when there was an error with the email mask or Firefox Account services. -->
   <string name="email_masks_error_retrieving_masks">Эл. пошта маскалары қазір қолжетімді емес. Бірнеше минуттан кейін әрекетті қайталаңыз.</string>
   <!--
+    Firefox browser VPN (a browser-only proxy, distinct from the Mozilla VPN service)
+
+    Title for the browser VPN entry in the settings list
+  -->
+  <string name="preferences_ip_protection_title_2">Кірістірілген VPN</string>
+  <!-- Label for the BETA badge for the browser VPN entry in the settings list -->
+  <string name="preferences_ip_protection_beta_badge_label">БЕТА</string>
+  <!-- Title for the browser VPN settings screen (displayed in the app bar) -->
+  <string name="ip_protection_title">VPN</string>
+  <!-- Label for the browser VPN toggle on the settings screen -->
+  <string name="ip_protection_toggle_label">VPN</string>
+  <!-- Headline for the browser VPN promo card. %s is the name of the app (for example "Firefox"). -->
+  <string name="ip_protection_promo_headline">%s ішіндегі кіріктірілген VPN</string>
+  <!-- Body text for the browser VPN promo card -->
+  <string name="ip_protection_promo_body">Қоғамдық Wi-Fi желісінде болсаңыз да, орналасқан жеріңізді жасыру арқылы қосымша қорғаныспен шолыңыз.</string>
+  <!-- Link text that opens additional information about the browser VPN -->
+  <string name="ip_protection_learn_more">Көбірек білу</string>
+  <!-- Label for the monthly data allowance section on the browser VPN settings screen -->
+  <string name="ip_protection_data_limit_label">Ай сайынғы деректер шегі</string>
+  <!--
+    Data usage shown on the browser VPN settings screen.
+    %1$.1f is the data remaining in GB (for example "8.3").
+    %2$.1f is the total monthly allowance in GB (for example "50.0").
+  -->
+  <string name="ip_protection_data_limit_value">%1$.1f ГБ/%2$.1f ГБ ішінен қалды</string>
+  <!--
+    Text shown below the data usage bar describing when the monthly allowance resets.
+    %1$.0f is the total monthly data allowance in GB (for example "50").
+  -->
+  <string name="ip_protection_data_reset_info">Әр айдың бірінші күнінде %1$.0f ГБ қалпына келтіріледі.</string>
+  <!-- Header for the browser VPN `location` section -->
+  <string name="ip_protection_location_section">Орналасу</string>
+  <!-- Label for the recommended automatic location option on the browser VPN settings screen -->
+  <string name="ip_protection_location_recommended_label">Ұсынылатын</string>
+  <!-- Description for the recommended automatic location option on the browser VPN settings screen -->
+  <string name="ip_protection_location_recommended_description">Сіз үшін ең жылдам VPN орналасуын таңдайды.</string>
+  <!-- Badge label shown in the menu item when the browser VPN is active -->
+  <string name="preferences_ip_protection_on">Іске қосулы</string>
+  <!-- Badge label shown in the menu item when the browser VPN is off -->
+  <string name="preferences_ip_protection_off">Сөндірулі</string>
+  <!-- Badge label shown in the menu item while the browser VPN is connecting -->
+  <string name="ip_protection_menu_connecting">Байланысу…</string>
+  <!-- Badge label shown in the menu item when the browser VPN is paused -->
+  <string name="ip_protection_menu_paused">Аялдатылған</string>
+  <!-- Badge label shown in the menu item when the browser VPN has an error -->
+  <string name="ip_protection_menu_error">Қате</string>
+  <!-- Content description for the chevron button that opens the browser VPN settings screen -->
+  <string name="ip_protection_navigate_settings">VPN баптауларын ашу</string>
+  <!-- Label shown next to the browser protection icon in the address bar when the browser VPN is active -->
+  <string name="ip_protection_toolbar_pill_label" tools:ignore="UnusedResources">VPN іске қосулы</string>
+  <!-- Accessibility description for the browser VPN pill in the address bar when the VPN has been activated -->
+  <string name="ip_protection_toolbar_pill_description" tools:ignore="UnusedResources">VPN белсенді.</string>
+  <!-- Label for the button that starts the browser VPN authentication or authorization flow on the settings screen -->
+  <string name="ip_protection_get_started">Бастау</string>
+  <!--
     Autofill
 
     Preference and title for managing the autofill settings
@@ -3268,26 +3393,12 @@
     the certificate authority that verified the ticket
   -->
   <string name="certificate_info_verified_by">Растаған: %1$s</string>
-  <!-- Login overflow menu delete button -->
-  <string name="login_menu_delete_button" tools:ignore="UnusedResources" moz:removedIn="149">Өшіру</string>
-  <!-- Login overflow menu edit button -->
-  <string name="login_menu_edit_button" tools:ignore="UnusedResources" moz:removedIn="149">Түзету</string>
   <!-- Message in delete confirmation dialog for password -->
   <string name="login_deletion_confirmation_2">Бұл парольді өшіруді шынымен қалайсыз ба?</string>
   <!-- Positive action of a dialog asking to delete -->
   <string name="dialog_delete_positive">Өшіру</string>
   <!-- Negative action of a dialog asking to delete login -->
   <string name="dialog_delete_negative">Бас тарту</string>
-  <!-- The saved password options menu description. -->
-  <string name="login_options_menu_2" tools:ignore="UnusedResources" moz:removedIn="149">Пароль опциялары</string>
-  <!-- The editable text field for a website address. -->
-  <string name="saved_login_hostname_description_3" tools:ignore="UnusedResources" moz:removedIn="149">Веб-сайт адресі үшін түзетуге болатын мәтіндік өрісі.</string>
-  <!-- The editable text field for a username. -->
-  <string name="saved_login_username_description_3" tools:ignore="UnusedResources" moz:removedIn="149">Пайдаланушы аты үшін түзетуге болатын мәтіндік өрісі.</string>
-  <!-- The editable text field for a login's password. -->
-  <string name="saved_login_password_description_2" tools:ignore="UnusedResources" moz:removedIn="149">Пароль үшін түзетуге болатын мәтіндік өрісі.</string>
-  <!-- The button description to save changes to an edited password. -->
-  <string name="save_changes_to_login_2" tools:ignore="UnusedResources" moz:removedIn="149">Өзгерістерді сақтау.</string>
   <!-- The page title for editing a saved password. -->
   <string name="edit_2">Парольді түзету</string>
   <!-- The page title for adding new password. -->
@@ -3347,6 +3458,8 @@
   <string name="homepage_shortcuts_show_all_content_description">Барлық жарлықтарды көрсету</string>
   <!-- Label for the "Add shortcut" button displayed as a tile. -->
   <string name="homepage_shortcuts_add_shortcut">Жарлықты қосу</string>
+  <!-- Title text for the "Enter a Website URL" dialog for adding a shortcut. -->
+  <string name="homepage_shortcuts_add_website_title">Веб-сайт URL адресін енгізіңіз</string>
   <!-- Title text displayed in the dialog when shortcuts limit is reached. -->
   <string name="shortcut_max_limit_title">Жарлықтар саны шегіне жетті</string>
   <!-- Content description text displayed in the dialog when shortcut limit is reached. -->
@@ -3460,16 +3573,6 @@
   <string name="experiments_snackbar">Деректерді жіберу үшін телеметрияны іске қосу.</string>
   <!-- Snackbar button text to navigate to telemetry settings. -->
   <string name="experiments_snackbar_button">Баптауларға өту</string>
-  <!--
-    Review quality check feature
-
-    Paragraph explaining the grading system we use to classify the reliability of a product's reviews.
-  -->
-  <string name="review_quality_check_info_review_grade_header" moz:removedIn="136" tools:ignore="UnusedResources"><![CDATA[Әрбір өнім пікіріне біз A мен F арасындағы <b>әріптік баға</b> береміз.]]></string>
-  <!-- Paragraph explaining how a product's adjusted grading is calculated. -->
-  <string name="review_quality_check_explanation_body_adjusted_grading" moz:removedIn="136" tools:ignore="UnusedResources"><![CDATA[<b>Түзетілген рейтинг</b> тек біз сенімді деп есептейтін пікірлерге негізделген.]]></string>
-  <!-- Paragraph explaining product review highlights. %s is the name of the retailer (e.g. Amazon). -->
-  <string name="review_quality_check_explanation_body_highlights" moz:removedIn="136" tools:ignore="UnusedResources"><![CDATA[<b>Маңызды сәттер</b> %s ішінен соңғы 80 күнде алынған, біз сенімді деп ойлайтын пікірлер негізінде алынды.]]></string>
   <!--
     Accessibility services actions labels. These will be appended to accessibility actions like "Double tap to.." but not by or applications but by services like Talkback.
 
@@ -3595,6 +3698,12 @@
   <string name="translation_settings_automatic_never_translate_sites">Бұл сайттарды ешқашан аудармау</string>
   <!-- Button text for the button that will take the user to the download languages dialog. On the download languages dialog, the user can manage which languages they would like to download for translations. -->
   <string name="translation_settings_download_language">Тілдерді жүктеп алу</string>
+  <!-- Toggle switch title and description for the translation settings control. -->
+  <string name="translation_settings_control_title">Аудармалар</string>
+  <!-- Description for the translation settings toggle switch. -->
+  <string name="translation_settings_control_description">Барлық аудармалар құрылғыңызда жеке болып сақталады.</string>
+  <!-- Clickable text for the translations settings item that links to a website. -->
+  <string name="translation_settings_control_learn_more">Көбірек білу</string>
   <!--
     Automatic translation preference screen
 

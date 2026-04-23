@@ -6,7 +6,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { actionCreators as ac, actionTypes as at } from "common/Actions.mjs";
 
-function LocationSearch({ outerClassName }) {
+function LocationSearch({ outerClassName, onLocationSelected }) {
   // should be the location object from suggestedLocations
   const [selectedLocation, setSelectedLocation] = useState("");
   const suggestedLocations = useSelector(
@@ -40,8 +40,9 @@ function LocationSearch({ outerClassName }) {
           data: false,
         })
       );
+      onLocationSelected?.();
     }
-  }, [selectedLocation, dispatch]);
+  }, [selectedLocation, dispatch, onLocationSelected]);
 
   // when component mounts, set focus to input
   useEffect(() => {

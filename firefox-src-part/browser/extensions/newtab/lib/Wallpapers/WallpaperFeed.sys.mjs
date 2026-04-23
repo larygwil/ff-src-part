@@ -167,12 +167,27 @@ export class WallpaperFeed {
       }),
     ];
 
+    const CATEGORY_ORDER = [
+      "custom-wallpaper",
+      "firefox",
+      "abstracts",
+      "celestial",
+      "photographs",
+      "solid-colors",
+    ];
+
     const categories = [
       ...new Set(
         wallpapers.map(wallpaper => wallpaper.category).filter(Boolean)
       ),
       ...(customWallpaperEnabled ? ["custom-wallpaper"] : []), // Conditionally add custom wallpaper input
-    ];
+    ].sort((a, b) => {
+      const aIndex = CATEGORY_ORDER.indexOf(a);
+      const bIndex = CATEGORY_ORDER.indexOf(b);
+      const aOrder = aIndex === -1 ? CATEGORY_ORDER.length : aIndex;
+      const bOrder = bIndex === -1 ? CATEGORY_ORDER.length : bIndex;
+      return aOrder - bOrder;
+    });
 
     this.store.dispatch(
       ac.BroadcastToContent({
@@ -325,8 +340,7 @@ export class WallpaperFeed {
         break;
       case at.PREF_CHANGED:
         if (
-          action.data.name ===
-            "newtabWallpapers.newtabWallpapers.customColor.enabled" ||
+          action.data.name === "newtabWallpapers.customColor.enabled" ||
           action.data.name === "newtabWallpapers.customWallpaper.enabled" ||
           action.data.name === "newtabWallpapers.enabled"
         ) {

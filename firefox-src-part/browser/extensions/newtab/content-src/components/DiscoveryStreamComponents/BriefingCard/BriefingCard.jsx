@@ -21,7 +21,6 @@ const BriefingCard = ({
   lastUpdated,
   selectedTopics,
   isFollowed,
-  firstVisibleTimestamp,
 }) => {
   const [showTimestamp, setShowTimestamp] = useState(false);
   const [timeAgo, setTimeAgo] = useState("");
@@ -101,8 +100,6 @@ const BriefingCard = ({
         card_type: "organic",
         recommendation_id: headline.recommendation_id,
         tile_id: headline.id,
-        fetchTimestamp: headline.fetchTimestamp,
-        firstVisibleTimestamp,
         corpus_item_id: headline.corpus_item_id,
         scheduled_corpus_item_id: headline.scheduled_corpus_item_id,
         recommended_at: headline.recommended_at,
@@ -185,7 +182,6 @@ const BriefingCard = ({
           id: headline.id,
           pos: headline.pos,
           recommendation_id: headline.recommendation_id,
-          fetchTimestamp: headline.fetchTimestamp,
           corpus_item_id: headline.corpus_item_id,
           scheduled_corpus_item_id: headline.scheduled_corpus_item_id,
           recommended_at: headline.recommended_at,
@@ -204,7 +200,6 @@ const BriefingCard = ({
         }))}
         dispatch={dispatch}
         source="DAILY_BRIEFING"
-        firstVisibleTimestamp={firstVisibleTimestamp}
       />
     </div>
   );

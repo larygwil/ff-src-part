@@ -20,6 +20,7 @@ import {
   gNoConnectivity,
   retryThis,
   VPN_ACTIVE,
+  detectClockSkew,
 } from "chrome://global/content/aboutNetErrorHelpers.mjs";
 import { initializeRegistry } from "chrome://global/content/errors/error-registry.mjs";
 import {
@@ -87,6 +88,18 @@ export class NetErrorCard extends MozLitElement {
     return defaultCode;
   }
 
+  static selectErrorId(errorCodeString) {
+    const specificId = NetErrorCard.getCustomErrorID(errorCodeString);
+    if (errorCodeString && isFeltPrivacySupported(specificId)) {
+      return specificId;
+    }
+    if (!errorCodeString || gErrorCode === "nssFailure2") {
+      const fallbackId = NetErrorCard.getCustomErrorID(gErrorCode);
+      return isFeltPrivacySupported(fallbackId) ? fallbackId : null;
+    }
+    return null;
+  }
+
   static isSupported() {
     if (!FELT_PRIVACY_REFRESH) {
       return false;
@@ -101,10 +114,7 @@ export class NetErrorCard extends MozLitElement {
         : document.getNetErrorInfo();
     } catch {}
 
-    const id = NetErrorCard.getCustomErrorID(
-      errorInfo.errorCodeString || gErrorCode
-    );
-    return isFeltPrivacySupported(id);
+    return !!NetErrorCard.selectErrorId(errorInfo.errorCodeString);
   }
 
   constructor() {
@@ -353,9 +363,7 @@ export class NetErrorCard extends MozLitElement {
   }
 
   getErrorConfig() {
-    const id = NetErrorCard.getCustomErrorID(
-      this.errorInfo.errorCodeString || gErrorCode
-    );
+    const id = NetErrorCard.selectErrorId(this.errorInfo.errorCodeString);
     const errorConfig = getResolvedErrorConfig(id, {
       hostname: this.hostname,
       errorInfo: this.errorInfo,
@@ -364,6 +372,17 @@ export class NetErrorCard extends MozLitElement {
       offline: gOffline,
       filePath: getFilePath(),
     });
+
+    if (errorConfig.checkClockSkew && gIsCertError) {
+      const now = Date.now();
+      if (detectClockSkew(this.errorInfo, now)) {
+        this.showCustomNetErrorCard = true;
+        return getResolvedErrorConfig("CLOCK_SKEW_ERROR", {
+          hostname: this.hostname,
+          now,
+        });
+      }
+    }
 
     if (errorConfig.customNetError) {
       this.showCustomNetErrorCard = true;
@@ -631,7 +650,6 @@ export class NetErrorCard extends MozLitElement {
   mapCustomNetErrorConfigToParams(customNetError, config) {
     const params = {
       titleL10nId: customNetError.titleL10nId,
-      showResponseStatus: customNetError.showResponseStatus,
       whyDangerousL10nId: customNetError.whyDangerousL10nId,
       whyDangerousL10nArgs: customNetError.whyDangerousL10nArgs,
       whyDidThisHappenL10nId: customNetError.whyDidThisHappenL10nId,
@@ -690,7 +708,6 @@ export class NetErrorCard extends MozLitElement {
   customNetErrorSectionTemplate(params) {
     const {
       titleL10nId,
-      showResponseStatus,
       whyDangerousL10nId,
       whyDangerousL10nArgs,
       whyDidThisHappenL10nId,
@@ -792,16 +809,6 @@ export class NetErrorCard extends MozLitElement {
 
     return html`<h1 id="error-title" data-l10n-id=${titleL10nId}></h1>
       ${this.introContentTemplate()}
-      ${showResponseStatus
-        ? html`<p
-            id="response-status-label"
-            data-l10n-id="neterror-response-status-code"
-            data-l10n-args=${JSON.stringify({
-              responsestatus: this.errorInfo?.responseStatus ?? 0,
-              responsestatustext: this.errorInfo?.responseStatusText ?? "",
-            })}
-          ></p>`
-        : null}
       ${useAdvancedSection
         ? html`<moz-button-group>
             ${goBack ? this.returnButtonTemplate() : null}

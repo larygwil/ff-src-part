@@ -32,6 +32,8 @@ ChromeUtils.defineESModuleGetters(lazy, {
   setTimeout: "resource://gre/modules/Timer.sys.mjs",
   MemoriesManager:
     "moz-src:///browser/components/aiwindow/models/memories/MemoriesManager.sys.mjs",
+  SmartWindowNavigationInfo:
+    "moz-src:///browser/components/aiwindow/models/SmartWindowNavigationInfo.sys.mjs",
   // @todo Bug 2009194
   // PageDataService:
   //   "moz-src:///browser/components/pagedata/PageDataService.sys.mjs",
@@ -88,6 +90,7 @@ export const SEARCH_BROWSING_HISTORY = "search_browsing_history";
 export const GET_PAGE_CONTENT = "get_page_content";
 export const RUN_SEARCH = "run_search";
 export const GET_USER_MEMORIES = "get_user_memories";
+export const GET_NAVIGATION_INFO = "get_navigation_info";
 
 export const TOOLS = [
   GET_OPEN_TABS,
@@ -95,6 +98,7 @@ export const TOOLS = [
   GET_PAGE_CONTENT,
   RUN_SEARCH,
   GET_USER_MEMORIES,
+  GET_NAVIGATION_INFO,
 ];
 
 export const RUN_SEARCH_VERBATIM_QUERY_DESCRIPTION =
@@ -210,6 +214,28 @@ export const toolsConfig = [
     },
   },
   RUN_SEARCH_TOOL_CONFIG_VERBATIM_QUERY,
+  {
+    type: "function",
+    function: {
+      name: GET_NAVIGATION_INFO,
+      description:
+        "Find relevant Firefox preferences pages based on a user query. " +
+        "Use this when the user asks where to find a setting, how to configure something in " +
+        "Firefox, or where to manage Smart Window features like memories.",
+      parameters: {
+        type: "object",
+        properties: {
+          query: {
+            type: "string",
+            description:
+              "A natural-language description of what the user is looking for, " +
+              "e.g. 'where to manage memories' or 'privacy settings'.",
+          },
+        },
+        required: ["query"],
+      },
+    },
+  },
   {
     type: "function",
     function: {
@@ -651,7 +677,7 @@ export class GetPageContent {
     // all of the conversations and collect a new Set of mentions.
     const mentionedUrls = conversation.getAllMentionURLs();
 
-    const results = Promise.all(
+    const results = await Promise.all(
       url_list.map(async (url, index) => {
         if (!isAllowedURL(url)) {
           return "This URL is not allowed: " + url;
@@ -783,6 +809,28 @@ export class GetPageContent {
 }
 
 /**
+ * Returns Firefox settings navigation entries semantically relevant to the query.
+ * No conversation parameter is needed.
+ *
+ * @param {object} toolParams
+ * @param {string} toolParams.query
+ * @returns {Promise<Array<{url, label, breadcrumb, description, similarity}>>}
+ */
+export async function getNavigationInfo(toolParams) {
+  const params = toolParams && typeof toolParams === "object" ? toolParams : {};
+  const { query = "" } = params;
+
+  if (!query.trim()) {
+    return [];
+  }
+
+  // No flags set: results are static browser UI metadata bundled with Firefox.
+  // No network requests are made and no user data is read, so there is no
+  // privacy risk and no untrusted content that could carry a prompt injection.
+  return lazy.SmartWindowNavigationInfo.getRelevantNavigation(query);
+}
+
+/**
  * Retrieves the summaries of all saved memories
  *
  * @param {ChatConversation} conversation
@@ -800,4 +848,9 @@ export async function getUserMemories(conversation) {
   return result;
 }
 
-export const toolFns = { getOpenTabs, searchBrowsingHistory, getUserMemories };
+export const toolFns = {
+  getOpenTabs,
+  searchBrowsingHistory,
+  getUserMemories,
+  getNavigationInfo,
+};

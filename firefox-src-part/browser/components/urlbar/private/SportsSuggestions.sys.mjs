@@ -4,6 +4,12 @@
 
 import { RealtimeSuggestProvider } from "moz-src:///browser/components/urlbar/private/RealtimeSuggestProvider.sys.mjs";
 
+const lazy = {};
+
+ChromeUtils.defineESModuleGetters(lazy, {
+  UrlbarUtils: "moz-src:///browser/components/urlbar/UrlbarUtils.sys.mjs",
+});
+
 /**
  * A feature that manages sports realtime suggestions.
  */
@@ -86,7 +92,7 @@ export class SportsSuggestions extends RealtimeSuggestProvider {
   getViewTemplateForDescriptionBottom(item, index) {
     return [
       {
-        name: `sport-name-${index}`,
+        name: `sport-${index}`,
         tag: "span",
       },
       {
@@ -121,7 +127,7 @@ export class SportsSuggestions extends RealtimeSuggestProvider {
       ...this.#viewUpdateImageAndBottom(item, index),
       [`item_${index}`]: {
         attributes: {
-          sport: item.sport,
+          "sport-category": item.sport_category,
           status: item.status_type,
         },
       },
@@ -161,11 +167,19 @@ export class SportsSuggestions extends RealtimeSuggestProvider {
 
   #viewUpdateImageAndBottom(item, i) {
     let date = new Date(item.date);
-    let { zonedNow, zonedDate, daysUntil, isFuture } =
-      SportsSuggestions._parseDate(date);
-
     let icon = itemIcon(item);
-    let isScheduled = item.status_type == "scheduled";
+
+    let {
+      formattedDate,
+      formattedTime,
+      parseDateResult: { daysUntil, zonedNow },
+    } = lazy.UrlbarUtils.formatDate(date, {
+      // If the item has an icon, the date chiclet won't be shown, so show the
+      // absolute date in the bottom part of the row.
+      forceAbsoluteDate: !!icon,
+      includeTimeZone: true,
+      capitalizeRelativeDate: true,
+    });
 
     // Create the image update.
     let imageUpdate;
@@ -215,45 +229,7 @@ export class SportsSuggestions extends RealtimeSuggestProvider {
       }
     }
 
-    // Create the date update. First, format the date.
-    let formattedDate;
-    if (Math.abs(daysUntil) <= 1) {
-      // Relative date: "Today", "Tomorrow", "Yesterday"
-      formattedDate = capitalizeString(
-        new Intl.RelativeTimeFormat(undefined, {
-          numeric: "auto",
-        }).format(daysUntil, "day")
-      );
-    } else {
-      // Formatted date with some combination of year, month, day, and weekday
-      let opts = {
-        timeZone: zonedNow.timeZoneId,
-      };
-      if (!isScheduled || icon || !isFuture) {
-        opts.month = "short";
-        opts.day = "numeric";
-        if (zonedDate.year != zonedNow.year) {
-          opts.year = "numeric";
-        }
-      }
-      if (isScheduled && isFuture) {
-        opts.weekday = "short";
-      }
-      formattedDate = new Intl.DateTimeFormat(undefined, opts).format(date);
-    }
-
-    // Now format the time.
-    let formattedTime;
-    if (isScheduled && daysUntil >= 0) {
-      formattedTime = new Intl.DateTimeFormat(undefined, {
-        hour: "numeric",
-        minute: "numeric",
-        timeZoneName: "short",
-        timeZone: zonedNow.timeZoneId,
-      }).format(date);
-    }
-
-    // Finally, create the date update.
+    // Create the date update in the bottom part of the row.
     let dateUpdate;
     if (formattedTime) {
       dateUpdate = {
@@ -307,80 +283,10 @@ export class SportsSuggestions extends RealtimeSuggestProvider {
       ...imageUpdate,
       ...dateUpdate,
       ...statusUpdate,
-      [`sport-name-${i}`]: {
+      [`sport-${i}`]: {
         textContent: item.sport,
       },
     };
-  }
-
-  /**
-   * Parses a date and returns some info about it.
-   *
-   * This is a static method rather than a helper function internal to this file
-   * so that tests can easily test it.
-   *
-   * @param {Date} date
-   *   A `Date` object.
-   * @returns {DateParseResult}
-   *   The result.
-   *
-   * @typedef {object} DateParseResult
-   * @property {typeof Temporal.ZonedDateTime} zonedNow
-   *   Now as a `ZonedDateTime`.
-   * @property {typeof Temporal.ZonedDateTime} zonedDate
-   *   The passed-in date as a `ZonedDateTime`.
-   * @property {boolean} isFuture
-   *   Whether the date is in the future.
-   * @property {number} daysUntil
-   *   The number of calendar days from today to the date:
-   *   If the date is after tomorrow: `Infinity`
-   *   If the date is tomorrow: `1`
-   *   If the date is today: `0`
-   *   If the date is yesterday: `-1`
-   *   If the date is before yesterday: `-Infinity`
-   */
-  static _parseDate(date) {
-    // Find how many days there are from today to the date.
-    let zonedNow = SportsSuggestions._zonedDateTimeISO();
-    let zonedDate = date.toTemporalInstant().toZonedDateTimeISO(zonedNow);
-
-    let today = zonedNow.startOfDay();
-    let yesterday = today.subtract({ days: 1 });
-    let tomorrow = today.add({ days: 1 });
-    let dayAfterTomorrow = today.add({ days: 2 });
-
-    let daysUntil;
-    if (Temporal.ZonedDateTime.compare(dayAfterTomorrow, zonedDate) <= 0) {
-      // date is after tomorrow
-      daysUntil = Infinity;
-    } else if (Temporal.ZonedDateTime.compare(tomorrow, zonedDate) <= 0) {
-      // date is tomorrow
-      daysUntil = 1;
-    } else if (Temporal.ZonedDateTime.compare(today, zonedDate) <= 0) {
-      // date is today
-      daysUntil = 0;
-    } else if (Temporal.ZonedDateTime.compare(yesterday, zonedDate) <= 0) {
-      // date is yesterday
-      daysUntil = -1;
-    } else {
-      // date is before yesterday
-      daysUntil = -Infinity;
-    }
-
-    let isFuture = Temporal.ZonedDateTime.compare(zonedNow, zonedDate) < 0;
-
-    return {
-      zonedNow,
-      zonedDate,
-      isFuture,
-      daysUntil,
-    };
-  }
-
-  // Thin wrapper around `zonedDateTimeISO` so that tests can easily set a mock
-  // "now" date and time.
-  static _zonedDateTimeISO() {
-    return Temporal.Now.zonedDateTimeISO();
   }
 }
 
@@ -394,8 +300,4 @@ function stringifiedScore(scoreValue) {
     s = String(s);
   }
   return typeof s == "string" ? s : "";
-}
-
-function capitalizeString(str) {
-  return str[0].toLocaleUpperCase() + str.substring(1);
 }

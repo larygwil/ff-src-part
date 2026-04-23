@@ -230,7 +230,7 @@ strong {
 
 /* Tooltip: query container info */
 .devtools-tooltip-query-container {
-  color: var(--theme-arrowpanel-color);
+  color: var(--theme-body-color);
   margin: 0;
   padding: 10px 14px 12px;
   font-size: 12px;
@@ -255,6 +255,12 @@ strong {
   list-style: none;
 }
 
+.devtools-tooltip-query-container ul.unset-properties {
+  margin-block-start: 1em;
+  padding-block-start: 1em;
+  border-block-start: 1px solid var(--theme-popup-dimmed);
+}
+
 .devtools-tooltip-query-container .objectBox-node .tag-name {
   color: var(--theme-highlight-blue);
 }
@@ -269,6 +275,10 @@ strong {
 
 .devtools-tooltip-query-container .property-value {
   color: var(--theme-highlight-red);
+
+  &.empty {
+    color: var(--theme-text-color-inactive);
+  }
 }
 
 /* Tooltip: Tiles */

@@ -27,6 +27,11 @@ const PROFILE_RESTORATION_DATE_PREF = "browser.backup.profile-restoration-date";
 const PROFILES_ENABLED_PREF = "browser.profiles.enabled";
 const PROFILES_CREATED_PREF = "browser.profiles.created";
 const STOREID_PREF = "toolkit.profiles.storeID";
+const WALLPAPER_TYPE_PREF =
+  "browser.newtabpage.activity-stream.newtabWallpapers.wallpaper";
+const CUSTOM_WALLPAPER_UUID_PREF =
+  "browser.newtabpage.activity-stream.newtabWallpapers.customWallpaper.uuid";
+const CUSTOM_WALLPAPER_FOLDER = "wallpaper";
 
 /**
  * Class representing files that modify preferences and permissions within a user profile.
@@ -72,17 +77,22 @@ export class PreferencesBackupResource extends BackupResource {
     const backupPrefs = Services.prefs.getChildList("browser.backup.");
     kIgnoredPrefs = kIgnoredPrefs.concat(backupPrefs);
 
-    // Prefs with this prefix are always overriden.
-    const kNimbusMetadataPrefPrefix = "nimbus.";
-
     for (const pref of kIgnoredPrefs) {
       if (Services.prefs.getPrefType(pref) !== Services.prefs.PREF_INVALID) {
         prefsOverrideMap.addEntry(pref, null);
       }
     }
 
+    // Prefs with this prefix are always overriden.
+    const kNimbusMetadataPrefPrefix = "nimbus.";
+    const kNimbusPrefExceptionList = ["nimbus.rollouts.enabled"];
+
     const nimbusPrefs = Services.prefs.getChildList(kNimbusMetadataPrefPrefix);
     for (const pref of nimbusPrefs) {
+      if (kNimbusPrefExceptionList.includes(pref)) {
+        continue;
+      }
+
       prefsOverrideMap.addEntry(pref, null);
     }
 
@@ -136,6 +146,22 @@ export class PreferencesBackupResource extends BackupResource {
       "chrome",
     ];
     await BackupResource.copyFiles(profilePath, stagingPath, simpleCopyFiles);
+
+    const WALLPAPER_TYPE = Services.prefs.getStringPref(
+      WALLPAPER_TYPE_PREF,
+      ""
+    );
+    const WALLPAPER_UUID = Services.prefs.getStringPref(
+      CUSTOM_WALLPAPER_UUID_PREF,
+      ""
+    );
+    if (WALLPAPER_TYPE == "custom" && WALLPAPER_UUID) {
+      await BackupResource.copyFiles(
+        PathUtils.join(profilePath, CUSTOM_WALLPAPER_FOLDER),
+        PathUtils.join(stagingPath, CUSTOM_WALLPAPER_FOLDER),
+        [WALLPAPER_UUID]
+      );
+    }
 
     // prefs.js is a special case - we have a helper function to flush the
     // current prefs state to disk off of the main thread.
@@ -239,6 +265,7 @@ export class PreferencesBackupResource extends BackupResource {
       "handlers.json",
       "user.js",
       "chrome",
+      CUSTOM_WALLPAPER_FOLDER,
     ];
     await BackupResource.copyFiles(
       recoveryPath,

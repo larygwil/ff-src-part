@@ -142,6 +142,7 @@ export class ChatConversation extends EventEmitter {
    * @param {number} [params.updatedDate]
    * @param {CONVERSATION_STATUS} [params.status]
    * @param {Array<ChatMessage>} [params.messages]
+   * @param {boolean|null} [params.memoriesToggled]
    */
   constructor(params) {
     const {
@@ -154,6 +155,7 @@ export class ChatConversation extends EventEmitter {
       updatedDate = Date.now(),
       messages = [],
       seenUrls,
+      memoriesToggled = null,
     } = params;
 
     super();
@@ -167,6 +169,7 @@ export class ChatConversation extends EventEmitter {
     this.updatedDate = updatedDate;
     this.#messages = messages;
     this.seenUrls = seenUrls ? new Set(seenUrls) : new Set();
+    this.memoriesToggled = memoriesToggled;
 
     // NOTE: Destructuring params.status causes a linter error
     this.status = params.status || CONVERSATION_STATUS.ACTIVE;

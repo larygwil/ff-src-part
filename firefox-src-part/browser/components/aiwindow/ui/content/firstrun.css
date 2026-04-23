@@ -26,6 +26,28 @@
   --brand-text-color: light-dark(#210340, #e4dcf7);
   --button-text-color: light-dark(var(--button-text-color-primary), #fbfbfe);
   --button-gradient: light-dark(var(--aiwindow-gradient-button), var(--aiwindow-gradient-button-dark));
+  /* stylelint-disable-next-line -- using linear gradient for text effect */
+  --header-bg-image: light-dark(linear-gradient(91deg, #7630c0 22.04%, #5c66ee 78.7%), linear-gradient(65deg, #9165ff 18.85%, #d8c9ff 78.79%));
+  --header-text-color: var(--bg-transparent);
+  --button-hover-bg: var(--button-gradient);
+  --button-hover-color: var(--button-text-color);
+  --button-active-bg: var(--button-gradient);
+  --button-active-color: var(--button-text-color);
+  --button-disabled-bg: var(--button-gradient);
+  --button-disabled-color: var(--button-text-color);
+
+  @media (forced-colors) {
+    --header-bg-image: none;
+    --header-text-color: var(--text-color);
+    --button-gradient: var(--button-background-color-primary);
+    --button-text-color: var(--button-text-color-primary);
+    --button-hover-bg: var(--button-background-color-primary-hover);
+    --button-hover-color: var(--button-text-color-primary-hover);
+    --button-active-bg: var(--button-background-color-primary-active);
+    --button-active-color: var(--button-text-color-primary-active);
+    --button-disabled-bg: var(--button-background-color-primary-disabled);
+    --button-disabled-color: var(--button-text-color-primary-disabled);
+  }
 
   .main-content,
   .section-main,
@@ -39,11 +61,10 @@
   }
 
   #mainContentHeader {
-    /* stylelint-disable-next-line -- using linear gradient for text effect */
-    background: light-dark(linear-gradient(91deg, #7630c0 22.04%, #5c66ee 78.7%), linear-gradient(65deg, #9165ff 18.85%, #d8c9ff 78.79%));
+    background-image: var(--header-bg-image);
     background-clip: text;
     /* stylelint-disable-next-line -- transparent needed for gradient text effect */
-    color: var(--bg-transparent);
+    color: var(--header-text-color);
   }
 
   .screen.AI_WINDOW_INTRO {
@@ -90,13 +111,29 @@
       font-weight: var(--button-font-weight);
       letter-spacing: -0.3px;
       cursor: pointer;
-      border: none;
+
+      border: var(--border-width) solid var(--button-border-color-primary);
     }
 
-    &:not(:has(.icon.selected)) button.primary {
-      opacity: 0.5;
+    button.primary:hover {
+      border-color: var(--button-border-color-primary-hover);
+      background: var(--button-hover-bg);
+      color: var(--button-hover-color);
+    }
+
+    button.primary:active {
+      border-color: var(--button-border-color-primary-active);
+      background: var(--button-active-bg);
+      color: var(--button-active-color);
+    }
+
+    button.primary:disabled {
+      opacity: var(--button-opacity-disabled);
       pointer-events: none;
       cursor: default;
+      border-color: var(--button-border-color-primary-disabled);
+      background: var(--button-disabled-bg);
+      color: var(--button-disabled-color);
     }
   }
 
@@ -154,7 +191,7 @@
         text-align: center;
         opacity: 0.8;
         margin-top: 0;
-        padding: var(--space-medium) calc(var(--space-xsmall) * 5);
+        padding: var(--space-small) calc(var(--space-xsmall) * 5);
         border-radius: var(--border-radius-medium);
         /* stylelint-disable-next-line stylelint-plugin-mozilla/use-design-tokens -- custom background per Figma design */
         background: var(--subtitle-bg-color);

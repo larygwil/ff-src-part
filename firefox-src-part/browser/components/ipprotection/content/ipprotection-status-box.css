@@ -59,6 +59,15 @@
   }
 }
 
+.catastrophic-error {
+  background-color: var(--background-color-critical);
+
+  ::slotted([slot="image"]) {
+    -moz-context-properties: fill;
+    fill: var(--icon-color-critical);
+  }
+}
+
 #content-container {
   display: flex;
   flex-direction: column;
@@ -129,6 +138,7 @@
 }
 
 ::slotted([slot="action"]) {
-  align-self: flex-start;
+  --button-padding: var(--space-large);
+  width: 100%;
   margin-block-start: var(--space-large);
 }

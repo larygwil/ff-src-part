@@ -5,8 +5,6 @@
 const lazy = {};
 
 ChromeUtils.defineESModuleGetters(lazy, {
-  IPPEnrollAndEntitleManager:
-    "moz-src:///toolkit/components/ipprotection/IPPEnrollAndEntitleManager.sys.mjs",
   IPPChannelFilter:
     "moz-src:///toolkit/components/ipprotection/IPPChannelFilter.sys.mjs",
   IPPNetworkUtils:
@@ -41,6 +39,7 @@ ChromeUtils.defineLazyGetter(
 export const ERRORS = Object.freeze({
   GENERIC: "generic-error",
   NETWORK: "network-error",
+  CATASTROPHIC: "catastrophic-error",
   TIMEOUT: "timeout-error", // Activation took too long and was aborted
   MISSING_PROMISE: "missing-activation-promise", // Expected promise was not returned
   MISSING_ABORT: "missing-abort-controller", // Expected abort controller was not returned
@@ -106,6 +105,9 @@ export async function scheduleCallback(
 ) {
   const getNow = imports.getNow || (() => Temporal.Now.instant());
   while (getNow().until(timepoint).total("milliseconds") > 0) {
+    if (abortSignal.aborted) {
+      return;
+    }
     const msUntilTrigger = getNow().until(timepoint).total("milliseconds");
     // clamp the timeout to the max allowed by setTimeout
     const clampedMs = Math.min(msUntilTrigger, 2147483647);
@@ -357,15 +359,9 @@ class IPPProxyManagerSingleton extends EventTarget {
 
     await lazy.IPProtectionServerlist.maybeFetchList();
 
-    let enrollAndEntitleData;
-    if (lazy.IPPEnrollAndEntitleManager.isEnrolling) {
-      enrollAndEntitleData =
-        await lazy.IPPEnrollAndEntitleManager.waitForEnrollment();
-    }
-    // If the current account can not be enrolled or is not entitled,
-    // the starting the proxy should fail.
-    if (!lazy.IPPEnrollAndEntitleManager.isEnrolledAndEntitled) {
-      throw enrollAndEntitleData?.error || ERRORS.GENERIC;
+    const notReady = await lazy.IPProtectionService.authProvider.aboutToStart();
+    if (notReady) {
+      throw notReady.error || ERRORS.GENERIC;
     }
 
     // Check if we aborted before starting the channel filter.

@@ -108,16 +108,28 @@ export class AIWindowTabStatesManager {
    */
   async openSidebarForReturningUser() {
     await this.#restorePromise;
-    if (this.#window && !lazy.AIWindowUI.isSidebarOpen(this.#window)) {
-      const tab = this.#window.gBrowser.selectedTab;
-      if (
-        getKeepSidebarOpenState(
-          this.#getTabState(tab)?.state,
-          lazy.sidebarOpenByDefault
-        )
-      ) {
-        lazy.AIWindowUI.openSidebar(this.#window);
-      }
+    // Guard against the window being closed (uninit called) while awaiting.
+    if (!this.#window) {
+      return;
+    }
+    const tab = this.#window.gBrowser.selectedTab;
+    const tabUrl = tab.linkedBrowser.currentURI.spec;
+    const tabState = this.#getTabState(tab);
+    // AIWINDOW_URL tabs are fullpage and don't use the sidebar.
+    if (
+      tabUrl === lazy.AIWINDOW_URL ||
+      lazy.AIWindowUI.isSidebarOpen(this.#window) ||
+      tabState?.state?.keepSidebarOpen === false
+    ) {
+      return;
+    }
+    if (
+      getKeepSidebarOpenState(
+        this.#getTabState(tab)?.state,
+        lazy.sidebarOpenByDefault
+      )
+    ) {
+      lazy.AIWindowUI.openSidebar(this.#window);
     }
   }
 
@@ -196,6 +208,11 @@ export class AIWindowTabStatesManager {
       "ai-window:sidebar-navigating",
       this.#onSidebarNavigating
     );
+
+    this.#window.addEventListener(
+      "ai-window:close-sidebar",
+      this.#onCloseSidebar
+    );
   }
 
   /**
@@ -230,6 +247,11 @@ export class AIWindowTabStatesManager {
     this.#window.removeEventListener(
       "ai-window:sidebar-navigating",
       this.#onSidebarNavigating
+    );
+
+    this.#window.removeEventListener(
+      "ai-window:close-sidebar",
+      this.#onCloseSidebar
     );
   }
 
@@ -326,6 +348,7 @@ export class AIWindowTabStatesManager {
     }
 
     if (!shouldKeepSidebar) {
+      lazy.AIWindowUI.updateSidebarInput(this.#window, "");
       lazy.AIWindowUI.closeSidebar(this.#window);
       return;
     }
@@ -579,6 +602,12 @@ export class AIWindowTabStatesManager {
         ...newState,
       };
 
+      // Enforce the above: newState may carry an input value, but fullpage
+      // mode input should never be stored.
+      if (tabState.state.mode === "fullpage") {
+        tabState.state.input = "";
+      }
+
       this.#tabStates.set(tab, tabState);
 
       const { conversationId, keepSidebarOpen } = tabState.state;
@@ -670,10 +699,16 @@ export class AIWindowTabStatesManager {
       });
     }
 
-    if (isOpen && source === "toggle") {
-      lazy.AIWindowUI.openSidebar(
+    if (isOpen) {
+      if (source === "toggle") {
+        lazy.AIWindowUI.openSidebar(
+          this.#window,
+          currentTabState?.state?.conversation ?? null
+        );
+      }
+      lazy.AIWindowUI.updateSidebarInput(
         this.#window,
-        currentTabState?.state?.conversation ?? null
+        currentTabState?.state?.input ?? ""
       );
     }
   };
@@ -692,6 +727,10 @@ export class AIWindowTabStatesManager {
     }
 
     this.#getTabState(tab, { input: "" });
+  };
+
+  #onCloseSidebar = () => {
+    lazy.AIWindowUI.closeSidebar(this.#window);
   };
 
   /**

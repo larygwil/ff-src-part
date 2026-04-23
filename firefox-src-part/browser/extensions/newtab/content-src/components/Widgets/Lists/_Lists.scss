@@ -7,7 +7,8 @@
 
   border-radius: var(--border-radius-large);
   padding-block-start: var(--space-medium);
-  box-shadow: var(--card-box-shadow);
+  // @backward-compat { version 150 } D281466/D283723 renamed design tokens; remove once Firefox 150 is on Release.
+  box-shadow: var(--card-box-shadow, var(--box-shadow-card));
 
   // Classic layout (when Nova is disabled)
   // @nova-cleanup(remove-conditional): Remove classic fixed-width/height styles after Nova ships
@@ -25,6 +26,14 @@
   position: relative;
   display: flex;
   flex-direction: column;
+
+  &.medium-widget {
+    grid-row: span 2;
+  }
+
+  &.large-widget {
+    grid-row: span 4;
+  }
 
   .confetti-canvas {
     position: absolute;

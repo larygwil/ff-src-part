@@ -508,9 +508,11 @@ class HTMLTooltip extends EventEmitter {
     }
 
     this.container.classList.add("tooltip-visible");
+    anchor.classList.add("tooltip-anchor");
 
     // Keep a pointer on the focused element to refocus it when hiding the tooltip.
     this._focusedElement = anchor.ownerDocument.activeElement;
+    this._anchor = anchor;
 
     if (this.doc.defaultView) {
       if (!this._pendingEventListenerPromise) {
@@ -825,6 +827,11 @@ class HTMLTooltip extends EventEmitter {
     if (tooltipHasFocus && this._focusedElement) {
       this._focusedElement.focus();
       this._focusedElement = null;
+    }
+
+    if (this._anchor) {
+      this._anchor.classList.remove("tooltip-anchor");
+      this._anchor = null;
     }
   }
 

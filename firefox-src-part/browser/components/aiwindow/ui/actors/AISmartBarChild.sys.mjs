@@ -9,7 +9,7 @@ export class AISmartBarChild extends JSWindowActorChild {
   receiveMessage(msg) {
     if (msg.name === "AskFromParent") {
       let event = new this.contentWindow.CustomEvent("smartbar-commit", {
-        detail: { value: msg.data.query, action: "chat" },
+        detail: { value: msg.data.query, action: "chat", location: "urlbar" },
         bubbles: true,
         composed: true,
       });

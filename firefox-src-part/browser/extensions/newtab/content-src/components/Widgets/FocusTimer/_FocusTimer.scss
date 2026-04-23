@@ -10,7 +10,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  box-shadow: var(--card-box-shadow);
+  // @backward-compat { version 150 } D281466/D283723 renamed design tokens; remove once Firefox 150 is on Release.
+  box-shadow: var(--card-box-shadow, var(--box-shadow-card));
 
   // Classic layout (when Nova is disabled)
   // @nova-cleanup(remove-conditional): Remove classic fixed-width/height styles after Nova ships
@@ -23,6 +24,14 @@
     .has-sections-grid & {
       width: var(--newtab-card-width-medium);
     }
+  }
+
+  &.medium-widget {
+    grid-row: span 2;
+  }
+
+  &.large-widget {
+    grid-row: span 4;
   }
 }
 
@@ -69,10 +78,10 @@
   padding-inline: var(--space-medium);
   margin-block-end: var(--space-medium);
 
-  h3 {
-    font-size: var(--button-font-size);
-    font-weight: var(--font-weight-heading);
+  h2 {
     margin-block: 0;
+    font-weight: var(--font-weight);
+    font-size: var(--font-size-root);
   }
 }
 

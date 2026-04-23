@@ -138,7 +138,7 @@ export const AIWindowUI = {
 
     if (!this.isSidebarOpen(win)) {
       this._showSidebarElements(box, splitter);
-      this._setAskButtonStyle(win, true);
+      this._updateAskButtonChecked(win, true);
     }
 
     Glean.smartWindow.sidebarOpen.record({
@@ -165,6 +165,13 @@ export const AIWindowUI = {
 
     const aiWindowElement = await this.getAiWindowElement(win, aiBrowser);
     if (!aiWindowElement) {
+      return;
+    }
+
+    // Return early if the sidebar was closed while we were waiting for the
+    // content element to load, prevents opening a conversation or creating
+    // a new one if the sidebar is closed anyway.
+    if (!this.isSidebarOpen(win)) {
       return;
     }
 
@@ -200,8 +207,9 @@ export const AIWindowUI = {
    * Close the AI Window sidebar.
    *
    * @param {Window} win
+   * @param {string} source
    */
-  closeSidebar(win) {
+  closeSidebar(win, source = null) {
     if (!this.isSidebarOpen(win)) {
       return;
     }
@@ -209,7 +217,7 @@ export const AIWindowUI = {
 
     box.collapsed = true;
     splitter.collapsed = true;
-    this._setAskButtonStyle(win, false);
+    this._updateAskButtonChecked(win, false);
 
     // Dispatch event to notify tab state manager that sidebar was toggled
     win.dispatchEvent(
@@ -217,6 +225,7 @@ export const AIWindowUI = {
         detail: {
           tab: win.gBrowser?.selectedTab,
           isOpen: false,
+          ...(source && { source }),
         },
       })
     );
@@ -235,40 +244,20 @@ export const AIWindowUI = {
    * @returns {boolean} true if now open, false if now closed
    */
   toggleSidebar(win) {
+    if (this.isSidebarOpen(win)) {
+      this.closeSidebar(win, "toggle");
+      return false;
+    }
+
     const nodes = this._getSidebarElements(win);
     if (!nodes) {
       return false;
     }
     const { chromeDoc, box, splitter } = nodes;
 
-    if (!box.collapsed) {
-      box.collapsed = true;
-      splitter.collapsed = true;
-      this._setAskButtonStyle(win, false);
-
-      // Dispatch event to notify tab state manager that sidebar was toggled
-      win.dispatchEvent(
-        new win.CustomEvent("ai-window:sidebar-toggle", {
-          detail: {
-            tab: win.gBrowser?.selectedTab,
-            isOpen: false,
-            source: "toggle",
-          },
-        })
-      );
-
-      const { chatId, messageSeq } = this._getConversationFromSidebar(win);
-      Glean.smartWindow.sidebarClose.record({
-        chat_id: chatId,
-        message_seq: messageSeq,
-      });
-
-      return false;
-    }
-
     this.ensureBrowserIsAppended(chromeDoc, box);
     this._showSidebarElements(box, splitter);
-    this._setAskButtonStyle(win, true);
+    this._updateAskButtonChecked(win, true);
 
     // Dispatch event to notify tab state manager that sidebar was toggled
     win.dispatchEvent(
@@ -280,12 +269,6 @@ export const AIWindowUI = {
         },
       })
     );
-
-    const { chatId, messageSeq } = this._getConversationFromSidebar(win);
-    Glean.smartWindow.sidebarOpen.record({
-      chat_id: chatId,
-      message_seq: messageSeq,
-    });
 
     return true;
   },
@@ -311,12 +294,13 @@ export const AIWindowUI = {
    * @param {Window} win
    * @param {boolean} sidebarIsOpen
    */
-  _setAskButtonStyle(win, sidebarIsOpen) {
+  _updateAskButtonChecked(win, sidebarIsOpen) {
     const askBtn = win.document.querySelector("#smartwindow-ask-button-inner");
     if (!askBtn) {
       return;
     }
-    askBtn.classList.toggle("sidebar-is-open", sidebarIsOpen);
+    askBtn.checked = sidebarIsOpen;
+    askBtn.setAttribute("aria-expanded", String(sidebarIsOpen));
   },
 
   /**

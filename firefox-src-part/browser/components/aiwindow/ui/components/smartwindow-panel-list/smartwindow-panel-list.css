@@ -22,9 +22,18 @@ panel-list {
   --panel-section-header-font-size: var(--font-size-small);
   --panel-item-padding: calc(var(--size-item-small) / 2);
   --panel-item-icon-size: var(--icon-size-small);
+  --button-background-color-hover: light-dark(var(--color-violet-0), var(--color-violet-100));
   /* stylelint-disable-next-line stylelint-plugin-mozilla/use-design-tokens */
   max-width: var(--panel-max-width);
   white-space: normal;
+}
+
+panel-list[valign="bottom"] {
+  margin-block-start: var(--space-small);
+}
+
+panel-list[valign="top"] {
+  margin-block-start: calc(-1 * var(--space-small));
 }
 
 panel-item.panel-section-header::part(button) {
@@ -36,6 +45,10 @@ panel-item.panel-section-header::part(button) {
 }
 
 panel-item:not(.panel-section-header)::part(button) {
+  border-radius: var(--border-radius-medium);
+  margin-inline: var(--space-small);
+  /* stylelint-disable-next-line stylelint-plugin-mozilla/use-design-tokens */
+  max-width: calc(var(--panel-max-width) - var(--space-large));
   /* stylelint-disable-next-line stylelint-plugin-mozilla/use-design-tokens */
   padding: var(--panel-item-padding);
 }

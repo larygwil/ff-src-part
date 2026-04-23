@@ -789,7 +789,7 @@ class FirefoxDataProvider {
       // We have to ensure passing mimeType as fetchResponseContent needs it from
       // updateRequest. It will convert the LongString in `response.content.text` to a
       // string.
-      mimeType: response.content.mimeType,
+      mimeType: response.content?.mimeType || "text/plain",
       responseContent: response,
     });
     this.emitForTests(TEST_EVENTS.RECEIVED_RESPONSE_CONTENT, response);

@@ -1,4 +1,3 @@
-/* -*- indent-tabs-mode: nil; js-indent-level: 2 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -48,6 +47,14 @@ export class AutoScrollChild extends JSWindowActorChild {
       }
 
       // Or if we're pasting into an input field of sorts.
+      if (
+        content.HTMLInputElement.isInstance(node) ||
+        content.HTMLTextAreaElement.isInstance(node)
+      ) {
+        return true;
+      }
+
+      // Gotta check also the internal nodes.
       let containingHost = node.getRootNode().host;
       if (
         containingHost &&

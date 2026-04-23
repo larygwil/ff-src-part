@@ -10,6 +10,11 @@
   align-items: center;
   justify-items: center;
   width: 100%;
+  --smartbar-width: 100%;
+}
+
+:host([classic-mode]) {
+  background-color: var(--background-color-canvas);
 }
 
 /* Fullpage: browser collapsed (0 height) until chat starts, showing prompts and smartbar */
@@ -28,12 +33,12 @@
 
 :host([mode="sidebar"]) {
   grid-template-areas:
-    "sidebar-header"
     "browser"
     "prompts"
     "smartbar"
     "disclaimer";
-  grid-template-rows: auto 1fr auto auto auto;
+  grid-template-rows: 1fr auto auto auto;
+  --smartbar-width: calc(100% - var(--space-large));
 }
 
 /* Expands browser to full height and removes prompts from grid when chat starts */
@@ -45,22 +50,34 @@
   grid-template-rows: 1fr auto auto;
 }
 
+:host([mode="fullpage"].chat-active) {
+  grid-template-areas:
+    "browser"
+    "prompts"
+    "smartbar"
+    "disclaimer";
+  grid-template-rows: 1fr auto auto auto;
+
+  & .fullpage-header:not([hidden]) {
+    display: flex;
+  }
+}
+
 :host([mode="sidebar"].chat-active) {
   grid-template-areas:
-    "sidebar-header"
     "browser"
     "smartbar"
     "disclaimer";
-  grid-template-rows: auto 1fr auto auto;
+  grid-template-rows: 1fr auto auto;
 }
 
 #browser-container {
-  grid-area: browser;
   display: contents;
   width: 100%;
 }
 
 #aichat-browser {
+  grid-area: browser;
   width: 100%;
   height: 100%;
 }
@@ -72,7 +89,7 @@
   /* smartbar max width must be the same as the child context (ai-window-content.css) container */
   max-width: var(--smartwindow-content-max-width);
   position: relative;
-  width: calc(100% - var(--space-large));
+  width: var(--smartbar-width);
 }
 
 #ai-window-smartbar {
@@ -130,32 +147,53 @@
   bottom: 0;
 }
 
+#smartbar-slot {
+  display: contents;
+}
+
 smartwindow-prompts {
   grid-area: prompts;
   width: 100%;
 }
 
-#browser-container.chat-active #ai-window-smartbar {
-  grid-area: 2 / 1;
-}
-
-.sidebar-header {
+.chat-header {
   box-sizing: border-box;
-  grid-area: sidebar-header;
-  padding: var(--space-small);
+  justify-content: flex-end;
+  padding-block: var(--space-small);
+  padding-inline: var(--space-small) var(--space-large);
+  position: absolute;
+  top: 0;
   width: 100%;
 }
 
-moz-button.new-chat-icon-button {
-  --button-border-radius: var(--border-radius-large);
-  /* Updating background color for light only, persisting default dark background-color */
-  --button-background-color: light-dark(var(--color-white), rgba(0, 0, 0, 0.33));
-  --button-text-color: light-dark(var(--color-violet-80), var(--color-white));
-  --button-background-color-hover: color-mix(in srgb, currentColor 11%, transparent);
+.sidebar-header {
+  display: flex;
+  gap: var(--space-small);
+  grid-area: sidebar-header;
 }
 
-moz-button.new-chat-icon-button::part(button) {
+.fullpage-header {
+  display: none;
+  grid-area: fullpage-header;
+}
+
+moz-button.new-chat-icon-button,
+moz-button.close-sidebar-button {
+  --button-border-radius: var(--border-radius-circle);
+  --button-background-color: light-dark(var(--color-white), var(--color-black-alpha-30));
+  --button-background-color-hover: light-dark(var(--color-violet-20), color-mix(in srgb, currentColor 11%, transparent));
+  --button-background-color-active: light-dark(var(--color-violet-30), color-mix(in srgb, currentColor 17%, transparent));
+  --button-text-color: light-dark(var(--color-violet-90), var(--color-violet-0));
+}
+
+moz-button.new-chat-icon-button::part(button),
+moz-button.close-sidebar-button::part(button) {
+  backdrop-filter: blur(12px);
   box-shadow: var(--box-shadow-level-1);
+}
+
+moz-button.close-sidebar-button {
+  --icon-size: calc(var(--icon-size-xsmall) - 2px);
 }
 
 #smartbar-toggle-button:not([hidden]) {
@@ -166,9 +204,15 @@ moz-button.new-chat-icon-button::part(button) {
 }
 
 #smartbar-toggle-button {
-  --smartbar-button-border-color: color-mix(in srgb, var(--color-purple-70) 15%, transparent);
-  --smartbar-button-background-color: color-mix(in srgb, var(--color-purple-40) 20%, transparent);
-  --smartbar-button-text-color: var(--color-gray-100);
+  --smartbar-button-border-color: light-dark(
+    color-mix(in srgb, var(--color-purple-70) 15%, transparent),
+    color-mix(in srgb, var(--color-violet-30) 25%, transparent)
+  );
+  --smartbar-button-background-color: light-dark(
+    color-mix(in srgb, var(--color-purple-40) 20%, transparent),
+    color-mix(in srgb, var(--color-violet-80) 30%, transparent)
+  );
+  --smartbar-button-text-color: light-dark(var(--color-gray-100), var(--color-white));
 }
 
 #smartbar-toggle-button::part(button) {
@@ -199,4 +243,14 @@ smartwindow-footer {
   width: 100%;
   display: flex;
   justify-content: center;
+}
+
+.sr-only {
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
+  height: 1px;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
 }

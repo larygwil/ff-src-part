@@ -36,6 +36,12 @@
 
   pref("pdfjs.enableSplitMerge", true);
 
+  #if defined(EARLY_BETA_OR_EARLIER)
+
+    pref("pdfjs.enableMerge", true);
+
+  #endif
+
 #endif
 
 #if defined(EARLY_BETA_OR_EARLIER)

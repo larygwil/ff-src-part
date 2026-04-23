@@ -329,8 +329,8 @@ export class IPProtectionToolbarButton {
       isActive: false,
       isError: false,
       isExcluded: false,
-      isNetworkError: false,
       isPaused: false,
+      isNetworkError: false,
     }
   ) {
     if (!toolbaritem) {

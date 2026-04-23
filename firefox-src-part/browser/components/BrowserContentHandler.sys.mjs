@@ -1121,17 +1121,15 @@ nsBrowserContentHandler.prototype = {
   /* nsIContentHandler */
 
   handleContent: function bch_handleContent(contentType, context, request) {
-    const NS_ERROR_WONT_HANDLE_CONTENT = 0x805d0001;
-
     try {
       var webNavInfo = Cc["@mozilla.org/webnavigation-info;1"].getService(
         Ci.nsIWebNavigationInfo
       );
       if (!webNavInfo.isTypeSupported(contentType)) {
-        throw NS_ERROR_WONT_HANDLE_CONTENT;
+        throw new Components.Exception("", Cr.NS_ERROR_WONT_HANDLE_CONTENT);
       }
     } catch (e) {
-      throw NS_ERROR_WONT_HANDLE_CONTENT;
+      throw new Components.Exception("", Cr.NS_ERROR_WONT_HANDLE_CONTENT);
     }
 
     request.QueryInterface(Ci.nsIChannel);

@@ -525,6 +525,15 @@ var gSync = {
     return UIState.get().status == UIState.STATUS_SIGNED_IN;
   },
 
+  get isSignedInWithSyncDisabled() {
+    const state = UIState.get();
+    return state.status == UIState.STATUS_SIGNED_IN && !state.syncEnabled;
+  },
+
+  get hasNoSendTabTargets() {
+    return this.getSendTabTargets().length === 0;
+  },
+
   shouldHideSendContextMenuItems(enabled) {
     const state = UIState.get();
     // Only show the "Send..." context menu items when sending would be possible
@@ -561,7 +570,7 @@ var gSync = {
     return targets.sort((a, b) => b.lastAccessTime - a.lastAccessTime);
   },
 
-  _hasOnlyMobileSendTabTargets(targets = this.getSendTabTargets()) {
+  hasOnlyMobileSendTabTargets(targets = this.getSendTabTargets()) {
     return (
       targets.length &&
       targets.every(
@@ -1164,7 +1173,7 @@ var gSync = {
       ]) {
         PanelMultiView.getViewNode(document, id).hidden = true;
       }
-    } else if (this._hasOnlyMobileSendTabTargets(sendTabTargets)) {
+    } else if (this.hasOnlyMobileSendTabTargets(sendTabTargets)) {
       PanelMultiView.getViewNode(
         document,
         "PanelUI-fxa-menu-sendtab-button"
@@ -1370,7 +1379,7 @@ var gSync = {
           syncSetupEl.removeAttribute("hidden");
         }
 
-        if (state.hasSyncKeys) {
+        if (state.syncEnabled) {
           cadButtonEl.removeAttribute("hidden");
           syncSetupSeparator.removeAttribute("hidden");
         } else {
@@ -2202,7 +2211,7 @@ var gSync = {
       sendTabsToDevice.hidden = true;
       sendTabToDeviceSeparator.hidden = true;
     } else {
-      if (this._hasOnlyMobileSendTabTargets()) {
+      if (this.hasOnlyMobileSendTabTargets()) {
         sendTabsToDevice.setAttribute(
           "data-l10n-id",
           "tab-context-send-to-mobile"
@@ -2272,7 +2281,7 @@ var gSync = {
       !hideItems && showSendPage
     );
 
-    let hasOnlyMobileTargets = this._hasOnlyMobileSendTabTargets();
+    let hasOnlyMobileTargets = this.hasOnlyMobileSendTabTargets();
     let sendLinkToDevice = document.getElementById("context-sendlinktodevice");
     let sendPageToDevice = document.getElementById("context-sendpagetodevice");
 

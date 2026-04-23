@@ -23,6 +23,7 @@ const BLANK_HOMEPAGE_URL = "chrome://browser/content/blanktab.html";
  * observe() cannot be train-hopped on earlier releases.
  */
 export const PREFERENCES_LOADED_EVENT = "home-pane-loaded";
+export const PREFERENCES_LOADED_EVENT_SUBPANE = "customHomepage-pane-loaded";
 
 // These "section" objects are formatted in a way to be similar to the ones from
 // SectionsManager to construct the preferences view.
@@ -113,10 +114,12 @@ const PREFS_FOR_SETTINGS = () => [
 export class AboutPreferences {
   init() {
     Services.obs.addObserver(this, PREFERENCES_LOADED_EVENT);
+    Services.obs.addObserver(this, PREFERENCES_LOADED_EVENT_SUBPANE);
   }
 
   uninit() {
     Services.obs.removeObserver(this, PREFERENCES_LOADED_EVENT);
+    Services.obs.removeObserver(this, PREFERENCES_LOADED_EVENT_SUBPANE);
   }
 
   onAction(action) {
