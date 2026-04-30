@@ -2003,8 +2003,59 @@ main.newtab-main section {
   transition: opacity 0.3s ease, margin 0.3s ease, max-width 0.3s ease;
 }
 
+.open-customization-button.personalize-animate-exit-done {
+  visibility: hidden;
+}
+.open-customization-button::part(moz-button-label) {
+  opacity: 0;
+  max-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .open-customization-button::part(moz-button-label) {
+    transition: opacity 0.3s ease, max-width 0.3s ease;
+  }
+}
+.lightWallpaper .open-customization-button::part(moz-button-label) {
+  color-scheme: light;
+}
+.darkWallpaper .open-customization-button::part(moz-button-label) {
+  color-scheme: dark;
+}
+.open-customization-button::part(button) {
+  min-width: var(--button-size-icon);
+  max-width: var(--button-size-icon);
+  height: var(--button-size-icon);
+  padding-inline: 0 calc((var(--button-size-icon) - var(--icon-size-medium)) / 2);
+  overflow: hidden;
+  justify-content: flex-end;
+  gap: 0;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .open-customization-button::part(button) {
+    transition: max-width 0.3s ease, padding 0.3s ease, gap 0.3s ease;
+  }
+}
+.lightWallpaper .open-customization-button::part(button) {
+  color-scheme: light;
+}
+.darkWallpaper .open-customization-button::part(button) {
+  color-scheme: dark;
+}
+.open-customization-button:hover::part(moz-button-label), .open-customization-button:focus-within::part(moz-button-label), .open-customization-button.activation-window-variant-a::part(moz-button-label), .open-customization-button.activation-window-variant-b::part(moz-button-label) {
+  opacity: 1;
+  max-width: 30ch;
+}
+.open-customization-button:hover::part(button), .open-customization-button:focus-within::part(button), .open-customization-button.activation-window-variant-a::part(button), .open-customization-button.activation-window-variant-b::part(button) {
+  max-width: calc(30ch + var(--icon-size-medium) + var(--space-small) + var(--space-large) * 2);
+  padding: var(--space-small) var(--space-large);
+  gap: var(--space-small);
+}
+
 .personalize-button:hover > label,
 .personalize-button:focus-visible > label,
+.personalize-button:focus-within > label,
 .personalize-button.activation-window-variant-a > label,
 .personalize-button.activation-window-variant-b > label {
   opacity: 1;
@@ -3383,28 +3434,38 @@ dialog:dir(rtl)::after {
   content: url("chrome://browser/skin/weather/night-mostly-cloudy-with-flurries.svg");
 }
 
-.location-input-wrapper {
+.weatherWrapper .location-input-wrapper,
+.weather-forecast-widget .location-input-wrapper {
   background-color: light-dark(var(--color-white), var(--newtab-background-color-secondary));
   color: var(--newtab-text-primary-color);
   border-radius: var(--border-radius-medium);
   padding: var(--space-small);
   position: relative;
 }
-.lightWallpaper .location-input-wrapper, .darkWallpaper .location-input-wrapper {
+.lightWallpaper .weatherWrapper .location-input-wrapper, .darkWallpaper .weatherWrapper .location-input-wrapper,
+.lightWallpaper .weather-forecast-widget .location-input-wrapper,
+.darkWallpaper .weather-forecast-widget .location-input-wrapper {
   background-color: var(--newtab-weather-background-color);
 }
-.lightWallpaper .location-input-wrapper:hover, .darkWallpaper .location-input-wrapper:hover {
+.lightWallpaper .weatherWrapper .location-input-wrapper:hover, .darkWallpaper .weatherWrapper .location-input-wrapper:hover,
+.lightWallpaper .weather-forecast-widget .location-input-wrapper:hover,
+.darkWallpaper .weather-forecast-widget .location-input-wrapper:hover {
   background-color: var(--newtab-button-static-hover-background);
 }
-.lightWallpaper .location-input-wrapper:hover:active, .darkWallpaper .location-input-wrapper:hover:active {
+.lightWallpaper .weatherWrapper .location-input-wrapper:hover:active, .darkWallpaper .weatherWrapper .location-input-wrapper:hover:active,
+.lightWallpaper .weather-forecast-widget .location-input-wrapper:hover:active,
+.darkWallpaper .weather-forecast-widget .location-input-wrapper:hover:active {
   background-color: var(--newtab-button-static-active-background);
 }
 @media (prefers-contrast) {
-  .lightWallpaper .location-input-wrapper, .darkWallpaper .location-input-wrapper {
+  .lightWallpaper .weatherWrapper .location-input-wrapper, .darkWallpaper .weatherWrapper .location-input-wrapper,
+.lightWallpaper .weather-forecast-widget .location-input-wrapper,
+.darkWallpaper .weather-forecast-widget .location-input-wrapper {
     background-color: var(--background-color-box);
   }
 }
-.location-input-wrapper .search-icon {
+.weatherWrapper .location-input-wrapper .search-icon,
+.weather-forecast-widget .location-input-wrapper .search-icon {
   content: url("chrome://global/skin/icons/search-glass.svg");
   -moz-context-properties: fill;
   fill: var(--icon-color);
@@ -3413,22 +3474,26 @@ dialog:dir(rtl)::after {
   transform: translateY(-50%);
   inset-inline-start: var(--space-large);
 }
-.location-input-wrapper .close-icon {
+.weatherWrapper .location-input-wrapper .close-icon,
+.weather-forecast-widget .location-input-wrapper .close-icon {
   position: absolute;
   inset-block-start: 50%;
   transform: translateY(-50%);
   inset-inline-end: var(--space-medium);
 }
-.location-input-wrapper .close-icon:focus-visible {
+.weatherWrapper .location-input-wrapper .close-icon:focus-visible,
+.weather-forecast-widget .location-input-wrapper .close-icon:focus-visible {
   outline: var(--focus-outline);
 }
-.location-input-wrapper input {
+.weatherWrapper .location-input-wrapper input,
+.weather-forecast-widget .location-input-wrapper input {
   border-radius: var(--border-radius-medium);
   background-color: light-dark(var(--color-white), var(--newtab-background-color-secondary));
   padding: var(--space-small) var(--space-xxlarge);
   border: 1px solid var(--border-color);
 }
-.location-input-wrapper input:focus-visible {
+.weatherWrapper .location-input-wrapper input:focus-visible,
+.weather-forecast-widget .location-input-wrapper input:focus-visible {
   outline: var(--focus-outline);
 }
 
@@ -4790,7 +4855,6 @@ dialog:dir(rtl)::after {
   transition: opacity 0.2s ease;
   border-radius: var(--border-radius-large);
   padding-block-start: var(--space-medium);
-  box-shadow: var(--card-box-shadow, var(--box-shadow-card));
   position: relative;
   display: flex;
   flex-direction: column;
@@ -4798,13 +4862,27 @@ dialog:dir(rtl)::after {
 .lists:hover {
   background: var(--newtab-background-color-secondary);
 }
+.nova-enabled .lists {
+  box-shadow: var(--box-shadow-level-2);
+}
+.nova-enabled .lists:hover, .nova-enabled .lists:focus-within {
+  outline: 1px solid var(--border-color-deemphasized);
+  box-shadow: var(--card-box-shadow-hover);
+}
 .classic-enabled .lists {
   grid-column: span 1;
   width: var(--newtab-card-grid-layout-width);
   height: var(--newtab-card-height);
+  box-shadow: var(--card-box-shadow, var(--box-shadow-card));
 }
 .has-sections-grid .classic-enabled .lists {
   width: var(--newtab-card-width-medium);
+}
+.lightWallpaper .classic-enabled .lists .empty-list {
+  color-scheme: light;
+}
+.darkWallpaper .classic-enabled .lists .empty-list {
+  color-scheme: dark;
 }
 .lists.medium-widget {
   grid-row: span 2;
@@ -4972,12 +5050,6 @@ dialog:dir(rtl)::after {
   height: 100%;
   padding-block-end: var(--space-medium);
 }
-.lightWallpaper .lists .empty-list {
-  color-scheme: light;
-}
-.darkWallpaper .lists .empty-list {
-  color-scheme: dark;
-}
 .lists .empty-list .empty-list-text {
   margin: 0;
   text-align: center;
@@ -5030,15 +5102,22 @@ dialog:dir(rtl)::after {
   display: flex;
   flex-direction: column;
   align-items: center;
-  box-shadow: var(--card-box-shadow, var(--box-shadow-card));
 }
 .focus-timer:hover {
   background: var(--newtab-background-color-secondary);
+}
+.nova-enabled .focus-timer {
+  box-shadow: var(--box-shadow-level-2);
+}
+.nova-enabled .focus-timer:hover, .nova-enabled .focus-timer:focus-within {
+  outline: 1px solid var(--border-color-deemphasized);
+  box-shadow: var(--card-box-shadow-hover);
 }
 .classic-enabled .focus-timer {
   grid-column: span 1;
   width: var(--newtab-card-grid-layout-width);
   height: var(--newtab-card-height);
+  box-shadow: var(--card-box-shadow, var(--box-shadow-card));
 }
 .has-sections-grid .classic-enabled .focus-timer {
   width: var(--newtab-card-width-medium);
@@ -5064,14 +5143,17 @@ dialog:dir(rtl)::after {
   justify-content: center;
   flex-grow: 1;
 }
-.focus-timer-tabs-buttons moz-button {
+.nova-enabled .focus-timer-tabs-buttons {
+  gap: var(--space-small);
+}
+.classic-enabled .focus-timer-tabs-buttons moz-button {
   flex-grow: 1;
 }
-.focus-timer-tabs-buttons moz-button:first-of-type::part(button) {
+.classic-enabled .focus-timer-tabs-buttons moz-button:first-of-type::part(button) {
   border-end-end-radius: 0;
   border-start-end-radius: 0;
 }
-.focus-timer-tabs-buttons moz-button:last-of-type::part(button) {
+.classic-enabled .focus-timer-tabs-buttons moz-button:last-of-type::part(button) {
   border-start-start-radius: 0;
   border-end-start-radius: 0;
 }

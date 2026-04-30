@@ -385,16 +385,24 @@
   <string name="ai_controls_see_whats_included">Δείτε τι περιλαμβάνεται και τι όχι</string>
   <!-- Banner text shown when AI enhancements are blocked -->
   <string name="ai_controls_blocked_info_banner">Οι νέες και οι τρέχουσες βελτιώσεις τεχνητής νοημοσύνης αποκλείονται από προεπιλογή. Μπορείτε να άρετε τον αποκλεισμό συγκεκριμένων λειτουργιών παρακάτω.</string>
+  <!-- Section header for the AI-powered features list -->
+  <string name="ai_controls_ai_powered_features">Λειτουργίες τεχνητής νοημοσύνης</string>
   <!-- Title for the translations AI feature toggle -->
   <string name="ai_controls_translations_title">Μεταφράσεις</string>
   <!-- Description for the translations AI feature toggle -->
   <string name="ai_controls_translations_description">Όλες οι μεταφράσεις παραμένουν ιδιωτικές στη συσκευή σας.</string>
   <!-- Link text to navigate to more translations settings -->
   <string name="ai_controls_more_translations_settings">Περισσότερες ρυθμίσεις μεταφράσεων</string>
+  <!-- Link text to navigate to more page summary settings -->
+  <string name="ai_controls_more_page_summary_settings">Περισσότερες ρυθμίσεις σύνοψης σελίδων</string>
   <!-- Title for the voice search AI feature toggle -->
   <string name="ai_controls_voice_search_title">Φωνητική αναζήτηση</string>
+  <!-- Description for the voice search AI feature toggle -->
+  <string name="ai_controls_voice_search_description">Ο ήχος μετατρέπεται σε κείμενο από τις υπηρεσίες ομιλίας της Google.</string>
   <!-- Title for the block AI enhancements confirmation dialog -->
   <string name="ai_controls_block_dialog_title">Αποκλεισμός βελτιώσεων ΤΝ;</string>
+  <!-- Body text for the block AI enhancements confirmation dialog. %1$s is the name of the app (for example "Firefox"). -->
+  <string name="ai_controls_block_dialog_body">Δεν θα βλέπετε τις νέες ή τρέχουσες βελτιώσεις τεχνητής νοημοσύνης στο %1$s, ούτε αναδυόμενα παράθυρα σχετικά με αυτές. Αργότερα, μπορείτε να άρετε τον αποκλεισμό όποιας λειτουργίας θέλετε να συνεχίσετε να χρησιμοποιείτε.\n\nΟ αποκλεισμός επηρεάζει και τις επεκτάσεις που χρησιμοποιούν τεχνητή νοημοσύνη που τροφοδοτείται από το %1$s.</string>
   <!-- Label shown above the list of features that will be blocked in the block AI dialog -->
   <string name="ai_controls_block_dialog_what_will_be_blocked">Τι θα αποκλειστεί:</string>
   <!-- Cancel button text in the block AI enhancements confirmation dialog -->
@@ -1109,6 +1117,8 @@
   <string name="customize_wallpapers">Ταπετσαρίες</string>
   <!-- Title for the customize home screen section with sponsored shortcuts. -->
   <string name="customize_toggle_contile">Χορηγούμενες συντομεύσεις</string>
+  <!-- Title for the customize home screen section that toggles the Homepage sports widget. -->
+  <string name="customize_toggle_world_cup" tools:ignore="UnusedResources">Παγκόσμιο Κύπελλο</string>
   <!--
     Wallpapers
 
@@ -1425,6 +1435,8 @@
   <!-- Preference for using the dynamic toolbar -->
   <string name="preference_gestures_dynamic_toolbar">Κύλιση για απόκρυψη γραμμής εργαλείων</string>
   <!-- Preference for showing the opened tabs by swiping up on the toolbar -->
+  <string name="preference_gestures_swipe_toolbar_show_tabs_2">Κάθετη ολίσθηση γραμμής εργαλείων για προβολή ανοικτών καρτελών</string>
+  <!-- Preference for showing the opened tabs by swiping up on the toolbar -->
   <string name="preference_gestures_swipe_toolbar_show_tabs">Ολίσθηση γραμμής εργαλείων προς τα πάνω για άνοιγμα καρτελών</string>
   <!-- Preference for switching tabs by swiping horizontally on the addressbar -->
   <string name="preference_gestures_swipe_toolbar_switch_tabs_2">Ολίσθηση γραμμής διευθύνσεων προς τα πλάγια για εναλλαγή καρτελών</string>
@@ -1592,6 +1604,14 @@
     The %1$s will be replaced by the number of opened private tabs
   -->
   <string name="tabs_header_private_tabs_counter_title">Ανοικτές ιδιωτικές καρτέλες: %1$s. Πατήστε για εναλλαγή καρτελών.</string>
+  <plurals name="tabs_header_tab_group_counter_title">
+    <!--
+      Title for the list of tab groups used by a11y services
+      The %1$d will be replaced by the number of opened tab groups
+    -->
+    <item quantity="one">%1$d ανοικτή ομάδα καρτελών. Πατήστε για εναλλαγή καρτελών.</item>
+    <item quantity="other">%1$d ανοικτές ομάδες καρτελών. Πατήστε για εναλλαγή καρτελών.</item>
+  </plurals>
   <!--
     Title for the list of tabs in the synced tabs used by a11y services
     The %1$s will be replaced by the number of opened synced tabs
@@ -1683,6 +1703,8 @@
   <string name="tab_manager_open_tab_search">Αναζήτηση ανοικτών καρτελών</string>
   <!-- The header text displayed on the tab groups page when no tab groups are open -->
   <string name="tab_manager_empty_tab_groups_page_header">Δοκιμάστε τις ομάδες καρτελών για λιγότερη κύλιση και περισσότερες εργασίες</string>
+  <!-- The description displayed on the tab groups page when no tab groups are open -->
+  <string name="tab_manager_empty_tab_groups_page_description">Επιλέξτε καρτέλες για να δημιουργήσετε μια ομάδα. Αποθηκεύονται εδώ, πάντα στη διάθεσή σας.</string>
   <!--
     Tab Group
 
@@ -1692,6 +1714,8 @@
   <!-- Title for the edit tab group bottom sheet -->
   <string name="edit_tab_group_title">Επεξεργασία ομάδας</string>
   <string name="create_tab_group_save_button">Αποθήκευση</string>
+  <!-- Description for the handle at the top of a bottom sheet, used to drag the sheet up or down. -->
+  <string name="edit_tab_group_bottom_sheet_grabber_content_description">Νέα ομάδα, σύμπτυξη λαβής μεταφοράς</string>
   <string name="edit_tab_group_bottom_sheet_close_content_description">Κλείσιμο επεξεργασίας ομάδας καρτελών</string>
   <!-- Default tab group name when creating a tab group -->
   <string name="create_tab_group_default_name" tools:ignore="UnusedResources" moz:removedIn="150">Ομάδα</string>
@@ -1706,6 +1730,8 @@
   <string name="tab_group_name_label" tools:ignore="UnusedResources" moz:removedIn="150">Όνομα</string>
   <!-- Title for adding more tabs to a tab group. -->
   <string name="add_to_tab_group_title">Προσθήκη σε</string>
+  <!-- Content Description for closing the "Add to Tab Group" panel. -->
+  <string name="add_to_tab_group_bottom_sheet_grabber_content_description">Προσθήκη σε ομάδα καρτελών, σύμπτυξη λαβής μεταφοράς</string>
   <!-- Content Description for "New tab group" panel. -->
   <string name="add_to_new_tab_group_content_description">Προσθήκη σε νέα ομάδα καρτελών</string>
   <!-- Content Description for closing the "Add to Tab Group" panel. -->
@@ -1719,6 +1745,33 @@
     -->
     <item quantity="one">%1$d καρτέλα</item>
     <item quantity="other">%1$d καρτέλες</item>
+  </plurals>
+  <plurals name="add_to_exiting_tab_group_content_description">
+    <!--
+      Accessibility description for add to existing tab group.
+      %1$s is the group name, %2$d is the number of tabs, %3$s is the color name.
+    -->
+    <item quantity="one">Προσθήκη στην ομάδα καρτελών «%1$s», %2$d καρτέλα, %3$s χρώμα</item>
+    <item quantity="other">Προσθήκη στην ομάδα καρτελών «%1$s», %2$d καρτέλες, %3$s χρώμα</item>
+  </plurals>
+  <plurals name="share_tab_group_button_content_description">
+    <!--
+      Content Description for share tab group button.
+      %1$s is the name of the tab group.
+      %2$d is the number of tabs in a tab group.
+    -->
+    <item quantity="one">Κοινή χρήση της ομάδας καρτελών «%1$s» με %2$d καρτέλα.</item>
+    <item quantity="other">Κοινή χρήση της ομάδας καρτελών «%1$s» με %2$d καρτέλες.</item>
+  </plurals>
+  <!-- Content description for the grabber/handle of the tab group bottom sheet. -->
+  <string name="tab_group_sheet_dismiss_description">Προβολή ομάδας καρτελών, σύμπτυξη λαβής μεταφοράς</string>
+  <plurals name="expanded_tab_group_header_description">
+    <!--
+      Accessibility description for the header of an expanded tab group.
+      %1$s is the group name, %2$d is the number of tabs, %3$s is the color name.
+    -->
+    <item quantity="one">Ομάδα καρτελών «%1$s» με %2$d καρτέλα, %3$s χρώμα</item>
+    <item quantity="other">Ομάδα καρτελών «%1$s» με %2$d καρτέλες, %3$s χρώμα</item>
   </plurals>
   <!-- Title for the Delete tab group confirmation dialog. -->
   <string name="delete_tab_group_confirmation_dialog_title">Διαγραφή ομάδας καρτελών;</string>
@@ -2136,6 +2189,8 @@
   <string name="bookmark_sort_menu_a_to_z">Ταξινόμηση: Α - Ω</string>
   <!-- Label for button to sort bookmarks in reverse alphabetical order in the bookmark sorting overflow menu. -->
   <string name="bookmark_sort_menu_z_to_a">Ταξινόμηση: Ω - Α</string>
+  <!-- Label for button to import bookmarks from file. -->
+  <string name="bookmark_import_menu_button">Εισαγωγή από αρχείο</string>
   <!--
     Bookmark multi select title in app bar
     %1$d is the number of bookmarks selected
@@ -2194,6 +2249,8 @@
   <string name="bookmark_select_folder_close_folder_content_description">Κλείσιμο φακέλου: %s</string>
   <!-- Content description for the "close" button in bookmarks screen. -->
   <string name="bookmark_close_button_content_description">Κλείσιμο σελιδοδεικτών</string>
+  <!-- Content description for the Import bookmarks button in bookmarks screen. -->
+  <string name="bookmark_import_bookmarks_button_content_description">Εισαγωγή από αρχείο</string>
   <!-- Title for the bookmark list empty state -->
   <string name="bookmark_empty_list_title">Δεν υπάρχει κανένας σελιδοδείκτης ακόμα</string>
   <!-- Bookmark screen folder description. %s is the count of bookmark folder children -->
@@ -3103,6 +3160,16 @@
   <string name="ip_protection_menu_error">Σφάλμα</string>
   <!-- Content description for the chevron button that opens the browser VPN settings screen -->
   <string name="ip_protection_navigate_settings">Άνοιγμα ρυθμίσεων VPN</string>
+  <!--
+    Subtitle shown below the VPN label in menus when the monthly data allowance is exhausted.
+    %1$d is the total monthly allowance in GB (for example "50").
+  -->
+  <string name="ip_protection_menu_limit_reached">Έχετε φτάσει το όριο των %1$d GB</string>
+  <!--
+    Error message shown on the browser VPN settings screen when the monthly data allowance is exhausted.
+    %1$d is the total monthly allowance in GB (for example "50").
+  -->
+  <string name="ip_protection_data_limit_reached_description">Έχετε χρησιμοποιήσει και τα %1$d GB των δεδομένων VPN σας. Η πρόσβαση θα επιτραπεί ξανά τον επόμενο μήνα.</string>
   <!-- Label shown next to the browser protection icon in the address bar when the browser VPN is active -->
   <string name="ip_protection_toolbar_pill_label" tools:ignore="UnusedResources">Ενεργό VPN</string>
   <!-- Accessibility description for the browser VPN pill in the address bar when the VPN has been activated -->
@@ -4346,7 +4413,7 @@
 
     Title text shown at the top of the sports widget country selector, encouraging the user to pick a national team to follow.
   -->
-  <string name="sports_widget_country_selector_title" tools:ignore="UnusedResources">Ακολουθήστε την ομάδα σας</string>
+  <string name="sports_widget_country_selector_title">Ακολουθήστε την ομάδα σας</string>
   <!-- Section header for the North America region in the sports widget country selector. -->
   <string name="sports_widget_confederation_north_america" tools:ignore="UnusedResources">Βόρεια Αμερική</string>
   <!-- Section header for the Africa confederation group in the sports widget country selector. -->
@@ -4369,18 +4436,22 @@
   <string name="sports_widget_match_live" tools:ignore="UnusedResources">ΖΩΝΤΑΝΑ</string>
   <!-- Title shown on the sports widget champion scoreboard row celebrating the soccer tournament winner. -->
   <string name="sports_widget_champions_title" tools:ignore="UnusedResources">Πρωταθλητές Παγκοσμίου Κυπέλλου 2026</string>
+  <!-- Title shown on the sports widget champion scoreboard celebrating the soccer tournament third place winners. -->
+  <string name="sports_widget_third_place_title" tools:ignore="UnusedResources">Τρίτη θέση</string>
   <!-- Round name shown on the sports widget for the Round of 32 stage in the soccer tournament. -->
-  <string name="sports_widget_round_of_32" tools:ignore="UnusedResources">Φάση των 32</string>
+  <string name="sports_widget_round_of_32">Φάση των 32</string>
   <!-- Round name shown on the sports widget for the Round of 16 stage in the soccer tournament. -->
-  <string name="sports_widget_round_of_16" tools:ignore="UnusedResources">Φάση των 16</string>
+  <string name="sports_widget_round_of_16">Φάση των 16</string>
   <!-- Round name shown on the sports widget for the quarter-finals stage in the soccer tournament. -->
-  <string name="sports_widget_quarter_final" tools:ignore="UnusedResources">Προημιτελικοί</string>
+  <string name="sports_widget_quarter_final">Προημιτελικοί</string>
   <!-- Round name shown on the sports widget for the semi-finals stage in the soccer tournament. -->
-  <string name="sports_widget_semi_final" tools:ignore="UnusedResources">Ημιτελικοί</string>
+  <string name="sports_widget_semi_final">Ημιτελικοί</string>
   <!-- Round name shown on the sports widget for the final stage in the soccer tournament. -->
-  <string name="sports_widget_final" tools:ignore="UnusedResources">Τελικός</string>
+  <string name="sports_widget_final">Τελικός</string>
   <!-- Round name shown on the sports widget for the bronze final stage in the soccer tournament. -->
-  <string name="sports_widget_bronze_final" tools:ignore="UnusedResources">Αγώνας για την τρίτη θέση</string>
+  <string name="sports_widget_bronze_final">Αγώνας τρίτης θέσης</string>
+  <!-- Sports widget action label to refresh match data after an error. -->
+  <string name="sports_widget_error_refresh">Ανανέωση</string>
   <!-- Sports widget group stage label for group A in the soccer tournament. -->
   <string name="sports_widget_group_a" tools:ignore="UnusedResources">Όμιλος Α</string>
   <!-- Sports widget group stage label for group B in the soccer tournament. -->
@@ -4412,7 +4483,13 @@
   <!-- Sports widget section header for previous soccer match results. -->
   <string name="sports_widget_previous_match" tools:ignore="UnusedResources">Προηγούμενος αγώνας</string>
   <!-- Sports widget section header for related soccer matches in the same group. -->
-  <string name="sports_widget_related_matches" tools:ignore="UnusedResources">Σχετικοί αγώνες</string>
+  <string name="sports_widget_related_matches">Σχετικοί αγώνες</string>
+  <!-- Sports widget section header for a list of upcoming soccer matches that have not yet started. -->
+  <string name="sports_widget_upcoming" tools:ignore="UnusedResources">Επερχόμενοι</string>
+  <!-- Sports widget match status suffix appended to match scores (e.g., "3 - 2 (Full time)") to indicate the match has been completed. -->
+  <string name="sports_widget_match_full_time_suffix">(Τελικό)</string>
+  <!-- Sports widget match status to indicate the match has been completed. -->
+  <string name="sports_widget_match_full_time" tools:ignore="UnusedResources">(Τελικό)</string>
   <!--
     Sports widget card title encouraging the user to follow the soccer tournament. “Keep tabs on” is an informal expression
     meaning to stay updated on or regularly follow something (in this case, World Cup matches and updates).
@@ -4430,17 +4507,41 @@
   <!-- Sports widget menu item to remove the widget from the homepage. -->
   <string name="sports_widget_remove" tools:ignore="UnusedResources">Αφαίρεση</string>
   <!-- Sports widget card title shown after a team is eliminated, asking if the user still wants to continue following the soccer tournament. -->
-  <string name="sports_widget_still_want_to_follow" tools:ignore="UnusedResources">Θέλετε ακόμα να παρακολουθείτε τις εξελίξεις;</string>
+  <string name="sports_widget_still_want_to_follow">Θέλετε ακόμα να παρακολουθείτε τις εξελίξεις;</string>
   <!-- Sports widget card description shown after a team is eliminated, suggesting to choose another team. -->
-  <string name="sports_widget_choose_another_team" tools:ignore="UnusedResources">Επιλέξτε μια άλλη ομάδα για να παρακολουθείτε το Παγκόσμιο Κύπελλο.</string>
+  <string name="sports_widget_choose_another_team">Επιλέξτε μια άλλη ομάδα για να παρακολουθείτε το Παγκόσμιο Κύπελλο.</string>
   <!-- Sports widget button label to follow another team after the current team is eliminated. -->
-  <string name="sports_widget_follow_another_team" tools:ignore="UnusedResources">Παρακολούθηση άλλης ομάδας</string>
+  <string name="sports_widget_follow_another_team">Παρακολούθηση άλλης ομάδας</string>
+  <!-- Sports widget card title shown before the soccer tournament begins on top of a timer that is counting down. -->
+  <string name="sports_widget_countdown_to_world_cup" tools:ignore="UnusedResources">Αντίστροφη μέτρηση για το Παγκόσμιο Κύπελλο</string>
+  <!-- Sports widget button label that navigates the user to the full soccer tournament match schedule. -->
+  <string name="sports_widget_view_schedule">Προβολή προγράμματος</string>
+  <!-- Sports widget button label that dismisses the step of choosing a team to follow. -->
+  <string name="sports_widget_skip">Παράλειψη</string>
   <!-- Sports widget match status label shown during halftime of a match. -->
   <string name="sports_widget_halftime" tools:ignore="UnusedResources">Ημίχρονο</string>
   <!-- Sports widget match status label shown during extra time of a match. -->
   <string name="sports_widget_extra_time" tools:ignore="UnusedResources">Παράταση</string>
   <!-- Sports widget match status label shown during penalties of a match. -->
   <string name="sports_widget_penalties" tools:ignore="UnusedResources">Πέναλτι</string>
+  <!--
+    Sports widget countdown label for days. D is short for Day. The layout only allows for 1–2 characters:
+    if there is an equivalent single character for your language, use that (e.g. T for German).
+    Your translation will be automatically truncated at 2 characters to avoid layout issues.
+  -->
+  <string name="sports_widget_countdown_days">Η</string>
+  <!--
+    Sports widget countdown pill abbreviated label for hours. H is short for Hour. The layout only allows for 1–2 characters:
+    if there is an equivalent single character for your language, use that (e.g. S for German).
+    Your translation will be automatically truncated at 2 characters to avoid layout issues.
+  -->
+  <string name="sports_widget_countdown_hours">Ω</string>
+  <!--
+    Sports widget countdown pill abbreviated label for minutes. M is short for Minute. The layout only allows for 1–2 characters:
+    if there is an equivalent single character for your language, use that.
+    Your translation will be automatically truncated at 2 characters to avoid layout issues
+  -->
+  <string name="sports_widget_countdown_minutes">Λ</string>
   <!-- ==== End of Terms of use popup prompt. ==== -->
 
   <!--

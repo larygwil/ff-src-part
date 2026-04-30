@@ -1768,8 +1768,33 @@
     <item quantity="many">أضف إلى مجموعة لسان %1$s، %2$d لسانًا، اللون %3$s</item>
     <item quantity="other">أضف إلى مجموعة لسان %1$s، %2$d لسان، اللون %3$s</item>
   </plurals>
+  <plurals name="share_tab_group_button_content_description">
+    <!--
+      Content Description for share tab group button.
+      %1$s is the name of the tab group.
+      %2$d is the number of tabs in a tab group.
+    -->
+    <item quantity="zero">لا مشاركة مجموعة ألسنة</item>
+    <item quantity="one">شارك مجموعة لسان %1$s مع لسان واحد</item>
+    <item quantity="two">شارك مجموعة لسان %1$s مع لسانين</item>
+    <item quantity="few">شارك مجموعة لسان %1$s مع %2$d ألسنة</item>
+    <item quantity="many">شارك مجموعة لسان %1$s مع %2$d لسانًا</item>
+    <item quantity="other">شارك مجموعة لسان %1$s مع %2$d لسان</item>
+  </plurals>
   <!-- Content description for the grabber/handle of the tab group bottom sheet. -->
   <string name="tab_group_sheet_dismiss_description">اعرض مجموعة اللسان، اطوِ مقبض السحب</string>
+  <plurals name="expanded_tab_group_header_description">
+    <!--
+      Accessibility description for the header of an expanded tab group.
+      %1$s is the group name, %2$d is the number of tabs, %3$s is the color name.
+    -->
+    <item quantity="zero">لا مجموعة لسان\u0020</item>
+    <item quantity="one">مجموعة لسان %1$s مع لسان واحد، لون %3$s</item>
+    <item quantity="two">مجموعة لسان %1$s مع لسانين، لون %3$s</item>
+    <item quantity="few">مجموعة لسان %1$s مع %2$d ألسنة، لون %3$s</item>
+    <item quantity="many">مجموعة لسان %1$s مع %2$d لسانًا، لون %3$s</item>
+    <item quantity="other">مجموعة لسان %1$s مع %2$d لسان، لون %3$s</item>
+  </plurals>
   <!-- Title for the Delete tab group confirmation dialog. -->
   <string name="delete_tab_group_confirmation_dialog_title">حذف مجموعة اللسان؟</string>
   <!-- Text shown in the body of the Delete tab group confirmation dialog. -->
@@ -1941,6 +1966,8 @@
   <string name="download_rename_error_exists_error">يوجد ملف باسم \"%s\" بالفعل في هذا الموقع</string>
   <!-- Error message when renaming with an invalid file name. -->
   <string name="download_rename_error_invalid_name_error">لا يُمكن استخدام \"/\" في أسماء الملفات</string>
+  <!-- Error message shown when a user tries to rename a downloaded file but only changes the casing (e.g., "file.txt" to "File.txt"). -->
+  <string name="download_rename_error_case_only_error">الاسم الذي أدخلته يتغير فقط بين الأحرف الكبيرة والصغيرة. جرّب اسم ملف مختلف.</string>
   <!-- Title for the alert dialog when the file cannot be renamed. -->
   <string name="download_rename_error_cannot_rename_title">يتعذّر إعادة تسمية الملف</string>
   <!-- Description message for the alert dialog when the file cannot be renamed. -->
@@ -2190,6 +2217,10 @@
   <string name="bookmark_sort_menu_a_to_z">ترتيب من الألف إلى الياء</string>
   <!-- Label for button to sort bookmarks in reverse alphabetical order in the bookmark sorting overflow menu. -->
   <string name="bookmark_sort_menu_z_to_a">ترتيب من الياء إلى الألف</string>
+  <!-- Label for button to import bookmarks from file. -->
+  <string name="bookmark_import_menu_button">استورِد من ملف</string>
+  <!-- Snackbar message shown when a bookmark import attempt fails. -->
+  <string name="bookmark_import_failure_snackbar">تعذّر استيراد العلامات. حاول مجددًا.</string>
   <!--
     Bookmark multi select title in app bar
     %1$d is the number of bookmarks selected
@@ -2248,8 +2279,12 @@
   <string name="bookmark_select_folder_close_folder_content_description">إغلاق المجلد: %s</string>
   <!-- Content description for the "close" button in bookmarks screen. -->
   <string name="bookmark_close_button_content_description">إغلاق الإشارات المرجعية</string>
+  <!-- Content description for the Import bookmarks button in bookmarks screen. -->
+  <string name="bookmark_import_bookmarks_button_content_description">استورِد من ملف</string>
   <!-- Title for the bookmark list empty state -->
   <string name="bookmark_empty_list_title">لا توجد علامات حتى الآن</string>
+  <!-- Title for the bookmark list empty state at the root level. -->
+  <string name="bookmark_empty_list_root_title">احتفظ بجميع علاماتك المفضلة معًا</string>
   <!-- Bookmark screen folder description. %s is the count of bookmark folder children -->
   <string name="bookmarks_folder_description">الإشارات المرجعية في المجلد: %s</string>
   <!-- Description for the bookmark list empty state when you're not signed into sync. -->
@@ -3161,6 +3196,16 @@
   <string name="ip_protection_menu_error">خطأ</string>
   <!-- Content description for the chevron button that opens the browser VPN settings screen -->
   <string name="ip_protection_navigate_settings">افتح إعدادات VPN</string>
+  <!--
+    Subtitle shown below the VPN label in menus when the monthly data allowance is exhausted.
+    %1$d is the total monthly allowance in GB (for example "50").
+  -->
+  <string name="ip_protection_menu_limit_reached">وصلت إلى حد %1$d ج.بايت</string>
+  <!--
+    Error message shown on the browser VPN settings screen when the monthly data allowance is exhausted.
+    %1$d is the total monthly allowance in GB (for example "50").
+  -->
+  <string name="ip_protection_data_limit_reached_description">لقد استهلكت كامل سعة بيانات VPN الخاصة بك %1$d ج.بايت. سيُصفّر الشهر المقبل.</string>
   <!-- Label shown next to the browser protection icon in the address bar when the browser VPN is active -->
   <string name="ip_protection_toolbar_pill_label" tools:ignore="UnusedResources">ال VPN مفعّل</string>
   <!-- Accessibility description for the browser VPN pill in the address bar when the VPN has been activated -->
@@ -4404,7 +4449,7 @@
 
     Title text shown at the top of the sports widget country selector, encouraging the user to pick a national team to follow.
   -->
-  <string name="sports_widget_country_selector_title" tools:ignore="UnusedResources">تابع فريقك</string>
+  <string name="sports_widget_country_selector_title">تابع فريقك</string>
   <!-- Section header for the North America region in the sports widget country selector. -->
   <string name="sports_widget_confederation_north_america" tools:ignore="UnusedResources">أمريكا الشمالية</string>
   <!-- Section header for the Africa confederation group in the sports widget country selector. -->
@@ -4423,6 +4468,8 @@
   <string name="sports_widget_country_england" tools:ignore="UnusedResources">إنجلترا</string>
   <!-- Country name for Scotland in the sports widget. Scotland cannot be resolved with the Android Intl APIs so it needs an explicit string. -->
   <string name="sports_widget_country_scotland" tools:ignore="UnusedResources">اسكتلندا</string>
+  <!-- Sports widget menu item to remove the widget from the homepage. -->
+  <string name="sports_widget_remove" tools:ignore="UnusedResources">أزِل</string>
   <!-- ==== End of Terms of use popup prompt. ==== -->
 
   <!--

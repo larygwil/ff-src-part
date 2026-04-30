@@ -20,6 +20,7 @@ export default class IPProtectionStatusCard extends MozLitElement {
   static queries = {
     statusBoxEl: "ipprotection-status-box",
     actionButtonEl: 'moz-button[slot="action"]',
+    locationButtonEl: 'moz-button[slot="location-action"]',
   };
 
   static shadowRootOptions = {
@@ -34,6 +35,7 @@ export default class IPProtectionStatusCard extends MozLitElement {
     bandwidthUsage: { type: Object },
     hasExclusion: { type: Boolean },
     isActivating: { type: Boolean },
+    showLocationButtonBadge: { type: Boolean },
   };
 
   handleButtonClick() {
@@ -42,6 +44,15 @@ export default class IPProtectionStatusCard extends MozLitElement {
       : this.TOGGLE_ON_EVENT;
     this.dispatchEvent(
       new CustomEvent(type, {
+        bubbles: true,
+        composed: true,
+      })
+    );
+  }
+
+  handleLocationButtonClick() {
+    this.dispatchEvent(
+      new CustomEvent("IPProtection:UserShowLocations", {
         bubbles: true,
         composed: true,
       })
@@ -75,6 +86,29 @@ export default class IPProtectionStatusCard extends MozLitElement {
       : null;
   }
 
+  locationSelectionButtonTemplate() {
+    return html`
+      <moz-button
+        class="toolbarbutton"
+        slot="location-action"
+        closemenu="none"
+        @click=${this.handleLocationButtonClick}
+      >
+        <span class="location-btn-content">
+          ${this.showLocationButtonBadge
+            ? html`<moz-badge type="new"></moz-badge>`
+            : null}
+          <span data-l10n-id="ipprotection-recommended-location-button"></span>
+          <img
+            class="arrow-icon"
+            src="chrome://global/skin/icons/arrow-right.svg"
+            role="presentation"
+          />
+        </span>
+      </moz-button>
+    `;
+  }
+
   statusTemplate({
     type,
     headerL10nId,
@@ -84,6 +118,10 @@ export default class IPProtectionStatusCard extends MozLitElement {
     iconSrc = null,
   }) {
     return html`
+      <link
+        rel="stylesheet"
+        href="chrome://browser/content/ipprotection/ipprotection-status-card.css"
+      />
       <ipprotection-status-box .headerL10nId=${headerL10nId} .type=${type}>
         ${iconSrc
           ? html`<img
@@ -102,6 +140,8 @@ export default class IPProtectionStatusCard extends MozLitElement {
           ?disabled=${buttonDisabled}
           closemenu="none"
         ></moz-button>
+
+        ${this.locationSelectionButtonTemplate()}
       </ipprotection-status-box>
     `;
   }

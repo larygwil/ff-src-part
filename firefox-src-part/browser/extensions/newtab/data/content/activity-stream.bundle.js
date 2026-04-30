@@ -2783,16 +2783,32 @@ function getActiveColumnLayout(screenWidth) {
 }
 
 /**
+ * Reads the active column layout from a DOM element via the --sections-col-count
+ * CSS variable set by Nova grid container queries.
+ *
+ * @param {Element} el
+ * @returns {string|null} e.g. "col-2", or null if the property is not set (classic path)
+ */
+function getNovaColumnLayout(el) {
+  if (!el) {
+    return null;
+  }
+  const val = parseInt(getComputedStyle(el).getPropertyValue("--sections-col-count"), 10);
+  return Number.isInteger(val) ? `col-${val}` : null;
+}
+
+/**
  * Determines the active card size ("small", "medium", or "large") based on the screen width
  * and class names applied to the card element at the time of an event (example: click)
  *
  * @param {number} screenWidth - The current window width (in pixels).
  * @param {string | string[]} classNames - A string or array of class names applied to the sections card.
  * @param {boolean[]} sectionsEnabled - If sections is not enabled, all cards are `medium-card`
- * @param {number} flightId - Error ege case: This function should not be called on spocs, which have flightId
+ * @param {number} flightId - Error edge case: This function should not be called on spocs, which have flightId
+ * @param {string} [columnLayout] - The active column layout (e.g. "col-2")
  * @returns {"small-card" | "medium-card" | "large-card" | null} The active card type, or null if none is matched.
  */
-function getActiveCardSize(screenWidth, classNames, sectionsEnabled, flightId) {
+function getActiveCardSize(screenWidth, classNames, sectionsEnabled, flightId, columnLayout) {
   // Only applies to sponsored content
   if (flightId) {
     return "spoc";
@@ -2805,7 +2821,8 @@ function getActiveCardSize(screenWidth, classNames, sectionsEnabled, flightId) {
   }
 
   // Return null if no values are available
-  if (!screenWidth || !classNames) {
+  // @nova-cleanup(remove-conditional): Remove the screenWidth check once Nova ships
+  if (!screenWidth && !columnLayout || !classNames) {
     // Missing arguments
     return null;
   }
@@ -2813,17 +2830,13 @@ function getActiveCardSize(screenWidth, classNames, sectionsEnabled, flightId) {
   const cardTypes = ["small", "medium", "large"];
 
   // Determine which column is active based on the current screen width
-  const currColumnCount = getActiveColumnLayout(screenWidth);
+  // @nova-cleanup(remove-conditional): Replace with just columnLayout once Nova ships
+  const currColumnCount = columnLayout ?? getActiveColumnLayout(screenWidth);
 
   // Match the card type for that column count
   for (let type of cardTypes) {
     const className = `${currColumnCount}-${type}`;
     if (classList.includes(className)) {
-      // Special case: below $break-point-medium (610px), report `col-1-small` as medium
-      if (screenWidth < 610 && currColumnCount === "col-1" && type === "small") {
-        return "medium-card";
-      }
-      // Will be either "small-card", "medium-card", or "large-card"
       return `${type}-card`;
     }
   }
@@ -3098,7 +3111,7 @@ class ImpressionStats_ImpressionStats extends (external_React_default()).PureCom
           ...(link.format ? {
             format: link.format
           } : {
-            format: getActiveCardSize(window.innerWidth, link.class_names, link.section, link.flightId)
+            format: getActiveCardSize(window.innerWidth, link.class_names, link.section, link.flightId, getNovaColumnLayout(this.impressionRef.current))
           }),
           ...(link.section ? {
             section: link.section,
@@ -3835,7 +3848,7 @@ class _DSCard extends (external_React_default()).PureComponent {
           ...(this.props.format ? {
             format: this.props.format
           } : {
-            format: getActiveCardSize(window.innerWidth, this.props.sectionsClassNames, this.props.section, this.props.flightId)
+            format: getActiveCardSize(window.innerWidth, this.props.sectionsClassNames, this.props.section, this.props.flightId, getNovaColumnLayout(this.contextMenuButtonHostElement))
           }),
           ...(this.props.section ? {
             section: this.props.section,
@@ -3863,7 +3876,7 @@ class _DSCard extends (external_React_default()).PureComponent {
           ...(this.props.format ? {
             format: this.props.format
           } : {
-            format: getActiveCardSize(window.innerWidth, this.props.sectionsClassNames, this.props.section, this.props.flightId)
+            format: getActiveCardSize(window.innerWidth, this.props.sectionsClassNames, this.props.section, this.props.flightId, getNovaColumnLayout(this.contextMenuButtonHostElement))
           }),
           ...(this.props.section ? {
             section: this.props.section,
@@ -4214,7 +4227,7 @@ class _DSCard extends (external_React_default()).PureComponent {
       section: this.props.section,
       section_position: this.props.sectionPosition,
       is_section_followed: this.props.sectionFollowed,
-      format: format ? format : getActiveCardSize(window.innerWidth, this.props.sectionsClassNames, this.props.section, this.props.flightId),
+      format: format ? format : getActiveCardSize(window.innerWidth, this.props.sectionsClassNames, this.props.section, this.props.flightId, getNovaColumnLayout(this.contextMenuButtonHostElement)),
       isSectionsCard: this.props.mayHaveSectionsCards,
       topic: this.props.topic,
       selected_topics: this.props.selected_topics,
@@ -11601,18 +11614,15 @@ function CardSections({
     if (!novaEnabled || !gridRef.current) {
       return;
     }
-    const val = parseInt(getComputedStyle(gridRef.current).getPropertyValue("--sections-col-count"), 10);
-    if (Number.isInteger(val)) {
-      setActiveColumnLayout(`col-${val}`);
+    const columnLayout = getNovaColumnLayout(gridRef.current);
+    if (columnLayout) {
+      setActiveColumnLayout(columnLayout);
     }
   }, [novaEnabled]);
   const syncLayoutOnFocus = (0,external_React_namespaceObject.useCallback)(e => {
     let nextLayout = getActiveColumnLayout(window.innerWidth);
     if (novaEnabled) {
-      const val = parseInt(getComputedStyle(e.currentTarget).getPropertyValue("--sections-col-count"), 10);
-      if (Number.isInteger(val)) {
-        nextLayout = `col-${val}`;
-      }
+      nextLayout = getNovaColumnLayout(e.currentTarget);
     }
     setActiveColumnLayout(currLayout => currLayout === nextLayout ? currLayout : nextLayout);
   }, [novaEnabled]);
@@ -12454,9 +12464,8 @@ function Lists({
     "data-l10n-id": "newtab-widget-lists-menu-copy",
     onClick: () => handleCopyListToClipboard()
   }),
-  // @nova-cleanup(remove-conditional): Remove the novaEnabled check; always
-  // render the size submenu after Nova ships
-  novaEnabled && /*#__PURE__*/external_React_default().createElement("panel-item", {
+  // @nova-cleanup(remove-conditional): Remove the `novaEnabled &&` check; keep widgetsMayBeMaximized
+  novaEnabled && widgetsMayBeMaximized && /*#__PURE__*/external_React_default().createElement("panel-item", {
     submenu: "lists-size-submenu"
   }, /*#__PURE__*/external_React_default().createElement("span", {
     "data-l10n-id": "newtab-widget-menu-change-size"
@@ -13355,9 +13364,8 @@ const FocusTimer = ({
       handlePrefUpdate("widgets.focusTimer.showSystemNotifications", !showSystemNotifications);
     }
   }),
-  // @nova-cleanup(remove-conditional): Remove the novaEnabled check; always
-  // render the size submenu after Nova ships
-  novaEnabled && /*#__PURE__*/external_React_default().createElement("panel-item", {
+  // @nova-cleanup(remove-conditional): Remove the `novaEnabled &&` check; keep widgetsMayBeMaximized
+  novaEnabled && widgetsMayBeMaximized && /*#__PURE__*/external_React_default().createElement("panel-item", {
     submenu: "focus-timer-size-submenu"
   }, /*#__PURE__*/external_React_default().createElement("span", {
     "data-l10n-id": "newtab-widget-menu-change-size"
@@ -13495,6 +13503,10 @@ function LocationSearch({
   const [selectedLocation, setSelectedLocation] = (0,external_React_namespaceObject.useState)("");
   const suggestedLocations = (0,external_ReactRedux_namespaceObject.useSelector)(state => state.Weather.suggestedLocations);
   const locationSearchString = (0,external_ReactRedux_namespaceObject.useSelector)(state => state.Weather.locationSearchString);
+  const novaEnabled = (0,external_ReactRedux_namespaceObject.useSelector)(state => state.Prefs.values["nova.enabled"]);
+  const weatherOptIn = (0,external_ReactRedux_namespaceObject.useSelector)(state => state.Prefs.values["system.showWeatherOptIn"]);
+  const optInAccepted = (0,external_ReactRedux_namespaceObject.useSelector)(state => state.Prefs.values["weather.optInAccepted"]);
+  const showCurrentLocation = !weatherOptIn || optInAccepted;
   const [userInput, setUserInput] = (0,external_React_namespaceObject.useState)(locationSearchString || "");
   const inputRef = (0,external_React_namespaceObject.useRef)(null);
   const dispatch = (0,external_ReactRedux_namespaceObject.useDispatch)();
@@ -13561,6 +13573,17 @@ function LocationSearch({
       handleCloseSearch();
     }
   }
+  function handleUseCurrentLocation() {
+    (0,external_ReactRedux_namespaceObject.batch)(() => {
+      dispatch(actionCreators.AlsoToMain({
+        type: actionTypes.WEATHER_USER_OPT_IN_LOCATION
+      }));
+      dispatch(actionCreators.BroadcastToContent({
+        type: actionTypes.WEATHER_SEARCH_ACTIVE,
+        data: false
+      }));
+    });
+  }
   return /*#__PURE__*/external_React_default().createElement("div", {
     className: `${outerClassName} location-search`
   }, /*#__PURE__*/external_React_default().createElement("div", {
@@ -13574,9 +13597,10 @@ function LocationSearch({
     "data-l10n-id": "newtab-weather-change-location-search-input-placeholder",
     onChange: handleChange,
     value: userInput,
-    onKeyDown: handleKeyDown
+    onKeyDown: handleKeyDown,
+    className: "location-input"
   }), /*#__PURE__*/external_React_default().createElement("moz-button", {
-    class: "close-icon",
+    className: "close-icon",
     type: "icon ghost",
     size: "small",
     iconSrc: "chrome://global/skin/icons/close.svg",
@@ -13586,7 +13610,12 @@ function LocationSearch({
   }, (suggestedLocations || []).map(merinoLocation => /*#__PURE__*/external_React_default().createElement("option", {
     value: merinoLocation.key,
     key: merinoLocation.key
-  }, merinoLocation.localized_name, ",", " ", merinoLocation.administrative_area.localized_name)))));
+  }, merinoLocation.localized_name, ",", " ", merinoLocation.administrative_area.localized_name)))), showCurrentLocation && novaEnabled && /*#__PURE__*/external_React_default().createElement("moz-button", {
+    "data-l10n-id": "newtab-weather-change-location-search-use-current",
+    type: "icon ghost",
+    iconSrc: "chrome://browser/skin/notification-icons/geo.svg",
+    onClick: handleUseCurrentLocation
+  }));
 }
 
 ;// CONCATENATED MODULE: ./content-src/components/Widgets/WeatherForecast/WeatherForecast.jsx
@@ -14041,6 +14070,7 @@ function Weather_Weather({
   const errorRef = (0,external_React_namespaceObject.useRef)(null);
   const sizeSubmenuRef = (0,external_React_namespaceObject.useRef)(null);
   const currentWeatherSize = prefs[Weather_PREF_WEATHER_SIZE] || "medium";
+  const widgetsMayBeMaximized = prefs.trainhopConfig?.widgets?.maximized || prefs["widgets.system.maximized"];
   const handleChangeSize = (0,external_React_namespaceObject.useCallback)(newSize => {
     (0,external_ReactRedux_namespaceObject.batch)(() => {
       dispatch(actionCreators.OnlyToMain({
@@ -14308,7 +14338,7 @@ function Weather_Weather({
     }), !showOptInState && isOptInEnabled && /*#__PURE__*/external_React_default().createElement("panel-item", {
       "data-l10n-id": "newtab-weather-menu-detect-my-location",
       onClick: handleDetectLocation
-    }), prefs["widgets.system.enabled"] && prefs["widgets.enabled"] && /*#__PURE__*/external_React_default().createElement("panel-item", {
+    }), prefs["widgets.system.enabled"] && prefs["widgets.enabled"] && widgetsMayBeMaximized && /*#__PURE__*/external_React_default().createElement("panel-item", {
       submenu: "weather-size-submenu"
     }, /*#__PURE__*/external_React_default().createElement("span", {
       "data-l10n-id": "newtab-widget-menu-change-size"
@@ -14330,8 +14360,16 @@ function Weather_Weather({
       onClick: handleLearnMore
     })));
   }
+  function getArticleClassNames() {
+    return ["weather-widget", "col-4", `${size}-widget`, hasError && "weather-error-state",
+    // weather-opt-in is suppressed while search is active so the opt-in
+    // layout styles don't conflict with the search UI layout.
+    showOptInState && !searchActive && "weather-opt-in",
+    // weather-search-active hides weather content and expands small widgets to 4-col.
+    searchActive && "weather-search-active"].filter(Boolean).join(" ");
+  }
   return /*#__PURE__*/external_React_default().createElement("article", {
-    className: `weather-widget col-4 ${size}-widget${hasError ? " weather-error-state" : ""}${showOptInState ? " weather-opt-in" : ""}`,
+    className: getArticleClassNames(),
     ref: el => {
       weatherRef.current = [el];
     }
@@ -14344,16 +14382,18 @@ function Weather_Weather({
     className: "widget-title-bar"
   }, /*#__PURE__*/external_React_default().createElement("div", {
     className: "widget-title"
-  }, searchActive && /*#__PURE__*/external_React_default().createElement(LocationSearch, {
-    outerClassName: "",
-    onLocationSelected: showOptInState ? handleOptInLocationSelected : undefined
-  }), !searchActive && !showOptInState && /*#__PURE__*/external_React_default().createElement("h3", null, weatherData.locationData.city)), renderContextMenu()), hasError && /*#__PURE__*/external_React_default().createElement("div", {
-    className: "forecast-error",
+  }, !showOptInState && !searchActive && /*#__PURE__*/external_React_default().createElement("h3", null, weatherData.locationData.city)), !searchActive && renderContextMenu()), hasError && /*#__PURE__*/external_React_default().createElement("div", {
+    className: "weather-error",
     ref: errorRef
   }, /*#__PURE__*/external_React_default().createElement("span", {
     className: "icon icon-info-warning"
   }), " ", /*#__PURE__*/external_React_default().createElement("p", {
     "data-l10n-id": "newtab-weather-error-not-available"
+  })), searchActive && /*#__PURE__*/external_React_default().createElement("div", {
+    className: "weather-search-container"
+  }, /*#__PURE__*/external_React_default().createElement(LocationSearch, {
+    outerClassName: "",
+    onLocationSelected: showOptInState ? handleOptInLocationSelected : undefined
   })), showOptInState ? !searchActive && /*#__PURE__*/external_React_default().createElement("div", {
     className: "weather-opt-in-container"
   }, /*#__PURE__*/external_React_default().createElement("div", {
@@ -14588,7 +14628,6 @@ function Widgets() {
   } = (0,external_ReactRedux_namespaceObject.useSelector)(state => state.Messages);
   const timerType = (0,external_ReactRedux_namespaceObject.useSelector)(state => state.TimerWidget.timerType);
   const timerData = (0,external_ReactRedux_namespaceObject.useSelector)(state => state.TimerWidget);
-  const widgetsMayBeMaximized = prefs[PREF_WIDGETS_SYSTEM_MAXIMIZED];
   const dispatch = (0,external_ReactRedux_namespaceObject.useDispatch)();
   const novaEnabled = prefs[Widgets_PREF_NOVA_ENABLED];
   const isMaximized = prefs[PREF_WIDGETS_MAXIMIZED];
@@ -14603,6 +14642,7 @@ function Widgets() {
   const hideAllToastEnabled = prefs.trainhopConfig?.widgets?.hideAllToastEnabled || prefs[PREF_WIDGETS_HIDE_ALL_TOAST_ENABLED];
   const feedbackUrl = prefs.trainhopConfig?.widgets?.feedbackUrl ?? WIDGETS_FEEDBACK_URL;
   const showWidgetsSizeToggle = nimbusMaximizedTrainhopEnabled || prefs[PREF_WIDGETS_SYSTEM_MAXIMIZED];
+  const widgetsMayBeMaximized = showWidgetsSizeToggle;
   const widgetsEnabled = prefs[PREF_WIDGETS_ENABLED];
   const listsEnabled = widgetsEnabled && (nimbusListsTrainhopEnabled || nimbusListsEnabled || prefs[PREF_WIDGETS_SYSTEM_LISTS_ENABLED]) && prefs[PREF_WIDGETS_LISTS_ENABLED];
   const timerEnabled = widgetsEnabled && (nimbusTimerTrainhopEnabled || nimbusTimerEnabled || prefs[PREF_WIDGETS_SYSTEM_TIMER_ENABLED]) && prefs[PREF_WIDGETS_TIMER_ENABLED];
@@ -16736,7 +16776,9 @@ class ContentSection extends (external_React_default()).PureComponent {
       "data-l10n-id": "newtab-custom-widget-timer-toggle"
     })))), /*#__PURE__*/external_React_default().createElement("div", {
       className: "settings-toggles"
-    }, !mayHaveWidgets && mayHaveWeather && /*#__PURE__*/external_React_default().createElement("div", {
+    },
+    // @nova-cleanup(remove-conditional): Remove novaEnabled conditional on data-preference; replace with data-preference="widgets.weather.enabled"
+    !mayHaveWidgets && mayHaveWeather && /*#__PURE__*/external_React_default().createElement("div", {
       id: "weather-section",
       className: "section"
     }, /*#__PURE__*/external_React_default().createElement("moz-toggle", {
@@ -16744,7 +16786,7 @@ class ContentSection extends (external_React_default()).PureComponent {
       pressed: weatherEnabled || null,
       ontoggle: this.onPreferenceSelect,
       onToggle: this.onPreferenceSelect,
-      "data-preference": "showWeather",
+      "data-preference": novaEnabled ? "widgets.weather.enabled" : "showWeather",
       "data-event-source": "WEATHER",
       "data-l10n-id": "newtab-custom-weather-toggle"
     })), /*#__PURE__*/external_React_default().createElement("span", {
@@ -16978,7 +17020,18 @@ class _CustomizeMenu extends (external_React_default()).PureComponent {
       classNames: "personalize-animate",
       in: !this.props.showing,
       appear: true
-    }, /*#__PURE__*/external_React_default().createElement("button", {
+    },
+    // @nova-cleanup(remove-conditional): replace with moz-button only
+    novaEnabled ? /*#__PURE__*/external_React_default().createElement("moz-button", {
+      ref: this.personalizeButtonRef,
+      className: `open-customization-button${activationWindowClass ? ` ${activationWindowClass}` : ""}`,
+      "data-l10n-id": "newtab-customize-panel-label",
+      "aria-haspopup": "dialog",
+      onClick: () => this.props.onOpen(),
+      iconsrc: "chrome://global/skin/icons/edit-outline.svg",
+      iconposition: "end",
+      type: "default"
+    }) : /*#__PURE__*/external_React_default().createElement("button", {
       ref: this.personalizeButtonRef,
       className: `${activationWindowClass} personalize-button`,
       "data-l10n-id": "newtab-customize-panel-icon-button",
@@ -18701,8 +18754,11 @@ class BaseContent extends (external_React_default()).PureComponent {
     const prefs = this.props.Prefs.values;
 
     // Check if weather widget was re-enabled from customization menu
-    const wasWeatherDisabled = !prevProps.Prefs.values.showWeather;
-    const isWeatherEnabled = this.props.Prefs.values.showWeather;
+    // @nova-cleanup(remove-conditional): Remove novaEnabledInUpdate and weatherPref variables; replace wasWeatherDisabled/isWeatherEnabled with direct reads of prevProps/props.Prefs.values["widgets.weather.enabled"]
+    const novaEnabledInUpdate = this.props.Prefs.values["nova.enabled"];
+    const weatherPref = novaEnabledInUpdate ? "widgets.weather.enabled" : "showWeather";
+    const wasWeatherDisabled = !prevProps.Prefs.values[weatherPref];
+    const isWeatherEnabled = this.props.Prefs.values[weatherPref];
     if (wasWeatherDisabled && isWeatherEnabled) {
       // If weather widget was enabled from customization menu, display opt-in dialog
       this.props.dispatch(actionCreators.SetPref("weather.optInDisplayed", true));
@@ -19079,7 +19135,8 @@ class BaseContent extends (external_React_default()).PureComponent {
     const novaEnabled = prefs[Base_PREF_NOVA_ENABLED];
     const activeWallpaper = prefs[`newtabWallpapers.wallpaper`] || prefs[`newtabWallpapers.initialWallpaper`];
     const wallpapersEnabled = prefs["newtabWallpapers.enabled"];
-    const weatherEnabled = prefs.showWeather;
+    // @nova-cleanup(remove-conditional): Remove conditional; replace with prefs["widgets.weather.enabled"]
+    const weatherEnabled = novaEnabled ? prefs["widgets.weather.enabled"] : prefs.showWeather;
     const {
       showTopicSelection
     } = DiscoveryStream;

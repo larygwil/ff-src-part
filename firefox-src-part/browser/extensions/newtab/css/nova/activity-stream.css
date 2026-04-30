@@ -1096,6 +1096,7 @@ main.newtab-main section {
   grid-column: 3;
   grid-row: 1/span 2;
   grid-template-rows: subgrid;
+  position: relative;
 }
 
 .sidebar-inline-start {
@@ -2386,8 +2387,59 @@ main.newtab-main section {
   transition: opacity 0.3s ease, margin 0.3s ease, max-width 0.3s ease;
 }
 
+.open-customization-button.personalize-animate-exit-done {
+  visibility: hidden;
+}
+.open-customization-button::part(moz-button-label) {
+  opacity: 0;
+  max-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .open-customization-button::part(moz-button-label) {
+    transition: opacity 0.3s ease, max-width 0.3s ease;
+  }
+}
+.lightWallpaper .open-customization-button::part(moz-button-label) {
+  color-scheme: light;
+}
+.darkWallpaper .open-customization-button::part(moz-button-label) {
+  color-scheme: dark;
+}
+.open-customization-button::part(button) {
+  min-width: var(--button-size-icon);
+  max-width: var(--button-size-icon);
+  height: var(--button-size-icon);
+  padding-inline: 0 calc((var(--button-size-icon) - var(--icon-size-medium)) / 2);
+  overflow: hidden;
+  justify-content: flex-end;
+  gap: 0;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .open-customization-button::part(button) {
+    transition: max-width 0.3s ease, padding 0.3s ease, gap 0.3s ease;
+  }
+}
+.lightWallpaper .open-customization-button::part(button) {
+  color-scheme: light;
+}
+.darkWallpaper .open-customization-button::part(button) {
+  color-scheme: dark;
+}
+.open-customization-button:hover::part(moz-button-label), .open-customization-button:focus-within::part(moz-button-label), .open-customization-button.activation-window-variant-a::part(moz-button-label), .open-customization-button.activation-window-variant-b::part(moz-button-label) {
+  opacity: 1;
+  max-width: 30ch;
+}
+.open-customization-button:hover::part(button), .open-customization-button:focus-within::part(button), .open-customization-button.activation-window-variant-a::part(button), .open-customization-button.activation-window-variant-b::part(button) {
+  max-width: calc(30ch + var(--icon-size-medium) + var(--space-small) + var(--space-large) * 2);
+  padding: var(--space-small) var(--space-large);
+  gap: var(--space-small);
+}
+
 .personalize-button:hover > label,
 .personalize-button:focus-visible > label,
+.personalize-button:focus-within > label,
 .personalize-button.activation-window-variant-a > label,
 .personalize-button.activation-window-variant-b > label {
   opacity: 1;
@@ -4461,7 +4513,6 @@ button.arrow-button:dir(rtl) {
   transition: opacity 0.2s ease;
   border-radius: var(--border-radius-large);
   padding-block-start: var(--space-medium);
-  box-shadow: var(--card-box-shadow, var(--box-shadow-card));
   position: relative;
   display: flex;
   flex-direction: column;
@@ -4469,13 +4520,27 @@ button.arrow-button:dir(rtl) {
 .lists:hover {
   background: var(--newtab-background-color-secondary);
 }
+.nova-enabled .lists {
+  box-shadow: var(--box-shadow-level-2);
+}
+.nova-enabled .lists:hover, .nova-enabled .lists:focus-within {
+  outline: 1px solid var(--border-color-deemphasized);
+  box-shadow: var(--card-box-shadow-hover);
+}
 .classic-enabled .lists {
   grid-column: span 1;
   width: var(--newtab-card-grid-layout-width);
   height: var(--newtab-card-height);
+  box-shadow: var(--card-box-shadow, var(--box-shadow-card));
 }
 .has-sections-grid .classic-enabled .lists {
   width: var(--newtab-card-width-medium);
+}
+.lightWallpaper .classic-enabled .lists .empty-list {
+  color-scheme: light;
+}
+.darkWallpaper .classic-enabled .lists .empty-list {
+  color-scheme: dark;
 }
 .lists.medium-widget {
   grid-row: span 2;
@@ -4643,12 +4708,6 @@ button.arrow-button:dir(rtl) {
   height: 100%;
   padding-block-end: var(--space-medium);
 }
-.lightWallpaper .lists .empty-list {
-  color-scheme: light;
-}
-.darkWallpaper .lists .empty-list {
-  color-scheme: dark;
-}
 .lists .empty-list .empty-list-text {
   margin: 0;
   text-align: center;
@@ -4701,15 +4760,22 @@ button.arrow-button:dir(rtl) {
   display: flex;
   flex-direction: column;
   align-items: center;
-  box-shadow: var(--card-box-shadow, var(--box-shadow-card));
 }
 .focus-timer:hover {
   background: var(--newtab-background-color-secondary);
+}
+.nova-enabled .focus-timer {
+  box-shadow: var(--box-shadow-level-2);
+}
+.nova-enabled .focus-timer:hover, .nova-enabled .focus-timer:focus-within {
+  outline: 1px solid var(--border-color-deemphasized);
+  box-shadow: var(--card-box-shadow-hover);
 }
 .classic-enabled .focus-timer {
   grid-column: span 1;
   width: var(--newtab-card-grid-layout-width);
   height: var(--newtab-card-height);
+  box-shadow: var(--card-box-shadow, var(--box-shadow-card));
 }
 .has-sections-grid .classic-enabled .focus-timer {
   width: var(--newtab-card-width-medium);
@@ -4735,14 +4801,17 @@ button.arrow-button:dir(rtl) {
   justify-content: center;
   flex-grow: 1;
 }
-.focus-timer-tabs-buttons moz-button {
+.nova-enabled .focus-timer-tabs-buttons {
+  gap: var(--space-small);
+}
+.classic-enabled .focus-timer-tabs-buttons moz-button {
   flex-grow: 1;
 }
-.focus-timer-tabs-buttons moz-button:first-of-type::part(button) {
+.classic-enabled .focus-timer-tabs-buttons moz-button:first-of-type::part(button) {
   border-end-end-radius: 0;
   border-start-end-radius: 0;
 }
-.focus-timer-tabs-buttons moz-button:last-of-type::part(button) {
+.classic-enabled .focus-timer-tabs-buttons moz-button:last-of-type::part(button) {
   border-start-start-radius: 0;
   border-end-start-radius: 0;
 }
@@ -4974,6 +5043,7 @@ button.arrow-button:dir(rtl) {
   display: flex;
   flex-direction: column;
   position: relative;
+  z-index: 1;
   --weather-sunny-background-color: light-dark(var(--color-yellow-0), var(--color-yellow-90));
   --weather-cloudy-background-color: light-dark(var(--color-gray-20), var(--color-gray-80));
   --weather-rainy-background-color: light-dark(var(--color-blue-0), var(--color-blue-90));
@@ -5367,6 +5437,84 @@ button.arrow-button:dir(rtl) {
 }
 .weather-widget.weather-opt-in.large-widget .weather-opt-in-container-buttons {
   gap: var(--space-medium);
+}
+.weather-widget.weather-search-active .weather-search-container {
+  position: relative;
+}
+.weather-widget.weather-search-active .location-input {
+  padding: var(--space-small);
+  outline: 1px solid var(--border-color-selected);
+  border-radius: var(--border-radius-circle);
+  padding-inline-start: calc(var(--space-medium) * 4);
+  border: 0;
+  width: 100%;
+}
+.weather-widget.weather-search-active .location-input-wrapper {
+  margin-block-end: var(--space-small);
+  position: relative;
+}
+.weather-widget.weather-search-active .search-icon {
+  content: url("chrome://global/skin/icons/search-glass.svg");
+  -moz-context-properties: fill;
+  fill: var(--icon-color);
+  position: absolute;
+  inset-block-start: 50%;
+  transform: translateY(-50%);
+  inset-inline-start: var(--space-large);
+}
+.weather-widget.weather-search-active .close-icon {
+  position: absolute;
+  inset-block-start: 50%;
+  transform: translateY(-50%);
+  inset-inline-end: var(--space-medium);
+}
+.weather-widget.weather-search-active .close-icon:focus-visible {
+  outline: var(--focus-outline);
+}
+.weather-widget.weather-search-active .weather-anchor, .weather-widget.weather-search-active .weather-container, .weather-widget.weather-search-active .forecast-footer, .weather-widget.weather-search-active .widget-title-bar {
+  display: none;
+}
+.weather-widget.weather-search-active.small-widget {
+  position: absolute;
+  inset-inline-end: 0;
+  width: calc(4 * var(--col-width) + 3 * var(--space-medium));
+  height: calc(2 * var(--row-height) + var(--space-medium));
+}
+.weather-widget.weather-error-state {
+  justify-content: flex-start;
+}
+.weather-widget.weather-error-state .weather-error {
+  display: flex;
+  align-items: flex-start;
+  flex-direction: column;
+  justify-content: space-evenly;
+  gap: var(--space-small);
+}
+.weather-widget.weather-error-state p {
+  margin: 0;
+  font-size: var(--font-size-small);
+  color: var(--text-color-deemphasized);
+}
+.weather-widget.weather-error-state.small-widget .weather-error {
+  margin-block-start: auto;
+  gap: var(--space-xsmall);
+}
+.weather-widget.weather-error-state.medium-widget .weather-error {
+  flex-direction: row;
+  justify-content: flex-start;
+  margin-block: auto;
+}
+.weather-widget.weather-error-state.medium-widget .widget-title-bar {
+  margin-block-end: 0;
+}
+.weather-widget.weather-error-state.large-widget .weather-error {
+  height: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.weather-widget.weather-error-state.large-widget .widget-title-bar {
+  margin-block-end: 0;
 }
 
 .ds-card-grid .ds-card {
@@ -11008,6 +11156,10 @@ button.arrow-button:dir(rtl) {
   padding: 0;
   /* stylelint-disable-next-line stylelint-plugin-mozilla/use-design-tokens */
   width: var(--col-width);
+}
+.nova-enabled .top-site-outer .title.sponsored > .title-label {
+  /* stylelint-disable-next-line stylelint-plugin-mozilla/use-design-tokens */
+  width: calc(var(--col-width) + 8px);
 }
 
 @media (forced-colors: active) {
