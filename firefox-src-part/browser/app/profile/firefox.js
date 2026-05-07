@@ -2108,6 +2108,7 @@ pref("messaging-system.log", "warn");
 pref("messaging-system.rsexperimentloader.collection_id", "nimbus-desktop-experiments");
 pref("nimbus.debug", false);
 pref("nimbus.validation.enabled", true);
+pref("nimbus.firstUpdateComplete", false);
 
 // Should Nimbus write to the shared ProfilesDatastoreService? Only used by tests.
 // TODO(bug 1967779): Require the ProfileDatastoreService by default and remove
@@ -3557,8 +3558,8 @@ pref("browser.ipProtection.added", false);
 pref("browser.ipProtection.hasUpgraded", false);
 // Pref that enables bandwidth usage feature
 pref("browser.ipProtection.bandwidth.enabled", true);
-// Pref that displays egress location in VPN panel
-pref("browser.ipProtection.egressLocationEnabled", false);
+// Pref that stores the current egress location for the VPN
+pref("browser.ipProtection.egressLocation", "");
 // Pref that flips at 50%, 75%, and 90% bandwidth usage thresholds
 pref("browser.ipProtection.bandwidthThreshold", 0);
 // Tracks the highest bandwidth warning threshold (75 or 90) dismissed per surface.

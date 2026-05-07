@@ -270,10 +270,13 @@ class IPPProxyManagerSingleton extends EventTarget {
    * True if started by user action, false if system action
    * @param {boolean} inPrivateBrowsing
    * True if started from a private browsing window
+   * @param {string} [country]
+   * Optional ISO 3166-1 alpha-2 country code to route through. When
+   * omitted, the recommended (anycast) location is used.
    * @returns {Promise<{started: boolean, error?: string}>}
    * Started is true if successfully connected, error contains the error message if it fails.
    */
-  async start(userAction = true, inPrivateBrowsing = false) {
+  async start(userAction = true, inPrivateBrowsing = false, country) {
     if (this.#state === IPPProxyStates.ACTIVATING) {
       if (!this.#activatingPromise) {
         throw new Error(ERRORS.MISSING_PROMISE);
@@ -313,7 +316,7 @@ class IPPProxyManagerSingleton extends EventTarget {
     );
 
     this.#activatingPromise = Promise.race([
-      this.#startInternal(abortSignal),
+      this.#startInternal(abortSignal, country),
       abortPromise,
     ])
       .then(
@@ -351,7 +354,7 @@ class IPPProxyManagerSingleton extends EventTarget {
     return this.#activatingPromise;
   }
 
-  async #startInternal(abortSignal) {
+  async #startInternal(abortSignal, country) {
     // Check network status before attempting connection
     if (lazy.IPPNetworkUtils.isOffline) {
       throw ERRORS.NETWORK;
@@ -390,7 +393,9 @@ class IPPProxyManagerSingleton extends EventTarget {
     }
     this.#schedulePassRotation(this.#pass);
 
-    const location = lazy.IPProtectionServerlist.getDefaultLocation();
+    const location = country
+      ? lazy.IPProtectionServerlist.getLocation(country)
+      : lazy.IPProtectionServerlist.getRecommendedLocation();
     const server = lazy.IPProtectionServerlist.selectServer(location?.city);
     if (!server) {
       throw ERRORS.SERVER_NOT_FOUND;
@@ -463,6 +468,37 @@ class IPPProxyManagerSingleton extends EventTarget {
     if (userAction && this.#state !== IPPProxyStates.PAUSED) {
       this.refreshUsage();
     }
+  }
+
+  /**
+   * Switch the active proxy connection to a server in a different country.
+   *
+   * @param {string} country - country code
+   * @returns {{switched: boolean, error?: string}}
+   */
+  switch(country) {
+    if (this.#state !== IPPProxyStates.ACTIVE) {
+      return { switched: false };
+    }
+
+    const location = country
+      ? lazy.IPProtectionServerlist.getLocation(country)
+      : lazy.IPProtectionServerlist.getRecommendedLocation();
+    const server = lazy.IPProtectionServerlist.selectServer(location?.city);
+
+    if (!server) {
+      this.#setErrorState(ERRORS.SERVER_NOT_FOUND);
+      return { switched: false, error: ERRORS.SERVER_NOT_FOUND };
+    }
+
+    lazy.logConsole.debug("Switching to server:", server?.hostname);
+
+    this.#connection.uninitialize();
+    this.#connection.initialize(this.#pass.asBearerToken(), server);
+
+    this.networkErrorObserver.addIsolationKey(this.#connection.isolationKey);
+
+    return { switched: true };
   }
 
   /**

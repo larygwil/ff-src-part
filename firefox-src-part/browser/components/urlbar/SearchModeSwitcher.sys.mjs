@@ -25,9 +25,6 @@ ChromeUtils.defineESModuleGetters(lazy, {
 ChromeUtils.defineLazyGetter(lazy, "SearchModeSwitcherL10n", () => {
   return new Localization(["browser/browser.ftl"]);
 });
-ChromeUtils.defineLazyGetter(lazy, "searchModeNewBadge", () => {
-  return lazy.SearchModeSwitcherL10n.formatValue("urlbar-searchmode-new");
-});
 
 // Default icon used for engines that do not have icons loaded.
 const DEFAULT_ENGINE_ICON =
@@ -100,6 +97,8 @@ export class SearchModeSwitcher {
   }
 
   async #onPopupShowing() {
+    // Discard event to avoid recording an abandonment.
+    this.#input.controller.engagementEvent.discard();
     await this.#buildSearchModeList();
     this.#input.view.close({ showFocusBorder: false });
 
@@ -517,8 +516,7 @@ export class SearchModeSwitcher {
       menuitem.setAttribute("closemenu", "none");
 
       if (engine.isNew() && engine.isAppProvided) {
-        menuitem.setAttribute("badge", await lazy.searchModeNewBadge);
-        menuitem.classList.add("badge-new");
+        menuitem.setAttribute("badge-type", "new");
       }
 
       menuitem.dataset.engineId = engine.id;
@@ -791,7 +789,17 @@ export class SearchModeSwitcher {
 
     let observer = engineObj => {
       Services.obs.removeObserver(observer, topic);
-      this.#remoteSearch(engineObj.wrappedJSObject, event);
+      this.#input.search(this.#getSearchString(), {
+        searchEngine: engineObj.wrappedJSObject,
+        searchModeEntry: "searchbutton",
+      });
+      if (this.#input.sapName == "urlbar") {
+        Glean.urlbarUnifiedsearchbutton.picked[
+          engineObj.wrappedJSObject.isConfigEngine
+            ? "builtin_search"
+            : "addon_search"
+        ].add(1);
+      }
     };
     Services.obs.addObserver(observer, topic);
 

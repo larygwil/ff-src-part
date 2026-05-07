@@ -317,8 +317,6 @@
     <string name="preferences_page_summaries">Page summaries</string>
 
     <!-- AI Controls settings -->
-    <!-- Label for the secret settings preference to enable AI controls -->
-    <string name="preferences_debug_settings_ai_controls">Enable AI controls</string>
     <!-- Title for the AI controls settings screen -->
     <string name="preferences_ai_controls">AI controls</string>
     <!-- Headline text for the AI controls banner. %s is the name of the app (for example "Firefox"). -->
@@ -1043,6 +1041,8 @@
     <string name="customize_wallpapers">Wallpapers</string>
     <!-- Title for the customize home screen section with sponsored shortcuts. -->
     <string name="customize_toggle_contile">Sponsored shortcuts</string>
+    <!-- Title for the customize home screen section that toggles the Homepage sports widget. -->
+    <string name="customize_toggle_world_cup" tools:ignore="UnusedResources">World Cup</string>
 
     <!-- Wallpapers -->
     <!-- Content description for various wallpapers. %1$s is the name of the wallpaper. -->
@@ -3974,7 +3974,7 @@
 
     <!-- Sports widget -->
     <!-- Title text shown at the top of the sports widget country selector, encouraging the user to pick a national team to follow. -->
-    <string name="sports_widget_country_selector_title" tools:ignore="UnusedResources">Follow your team</string>
+    <string name="sports_widget_country_selector_title">Follow your team</string>
     <!-- Section header for the North America region in the sports widget country selector. -->
     <string name="sports_widget_confederation_north_america" tools:ignore="UnusedResources">North America</string>
     <!-- Section header for the Africa confederation group in the sports widget country selector. -->
@@ -3997,18 +3997,28 @@
     <string name="sports_widget_match_live" tools:ignore="UnusedResources">LIVE</string>
     <!-- Title shown on the sports widget champion scoreboard row celebrating the soccer tournament winner. -->
     <string name="sports_widget_champions_title" tools:ignore="UnusedResources">2026 World Cup Champions</string>
+    <!-- Title shown on the sports widget champion scoreboard celebrating the soccer tournament runners-up. Runners-up means second place. -->
+    <string name="sports_widget_runner_up_title" tools:ignore="UnusedResources">Runners-up</string>
+    <!-- Title shown on the sports widget champion scoreboard celebrating the soccer tournament third place winners. -->
+    <string name="sports_widget_third_place_title" tools:ignore="UnusedResources">Third place</string>
     <!-- Round name shown on the sports widget for the Round of 32 stage in the soccer tournament. -->
-    <string name="sports_widget_round_of_32" tools:ignore="UnusedResources">Round of 32</string>
+    <string name="sports_widget_round_of_32">Round of 32</string>
     <!-- Round name shown on the sports widget for the Round of 16 stage in the soccer tournament. -->
-    <string name="sports_widget_round_of_16" tools:ignore="UnusedResources">Round of 16</string>
+    <string name="sports_widget_round_of_16">Round of 16</string>
     <!-- Round name shown on the sports widget for the quarter-finals stage in the soccer tournament. -->
-    <string name="sports_widget_quarter_final" tools:ignore="UnusedResources">Quarter-finals</string>
+    <string name="sports_widget_quarter_final">Quarter-finals</string>
     <!-- Round name shown on the sports widget for the semi-finals stage in the soccer tournament. -->
-    <string name="sports_widget_semi_final" tools:ignore="UnusedResources">Semi-finals</string>
+    <string name="sports_widget_semi_final">Semi-finals</string>
     <!-- Round name shown on the sports widget for the final stage in the soccer tournament. -->
-    <string name="sports_widget_final" tools:ignore="UnusedResources">Final</string>
+    <string name="sports_widget_final">Final</string>
     <!-- Round name shown on the sports widget for the bronze final stage in the soccer tournament. -->
-    <string name="sports_widget_bronze_final" tools:ignore="UnusedResources">Bronze Final</string>
+    <string name="sports_widget_bronze_final">Bronze Final</string>
+    <!-- Sports widget error card message shown when match data fails to load. -->
+    <string name="sports_widget_error_load_failed">Match info is not available right now. Try refreshing in a few minutes.</string>
+    <!-- Sports widget error card message shown when the network connection is interrupted and live updates pause. -->
+    <string name="sports_widget_error_connection_interrupted">Connection interrupted — live updates paused.</string>
+    <!-- Sports widget action label to refresh match data after an error. -->
+    <string name="sports_widget_error_refresh">Refresh</string>
     <!-- Sports widget group stage label for group A in the soccer tournament. -->
     <string name="sports_widget_group_a" tools:ignore="UnusedResources">Group A</string>
     <!-- Sports widget group stage label for group B in the soccer tournament. -->
@@ -4037,10 +4047,14 @@
     <string name="sports_widget_see_results" tools:ignore="UnusedResources">See results</string>
     <!-- Sports widget button label to view details of a soccer match results. -->
     <string name="sports_widget_view_match_details" tools:ignore="UnusedResources">View match details</string>
-    <!-- Sports widget section header for previous soccer match results. -->
-    <string name="sports_widget_previous_match" tools:ignore="UnusedResources">Previous match</string>
     <!-- Sports widget section header for related soccer matches in the same group. -->
-    <string name="sports_widget_related_matches" tools:ignore="UnusedResources">Related matches</string>
+    <string name="sports_widget_related_matches">Related matches</string>
+    <!-- Sports widget section header for a list of upcoming soccer matches that have not yet started. -->
+    <string name="sports_widget_upcoming" tools:ignore="UnusedResources">Upcoming</string>
+    <!-- Sports widget match status suffix appended to match scores (e.g., "3 - 2 (Full time)") to indicate the match has been completed. -->
+    <string name="sports_widget_match_full_time_suffix">(Full time)</string>
+    <!-- Sports widget match status to indicate the match has been completed. -->
+    <string name="sports_widget_match_full_time_2" tools:ignore="UnusedResources">Full time</string>
     <!-- Sports widget card title encouraging the user to follow the soccer tournament. “Keep tabs on” is an informal expression
       meaning to stay updated on or regularly follow something (in this case, World Cup matches and updates).
       It’s playfully related to Firefox in that “tabs” are a browser feature.
@@ -4056,17 +4070,66 @@
     <!-- Sports widget menu item to remove the widget from the homepage. -->
     <string name="sports_widget_remove" tools:ignore="UnusedResources">Remove</string>
     <!-- Sports widget card title shown after a team is eliminated, asking if the user still wants to continue following the soccer tournament. -->
-    <string name="sports_widget_still_want_to_follow" tools:ignore="UnusedResources">Still want to follow along?</string>
+    <string name="sports_widget_still_want_to_follow">Still want to follow along?</string>
     <!-- Sports widget card description shown after a team is eliminated, suggesting to choose another team. -->
-    <string name="sports_widget_choose_another_team" tools:ignore="UnusedResources">Choose another team to keep up with the World Cup.</string>
+    <string name="sports_widget_choose_another_team">Choose another team to keep up with the World Cup.</string>
     <!-- Sports widget button label to follow another team after the current team is eliminated. -->
-    <string name="sports_widget_follow_another_team" tools:ignore="UnusedResources">Follow another team</string>
+    <string name="sports_widget_follow_another_team">Follow another team</string>
+    <!-- Sports widget card title shown before the soccer tournament begins on top of a timer that is counting down. -->
+    <string name="sports_widget_countdown_to_world_cup" tools:ignore="UnusedResources">Countdown to the World Cup</string>
+    <!-- Sports widget button label that navigates the user to the full soccer tournament match schedule. -->
+    <string name="sports_widget_view_schedule">View schedule</string>
+    <!-- Sports widget button label that dismisses the step of choosing a team to follow. -->
+    <string name="sports_widget_skip">Skip</string>
     <!-- Sports widget match status label shown during halftime of a match. -->
     <string name="sports_widget_halftime" tools:ignore="UnusedResources">Halftime</string>
     <!-- Sports widget match status label shown during extra time of a match. -->
     <string name="sports_widget_extra_time" tools:ignore="UnusedResources">Extra time</string>
     <!-- Sports widget match status label shown during penalties of a match. -->
     <string name="sports_widget_penalties" tools:ignore="UnusedResources">Penalties</string>
+    <!-- Sports widget countdown label for days. D is short for Day. The layout only allows for 1–2 characters:
+      if there is an equivalent single character for your language, use that (e.g. T for German).
+      Your translation will be automatically truncated at 2 characters to avoid layout issues. -->
+    <string name="sports_widget_countdown_days">D</string>
+    <!-- Sports widget countdown pill abbreviated label for hours. H is short for Hour. The layout only allows for 1–2 characters:
+      if there is an equivalent single character for your language, use that (e.g. S for German).
+      Your translation will be automatically truncated at 2 characters to avoid layout issues. -->
+    <string name="sports_widget_countdown_hours">H</string>
+    <!-- Sports widget countdown pill abbreviated label for minutes. M is short for Minute. The layout only allows for 1–2 characters:
+      if there is an equivalent single character for your language, use that.
+      Your translation will be automatically truncated at 2 characters to avoid layout issues -->
+    <string name="sports_widget_countdown_minutes">M</string>
+    <!-- Content description (for accessibility, not displayed) for the close button on the sports widget team / country selector.  -->
+    <string name="sports_widget_close_team_selection_sheet_content_description" tools:ignore="UnusedResources">Close team selection sheet</string>
+    <!-- Content description (for accessibility, not displayed) for the close button on the sports widget card. -->
+    <string name="sports_widget_close_content_description">Close</string>
+    <!-- Content description (for accessibility, not displayed) for the overflow (more options) menu button on the sports widget card. -->
+    <string name="sports_widget_more_options_content_description" tools:ignore="UnusedResources">More options</string>
+    <!-- Content description (for accessibility, not displayed) announcing the time remaining until the soccer tournament kickoff.
+      %1$d is the number of days, %2$d is the number of hours, and %3$d is the number of minutes. -->
+    <string name="sports_widget_countdown_remaining_content_description">Remaining time. Days: %1$d. Hours: %2$d. Minutes: %3$d.</string>
+    <!-- Content description (for accessibility, not displayed)  for the action that navigates to the World Cup website. -->
+    <string name="sports_widget_go_to_world_cup_site_content_description" tools:ignore="UnusedResources">Go to World Cup site</string>
+    <!-- Content description (for accessibility, not displayed)  announcing an upcoming soccer match.
+      %1$s is the home team name, %2$s is the away team name, %3$s is the match date, %4$s is the kickoff time. -->
+    <string name="sports_widget_upcoming_match_content_description" tools:ignore="UnusedResources">Upcoming: %1$s versus %2$s, %3$s at %4$s</string>
+    <!-- Content description (for accessibility, not displayed)  used for the sports widget card header announcing a live match for a group or stage.
+      %s is the soccer tournament group name or stage (e.g. Group A represented by sports_widget_group_a, Round of 32 represented by sports_widget_round_of_32,
+      or Final represented by sports_widget_final). -->
+    <string name="sports_widget_live_game_content_description" tools:ignore="UnusedResources">%s, live game</string>
+    <!-- Content description (for accessibility, not displayed) announcing a live score.
+      %1$s is the home team name, %2$d is the home team score, %3$s is the away team name, %4$d is the away team score,
+      and %5$s is the match elapsed time (e.g. 72 minutes). -->
+    <string name="sports_widget_live_score_content_description" tools:ignore="UnusedResources">%1$s %2$d, %3$s %4$d, %5$s, live</string>
+    <!-- Content description (for accessibility, not displayed) for a paginated item.
+      %1$s is the soccer tournament group name or stage (e.g. Group A represented by sports_widget_group_a, Round of 32 represented by sports_widget_round_of_32),
+      %2$d is the current page number, and %3$d is the total number of pages. -->
+    <string name="sports_widget_page_position_content_description" tools:ignore="UnusedResources">%1$s, page %2$d of %3$d</string>
+    <!-- Content description (for accessibility, not displayed) for a page within the World Cup final results carousel.
+      %1$d is the current page number, and %2$d is the total number of pages. -->
+    <string name="sports_widget_final_results_page_content_description" tools:ignore="UnusedResources">World Cup final results, page %1$d of %2$d</string>
+    <!-- Content description (for accessibility, not displayed) for the remove button that removes the sports widget from the homepage. -->
+    <string name="sports_widget_remove_content_description" tools:ignore="UnusedResources">Remove World Cup from home</string>
 
     <!-- Privacy notice homepage banner -->
     <!-- A message we show the user on the homepage when there is a new version of the privacy notice. 'Firefox' is intentionally hardcoded.

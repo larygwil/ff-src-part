@@ -335,7 +335,11 @@
     Content description for the Home screen button on the browser toolbar
   -->
   <string name="browser_toolbar_home">Mba’erechaha ñepyrũgua</string>
-  <!-- Content description for the translate page toolbar button that opens the translations dialog when no translation has occurred. -->
+  <!--
+    Browser Toolbar
+
+    Content description for the translate page toolbar button that opens the translations dialog when no translation has occurred.
+  -->
   <string name="browser_toolbar_translate">Emoñe’ẽasa kuatiarogue</string>
   <!--
     Content description (not visible, for screen readers etc.) for the translate page toolbar button that opens the translations dialog when the page is translated successfully.
@@ -369,7 +373,11 @@
     Label for the secret settings preference to enable AI controls
   -->
   <string name="preferences_debug_settings_ai_controls">Embobjuruja IA moambueha</string>
-  <!-- Title for the AI controls settings screen -->
+  <!--
+    AI Controls settings
+
+    Title for the AI controls settings screen
+  -->
   <string name="preferences_ai_controls">IA moambueha</string>
   <!-- Headline text for the AI controls banner. %s is the name of the app (for example "Firefox"). -->
   <string name="ai_controls_banner_headline">Eguereko meme jeporavorã %s-pe</string>
@@ -401,6 +409,8 @@
   <string name="ai_controls_voice_search_description">Mba’epúgui oiko moñe’ẽrã Google Voice Services rupive.</string>
   <!-- Title for the block AI enhancements confirmation dialog -->
   <string name="ai_controls_block_dialog_title">¿Ejoko IA porãverã?</string>
+  <!-- Body text for the block AI enhancements confirmation dialog. %1$s is the name of the app (for example "Firefox"). -->
+  <string name="ai_controls_block_dialog_body">Ndojehechamo’ãi pe IA pyahu iporãvéva térã ag̃agua %1$s-pe, avei ovetã apysẽ hi’ári. Uperire, ikatu embohekojera opaite mba’e eiporuséva.\n\nPe jejoko avei ombyaikuaa jepysokue oiporúva IA ome’ẽva %1$s.</string>
   <!-- Label shown above the list of features that will be blocked in the block AI dialog -->
   <string name="ai_controls_block_dialog_what_will_be_blocked">Mba’épa ojejokóta:</string>
   <!-- Cancel button text in the block AI enhancements confirmation dialog -->
@@ -425,7 +435,11 @@
   <string name="search_scan_button_2">Emoha’ãnga QR ayvu</string>
   <!-- Button in the search view when shortcuts are displayed that takes a user to the search engine settings -->
   <string name="search_shortcuts_engine_settings">Hekaha ñemboheko</string>
-  <!-- Button in the search view that lets a user navigate to the site in their clipboard -->
+  <!--
+    Search Fragment
+
+    Button in the search view that lets a user navigate to the site in their clipboard
+  -->
   <string name="awesomebar_clipboard_title">Emoĩmba juajuha kuatiajokoha guive</string>
   <!-- Button in the search suggestions onboarding that allows search suggestions in private sessions -->
   <string name="search_suggestions_onboarding_allow_button">Moneĩ</string>
@@ -1779,6 +1793,14 @@
   <string name="delete_tab_group_confirmation_dialog_confirm">Emboguete aty</string>
   <!-- Text shown on the cancel button in the Delete tab group confirmation dialog. -->
   <string name="delete_tab_group_confirmation_dialog_cancel">Eheja</string>
+  <!-- Title for the Close last tab and delete tab group confirmation dialog. -->
+  <string name="close_tab_and_delete_group_confirmation_dialog_title">¿Emboty tendayke ha embogue aty?</string>
+  <!-- Text shown in the body of the Close last tab and delete tab group confirmation dialog. -->
+  <string name="close_tab_and_delete_group_confirmation_dialog_body">Kóva omboguete aty opaite árape g̃uarã.</string>
+  <!-- Text shown on the confirm button in the Close last tab and delete tab group confirmation dialog. -->
+  <string name="close_tab_and_delete_group_confirmation_dialog_confirm">Emboguete aty</string>
+  <!-- Text shown on the cancel button in the Close last tab and delete tab group confirmation dialog. -->
+  <string name="close_tab_and_delete_group_confirmation_dialog_cancel">Eheja</string>
   <!--
     Color labels for tab groups, used for accessibility and selection UI.
 
@@ -1938,6 +1960,8 @@
   <string name="download_rename_error_exists_error">Oĩma marandurenda hérava “%s” ko tendaitépe</string>
   <!-- Error message when renaming with an invalid file name. -->
   <string name="download_rename_error_invalid_name_error">Marandurenda réra ndoiporukuaái “/”</string>
+  <!-- Error message shown when a user tries to rename a downloaded file but only changes the casing (e.g., "file.txt" to "File.txt"). -->
+  <string name="download_rename_error_case_only_error">Téra ojehaiva omoambue tai tuicháva térã michĩva. Eiporu peteĩ marandurenda réra iñambuéva.</string>
   <!-- Title for the alert dialog when the file cannot be renamed. -->
   <string name="download_rename_error_cannot_rename_title">Nadaikatúi emboherajey marandurenda</string>
   <!-- Description message for the alert dialog when the file cannot be renamed. -->
@@ -2717,6 +2741,8 @@
   </plurals>
   <!-- Text shown on the trackers blocked card when no trackers have been blocked yet -->
   <string name="trackers_blocked_empty">Eime ñemo’ãme</string>
+  <!-- Text shown below the trackers blocked card with typing animation -->
+  <string name="help_catch_trackers">Eipytyvõ ejagarávo tappykuehohápe</string>
   <!-- Preference for enhanced tracking protection for the standard protection settings -->
   <string name="preference_enhanced_tracking_protection_standard_default_1">Ypyguaite (ijypygua)</string>
   <!-- Preference description for enhanced tracking protection for the standard protection settings -->
@@ -3178,6 +3204,18 @@
   <string name="ip_protection_toolbar_pill_description" tools:ignore="UnusedResources">VPN hendyhína.</string>
   <!-- Label for the button that starts the browser VPN authentication or authorization flow on the settings screen -->
   <string name="ip_protection_get_started">Eñepyrũ</string>
+  <!-- Headline for the browser VPN onboarding card. %s is the name of the app (for example "Firefox"). -->
+  <string name="ip_protection_onboarding_card_headline">Eiporu VPN juajupyre %s rehegua</string>
+  <!--
+    The body of the VPN onboarding card.
+    %1$s is a link using ip_protection_onboarding_body_link (“Browse with extra protection”) as text. It links to a support article about VPN on Firefox.
+    %2$d is the total monthly allowance in GB (for example "50").
+  -->
+  <string name="ip_protection_onboarding_body">%1$s oñomi ne rendaite, taha’e Wi-Fi jepera’e. Eiporu %2$d GB reiete jasy pukukue.</string>
+  <!-- Used as text for a link in ip_protection_onboarding_body. Make sure to adapt capitalization if the link is in the middle of the sentence. -->
+  <string name="ip_protection_onboarding_body_link">Eikundaha ñemo’ã jo’a reheve</string>
+  <!-- Label for the dismiss button on the onboarding bottom sheet. -->
+  <string name="ip_protection_onboarding_not_now_button">Ani ko’ág̃a</string>
   <!--
     Autofill
 
@@ -4488,16 +4526,12 @@
   <string name="sports_widget_see_results" tools:ignore="UnusedResources">Ehecha mba’éicha osẽ</string>
   <!-- Sports widget button label to view details of a soccer match results. -->
   <string name="sports_widget_view_match_details" tools:ignore="UnusedResources">Ehecha partído rehegua</string>
-  <!-- Sports widget section header for previous soccer match results. -->
-  <string name="sports_widget_previous_match" tools:ignore="UnusedResources">Partído oikoramóva</string>
   <!-- Sports widget section header for related soccer matches in the same group. -->
   <string name="sports_widget_related_matches">Partidoita ojuehegua</string>
   <!-- Sports widget section header for a list of upcoming soccer matches that have not yet started. -->
   <string name="sports_widget_upcoming" tools:ignore="UnusedResources">Oupotáva</string>
   <!-- Sports widget match status suffix appended to match scores (e.g., "3 - 2 (Full time)") to indicate the match has been completed. -->
   <string name="sports_widget_match_full_time_suffix">(Ára pukukue)</string>
-  <!-- Sports widget match status to indicate the match has been completed. -->
-  <string name="sports_widget_match_full_time" tools:ignore="UnusedResources">(Ára pukukue)</string>
   <!-- Sports widget match status to indicate the match has been completed. -->
   <string name="sports_widget_match_full_time_2" tools:ignore="UnusedResources">Ára pukukue</string>
   <!--
@@ -4555,9 +4589,14 @@
   <!-- Content description (for accessibility, not displayed) for the close button on the sports widget team / country selector. -->
   <string name="sports_widget_close_team_selection_sheet_content_description" tools:ignore="UnusedResources">Kuatia poravorã aty ñembotygua</string>
   <!-- Content description (for accessibility, not displayed) for the close button on the sports widget card. -->
-  <string name="sports_widget_close_content_description" tools:ignore="UnusedResources">Emboty</string>
+  <string name="sports_widget_close_content_description">Emboty</string>
   <!-- Content description (for accessibility, not displayed) for the overflow (more options) menu button on the sports widget card. -->
   <string name="sports_widget_more_options_content_description" tools:ignore="UnusedResources">Jeporavorãve</string>
+  <!--
+    Content description (for accessibility, not displayed) announcing the time remaining until the soccer tournament kickoff.
+    %1$d is the number of days, %2$d is the number of hours, and %3$d is the number of minutes.
+  -->
+  <string name="sports_widget_countdown_remaining_content_description">Aravo hembýva. Ára: %1$d. Aravo: %2$d. Aravo’i: %3$d.</string>
   <!-- Content description (for accessibility, not displayed)  for the action that navigates to the World Cup website. -->
   <string name="sports_widget_go_to_world_cup_site_content_description" tools:ignore="UnusedResources">Eike Mundial ñanduti roguápe</string>
   <!--
@@ -4565,6 +4604,29 @@
     %1$s is the home team name, %2$s is the away team name, %3$s is the match date, %4$s is the kickoff time.
   -->
   <string name="sports_widget_upcoming_match_content_description" tools:ignore="UnusedResources">Tenondeve: %1$s %2$srovái, %3$s %4$s-pe</string>
+  <!--
+    Content description (for accessibility, not displayed)  used for the sports widget card header announcing a live match for a group or stage.
+    %s is the soccer tournament group name or stage (e.g. Group A represented by sports_widget_group_a, Round of 32 represented by sports_widget_round_of_32,
+    or Final represented by sports_widget_final).
+  -->
+  <string name="sports_widget_live_game_content_description" tools:ignore="UnusedResources">%s, jehuga ñandutípe</string>
+  <!--
+    Content description (for accessibility, not displayed) announcing a live score.
+    %1$s is the home team name, %2$d is the home team score, %3$s is the away team name, %4$d is the away team score,
+    and %5$s is the match elapsed time (e.g. 72 minutes).
+  -->
+  <string name="sports_widget_live_score_content_description" tools:ignore="UnusedResources">%1$s %2$d, %3$s %4$d, %5$s, ñandutípe</string>
+  <!--
+    Content description (for accessibility, not displayed) for a paginated item.
+    %1$s is the soccer tournament group name or stage (e.g. Group A represented by sports_widget_group_a, Round of 32 represented by sports_widget_round_of_32),
+    %2$d is the current page number, and %3$d is the total number of pages.
+  -->
+  <string name="sports_widget_page_position_content_description" tools:ignore="UnusedResources">%1$s, kuatiarogue %2$d %3$d rehegua</string>
+  <!--
+    Content description (for accessibility, not displayed) for a page within the World Cup final results carousel.
+    %1$d is the current page number, and %2$d is the total number of pages.
+  -->
+  <string name="sports_widget_final_results_page_content_description" tools:ignore="UnusedResources">Mba’éicha osẽ Copa del Mundo rehegua, kuatiarogue %1$d %2$d rehegua</string>
   <!-- Content description (for accessibility, not displayed) for the remove button that removes the sports widget from the homepage. -->
   <string name="sports_widget_remove_content_description" tools:ignore="UnusedResources">Eipe’a Copa del Mundo nde rógagui</string>
   <!-- ==== End of Terms of use popup prompt. ==== -->

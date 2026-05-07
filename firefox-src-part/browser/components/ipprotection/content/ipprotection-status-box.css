@@ -103,8 +103,7 @@
   flex-direction: column;
 }
 
-#bandwidth,
-#location {
+#bandwidth {
   display: flex;
   align-items: center;
   gap: var(--space-xsmall);
@@ -116,24 +115,20 @@
   margin-top: var(--space-large);
 }
 
+::slotted([slot="content"].location-message) {
+  border: none;
+  margin-top: var(--space-small);
+  font-size: var(--font-size-small, 11px);
+  color: var(--text-color-deemphasized);
+  text-align: center;
+}
+
 ::slotted([slot="image"]) {
   height: var(--size-image-small);
   width: var(--size-image-small);
 }
 
-::slotted([slot="location-icon"]) {
-  -moz-context-properties: fill;
-  /* Intentionally set the icon color to match the deemphasized text */
-  /* stylelint-disable-next-line stylelint-plugin-mozilla/use-design-tokens */
-  fill: var(--text-color-deemphasized);
-
-  @media (prefers-contrast) {
-    fill: currentColor;
-  }
-}
-
-::slotted([slot="bandwidth"]),
-::slotted([slot="location"]) {
+::slotted([slot="bandwidth"]) {
   color: var(--text-color-deemphasized);
 }
 

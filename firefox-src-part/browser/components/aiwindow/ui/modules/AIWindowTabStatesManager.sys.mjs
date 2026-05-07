@@ -18,11 +18,29 @@ ChromeUtils.defineESModuleGetters(lazy, {
   SessionStore: "resource:///modules/sessionstore/SessionStore.sys.mjs",
 });
 
+const SIDEBAR_EMPTY_CLOSE_COUNT_PREF =
+  "browser.smartwindow.sidebar.emptyCloseCount";
+
 XPCOMUtils.defineLazyPreferenceGetter(
   lazy,
   "sidebarOpenByDefault",
   "browser.smartwindow.sidebar.openByDefault"
 );
+
+XPCOMUtils.defineLazyPreferenceGetter(
+  lazy,
+  "sidebarEmptyCloseCount",
+  SIDEBAR_EMPTY_CLOSE_COUNT_PREF,
+  0
+);
+
+/**
+ * At which count the empty close prompt should be shown.
+ *
+ * If this value needs to be updated it should also be updated in
+ * the trigger string in FeatureCalloutMessages.sys.mjs
+ */
+const SIDEBAR_EMPTY_CLOSE_PROMPT_TRIGGER_COUNT = 2;
 
 const SESSION_STORE_KEY = "ai-window-tab-state";
 
@@ -200,6 +218,11 @@ export class AIWindowTabStatesManager {
     );
 
     this.#window.addEventListener(
+      "ai-window:conversation-changed",
+      this.#onConversationChanged
+    );
+
+    this.#window.addEventListener(
       "ai-window:sidebar-toggle",
       this.#onSidebarToggle
     );
@@ -237,6 +260,11 @@ export class AIWindowTabStatesManager {
     this.#window.removeEventListener(
       "ai-window:clear-conversation",
       this.#onConversationCleared
+    );
+
+    this.#window.removeEventListener(
+      "ai-window:conversation-changed",
+      this.#onConversationChanged
     );
 
     this.#window.removeEventListener(
@@ -665,19 +693,43 @@ export class AIWindowTabStatesManager {
    * @param {TabStateEvent} event
    */
   #onConversationCleared = event => {
-    const { tab } = event.detail;
+    const { tab, conversation, conversationId } = event.detail;
     const currentTabState = this.#getTabState(tab);
 
-    // Preserve existing state but clear only the conversationId.
-    // keepSidebarOpen is preserved as-is; it is only modified by explicit
-    // user actions (sidebar toggle) or conversation open, not by clear.
+    // Preserve existing state and keep the newly-swapped empty conversation
+    // so tab switches back to this tab reuse the same instance (and its
+    // cached transient starter prompts).
     if (currentTabState?.state) {
       this.#getTabState(tab, {
         ...currentTabState.state,
-        conversationId: null,
-        conversation: null,
+        conversationId,
+        conversation,
       });
     }
+  };
+
+  /**
+   * Handles ai-window:conversation-changed events dispatched whenever
+   * an ai-window's active conversation is swapped. Triggers starter
+   * prompt loading when the conversation is empty and the current page
+   * URL differs from the one starters were already loaded for.
+   *
+   * @param {TabStateEvent} event
+   */
+  #onConversationChanged = event => {
+    const { conversation, mode, tab } = event.detail;
+
+    if (!conversation || conversation.messageCount) {
+      return;
+    }
+
+    const currentUrl = tab.linkedBrowser.currentURI.spec ?? "";
+    const dedupSkip = conversation.transientStarterUrl === currentUrl;
+    if (dedupSkip) {
+      return;
+    }
+
+    lazy.AIWindowUI.updateStarterPrompts(this.#window, false, mode, tab);
   };
 
   /**
@@ -699,6 +751,8 @@ export class AIWindowTabStatesManager {
       });
     }
 
+    const { conversation } = currentTabState.state;
+
     if (isOpen) {
       if (source === "toggle") {
         lazy.AIWindowUI.openSidebar(
@@ -710,8 +764,34 @@ export class AIWindowTabStatesManager {
         this.#window,
         currentTabState?.state?.input ?? ""
       );
+    } else {
+      this.#updateEmptyCloseCount(conversation, isOpen, source);
     }
   };
+
+  /**
+   * Updates the empty-close count when the sidebar closes. Resets to 0
+   * if the user engaged in a conversation, otherwise increments.
+   * No-op once the prompt trigger count is reached.
+   *
+   * @param {ChatConversation} conversation
+   * @param {boolean} isOpen
+   * @param {'close' | 'toggle'} source
+   */
+  #updateEmptyCloseCount(conversation, isOpen, source) {
+    if (
+      isOpen ||
+      !["close", "toggle"].includes(source) ||
+      lazy.sidebarEmptyCloseCount >= SIDEBAR_EMPTY_CLOSE_PROMPT_TRIGGER_COUNT
+    ) {
+      return;
+    }
+
+    Services.prefs.setIntPref(
+      SIDEBAR_EMPTY_CLOSE_COUNT_PREF,
+      conversation?.messages?.length ? 0 : lazy.sidebarEmptyCloseCount + 1
+    );
+  }
 
   /**
    * Handles ai-window:sidebar-navigating events dispatched when the
@@ -731,6 +811,7 @@ export class AIWindowTabStatesManager {
 
   #onCloseSidebar = () => {
     lazy.AIWindowUI.closeSidebar(this.#window);
+    this.#updateEmptyCloseCount(null, false, "close");
   };
 
   /**
@@ -759,7 +840,7 @@ export class AIWindowTabStatesManager {
         const tab = this.#window.gBrowser.selectedTab;
         let tabState = this.#tabStates.get(tab);
 
-        lazy.AIWindowUI.updateStarterPrompts(this.#window);
+        lazy.AIWindowUI.updateStarterPrompts(this.#window, true);
 
         if (!tabState || !tabState.state?.conversationId) {
           return;

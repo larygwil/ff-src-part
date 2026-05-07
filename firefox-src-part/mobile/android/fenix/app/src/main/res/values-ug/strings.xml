@@ -283,6 +283,8 @@
   <string name="browser_menu_edit_bookmark">خەتكۈچ تەھرىر</string>
   <!-- Browser menu label that the saves the currently visited page as a PDF -->
   <string name="browser_menu_save_as_pdf_2">PDF كە ساقلا</string>
+  <!-- Browser menu label for moving the current private tab to a non-private tab -->
+  <string name="browser_menu_move_to_non_private_tab">شەخسىي بولمىغان بەتكۈچكە يۆتكەل</string>
   <!-- Browser menu label for navigating to the translation feature, which provides language translation options the current visited page -->
   <string name="browser_menu_translate_page_2">بەت تەرجىمىسى</string>
   <!-- Browser menu label for navigating to the summarization feature, which provides site summarization for the current visited page -->
@@ -333,7 +335,11 @@
     Content description for the Home screen button on the browser toolbar
   -->
   <string name="browser_toolbar_home">باش ئېكران</string>
-  <!-- Content description for the translate page toolbar button that opens the translations dialog when no translation has occurred. -->
+  <!--
+    Browser Toolbar
+
+    Content description for the translate page toolbar button that opens the translations dialog when no translation has occurred.
+  -->
   <string name="browser_toolbar_translate">بەت تەرجىمىسى</string>
   <!--
     Content description (not visible, for screen readers etc.) for the translate page toolbar button that opens the translations dialog when the page is translated successfully.
@@ -356,6 +362,60 @@
   <!-- Content description for the translate toolbar action that closes the translations toolbar. -->
   <string name="translation_toolbar_close_action">ئۇچۇرغا پەرۋا قىلما</string>
   <!--
+    Page summaries
+
+    Toolbar title for the Page summaries settings fragment
+  -->
+  <string name="preferences_page_summaries">بەت خۇلاسىسى</string>
+  <!--
+    AI Controls settings
+
+    Label for the secret settings preference to enable AI controls
+  -->
+  <string name="preferences_debug_settings_ai_controls">سۈنئىي ئەقىل تىزگىنىنى قوزغات</string>
+  <!--
+    AI Controls settings
+
+    Title for the AI controls settings screen
+  -->
+  <string name="preferences_ai_controls">سۈنئىي ئەقىل تىزگىنى</string>
+  <!-- Headline text for the AI controls banner. %s is the name of the app (for example "Firefox"). -->
+  <string name="ai_controls_banner_headline">%s تا تاللاش ھەمىشە سىزدە</string>
+  <!-- Supporting text for the AI controls banner -->
+  <string name="ai_controls_banner_supporting_text">سۇنئىي ئەقىلنىڭ ئالىي ئىقتىدارىنى ئىشلىتىش ئىشلەتمەسلىكمۇ شۇنىڭ ئىچىدە.</string>
+  <!-- Link text for learning more about AI controls -->
+  <string name="ai_controls_learn_more">تەپسىلاتى</string>
+  <!-- Title for the block AI enhancements toggle -->
+  <string name="ai_controls_block_ai_title">سۈنئىي ئەقىلنىڭ ئالىي ئىقتىدارىنى توسىدۇ</string>
+  <!-- Description for the block AI enhancements toggle. %s is the name of the app (for example "Firefox"). -->
+  <string name="ai_controls_block_ai_description">توسۇش دېگەنلىك %s دا يېڭى ياكى نۆۋەتتىكى سۇنئىي ئەقىلنىڭ كۈچەيتىلگەن ئىقتىدارىنى كۆرەلمەيسىز ياكى ئۇلار ھەققىدە قاڭقىش ئۇچۇرىغا ئېرىشمەيسىز دېگەنلىك.</string>
+  <!-- Link text to see what AI enhancements are and aren’t included -->
+  <string name="ai_controls_see_whats_included">نېمە بار ۋە يوقلۇقىنى كۆرۈڭ</string>
+  <!-- Banner text shown when AI enhancements are blocked -->
+  <string name="ai_controls_blocked_info_banner">كۆڭۈلدىكى ئەھۋالدا يېڭى ۋە نۆۋەتتىكى سۇنئىي ئەقىلنىڭ كۈچەيتىلگەن ئىقتىدارى توسۇلدى. تۆۋەندە توسۇلغان ئىقتىدارنى قايتا ئاچقىلى بولىدۇ.</string>
+  <!-- Section header for the AI-powered features list -->
+  <string name="ai_controls_ai_powered_features">سۈنئىي ئەقىلدە ئىشلەنگەن ئىقتىدار</string>
+  <!-- Title for the translations AI feature toggle -->
+  <string name="ai_controls_translations_title">تەرجىمە</string>
+  <!-- Description for the translations AI feature toggle -->
+  <string name="ai_controls_translations_description">تەرجىمە ئۈسكۈنىڭىزدە شەخسىي پېتى تۇرىدۇ.</string>
+  <!-- Link text to navigate to more translations settings -->
+  <string name="ai_controls_more_translations_settings">تېخىمۇ كۆپ تەرجىمە تەڭشىكى</string>
+  <!-- Link text to navigate to more page summary settings -->
+  <string name="ai_controls_more_page_summary_settings">تېخىمۇ كۆپ بەت خۇلاسە تەڭشىكى</string>
+  <!-- Title for the voice search AI feature toggle -->
+  <string name="ai_controls_voice_search_title">ئاۋازلىق ئىزدەش</string>
+  <!-- Description for the voice search AI feature toggle -->
+  <string name="ai_controls_voice_search_description">ئاۋاز Google تاۋۇش مۇلازىمىتى ئارقىلىق تېكىستكە ئايلاندۇرۇلىدۇ.</string>
+  <!-- Title for the block AI enhancements confirmation dialog -->
+  <string name="ai_controls_block_dialog_title">سۈنئىي ئەقىلنىڭ كۈچەيتىلگەن ئىقتىدارىنى توسامدۇ؟</string>
+  <!-- Label shown above the list of features that will be blocked in the block AI dialog -->
+  <string name="ai_controls_block_dialog_what_will_be_blocked">نېمە توسۇلىدۇ:</string>
+  <!-- Cancel button text in the block AI enhancements confirmation dialog -->
+  <string name="ai_controls_block_dialog_cancel">ۋاز كەچ</string>
+  <!-- Block button text in the block AI enhancements confirmation dialog -->
+  <string name="ai_controls_block_dialog_block">توس</string>
+  <!--
     Locale Settings Fragment
 
     Content description for tick mark on selected language
@@ -373,7 +433,11 @@
   <string name="search_scan_button_2">QR كودىنى تارا</string>
   <!-- Button in the search view when shortcuts are displayed that takes a user to the search engine settings -->
   <string name="search_shortcuts_engine_settings">ئىزدەش ماتورى تەڭشىكى</string>
-  <!-- Button in the search view that lets a user navigate to the site in their clipboard -->
+  <!--
+    Search Fragment
+
+    Button in the search view that lets a user navigate to the site in their clipboard
+  -->
   <string name="awesomebar_clipboard_title">چاپلاش تاختىسىدىكى ئۇلىنىشنى ئېچىش</string>
   <!-- Button in the search suggestions onboarding that allows search suggestions in private sessions -->
   <string name="search_suggestions_onboarding_allow_button">يول قوي</string>
@@ -751,6 +815,12 @@
   <string name="preferences_category_about">ھەققىدە</string>
   <!-- Preference category for settings related to changing the default search engine -->
   <string name="preferences_category_select_default_search_engine">بىرى تاللىنىدۇ</string>
+  <!-- Preference category for settings related to changing the default search engine -->
+  <string name="preferences_category_select_default_search_engine_2">ئادەتتىكى زىيارەتنىڭ كۆڭۈلدىكى ئىزدەش موتورى</string>
+  <!-- Preference category for settings related to changing the private browsing search engine -->
+  <string name="preferences_category_select_private_search_engine">شەخسىي زىيارەتنىڭ كۆڭۈلدىكى ئىزدەش موتورى</string>
+  <!-- Option to set the private browsing mode to use the normal default search engine -->
+  <string name="search_engine_use_default">ئادەتتىكى زىيارەتتە ئىشلەتكىنى بىلەن ئوخشاش ئىزدەش موتورىنى ئىشلىتىدۇ</string>
   <!-- Preference for settings related to managing search shortcuts for the quick search menu -->
   <string name="preferences_manage_search_shortcuts_2">باشقا ئىزدەش موتورلىرىنى باشقۇرۇش</string>
   <!-- Summary for preference for settings related to managing search shortcuts for the quick search menu -->
@@ -967,6 +1037,15 @@
   <string name="preference_downloads_folder_permission_lost" tools:ignore="UnusedResources">بۇ قىسقۇچنى ئىشلىتىش ئىجازىتىڭىز يوق. باشقا بىرىنى تاللاپ سىناڭ.</string>
   <!-- Preference title for choosing an app to handle downloads -->
   <string name="preferences_choose_app_for_downloads">چۈشۈرۈشنى باشقا ئەپتە باشقۇرىدۇ</string>
+  <!-- Preference category for deleting or removing downloads -->
+  <string name="preferences_category_delete_or_remove_downloads">چۈشۈرۈلمنى ئۆچۈرۈپ ياكى چىقىرىۋېتىدۇ</string>
+  <string name="preferences_downloads_delete_from_device">ئۈسكۈنىدىن ئۆچۈر</string>
+  <string name="preferences_downloads_delete_from_device_description">ھۆججەت ئۈسكۈنىڭىزدىن ئۆچۈرۈلدى ۋە چۈشۈرۈش خاتىرىسىدىن چىقىرىۋېتىلدى</string>
+  <string name="preferences_downloads_remove_from_download_history">چۈشۈرۈش تارىخىدىن چىقىرىۋەت</string>
+  <string name="preferences_downloads_remove_from_download_history_description">ھۆججەت چۈشۈرۈش تارىخىڭىزدىن چىقىرىۋېتىلدى، ئەمما يەنىلا ئۈسكۈنىڭىزدە ساقلاندى</string>
+  <string name="preferences_downloads_ask_when_to_delete_files">ھۆججەت ئۆچۈرگەندە مەندىن سورا</string>
+  <!-- Preference for downloads -->
+  <string name="preferences_downloads_2">چۈشۈرۈش تەڭشىكى</string>
   <!-- Title for the setting to automatically clean up downloaded files. %s is the name of the app (for example "Firefox"). -->
   <string name="preferences_downloads_settings_clean_up_files_title">ئۈسكۈنە ۋە %s دىن ئۆچۈرىدۇ</string>
   <!-- Summary for the setting to automatically clean up downloaded files -->
@@ -1048,6 +1127,8 @@
   <string name="customize_wallpapers">تام قەغىزى</string>
   <!-- Title for the customize home screen section with sponsored shortcuts. -->
   <string name="customize_toggle_contile">قوللايدىغان تېزلەتمىلەر</string>
+  <!-- Title for the customize home screen section that toggles the Homepage sports widget. -->
+  <string name="customize_toggle_world_cup" tools:ignore="UnusedResources">دۇنيا لوڭقىسى</string>
   <!--
     Wallpapers
 
@@ -1329,6 +1410,8 @@
   <string name="toolbar_customize_shortcut_homepage">باش بەت</string>
   <!-- Back shortcut in toolbar customization -->
   <string name="toolbar_customize_shortcut_back">قايت</string>
+  <!-- Label for choosing in toolbar customization settings to not use any custom shortcut button. -->
+  <string name="toolbar_customize_shortcut_none">يوق</string>
   <!--
     App icon Preferences
 
@@ -1659,6 +1742,38 @@
   <string name="delete_tab_group_confirmation_dialog_confirm">گۇرۇپپا ئۆچۈر</string>
   <!-- Text shown on the cancel button in the Delete tab group confirmation dialog. -->
   <string name="delete_tab_group_confirmation_dialog_cancel">ۋاز كەچ</string>
+  <!-- Title for the Close last tab and delete tab group confirmation dialog. -->
+  <string name="close_tab_and_delete_group_confirmation_dialog_title">بەتكۈچنى تاقاپ، گۇرۇپپىنى ئۆچۈرەمدۇ؟</string>
+  <!-- Text shown in the body of the Close last tab and delete tab group confirmation dialog. -->
+  <string name="close_tab_and_delete_group_confirmation_dialog_body">بۇ گۇرۇپپىنى مەڭگۈلۈك ئۆچۈرىدۇ.</string>
+  <!-- Text shown on the confirm button in the Close last tab and delete tab group confirmation dialog. -->
+  <string name="close_tab_and_delete_group_confirmation_dialog_confirm">گۇرۇپپا ئۆچۈر</string>
+  <!-- Text shown on the cancel button in the Close last tab and delete tab group confirmation dialog. -->
+  <string name="close_tab_and_delete_group_confirmation_dialog_cancel">ۋاز كەچ</string>
+  <!--
+    Color labels for tab groups, used for accessibility and selection UI.
+
+    Tab group color: Yellow
+  -->
+  <string name="tab_group_color_yellow">سېرىق</string>
+  <!-- Tab group color: Orange -->
+  <string name="tab_group_color_orange">قىزغۇچ سېرىق</string>
+  <!-- Tab group color: Red -->
+  <string name="tab_group_color_red">قىزىل</string>
+  <!-- Tab group color: Pink -->
+  <string name="tab_group_color_pink">ھالرەڭ</string>
+  <!-- Tab group color: Purple -->
+  <string name="tab_group_color_purple">بىنەپشە</string>
+  <!-- Tab group color: Violet -->
+  <string name="tab_group_color_violet">كۆكۈچ سۆسۈن</string>
+  <!-- Tab group color: Blue -->
+  <string name="tab_group_color_blue">كۆك</string>
+  <!-- Tab group color: Cyan -->
+  <string name="tab_group_color_cyan">ئوچۇق كۆك</string>
+  <!-- Tab group color: Green -->
+  <string name="tab_group_color_green">يېشىل</string>
+  <!-- Tab group color: Grey -->
+  <string name="tab_group_color_grey">كۈلرەڭ</string>
   <!--
     History
 

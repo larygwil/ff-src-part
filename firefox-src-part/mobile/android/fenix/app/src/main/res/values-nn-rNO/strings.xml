@@ -335,7 +335,11 @@
     Content description for the Home screen button on the browser toolbar
   -->
   <string name="browser_toolbar_home">Startskjerm</string>
-  <!-- Content description for the translate page toolbar button that opens the translations dialog when no translation has occurred. -->
+  <!--
+    Browser Toolbar
+
+    Content description for the translate page toolbar button that opens the translations dialog when no translation has occurred.
+  -->
   <string name="browser_toolbar_translate">Omset sida</string>
   <!--
     Content description (not visible, for screen readers etc.) for the translate page toolbar button that opens the translations dialog when the page is translated successfully.
@@ -369,7 +373,11 @@
     Label for the secret settings preference to enable AI controls
   -->
   <string name="preferences_debug_settings_ai_controls">Aktiver KI-kontrollar</string>
-  <!-- Title for the AI controls settings screen -->
+  <!--
+    AI Controls settings
+
+    Title for the AI controls settings screen
+  -->
   <string name="preferences_ai_controls">KI-kontrollar</string>
   <!-- Headline text for the AI controls banner. %s is the name of the app (for example "Firefox"). -->
   <string name="ai_controls_banner_headline">Du har alltid eit val i %s</string>
@@ -389,10 +397,16 @@
   <string name="ai_controls_ai_powered_features">AI-drivne funksjonar</string>
   <!-- Title for the translations AI feature toggle -->
   <string name="ai_controls_translations_title">Omsettingar</string>
+  <!-- Description for the translations AI feature toggle -->
+  <string name="ai_controls_translations_description">Alle omsettingar held fram med å vere private på eininga di.</string>
   <!-- Link text to navigate to more translations settings -->
   <string name="ai_controls_more_translations_settings">Fleire omsettingsinnstillingar</string>
+  <!-- Link text to navigate to more page summary settings -->
+  <string name="ai_controls_more_page_summary_settings">Fleire innstillingar for sidesamandrag</string>
   <!-- Title for the voice search AI feature toggle -->
   <string name="ai_controls_voice_search_title">Stemmesøk</string>
+  <!-- Description for the voice search AI feature toggle -->
+  <string name="ai_controls_voice_search_description">Lyd blir konvertert til tekst av Google Speech Services.</string>
   <!-- Title for the block AI enhancements confirmation dialog -->
   <string name="ai_controls_block_dialog_title">Blokkere AI-forbetringar?</string>
   <!-- Label shown above the list of features that will be blocked in the block AI dialog -->
@@ -419,7 +433,11 @@
   <string name="search_scan_button_2">Skann QR-kode</string>
   <!-- Button in the search view when shortcuts are displayed that takes a user to the search engine settings -->
   <string name="search_shortcuts_engine_settings">Innstillingar for søkjemotor</string>
-  <!-- Button in the search view that lets a user navigate to the site in their clipboard -->
+  <!--
+    Search Fragment
+
+    Button in the search view that lets a user navigate to the site in their clipboard
+  -->
   <string name="awesomebar_clipboard_title">Fyll inn lenke frå utklippstavla</string>
   <!-- Button in the search suggestions onboarding that allows search suggestions in private sessions -->
   <string name="search_suggestions_onboarding_allow_button">Tillat</string>
@@ -1427,6 +1445,8 @@
   <!-- Preference for using the dynamic toolbar -->
   <string name="preference_gestures_dynamic_toolbar">Bla for å gøyme verktøylinja</string>
   <!-- Preference for showing the opened tabs by swiping up on the toolbar -->
+  <string name="preference_gestures_swipe_toolbar_show_tabs_2">Sveip verktøylinja vertikalt for å sjå opne faner</string>
+  <!-- Preference for showing the opened tabs by swiping up on the toolbar -->
   <string name="preference_gestures_swipe_toolbar_show_tabs">Sveip verktøylinja opp for å opne faner</string>
   <!-- Preference for switching tabs by swiping horizontally on the addressbar -->
   <string name="preference_gestures_swipe_toolbar_switch_tabs_2">Sveip adresselinja sidelengs for å byte fane</string>
@@ -1683,6 +1703,8 @@
   <string name="pwa_site_controls_title_private">%1$s (privatmodus)</string>
   <!-- Content description (not visible, for screen readers etc.) for the button to open the Tab Search feature to search through tabs. -->
   <string name="tab_manager_open_tab_search">Opne fanesøk</string>
+  <!-- The description displayed on the tab groups page when no tab groups are open -->
+  <string name="tab_manager_empty_tab_groups_page_description">Vel faner for å opprette ei gruppe. Dei er lagra her, klare når du er det.</string>
   <!--
     Tab Group
 
@@ -1692,6 +1714,8 @@
   <!-- Title for the edit tab group bottom sheet -->
   <string name="edit_tab_group_title">Rediger gruppe</string>
   <string name="create_tab_group_save_button">Lagre</string>
+  <!-- Description for the handle at the top of a bottom sheet, used to drag the sheet up or down. -->
+  <string name="edit_tab_group_bottom_sheet_grabber_content_description">Ny gruppe, skjul drahandtak</string>
   <string name="edit_tab_group_bottom_sheet_close_content_description">Lat att redigering av fanegruppe</string>
   <!-- Default tab group name when creating a tab group -->
   <string name="create_tab_group_default_name" tools:ignore="UnusedResources" moz:removedIn="150">Gruppe</string>
@@ -1707,6 +1731,10 @@
   <!-- Title for adding more tabs to a tab group. -->
   <string name="add_to_tab_group_title">Legg til i</string>
   <!-- Content Description for closing the "Add to Tab Group" panel. -->
+  <string name="add_to_tab_group_bottom_sheet_grabber_content_description">Legg til i ei fanegruppe, skjul drahandtaket</string>
+  <!-- Content Description for "New tab group" panel. -->
+  <string name="add_to_new_tab_group_content_description">Legg til i ny fanegruppe</string>
+  <!-- Content Description for closing the "Add to Tab Group" panel. -->
   <string name="add_to_tab_group_bottom_sheet_close_content_description">Lat att legg til i fanegruppe</string>
   <!-- Label for adding to a new tab group. -->
   <string name="add_to_new_tab_group_title">Ny fanegruppe</string>
@@ -1718,6 +1746,8 @@
     <item quantity="one">%1$d fane</item>
     <item quantity="other">%1$d faner</item>
   </plurals>
+  <!-- Content description for the grabber/handle of the tab group bottom sheet. -->
+  <string name="tab_group_sheet_dismiss_description">Vis fanegruppe, skjul drahandtak</string>
   <!-- Title for the Delete tab group confirmation dialog. -->
   <string name="delete_tab_group_confirmation_dialog_title">Slette fanegruppe?</string>
   <!-- Text shown in the body of the Delete tab group confirmation dialog. -->
@@ -1726,6 +1756,14 @@
   <string name="delete_tab_group_confirmation_dialog_confirm">Slett gruppe</string>
   <!-- Text shown on the cancel button in the Delete tab group confirmation dialog. -->
   <string name="delete_tab_group_confirmation_dialog_cancel">Avbryt</string>
+  <!-- Title for the Close last tab and delete tab group confirmation dialog. -->
+  <string name="close_tab_and_delete_group_confirmation_dialog_title">Late att fane og slette gruppe?</string>
+  <!-- Text shown in the body of the Close last tab and delete tab group confirmation dialog. -->
+  <string name="close_tab_and_delete_group_confirmation_dialog_body">Dette slettar gruppa permanent.</string>
+  <!-- Text shown on the confirm button in the Close last tab and delete tab group confirmation dialog. -->
+  <string name="close_tab_and_delete_group_confirmation_dialog_confirm">Slett gruppe</string>
+  <!-- Text shown on the cancel button in the Close last tab and delete tab group confirmation dialog. -->
+  <string name="close_tab_and_delete_group_confirmation_dialog_cancel">Avbryt</string>
   <!--
     Color labels for tab groups, used for accessibility and selection UI.
 
@@ -1885,6 +1923,8 @@
   <string name="download_rename_error_exists_error">Ei fil med namnet «%s» finst allereie på denne plasseringa</string>
   <!-- Error message when renaming with an invalid file name. -->
   <string name="download_rename_error_invalid_name_error">Filnamn kan ikkje bruke «/»</string>
+  <!-- Error message shown when a user tries to rename a downloaded file but only changes the casing (e.g., "file.txt" to "File.txt"). -->
+  <string name="download_rename_error_case_only_error">Namnet du oppgav endrar berre store eller små bokstavar. Prøv med eit anna filnamn.</string>
   <!-- Title for the alert dialog when the file cannot be renamed. -->
   <string name="download_rename_error_cannot_rename_title">Kan ikkje endre namn på fila</string>
   <!-- Description message for the alert dialog when the file cannot be renamed. -->
@@ -2136,6 +2176,8 @@
   <string name="bookmark_sort_menu_z_to_a">Sorter etter Å - A</string>
   <!-- Label for button to import bookmarks from file. -->
   <string name="bookmark_import_menu_button">Importer frå fil</string>
+  <!-- Snackbar message shown when a bookmark import attempt fails. -->
+  <string name="bookmark_import_failure_snackbar">Klarte ikkje å importere bokmerke. Prøv igjen.</string>
   <!--
     Bookmark multi select title in app bar
     %1$d is the number of bookmarks selected
@@ -2198,6 +2240,8 @@
   <string name="bookmark_import_bookmarks_button_content_description">Importer frå fil</string>
   <!-- Title for the bookmark list empty state -->
   <string name="bookmark_empty_list_title">Ingen bokmerke enno</string>
+  <!-- Title for the bookmark list empty state at the root level. -->
+  <string name="bookmark_empty_list_root_title">Hald alle favorittbokmerka dine samla</string>
   <!-- Bookmark screen folder description. %s is the count of bookmark folder children -->
   <string name="bookmarks_folder_description">Bokmerke i mappa: %s</string>
   <!-- Description for the bookmark list empty state when you're not signed into sync. -->
@@ -2660,6 +2704,8 @@
   </plurals>
   <!-- Text shown on the trackers blocked card when no trackers have been blocked yet -->
   <string name="trackers_blocked_empty">Du er verna</string>
+  <!-- Text shown below the trackers blocked card with typing animation -->
+  <string name="help_catch_trackers">Hjelp til med å fange sporarar</string>
   <!-- Preference for enhanced tracking protection for the standard protection settings -->
   <string name="preference_enhanced_tracking_protection_standard_default_1">Standard (standard)</string>
   <!-- Preference description for enhanced tracking protection for the standard protection settings -->
@@ -3068,6 +3114,8 @@
   <string name="ip_protection_title">VPN</string>
   <!-- Label for the browser VPN toggle on the settings screen -->
   <string name="ip_protection_toggle_label">VPN</string>
+  <!-- Headline for the browser VPN promo card. %s is the name of the app (for example "Firefox"). -->
+  <string name="ip_protection_promo_headline">Den innebygde VPN-en i %s</string>
   <!-- Body text for the browser VPN promo card -->
   <string name="ip_protection_promo_body">Surf med ekstra vern ved å skjule plasseringa di, også på offentleg Wi-Fi.</string>
   <!-- Link text that opens additional information about the browser VPN -->
@@ -3080,10 +3128,17 @@
     %2$.1f is the total monthly allowance in GB (for example "50.0").
   -->
   <string name="ip_protection_data_limit_value">%1$.1f GB av %2$.1f GB att</string>
+  <!--
+    Text shown below the data usage bar describing when the monthly allowance resets.
+    %1$.0f is the total monthly data allowance in GB (for example "50").
+  -->
+  <string name="ip_protection_data_reset_info">Blir nullstilt til %1$.0f GB den første i kvar månad.</string>
   <!-- Header for the browser VPN `location` section -->
   <string name="ip_protection_location_section">Plassering</string>
   <!-- Label for the recommended automatic location option on the browser VPN settings screen -->
   <string name="ip_protection_location_recommended_label">Tilrådd</string>
+  <!-- Description for the recommended automatic location option on the browser VPN settings screen -->
+  <string name="ip_protection_location_recommended_description">Vel den raskaste VPN-plasseringa for deg.</string>
   <!-- Badge label shown in the menu item when the browser VPN is active -->
   <string name="preferences_ip_protection_on">På</string>
   <!-- Badge label shown in the menu item when the browser VPN is off -->
@@ -3096,12 +3151,34 @@
   <string name="ip_protection_menu_error">Feil</string>
   <!-- Content description for the chevron button that opens the browser VPN settings screen -->
   <string name="ip_protection_navigate_settings">Opne VPN-innstillingar</string>
+  <!--
+    Subtitle shown below the VPN label in menus when the monthly data allowance is exhausted.
+    %1$d is the total monthly allowance in GB (for example "50").
+  -->
+  <string name="ip_protection_menu_limit_reached">%1$d GB-grense nådd</string>
+  <!--
+    Error message shown on the browser VPN settings screen when the monthly data allowance is exhausted.
+    %1$d is the total monthly allowance in GB (for example "50").
+  -->
+  <string name="ip_protection_data_limit_reached_description">Du har brukt opp alle %1$d GB av VPN-dataa dine. Tilgangen blir nullstilt neste månad.</string>
   <!-- Label shown next to the browser protection icon in the address bar when the browser VPN is active -->
   <string name="ip_protection_toolbar_pill_label" tools:ignore="UnusedResources">VPN på</string>
   <!-- Accessibility description for the browser VPN pill in the address bar when the VPN has been activated -->
   <string name="ip_protection_toolbar_pill_description" tools:ignore="UnusedResources">VPN er aktiv.</string>
   <!-- Label for the button that starts the browser VPN authentication or authorization flow on the settings screen -->
   <string name="ip_protection_get_started">Kom i gang</string>
+  <!-- Headline for the browser VPN onboarding card. %s is the name of the app (for example "Firefox"). -->
+  <string name="ip_protection_onboarding_card_headline">Prøv %s sin innebygde VPN</string>
+  <!--
+    The body of the VPN onboarding card.
+    %1$s is a link using ip_protection_onboarding_body_link (“Browse with extra protection”) as text. It links to a support article about VPN on Firefox.
+    %2$d is the total monthly allowance in GB (for example "50").
+  -->
+  <string name="ip_protection_onboarding_body">%1$s ved å skjule plasseringa di, også på offentleg Wi-Fi. Få %2$d GB gratis kvar månad.</string>
+  <!-- Used as text for a link in ip_protection_onboarding_body. Make sure to adapt capitalization if the link is in the middle of the sentence. -->
+  <string name="ip_protection_onboarding_body_link">Surf med ekstra vern</string>
+  <!-- Label for the dismiss button on the onboarding bottom sheet. -->
+  <string name="ip_protection_onboarding_not_now_button">Ikkje no</string>
   <!--
     Autofill
 
@@ -3402,6 +3479,8 @@
   <string name="homepage_shortcuts_show_all_content_description">Vis alle snarvegar</string>
   <!-- Label for the "Add shortcut" button displayed as a tile. -->
   <string name="homepage_shortcuts_add_shortcut">Legg til snarveg</string>
+  <!-- Title text for the "Enter a Website URL" dialog for adding a shortcut. -->
+  <string name="homepage_shortcuts_add_website_title">Skriv inn ei nettstadadresse</string>
   <!-- Title text displayed in the dialog when shortcuts limit is reached. -->
   <string name="shortcut_max_limit_title">Grensa for antal snarvegar er nådd</string>
   <!-- Content description text displayed in the dialog when shortcut limit is reached. -->
@@ -3642,6 +3721,8 @@
   <string name="translation_settings_download_language">Last ned språk</string>
   <!-- Toggle switch title and description for the translation settings control. -->
   <string name="translation_settings_control_title">Omsettingar</string>
+  <!-- Description for the translation settings toggle switch. -->
+  <string name="translation_settings_control_description">Alle omsettingar held fram med å vere private på eininga di.</string>
   <!-- Clickable text for the translations settings item that links to a website. -->
   <string name="translation_settings_control_learn_more">Les meir</string>
   <!--
@@ -4374,6 +4455,10 @@
   <string name="sports_widget_final">Finale</string>
   <!-- Round name shown on the sports widget for the bronze final stage in the soccer tournament. -->
   <string name="sports_widget_bronze_final">Bronsefinale</string>
+  <!-- Sports widget error card message shown when match data fails to load. -->
+  <string name="sports_widget_error_load_failed">Kampinfo er ikkje tilgjengeleg akkurat no. Prøv å oppdatere om nokre minutt.</string>
+  <!-- Sports widget error card message shown when the network connection is interrupted and live updates pause. -->
+  <string name="sports_widget_error_connection_interrupted">Brot i sambandet – direkteoppdateringar er sett på pause.</string>
   <!-- Sports widget action label to refresh match data after an error. -->
   <string name="sports_widget_error_refresh">Oppdater</string>
   <!-- Sports widget group stage label for group A in the soccer tournament. -->
@@ -4404,12 +4489,14 @@
   <string name="sports_widget_see_results" tools:ignore="UnusedResources">Vis resultat</string>
   <!-- Sports widget button label to view details of a soccer match results. -->
   <string name="sports_widget_view_match_details" tools:ignore="UnusedResources">Vis kampdetaljar</string>
-  <!-- Sports widget section header for previous soccer match results. -->
-  <string name="sports_widget_previous_match" tools:ignore="UnusedResources">Førre kamp</string>
   <!-- Sports widget section header for related soccer matches in the same group. -->
   <string name="sports_widget_related_matches">Relaterte kampar</string>
   <!-- Sports widget section header for a list of upcoming soccer matches that have not yet started. -->
   <string name="sports_widget_upcoming" tools:ignore="UnusedResources">Komande</string>
+  <!-- Sports widget match status suffix appended to match scores (e.g., "3 - 2 (Full time)") to indicate the match has been completed. -->
+  <string name="sports_widget_match_full_time_suffix">(Slutt)</string>
+  <!-- Sports widget match status to indicate the match has been completed. -->
+  <string name="sports_widget_match_full_time_2" tools:ignore="UnusedResources">Slutt</string>
   <!--
     Sports widget card title encouraging the user to follow the soccer tournament. “Keep tabs on” is an informal expression
     meaning to stay updated on or regularly follow something (in this case, World Cup matches and updates).
@@ -4434,6 +4521,8 @@
   <string name="sports_widget_follow_another_team">Følg eit anna lag</string>
   <!-- Sports widget card title shown before the soccer tournament begins on top of a timer that is counting down. -->
   <string name="sports_widget_countdown_to_world_cup" tools:ignore="UnusedResources">Nedteljing til VM</string>
+  <!-- Sports widget button label that navigates the user to the full soccer tournament match schedule. -->
+  <string name="sports_widget_view_schedule">Sjå kampoppsettet</string>
   <!-- Sports widget button label that dismisses the step of choosing a team to follow. -->
   <string name="sports_widget_skip">Hopp over</string>
   <!-- Sports widget match status label shown during halftime of a match. -->
@@ -4460,23 +4549,49 @@
     Your translation will be automatically truncated at 2 characters to avoid layout issues
   -->
   <string name="sports_widget_countdown_minutes">M</string>
+  <!-- Content description (for accessibility, not displayed) for the close button on the sports widget team / country selector. -->
+  <string name="sports_widget_close_team_selection_sheet_content_description" tools:ignore="UnusedResources">Lat att lagval-liste</string>
   <!-- Content description (for accessibility, not displayed) for the close button on the sports widget card. -->
-  <string name="sports_widget_close_content_description" tools:ignore="UnusedResources">Lat att</string>
+  <string name="sports_widget_close_content_description">Lat att</string>
   <!-- Content description (for accessibility, not displayed) for the overflow (more options) menu button on the sports widget card. -->
   <string name="sports_widget_more_options_content_description" tools:ignore="UnusedResources">Fleire innstillingar</string>
   <!--
     Content description (for accessibility, not displayed) announcing the time remaining until the soccer tournament kickoff.
     %1$d is the number of days, %2$d is the number of hours, and %3$d is the number of minutes.
   -->
-  <string name="sports_widget_countdown_remaining_content_description" tools:ignore="UnusedResources">Attståande tid. Dagar: %1$d. Timar: %2$d. Minutt: %3$d.</string>
+  <string name="sports_widget_countdown_remaining_content_description">Attståande tid. Dagar: %1$d. Timar: %2$d. Minutt: %3$d.</string>
   <!-- Content description (for accessibility, not displayed)  for the action that navigates to the World Cup website. -->
   <string name="sports_widget_go_to_world_cup_site_content_description" tools:ignore="UnusedResources">Gå til VM-nettstaden</string>
+  <!--
+    Content description (for accessibility, not displayed)  announcing an upcoming soccer match.
+    %1$s is the home team name, %2$s is the away team name, %3$s is the match date, %4$s is the kickoff time.
+  -->
+  <string name="sports_widget_upcoming_match_content_description" tools:ignore="UnusedResources">Komande: %1$s mot %2$s, %3$s kl. %4$s</string>
+  <!--
+    Content description (for accessibility, not displayed)  used for the sports widget card header announcing a live match for a group or stage.
+    %s is the soccer tournament group name or stage (e.g. Group A represented by sports_widget_group_a, Round of 32 represented by sports_widget_round_of_32,
+    or Final represented by sports_widget_final).
+  -->
+  <string name="sports_widget_live_game_content_description" tools:ignore="UnusedResources">%s, direktesendt kamp</string>
+  <!--
+    Content description (for accessibility, not displayed) announcing a live score.
+    %1$s is the home team name, %2$d is the home team score, %3$s is the away team name, %4$d is the away team score,
+    and %5$s is the match elapsed time (e.g. 72 minutes).
+  -->
+  <string name="sports_widget_live_score_content_description" tools:ignore="UnusedResources">%1$s %2$d, %3$s %4$d, %5$s, direkte</string>
   <!--
     Content description (for accessibility, not displayed) for a paginated item.
     %1$s is the soccer tournament group name or stage (e.g. Group A represented by sports_widget_group_a, Round of 32 represented by sports_widget_round_of_32),
     %2$d is the current page number, and %3$d is the total number of pages.
   -->
-  <string name="sports_widget_page_position_content_description" tools:ignore="UnusedResources">%1$s, sider %2$d av %3$d</string>
+  <string name="sports_widget_page_position_content_description" tools:ignore="UnusedResources">%1$s, side %2$d av %3$d</string>
+  <!--
+    Content description (for accessibility, not displayed) for a page within the World Cup final results carousel.
+    %1$d is the current page number, and %2$d is the total number of pages.
+  -->
+  <string name="sports_widget_final_results_page_content_description" tools:ignore="UnusedResources">VM-sluttresultat, side %1$d av %2$d</string>
+  <!-- Content description (for accessibility, not displayed) for the remove button that removes the sports widget from the homepage. -->
+  <string name="sports_widget_remove_content_description" tools:ignore="UnusedResources">Fjern VM-widgeten frå startsida di</string>
   <!-- ==== End of Terms of use popup prompt. ==== -->
 
   <!--

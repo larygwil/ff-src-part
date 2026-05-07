@@ -335,7 +335,11 @@
     Content description for the Home screen button on the browser toolbar
   -->
   <string name="browser_toolbar_home">Hasiera-pantaila</string>
-  <!-- Content description for the translate page toolbar button that opens the translations dialog when no translation has occurred. -->
+  <!--
+    Browser Toolbar
+
+    Content description for the translate page toolbar button that opens the translations dialog when no translation has occurred.
+  -->
   <string name="browser_toolbar_translate">Itzuli orria</string>
   <!--
     Content description (not visible, for screen readers etc.) for the translate page toolbar button that opens the translations dialog when the page is translated successfully.
@@ -369,7 +373,11 @@
     Label for the secret settings preference to enable AI controls
   -->
   <string name="preferences_debug_settings_ai_controls">Gaitu AA kontrolak</string>
-  <!-- Title for the AI controls settings screen -->
+  <!--
+    AI Controls settings
+
+    Title for the AI controls settings screen
+  -->
   <string name="preferences_ai_controls">AA kontrolak</string>
   <!-- Headline text for the AI controls banner. %s is the name of the app (for example "Firefox"). -->
   <string name="ai_controls_banner_headline">Beti aukera dezakezu %s(e)n</string>
@@ -427,7 +435,11 @@
   <string name="search_scan_button_2">Eskaneatu QR kodea</string>
   <!-- Button in the search view when shortcuts are displayed that takes a user to the search engine settings -->
   <string name="search_shortcuts_engine_settings">Bilaketa-motorren ezarpenak</string>
-  <!-- Button in the search view that lets a user navigate to the site in their clipboard -->
+  <!--
+    Search Fragment
+
+    Button in the search view that lets a user navigate to the site in their clipboard
+  -->
   <string name="awesomebar_clipboard_title">Osatu lotura arbeletik</string>
   <!-- Button in the search suggestions onboarding that allows search suggestions in private sessions -->
   <string name="search_suggestions_onboarding_allow_button">Baimendu</string>
@@ -4492,16 +4504,12 @@
   <string name="sports_widget_see_results" tools:ignore="UnusedResources">Ikusi emaitzak</string>
   <!-- Sports widget button label to view details of a soccer match results. -->
   <string name="sports_widget_view_match_details" tools:ignore="UnusedResources">Ikusi partidaren xehetasunak</string>
-  <!-- Sports widget section header for previous soccer match results. -->
-  <string name="sports_widget_previous_match" tools:ignore="UnusedResources">Aurreko partida</string>
   <!-- Sports widget section header for related soccer matches in the same group. -->
   <string name="sports_widget_related_matches">Erlazionatutako partidak</string>
   <!-- Sports widget section header for a list of upcoming soccer matches that have not yet started. -->
   <string name="sports_widget_upcoming" tools:ignore="UnusedResources">Hurrengoak</string>
   <!-- Sports widget match status suffix appended to match scores (e.g., "3 - 2 (Full time)") to indicate the match has been completed. -->
   <string name="sports_widget_match_full_time_suffix">(Partidaren amaiera)</string>
-  <!-- Sports widget match status to indicate the match has been completed. -->
-  <string name="sports_widget_match_full_time" tools:ignore="UnusedResources">(Partidaren amaiera)</string>
   <!-- Sports widget match status to indicate the match has been completed. -->
   <string name="sports_widget_match_full_time_2" tools:ignore="UnusedResources">Partidaren amaiera</string>
   <!--
@@ -4559,14 +4567,14 @@
   <!-- Content description (for accessibility, not displayed) for the close button on the sports widget team / country selector. -->
   <string name="sports_widget_close_team_selection_sheet_content_description" tools:ignore="UnusedResources">Itxi taldea hautatzeko orria</string>
   <!-- Content description (for accessibility, not displayed) for the close button on the sports widget card. -->
-  <string name="sports_widget_close_content_description" tools:ignore="UnusedResources">Itxi</string>
+  <string name="sports_widget_close_content_description">Itxi</string>
   <!-- Content description (for accessibility, not displayed) for the overflow (more options) menu button on the sports widget card. -->
   <string name="sports_widget_more_options_content_description" tools:ignore="UnusedResources">Aukera gehiago</string>
   <!--
     Content description (for accessibility, not displayed) announcing the time remaining until the soccer tournament kickoff.
     %1$d is the number of days, %2$d is the number of hours, and %3$d is the number of minutes.
   -->
-  <string name="sports_widget_countdown_remaining_content_description" tools:ignore="UnusedResources">Falta den denbora. Egunak: %1$d. Orduak: %2$d. Minutuak: %3$d.</string>
+  <string name="sports_widget_countdown_remaining_content_description">Falta den denbora. Egunak: %1$d. Orduak: %2$d. Minutuak: %3$d.</string>
   <!-- Content description (for accessibility, not displayed)  for the action that navigates to the World Cup website. -->
   <string name="sports_widget_go_to_world_cup_site_content_description" tools:ignore="UnusedResources">Joan Munduko Koparen gunera</string>
   <!--
