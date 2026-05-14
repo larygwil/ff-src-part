@@ -370,17 +370,13 @@
   <!--
     AI Controls settings
 
-    Label for the secret settings preference to enable AI controls
-  -->
-  <string name="preferences_debug_settings_ai_controls">Povoliť nastavenia AI</string>
-  <!--
-    AI Controls settings
-
     Title for the AI controls settings screen
   -->
   <string name="preferences_ai_controls">Nastavenia AI</string>
   <!-- Headline text for the AI controls banner. %s is the name of the app (for example "Firefox"). -->
   <string name="ai_controls_banner_headline">Vo %se máte vždy na výber</string>
+  <!-- Supporting text for the AI controls banner. %s is a learn more link using ai_controls_learn_more as text. -->
+  <string name="ai_controls_banner_supporting_text_2">To zahŕňa aj to, či používať funkcie vylepšené umelou inteligenciou. %s</string>
   <!-- Supporting text for the AI controls banner -->
   <string name="ai_controls_banner_supporting_text">To zahŕňa aj to, či používať funkcie vylepšené umelou inteligenciou.</string>
   <!-- Link text for learning more about AI controls -->
@@ -612,7 +608,7 @@
   <!-- Onboarding label for 'Continue' button. -->
   <string name="onboarding_redesign_continue_button" tools:ignore="UnusedResources">Pokračovať</string>
   <!-- Marketing onboarding page title. 'Firefox' is intentionally hardcoded. -->
-  <string name="onboarding_marketing_redesign_title" tools:ignore="BrandUsage,UnusedResources">Pomôžte nám rozšíriť Firefox</string>
+  <string name="onboarding_marketing_redesign_title" tools:ignore="BrandUsage">Pomôžte nám rozšíriť Firefox</string>
   <!-- Marketing onboarding page opt-out checkbox. Unchecking the box does not increase data collection. Our data practices remain the same. 'Mozilla' is intentionally hardcoded. -->
   <string name="onboarding_marketing_redesign_opt_out_checkbox" tools:ignore="BrandUsage,UnusedResources">Podeľte sa o to, ako ste objavili Firefox a že ho používate, s marketingovými partnermi Mozilly. Tieto údaje sa nikdy nepredávajú.</string>
   <!-- Marketing onboarding page clickable link text to "learn more" on how data is used. -->
@@ -716,7 +712,7 @@
     Marketing onboarding body. 'Firefox' and 'Mozilla' are intentionally hardcoded.
     %1$s is replaced by an active link, using nova_onboarding_marketing_body_link_text as text (“How we use the data”).
   -->
-  <string name="nova_onboarding_marketing_body" tools:ignore="BrandUsage">Podeľte sa o to, ako ste objavili Firefox a že ho používate, s marketingovými partnermi Mozilly. Tieto údaje sa nikdy nepredávajú. %1$s</string>
+  <string name="nova_onboarding_marketing_body" tools:ignore="BrandUsage,UnusedResources">Podeľte sa o to, ako ste objavili Firefox a že ho používate, s marketingovými partnermi Mozilly. Tieto údaje sa nikdy nepredávajú. %1$s</string>
   <!-- Marketing onboarding body link text. -->
   <string name="nova_onboarding_marketing_body_link_text">Ako používame údaje</string>
   <!-- Notifications onboarding title. 'Firefox' is intentionally hardcoded. -->
@@ -1805,6 +1801,14 @@
   <string name="delete_tab_group_confirmation_dialog_confirm">Odstrániť skupinu</string>
   <!-- Text shown on the cancel button in the Delete tab group confirmation dialog. -->
   <string name="delete_tab_group_confirmation_dialog_cancel">Zrušiť</string>
+  <!-- Title for the Close last tab and delete tab group confirmation dialog. -->
+  <string name="close_tab_and_delete_group_confirmation_dialog_title">Zatvoriť kartu a odstrániť skupinu?</string>
+  <!-- Text shown in the body of the Close last tab and delete tab group confirmation dialog. -->
+  <string name="close_tab_and_delete_group_confirmation_dialog_body">Týmto sa skupina natrvalo odstráni.</string>
+  <!-- Text shown on the confirm button in the Close last tab and delete tab group confirmation dialog. -->
+  <string name="close_tab_and_delete_group_confirmation_dialog_confirm">Odstrániť skupinu</string>
+  <!-- Text shown on the cancel button in the Close last tab and delete tab group confirmation dialog. -->
+  <string name="close_tab_and_delete_group_confirmation_dialog_cancel">Zrušiť</string>
   <!--
     Color labels for tab groups, used for accessibility and selection UI.
 
@@ -2221,6 +2225,8 @@
   <string name="bookmark_import_menu_button">Importovať zo súboru</string>
   <!-- Snackbar message shown when a bookmark import attempt fails. -->
   <string name="bookmark_import_failure_snackbar">Záložky sa nepodarilo importovať. Skúste to znova.</string>
+  <!-- Default name for the folder created when importing bookmarks from a file. -->
+  <string name="bookmark_import_destination_default_name">Importované záložky</string>
   <!--
     Bookmark multi select title in app bar
     %1$d is the number of bookmarks selected
@@ -2749,6 +2755,8 @@
   </plurals>
   <!-- Text shown on the trackers blocked card when no trackers have been blocked yet -->
   <string name="trackers_blocked_empty">Ste chránení</string>
+  <!-- Text shown below the trackers blocked card with typing animation -->
+  <string name="help_catch_trackers">Pomôžte chytiť sledovačov</string>
   <!-- Preference for enhanced tracking protection for the standard protection settings -->
   <string name="preference_enhanced_tracking_protection_standard_default_1">Štandardná (predvolená)</string>
   <!-- Preference description for enhanced tracking protection for the standard protection settings -->
@@ -3205,11 +3213,30 @@
   -->
   <string name="ip_protection_data_limit_reached_description">Vyčerpali ste celý objem %1$d\u00a0GB dát pre VPN. Prístup sa obnoví budúci mesiac.</string>
   <!-- Label shown next to the browser protection icon in the address bar when the browser VPN is active -->
-  <string name="ip_protection_toolbar_pill_label" tools:ignore="UnusedResources">VPN je zapnutá</string>
+  <string name="ip_protection_toolbar_pill_label">VPN je zapnutá</string>
   <!-- Accessibility description for the browser VPN pill in the address bar when the VPN has been activated -->
-  <string name="ip_protection_toolbar_pill_description" tools:ignore="UnusedResources">VPN je aktívna.</string>
+  <string name="ip_protection_toolbar_pill_description">VPN je aktívna.</string>
   <!-- Label for the button that starts the browser VPN authentication or authorization flow on the settings screen -->
   <string name="ip_protection_get_started">Poďme na to</string>
+  <!-- Headline for the browser VPN onboarding card. %s is the name of the app (for example "Firefox"). -->
+  <string name="ip_protection_onboarding_card_headline">Vyskúšajte VPN vstavanú priamo vo %se</string>
+  <!--
+    The body of the VPN onboarding card.
+    %1$s is a link using ip_protection_onboarding_body_link (“Browse with extra protection”) as text. It links to a support article about VPN on Firefox.
+    %2$d is the total monthly allowance in GB (for example "50").
+  -->
+  <string name="ip_protection_onboarding_body">%1$s skrytím svojej polohy, a to aj na verejnej Wi‑Fi sieti. Získajte %2$d\u00a0GB zadarmo každý mesiac.</string>
+  <!-- Used as text for a link in ip_protection_onboarding_body. Make sure to adapt capitalization if the link is in the middle of the sentence. -->
+  <string name="ip_protection_onboarding_body_link">Prehliadajte s extra ochranou</string>
+  <!-- Label for the dismiss button on the onboarding bottom sheet. -->
+  <string name="ip_protection_onboarding_not_now_button">Teraz nie</string>
+  <!-- Snackbar (in-app pop-up notification) text to signal the browser VPN connection error -->
+  <string name="ip_protection_connection_error_snackbar">Nepodarilo sa pripojiť k VPN. Skúste to znova o niekoľko minút.</string>
+  <!--
+    Snackbar (in-app pop-up notification) text to signal the browser VPN has reached the monthly data limit.
+    %1$d is the total monthly allowance in GB (for example "50").
+  -->
+  <string name="ip_protection_data_limit_reached_snackbar">Využili ste %1$d GB dát VPN. Prístup sa obnoví budúci mesiac.</string>
   <!--
     Autofill
 
@@ -4623,6 +4650,18 @@
   <string name="sports_widget_final_results_page_content_description" tools:ignore="UnusedResources">Konečné výsledky Majstrovstiev sveta, strana %1$d z %2$d</string>
   <!-- Content description (for accessibility, not displayed) for the remove button that removes the sports widget from the homepage. -->
   <string name="sports_widget_remove_content_description" tools:ignore="UnusedResources">Odstrániť Majstrovstvá sveta z domovskej stránky</string>
+  <!-- Title shown on the sports widget immediately after the user has followed a team. %s is the selected team (e.g., "USA"). -->
+  <string name="sports_widget_team_followed_title" tools:ignore="UnusedResources">Sledujete: \n%s</string>
+  <!-- Description shown on the sports widget immediately after the user has followed a team -->
+  <string name="sports_widget_team_followed_description" tools:ignore="UnusedResources">Informácie o zápase tu nájdete pred začiatkom turnaja.</string>
+  <!-- Sports widget match status label shown during first half of a match. -->
+  <string name="sports_widget_first_half" tools:ignore="UnusedResources">Prvý polčas</string>
+  <!-- Sports widget match status label shown during second half of a match. -->
+  <string name="sports_widget_second_half" tools:ignore="UnusedResources">Druhý polčas</string>
+  <!-- Sports widget error card title shown when the user is offline. -->
+  <string name="sports_widget_error_connection_offline_title" tools:ignore="UnusedResources">Vyzerá to, že momentálne nie ste pripojení k internetu.</string>
+  <!-- Sports widget error card description shown when the user is offline. -->
+  <string name="sports_widget_error_connection_offline_description" tools:ignore="UnusedResources">Skontrolujte svoje internetové pripojenie a skúste to znova.</string>
   <!-- ==== End of Terms of use popup prompt. ==== -->
 
   <!--

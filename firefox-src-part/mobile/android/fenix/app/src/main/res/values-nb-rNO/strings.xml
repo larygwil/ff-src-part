@@ -370,17 +370,13 @@
   <!--
     AI Controls settings
 
-    Label for the secret settings preference to enable AI controls
-  -->
-  <string name="preferences_debug_settings_ai_controls">Aktiver AI-kontroller</string>
-  <!--
-    AI Controls settings
-
     Title for the AI controls settings screen
   -->
   <string name="preferences_ai_controls">AI-kontroller</string>
   <!-- Headline text for the AI controls banner. %s is the name of the app (for example "Firefox"). -->
   <string name="ai_controls_banner_headline">Du har alltid et valg i %s</string>
+  <!-- Supporting text for the AI controls banner. %s is a learn more link using ai_controls_learn_more as text. -->
+  <string name="ai_controls_banner_supporting_text_2">Det inkluderer om du vil bruke funksjoner som er forbedret med AI. %s</string>
   <!-- Supporting text for the AI controls banner -->
   <string name="ai_controls_banner_supporting_text">Det inkluderer om du vil bruke funksjoner som er forbedret med AI.</string>
   <!-- Link text for learning more about AI controls -->
@@ -612,7 +608,7 @@
   <!-- Onboarding label for 'Continue' button. -->
   <string name="onboarding_redesign_continue_button" tools:ignore="UnusedResources">Fortsett</string>
   <!-- Marketing onboarding page title. 'Firefox' is intentionally hardcoded. -->
-  <string name="onboarding_marketing_redesign_title" tools:ignore="BrandUsage,UnusedResources">Hjelp oss med å utvikle Firefox</string>
+  <string name="onboarding_marketing_redesign_title" tools:ignore="BrandUsage">Hjelp oss med å utvikle Firefox</string>
   <!-- Marketing onboarding page opt-out checkbox. Unchecking the box does not increase data collection. Our data practices remain the same. 'Mozilla' is intentionally hardcoded. -->
   <string name="onboarding_marketing_redesign_opt_out_checkbox" tools:ignore="BrandUsage,UnusedResources">Del hvordan du oppdaget Firefox, og at du bruker den, med Mozillas markedsføringspartnere. Disse dataene selges aldri.</string>
   <!-- Marketing onboarding page clickable link text to "learn more" on how data is used. -->
@@ -716,9 +712,27 @@
     Marketing onboarding body. 'Firefox' and 'Mozilla' are intentionally hardcoded.
     %1$s is replaced by an active link, using nova_onboarding_marketing_body_link_text as text (“How we use the data”).
   -->
-  <string name="nova_onboarding_marketing_body" tools:ignore="BrandUsage">Del hvordan du oppdaget Firefox, og at du bruker den, med Mozillas markedsføringspartnere. Disse dataene selges aldri. %1$s</string>
+  <string name="nova_onboarding_marketing_body" tools:ignore="BrandUsage,UnusedResources">Del hvordan du oppdaget Firefox, og at du bruker den, med Mozillas markedsføringspartnere. Disse dataene selges aldri. %1$s</string>
+  <!-- Marketing onboarding body. 'Firefox' and 'Mozilla' are intentionally hardcoded. -->
+  <string name="nova_onboarding_marketing_body_2" tools:ignore="BrandUsage">Del hvordan du oppdaget Firefox, og at du bruker den, med Mozillas markedsføringspartnere. Disse dataene selges aldri.</string>
+  <!-- Marketing onboarding body. 'Firefox' and 'Mozilla' are intentionally hardcoded. -->
+  <string name="nova_onboarding_marketing_body_3" tools:ignore="BrandUsage">Du kan hjelpe oss med å nå flere ved å la Mozilla informere kanalene der vi markedsfører Firefox om at du er en Firefox-bruker.</string>
+  <!--
+    Marketing onboarding body. 'Firefox' and 'Mozilla' are intentionally hardcoded.
+    “Platform you came from” refers to the external app, website, store, campaign, or other source that directed the user to Firefox.
+  -->
+  <string name="nova_onboarding_marketing_body_4" tools:ignore="BrandUsage">Du kan hjelpe oss med å nå flere personer ved å la Mozilla informere plattformen du kom fra om at du bruker Firefox.</string>
+  <!--
+    Marketing onboarding body. 'Firefox' and 'Mozilla' are intentionally hardcoded.
+    “Platform you came from” refers to the external app, website, store, campaign, or other source that directed the user to Firefox.
+  -->
+  <string name="nova_onboarding_marketing_body_5" tools:ignore="BrandUsage,UnusedResources">Hjelp oss å nå flere ved å la Mozilla informere plattformen du kom fra om at du bruker Firefox.</string>
   <!-- Marketing onboarding body link text. -->
   <string name="nova_onboarding_marketing_body_link_text">Hvordan vi bruker dataene</string>
+  <!-- Marketing onboarding primary button text. 'Firefox' is intentionally hardcoded. -->
+  <string name="nova_onboarding_marketing_primary_button_text" tools:ignore="BrandUsage">Hjelp Firefox</string>
+  <!-- Marketing onboarding secondary button text. -->
+  <string name="nova_onboarding_marketing_secondary_button_text">Nei takk</string>
   <!-- Notifications onboarding title. 'Firefox' is intentionally hardcoded. -->
   <string name="nova_onboarding_notifications_title" tools:ignore="BrandUsage,UnusedResources">Varsler hjelper deg å holde deg tryggere med Firefox</string>
   <!-- Notifications onboarding subtitle. 'Firefox' is intentionally hardcoded. -->
@@ -1714,7 +1728,7 @@
   <!-- Content description (not visible, for screen readers etc.) for the button to open the Tab Search feature to search through tabs. -->
   <string name="tab_manager_open_tab_search">Åpne fanesøk</string>
   <!-- The header text displayed on the tab groups page when no tab groups are open -->
-  <string name="tab_manager_empty_tab_groups_page_header">Prøv fanegrupper for mindre scrolling og mer gjort</string>
+  <string name="tab_manager_empty_tab_groups_page_header">Prøv fanegrupper for mindre skrolling og mer gjort</string>
   <!-- The description displayed on the tab groups page when no tab groups are open -->
   <string name="tab_manager_empty_tab_groups_page_description">Velg faner for å opprette en gruppe. De er lagret her, klare når du er det.</string>
   <!--
@@ -2215,6 +2229,8 @@
   <string name="bookmark_import_menu_button">Importer fra fil</string>
   <!-- Snackbar message shown when a bookmark import attempt fails. -->
   <string name="bookmark_import_failure_snackbar">Kunne ikke importere bokmerker. Prøv igjen.</string>
+  <!-- Default name for the folder created when importing bookmarks from a file. -->
+  <string name="bookmark_import_destination_default_name">Importerte bokmerker</string>
   <!--
     Bookmark multi select title in app bar
     %1$d is the number of bookmarks selected
@@ -3186,6 +3202,8 @@
   <string name="ip_protection_menu_paused">Satt på pause</string>
   <!-- Badge label shown in the menu item when the browser VPN has an error -->
   <string name="ip_protection_menu_error">Feil</string>
+  <!-- Badge label shown in the menu item when the user is eligible to use the browser VPN but should authenticate or authorize it first. -->
+  <string name="ip_protection_menu_auth_required">Prøv det</string>
   <!-- Content description for the chevron button that opens the browser VPN settings screen -->
   <string name="ip_protection_navigate_settings">Åpne VPN-innstillinger</string>
   <!--
@@ -3199,9 +3217,9 @@
   -->
   <string name="ip_protection_data_limit_reached_description">Du har brukt opp alle %1$d GB av dine VPN-data. Tilgangen nullstilles neste måned.</string>
   <!-- Label shown next to the browser protection icon in the address bar when the browser VPN is active -->
-  <string name="ip_protection_toolbar_pill_label" tools:ignore="UnusedResources">VPN på</string>
+  <string name="ip_protection_toolbar_pill_label">VPN på</string>
   <!-- Accessibility description for the browser VPN pill in the address bar when the VPN has been activated -->
-  <string name="ip_protection_toolbar_pill_description" tools:ignore="UnusedResources">VPN er aktiv.</string>
+  <string name="ip_protection_toolbar_pill_description">VPN er aktiv.</string>
   <!-- Label for the button that starts the browser VPN authentication or authorization flow on the settings screen -->
   <string name="ip_protection_get_started">Kom i gang</string>
   <!-- Headline for the browser VPN onboarding card. %s is the name of the app (for example "Firefox"). -->
@@ -3216,6 +3234,13 @@
   <string name="ip_protection_onboarding_body_link">Surf med ekstra beskyttelse</string>
   <!-- Label for the dismiss button on the onboarding bottom sheet. -->
   <string name="ip_protection_onboarding_not_now_button">Ikke nå</string>
+  <!-- Snackbar (in-app pop-up notification) text to signal the browser VPN connection error -->
+  <string name="ip_protection_connection_error_snackbar">Kunne ikke koble til VPN. Prøv igjen om noen minutter.</string>
+  <!--
+    Snackbar (in-app pop-up notification) text to signal the browser VPN has reached the monthly data limit.
+    %1$d is the total monthly allowance in GB (for example "50").
+  -->
+  <string name="ip_protection_data_limit_reached_snackbar">%1$d GB med VPN-data brukt. Tilgangen tilbakestilles neste måned.</string>
   <!--
     Autofill
 
@@ -4629,6 +4654,20 @@
   <string name="sports_widget_final_results_page_content_description" tools:ignore="UnusedResources">Resultater av VM-sluttspillet, side %1$d av %2$d</string>
   <!-- Content description (for accessibility, not displayed) for the remove button that removes the sports widget from the homepage. -->
   <string name="sports_widget_remove_content_description" tools:ignore="UnusedResources">Fjern VM-widgeten fra startsiden din</string>
+  <!-- Title shown on the sports widget immediately after the user has followed a team. %s is the selected team (e.g., "USA"). -->
+  <string name="sports_widget_team_followed_title" tools:ignore="UnusedResources">Følger: \n%s</string>
+  <!-- Description shown on the sports widget immediately after the user has followed a team -->
+  <string name="sports_widget_team_followed_description" tools:ignore="UnusedResources">Følg med for kampinformasjon når turneringen nærmer seg.</string>
+  <!-- Sports widget match status label shown during first half of a match. -->
+  <string name="sports_widget_first_half" tools:ignore="UnusedResources">Første omgang</string>
+  <!-- Sports widget match status label shown during second half of a match. -->
+  <string name="sports_widget_second_half" tools:ignore="UnusedResources">Andre omgang</string>
+  <!-- Sports widget error card title shown when the user is offline. -->
+  <string name="sports_widget_error_connection_offline_title" tools:ignore="UnusedResources">Det ser ut til at du er frakoblet.</string>
+  <!-- Sports widget error card description shown when the user is offline. -->
+  <string name="sports_widget_error_connection_offline_description" tools:ignore="UnusedResources">Sjekk internett-tilkoblingen din og prøv igjen.</string>
+  <!-- Sports widget general group stage label in the soccer tournament. -->
+  <string name="sports_widget_group_stage" tools:ignore="UnusedResources">Gruppespill</string>
   <!-- ==== End of Terms of use popup prompt. ==== -->
 
   <!--

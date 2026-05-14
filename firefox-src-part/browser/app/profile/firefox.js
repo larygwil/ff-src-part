@@ -2253,6 +2253,11 @@ pref("browser.smartwindow.model", "");
 pref("browser.smartwindow.preferences.endpoint", "");
 pref("browser.smartwindow.firstrun.explainerURL", "https://www.firefox.com/en-US/smart-window/?v=product");
 
+// Smart Window: Merino World Cup Soccer tool call (bug 2038266)
+pref("browser.smartwindow.worldcup.enabled", false);
+pref("browser.smartwindow.worldcup.endpointURL", "https://merino.services.mozilla.com");
+pref("browser.smartwindow.worldcup.timeoutMs", 2000);
+
 // Smart Window Logging
 pref("browser.smartwindow.chatHistory.loglevel", "Error");
 pref("browser.smartwindow.chatStore.loglevel", "Error");
@@ -3558,6 +3563,8 @@ pref("browser.ipProtection.added", false);
 pref("browser.ipProtection.hasUpgraded", false);
 // Pref that enables bandwidth usage feature
 pref("browser.ipProtection.bandwidth.enabled", true);
+// Pref for messaging the maximum bandwidth allowance in GB
+pref("browser.ipProtection.bandwidth.maxInGb", 50);
 // Pref that stores the current egress location for the VPN
 pref("browser.ipProtection.egressLocation", "");
 // Pref that flips at 50%, 75%, and 90% bandwidth usage thresholds

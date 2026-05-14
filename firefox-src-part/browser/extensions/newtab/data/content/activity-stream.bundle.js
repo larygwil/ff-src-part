@@ -14877,7 +14877,7 @@ function Widgets() {
         iconSrc: "chrome://global/skin/icons/more.svg",
         menuId: "widgets-header-context-panel",
         type: "ghost",
-        size: "small"
+        size: "default"
       }), /*#__PURE__*/external_React_default().createElement("panel-list", {
         id: "widgets-header-context-panel"
       }, /*#__PURE__*/external_React_default().createElement("panel-item", {
@@ -16116,6 +16116,7 @@ class _WallpaperCategories extends (external_React_default()).PureComponent {
       return arr;
     }
     let wallpaperCustomSolidColorHex = null;
+    const wallpapersUserEnabled = prefs["newtabWallpapers.user.enabled"];
     const selectedWallpaper = prefs["newtabWallpapers.wallpaper"];
 
     // User has previous selected a custom color
@@ -16343,8 +16344,8 @@ class _WallpaperCategories extends (external_React_default()).PureComponent {
           name: `wallpaper-${title}`,
           id: title,
           value: title,
-          checked: title === activeWallpaper,
-          "aria-checked": title === activeWallpaper,
+          checked: wallpapersUserEnabled && title === activeWallpaper,
+          "aria-checked": wallpapersUserEnabled && title === activeWallpaper,
           className: `wallpaper-input theme-${theme} ${this.state.activeId === title ? "active" : ""}`,
           onClick: () => this.setActiveId(title) //
           ,
@@ -18974,8 +18975,12 @@ class BaseContent extends (external_React_default()).PureComponent {
   }
   applyBodyClasses() {
     const {
-      body
+      body,
+      documentElement
     } = this.props.document;
+    if (documentElement) {
+      documentElement.classList.toggle("nova-tokens", !!this.props.Prefs.values[Base_PREF_NOVA_ENABLED]);
+    }
     if (!body) {
       return;
     }

@@ -370,17 +370,13 @@
   <!--
     AI Controls settings
 
-    Label for the secret settings preference to enable AI controls
-  -->
-  <string name="preferences_debug_settings_ai_controls">Activează comenzile AI</string>
-  <!--
-    AI Controls settings
-
     Title for the AI controls settings screen
   -->
   <string name="preferences_ai_controls">Comenzi AI</string>
   <!-- Headline text for the AI controls banner. %s is the name of the app (for example "Firefox"). -->
   <string name="ai_controls_banner_headline">Întotdeauna alegerea e a ta în \u0020%s</string>
+  <!-- Supporting text for the AI controls banner. %s is a learn more link using ai_controls_learn_more as text. -->
+  <string name="ai_controls_banner_supporting_text_2">Include și dacă se vor utiliza sau nu funcționalități îmbunătățite cu AI. %s</string>
   <!-- Supporting text for the AI controls banner -->
   <string name="ai_controls_banner_supporting_text">Include dacă se vor utiliza funcționalități îmbunătățite cu AI.</string>
   <!-- Link text for learning more about AI controls -->
@@ -612,7 +608,7 @@
   <!-- Onboarding label for 'Continue' button. -->
   <string name="onboarding_redesign_continue_button" tools:ignore="UnusedResources">Continuă</string>
   <!-- Marketing onboarding page title. 'Firefox' is intentionally hardcoded. -->
-  <string name="onboarding_marketing_redesign_title" tools:ignore="BrandUsage,UnusedResources">Ajută-ne să dezvoltăm Firefox</string>
+  <string name="onboarding_marketing_redesign_title" tools:ignore="BrandUsage">Ajută-ne să dezvoltăm Firefox</string>
   <!-- Marketing onboarding page opt-out checkbox. Unchecking the box does not increase data collection. Our data practices remain the same. 'Mozilla' is intentionally hardcoded. -->
   <string name="onboarding_marketing_redesign_opt_out_checkbox" tools:ignore="BrandUsage,UnusedResources">Partajează cu partenerii de marketing Mozilla cum ai descoperit Firefox și că îl folosești. Aceste date nu sunt niciodată vândute.</string>
   <!-- Marketing onboarding page clickable link text to "learn more" on how data is used. -->
@@ -716,7 +712,7 @@
     Marketing onboarding body. 'Firefox' and 'Mozilla' are intentionally hardcoded.
     %1$s is replaced by an active link, using nova_onboarding_marketing_body_link_text as text (“How we use the data”).
   -->
-  <string name="nova_onboarding_marketing_body" tools:ignore="BrandUsage">Partajează cu partenerii de marketing Mozilla cum ai descoperit Firefox și că îl folosești. Aceste date nu sunt niciodată vândute. %1$s</string>
+  <string name="nova_onboarding_marketing_body" tools:ignore="BrandUsage,UnusedResources">Partajează cu partenerii de marketing Mozilla cum ai descoperit Firefox și că îl folosești. Aceste date nu sunt niciodată vândute. %1$s</string>
   <!-- Marketing onboarding body link text. -->
   <string name="nova_onboarding_marketing_body_link_text">Cum utilizăm datele</string>
   <!-- Notifications onboarding title. 'Firefox' is intentionally hardcoded. -->
@@ -2222,6 +2218,8 @@
   <string name="bookmark_import_menu_button">Importă din fișier</string>
   <!-- Snackbar message shown when a bookmark import attempt fails. -->
   <string name="bookmark_import_failure_snackbar">Nu s-au putut importa marcajele. Încearcă din nou.</string>
+  <!-- Default name for the folder created when importing bookmarks from a file. -->
+  <string name="bookmark_import_destination_default_name">Marcaje importate</string>
   <!--
     Bookmark multi select title in app bar
     %1$d is the number of bookmarks selected
@@ -3207,9 +3205,9 @@
   -->
   <string name="ip_protection_data_limit_reached_description">Ai folosit toți cei %1$d GB din datele VPN. Accesul se resetează luna viitoare.</string>
   <!-- Label shown next to the browser protection icon in the address bar when the browser VPN is active -->
-  <string name="ip_protection_toolbar_pill_label" tools:ignore="UnusedResources">VPN activat</string>
+  <string name="ip_protection_toolbar_pill_label">VPN activat</string>
   <!-- Accessibility description for the browser VPN pill in the address bar when the VPN has been activated -->
-  <string name="ip_protection_toolbar_pill_description" tools:ignore="UnusedResources">VPN-ul este activ.</string>
+  <string name="ip_protection_toolbar_pill_description">VPN-ul este activ.</string>
   <!-- Label for the button that starts the browser VPN authentication or authorization flow on the settings screen -->
   <string name="ip_protection_get_started">Începe</string>
   <!-- Headline for the browser VPN onboarding card. %s is the name of the app (for example "Firefox"). -->
@@ -4637,6 +4635,10 @@
   <string name="sports_widget_final_results_page_content_description" tools:ignore="UnusedResources">Rezultatele finale ale Cupei Mondiale, pagina %1$d din %2$d</string>
   <!-- Content description (for accessibility, not displayed) for the remove button that removes the sports widget from the homepage. -->
   <string name="sports_widget_remove_content_description" tools:ignore="UnusedResources">Elimină Cupa Mondială din ecranul de pornire</string>
+  <!-- Title shown on the sports widget immediately after the user has followed a team. %s is the selected team (e.g., "USA"). -->
+  <string name="sports_widget_team_followed_title" tools:ignore="UnusedResources">Urmărești pe: \n%s</string>
+  <!-- Description shown on the sports widget immediately after the user has followed a team -->
+  <string name="sports_widget_team_followed_description" tools:ignore="UnusedResources">Revino pentru informații despre meci pe măsură ce se apropie campionatul.</string>
   <!-- ==== End of Terms of use popup prompt. ==== -->
 
   <!--

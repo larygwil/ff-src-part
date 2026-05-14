@@ -370,17 +370,13 @@
   <!--
     AI Controls settings
 
-    Label for the secret settings preference to enable AI controls
-  -->
-  <string name="preferences_debug_settings_ai_controls">فعِّل عناصر التحكم بالذكاء الاصطناعي</string>
-  <!--
-    AI Controls settings
-
     Title for the AI controls settings screen
   -->
   <string name="preferences_ai_controls">التحكم بالذكاء الاصطناعي</string>
   <!-- Headline text for the AI controls banner. %s is the name of the app (for example "Firefox"). -->
   <string name="ai_controls_banner_headline">لديك دائمًا خيار في %s</string>
+  <!-- Supporting text for the AI controls banner. %s is a learn more link using ai_controls_learn_more as text. -->
+  <string name="ai_controls_banner_supporting_text_2">ويشمل ذلك ما إذا كان ينبغي استخدام الميزات المحسّنة بالذكاء الاصطناعي. %s</string>
   <!-- Supporting text for the AI controls banner -->
   <string name="ai_controls_banner_supporting_text">ويشمل ذلك ما إذا كان ينبغي استخدام الميزات المحسّنة بالذكاء الاصطناعي.</string>
   <!-- Link text for learning more about AI controls -->
@@ -612,7 +608,7 @@
   <!-- Onboarding label for 'Continue' button. -->
   <string name="onboarding_redesign_continue_button" tools:ignore="UnusedResources">متابعة</string>
   <!-- Marketing onboarding page title. 'Firefox' is intentionally hardcoded. -->
-  <string name="onboarding_marketing_redesign_title" tools:ignore="BrandUsage,UnusedResources">ساعدنا في تطوير Firefox</string>
+  <string name="onboarding_marketing_redesign_title" tools:ignore="BrandUsage">ساعدنا في تطوير Firefox</string>
   <!-- Marketing onboarding page opt-out checkbox. Unchecking the box does not increase data collection. Our data practices remain the same. 'Mozilla' is intentionally hardcoded. -->
   <string name="onboarding_marketing_redesign_opt_out_checkbox" tools:ignore="BrandUsage,UnusedResources">شارك معلومات حول كيفية اكتشافك واستخدامك لـ Firefox مع شركاء Mozilla التسويقيين. نحن لا نبيع هذه البيانات أبداً.</string>
   <!-- Marketing onboarding page clickable link text to "learn more" on how data is used. -->
@@ -716,9 +712,27 @@
     Marketing onboarding body. 'Firefox' and 'Mozilla' are intentionally hardcoded.
     %1$s is replaced by an active link, using nova_onboarding_marketing_body_link_text as text (“How we use the data”).
   -->
-  <string name="nova_onboarding_marketing_body" tools:ignore="BrandUsage">شارك معلومات حول كيفية اكتشافك واستخدامك لـ Firefox مع شركاء Mozilla التسويقيين. نحن لا نبيع هذه البيانات أبداً. %1$s</string>
+  <string name="nova_onboarding_marketing_body" tools:ignore="BrandUsage,UnusedResources">شارك معلومات حول كيفية اكتشافك واستخدامك لـ Firefox مع شركاء Mozilla التسويقيين. نحن لا نبيع هذه البيانات أبداً. %1$s</string>
+  <!-- Marketing onboarding body. 'Firefox' and 'Mozilla' are intentionally hardcoded. -->
+  <string name="nova_onboarding_marketing_body_2" tools:ignore="BrandUsage">شارك معلومات حول كيفية اكتشافك واستخدامك لـ Firefox مع شركاء Mozilla التسويقيين. نحن لا نبيع هذه البيانات أبدًا.</string>
+  <!-- Marketing onboarding body. 'Firefox' and 'Mozilla' are intentionally hardcoded. -->
+  <string name="nova_onboarding_marketing_body_3" tools:ignore="BrandUsage">يمكنك مساعدتنا في الوصول إلى المزيد من الأشخاص من خلال السماح لـ Mozilla بإبلاغ القنوات التي نروج فيها لمتصفح Firefox بأنك مستخدم لمتصفح Firefox.</string>
+  <!--
+    Marketing onboarding body. 'Firefox' and 'Mozilla' are intentionally hardcoded.
+    “Platform you came from” refers to the external app, website, store, campaign, or other source that directed the user to Firefox.
+  -->
+  <string name="nova_onboarding_marketing_body_4" tools:ignore="BrandUsage">يمكنك مساعدتنا في الوصول إلى المزيد من الأشخاص من خلال السماح لـ Mozilla بإبلاغ المنصة التي أتيت منها بأنك تستخدم Firefox.</string>
+  <!--
+    Marketing onboarding body. 'Firefox' and 'Mozilla' are intentionally hardcoded.
+    “Platform you came from” refers to the external app, website, store, campaign, or other source that directed the user to Firefox.
+  -->
+  <string name="nova_onboarding_marketing_body_5" tools:ignore="BrandUsage,UnusedResources">ساعدنا في الوصول إلى المزيد من الأشخاص من خلال السماح لـ Mozilla بإبلاغ المنصة التي أتيت منها بأنك تستخدم Firefox.</string>
   <!-- Marketing onboarding body link text. -->
   <string name="nova_onboarding_marketing_body_link_text">كيفية استخدامنا للبيانات</string>
+  <!-- Marketing onboarding primary button text. 'Firefox' is intentionally hardcoded. -->
+  <string name="nova_onboarding_marketing_primary_button_text" tools:ignore="BrandUsage">ساعد Firefox</string>
+  <!-- Marketing onboarding secondary button text. -->
+  <string name="nova_onboarding_marketing_secondary_button_text">لا، شكرًا</string>
   <!-- Notifications onboarding title. 'Firefox' is intentionally hardcoded. -->
   <string name="nova_onboarding_notifications_title" tools:ignore="BrandUsage,UnusedResources">تساعدك الإشعارات على البقاء أكثر أماناً مع Firefox</string>
   <!-- Notifications onboarding subtitle. 'Firefox' is intentionally hardcoded. -->
@@ -2241,6 +2255,8 @@
   <string name="bookmark_import_menu_button">استورِد من ملف</string>
   <!-- Snackbar message shown when a bookmark import attempt fails. -->
   <string name="bookmark_import_failure_snackbar">تعذّر استيراد العلامات. حاول مجددًا.</string>
+  <!-- Default name for the folder created when importing bookmarks from a file. -->
+  <string name="bookmark_import_destination_default_name">العلامات المستوردة</string>
   <!--
     Bookmark multi select title in app bar
     %1$d is the number of bookmarks selected
@@ -3229,9 +3245,9 @@
   -->
   <string name="ip_protection_data_limit_reached_description">لقد استهلكت كامل سعة بيانات VPN الخاصة بك %1$d ج.بايت. سيُصفّر الشهر المقبل.</string>
   <!-- Label shown next to the browser protection icon in the address bar when the browser VPN is active -->
-  <string name="ip_protection_toolbar_pill_label" tools:ignore="UnusedResources">ال VPN مفعّل</string>
+  <string name="ip_protection_toolbar_pill_label">ال VPN مفعّل</string>
   <!-- Accessibility description for the browser VPN pill in the address bar when the VPN has been activated -->
-  <string name="ip_protection_toolbar_pill_description" tools:ignore="UnusedResources">ال VPN نشط.</string>
+  <string name="ip_protection_toolbar_pill_description">ال VPN نشط.</string>
   <!-- Label for the button that starts the browser VPN authentication or authorization flow on the settings screen -->
   <string name="ip_protection_get_started">ابدأ</string>
   <!-- Headline for the browser VPN onboarding card. %s is the name of the app (for example "Firefox"). -->
@@ -3246,6 +3262,13 @@
   <string name="ip_protection_onboarding_body_link">تصفح الإنترنت بحماية إضافية</string>
   <!-- Label for the dismiss button on the onboarding bottom sheet. -->
   <string name="ip_protection_onboarding_not_now_button">ليس الآن</string>
+  <!-- Snackbar (in-app pop-up notification) text to signal the browser VPN connection error -->
+  <string name="ip_protection_connection_error_snackbar">تعذّر الاتصال بشبكة VPN. حاول مجددًا بعد بضع دقائق.</string>
+  <!--
+    Snackbar (in-app pop-up notification) text to signal the browser VPN has reached the monthly data limit.
+    %1$d is the total monthly allowance in GB (for example "50").
+  -->
+  <string name="ip_protection_data_limit_reached_snackbar">استُخدم %1$d ج.بايت من بيانات VPN. سيُصفّر الوصول الشهر المقبل.</string>
   <!--
     Autofill
 
@@ -4504,6 +4527,10 @@
   <string name="sports_widget_country_scotland" tools:ignore="UnusedResources">اسكتلندا</string>
   <!-- Sports widget menu item to remove the widget from the homepage. -->
   <string name="sports_widget_remove" tools:ignore="UnusedResources">أزِل</string>
+  <!-- Content description (for accessibility, not displayed) for the close button on the sports widget card. -->
+  <string name="sports_widget_close_content_description">أغلق</string>
+  <!-- Content description (for accessibility, not displayed) for the overflow (more options) menu button on the sports widget card. -->
+  <string name="sports_widget_more_options_content_description" tools:ignore="UnusedResources">خيارات إضافية</string>
   <!-- ==== End of Terms of use popup prompt. ==== -->
 
   <!--

@@ -370,17 +370,13 @@
   <!--
     AI Controls settings
 
-    Label for the secret settings preference to enable AI controls
-  -->
-  <string name="preferences_debug_settings_ai_controls">Wodźenske elementy KI zmóžnić</string>
-  <!--
-    AI Controls settings
-
     Title for the AI controls settings screen
   -->
   <string name="preferences_ai_controls">Wodźenske elementy KI</string>
   <!-- Headline text for the AI controls banner. %s is the name of the app (for example "Firefox"). -->
   <string name="ai_controls_banner_headline">W %s maće přeco wólbu</string>
+  <!-- Supporting text for the AI controls banner. %s is a learn more link using ai_controls_learn_more as text. -->
+  <string name="ai_controls_banner_supporting_text_2">To wopřijima, hač so maja funkcije wužiwać, kotrež su přez KI polěpšene. %s</string>
   <!-- Supporting text for the AI controls banner -->
   <string name="ai_controls_banner_supporting_text">To wopřijima, hač so maja funkcije wužiwać, kotrež su přez KI polěpšene.</string>
   <!-- Link text for learning more about AI controls -->
@@ -612,7 +608,7 @@
   <!-- Onboarding label for 'Continue' button. -->
   <string name="onboarding_redesign_continue_button" tools:ignore="UnusedResources">Dale</string>
   <!-- Marketing onboarding page title. 'Firefox' is intentionally hardcoded. -->
-  <string name="onboarding_marketing_redesign_title" tools:ignore="BrandUsage,UnusedResources">Pomhajće nam, Firefox rosć dać</string>
+  <string name="onboarding_marketing_redesign_title" tools:ignore="BrandUsage">Pomhajće nam, Firefox rosć dać</string>
   <!-- Marketing onboarding page opt-out checkbox. Unchecking the box does not increase data collection. Our data practices remain the same. 'Mozilla' is intentionally hardcoded. -->
   <string name="onboarding_marketing_redesign_opt_out_checkbox" tools:ignore="BrandUsage,UnusedResources">Zdźělće našim marketingowym partneram Mozilla, kak sće Firefox wotkrył a zo jón wužiwaće. Tute daty so ženje njepředawaja.</string>
   <!-- Marketing onboarding page clickable link text to "learn more" on how data is used. -->
@@ -716,9 +712,27 @@
     Marketing onboarding body. 'Firefox' and 'Mozilla' are intentionally hardcoded.
     %1$s is replaced by an active link, using nova_onboarding_marketing_body_link_text as text (“How we use the data”).
   -->
-  <string name="nova_onboarding_marketing_body" tools:ignore="BrandUsage">Zdźělće našim marketingowym partneram Mozilla, kak sće Firefox wotkrył a zo jón wužiwaće. Tute daty so ženje njepředawaja. %1$s</string>
+  <string name="nova_onboarding_marketing_body" tools:ignore="BrandUsage,UnusedResources">Zdźělće našim marketingowym partneram Mozilla, kak sće Firefox wotkrył a zo jón wužiwaće. Tute daty so ženje njepředawaja. %1$s</string>
+  <!-- Marketing onboarding body. 'Firefox' and 'Mozilla' are intentionally hardcoded. -->
+  <string name="nova_onboarding_marketing_body_2" tools:ignore="BrandUsage">Zdźělće našim marketingowym partneram Mozilla, kak sće Firefox wotkrył a zo jón wužiwaće. Tute daty so ženje njepředawaja.</string>
+  <!-- Marketing onboarding body. 'Firefox' and 'Mozilla' are intentionally hardcoded. -->
+  <string name="nova_onboarding_marketing_body_3" tools:ignore="BrandUsage">Dowolće Mozilla kanale informować, hdźež Firefox spěchujemy, zo sće wužiwar Firefox, zo bychmy móhli wjace ludźi dosćahnyć.</string>
+  <!--
+    Marketing onboarding body. 'Firefox' and 'Mozilla' are intentionally hardcoded.
+    “Platform you came from” refers to the external app, website, store, campaign, or other source that directed the user to Firefox.
+  -->
+  <string name="nova_onboarding_marketing_body_4" tools:ignore="BrandUsage">Dowolće Mozilla platformu informować, wot kotrejež přińdźeće, zo Firefox wužiwaće, zo bychmy móhli wjace ludźi dosćahnyć.</string>
+  <!--
+    Marketing onboarding body. 'Firefox' and 'Mozilla' are intentionally hardcoded.
+    “Platform you came from” refers to the external app, website, store, campaign, or other source that directed the user to Firefox.
+  -->
+  <string name="nova_onboarding_marketing_body_5" tools:ignore="BrandUsage,UnusedResources">Dowolće Mozilla platformu informować, wot kotrejež přińdźeće, zo Firefox wužiwaće, zo byšće nam pomhał, wjace ludźi dosćahnyć.</string>
   <!-- Marketing onboarding body link text. -->
   <string name="nova_onboarding_marketing_body_link_text">Kak daty wužiwamy</string>
+  <!-- Marketing onboarding primary button text. 'Firefox' is intentionally hardcoded. -->
+  <string name="nova_onboarding_marketing_primary_button_text" tools:ignore="BrandUsage">Pomoc Firefox</string>
+  <!-- Marketing onboarding secondary button text. -->
+  <string name="nova_onboarding_marketing_secondary_button_text">Ně, dźakuju so</string>
   <!-- Notifications onboarding title. 'Firefox' is intentionally hardcoded. -->
   <string name="nova_onboarding_notifications_title" tools:ignore="BrandUsage,UnusedResources">Zdźělenki wam pomhaja, z Firefox wěsćiši wostać</string>
   <!-- Notifications onboarding subtitle. 'Firefox' is intentionally hardcoded. -->
@@ -2229,6 +2243,8 @@
   <string name="bookmark_import_menu_button">Z dataje importować</string>
   <!-- Snackbar message shown when a bookmark import attempt fails. -->
   <string name="bookmark_import_failure_snackbar">Zapołožki njedachu so importować. Spytajće hišće raz.</string>
+  <!-- Default name for the folder created when importing bookmarks from a file. -->
+  <string name="bookmark_import_destination_default_name">Importowane zapołožki</string>
   <!--
     Bookmark multi select title in app bar
     %1$d is the number of bookmarks selected
@@ -3202,6 +3218,8 @@
   <string name="ip_protection_menu_paused">Přestawka</string>
   <!-- Badge label shown in the menu item when the browser VPN has an error -->
   <string name="ip_protection_menu_error">Zmylk</string>
+  <!-- Badge label shown in the menu item when the user is eligible to use the browser VPN but should authenticate or authorize it first. -->
+  <string name="ip_protection_menu_auth_required">Wupruwujće jón</string>
   <!-- Content description for the chevron button that opens the browser VPN settings screen -->
   <string name="ip_protection_navigate_settings">Nastajenja VPN wočinić</string>
   <!--
@@ -3215,9 +3233,9 @@
   -->
   <string name="ip_protection_data_limit_reached_description">Sće wšě %1$d GB swojich datow VPN přetrjebał. Přistup so přichodny měsac wróćo staji.</string>
   <!-- Label shown next to the browser protection icon in the address bar when the browser VPN is active -->
-  <string name="ip_protection_toolbar_pill_label" tools:ignore="UnusedResources">VPN aktiwny</string>
+  <string name="ip_protection_toolbar_pill_label">VPN aktiwny</string>
   <!-- Accessibility description for the browser VPN pill in the address bar when the VPN has been activated -->
-  <string name="ip_protection_toolbar_pill_description" tools:ignore="UnusedResources">VPN je aktiwny.</string>
+  <string name="ip_protection_toolbar_pill_description">VPN je aktiwny.</string>
   <!-- Label for the button that starts the browser VPN authentication or authorization flow on the settings screen -->
   <string name="ip_protection_get_started">Prěnje kroki</string>
   <!-- Headline for the browser VPN onboarding card. %s is the name of the app (for example "Firefox"). -->
@@ -3232,6 +3250,13 @@
   <string name="ip_protection_onboarding_body_link">Přehladujće z přidatnym škitom</string>
   <!-- Label for the dismiss button on the onboarding bottom sheet. -->
   <string name="ip_protection_onboarding_not_now_button">Nic nětko</string>
+  <!-- Snackbar (in-app pop-up notification) text to signal the browser VPN connection error -->
+  <string name="ip_protection_connection_error_snackbar">Njeje móžno z VPN zwjazać. Spytajće za mało mjeńšin hišće raz.</string>
+  <!--
+    Snackbar (in-app pop-up notification) text to signal the browser VPN has reached the monthly data limit.
+    %1$d is the total monthly allowance in GB (for example "50").
+  -->
+  <string name="ip_protection_data_limit_reached_snackbar">%1$d GB datow VPN je so přetrjebało. Přistup so w přichodnym měsacu wróćo staji.</string>
   <!--
     Autofill
 
@@ -4645,6 +4670,20 @@
   <string name="sports_widget_final_results_page_content_description" tools:ignore="UnusedResources">Kónčne wuslědki swětoweho mišterstwa, strona %1$d z %2$d</string>
   <!-- Content description (for accessibility, not displayed) for the remove button that removes the sports widget from the homepage. -->
   <string name="sports_widget_remove_content_description" tools:ignore="UnusedResources">Swětowe mišterstwo ze startoweje strony wotstronić</string>
+  <!-- Title shown on the sports widget immediately after the user has followed a team. %s is the selected team (e.g., "USA"). -->
+  <string name="sports_widget_team_followed_title" tools:ignore="UnusedResources">Slěduje: \n%s</string>
+  <!-- Description shown on the sports widget immediately after the user has followed a team -->
+  <string name="sports_widget_team_followed_description" tools:ignore="UnusedResources">Hladajće za informacijemi wo hrě, hdyž so turněr bliži.</string>
+  <!-- Sports widget match status label shown during first half of a match. -->
+  <string name="sports_widget_first_half" tools:ignore="UnusedResources">Prěni połčas</string>
+  <!-- Sports widget match status label shown during second half of a match. -->
+  <string name="sports_widget_second_half" tools:ignore="UnusedResources">Druhi połčas</string>
+  <!-- Sports widget error card title shown when the user is offline. -->
+  <string name="sports_widget_error_connection_offline_title" tools:ignore="UnusedResources">Zda so, zo sće offline.</string>
+  <!-- Sports widget error card description shown when the user is offline. -->
+  <string name="sports_widget_error_connection_offline_description" tools:ignore="UnusedResources">Přepruwujće swój internetny zwisk a spytajće hišće raz.</string>
+  <!-- Sports widget general group stage label in the soccer tournament. -->
+  <string name="sports_widget_group_stage" tools:ignore="UnusedResources">Skupinska faza</string>
   <!-- ==== End of Terms of use popup prompt. ==== -->
 
   <!--

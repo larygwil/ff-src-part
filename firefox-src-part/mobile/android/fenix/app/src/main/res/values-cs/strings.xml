@@ -373,14 +373,32 @@
     Title for the AI controls settings screen
   -->
   <string name="preferences_ai_controls">Ovládání AI</string>
+  <!-- Headline text for the AI controls banner. %s is the name of the app (for example "Firefox"). -->
+  <string name="ai_controls_banner_headline">V aplikaci %s máte vždy na výběr</string>
+  <!-- Supporting text for the AI controls banner -->
+  <string name="ai_controls_banner_supporting_text">To zahrnuje i to, zda používat funkce vylepšené umělou inteligencí.</string>
   <!-- Link text for learning more about AI controls -->
   <string name="ai_controls_learn_more">Zjistit více</string>
   <!-- Title for the block AI enhancements toggle -->
   <string name="ai_controls_block_ai_title">Blokovat vylepšení pomocí AI</string>
+  <!-- Link text to see what AI enhancements are and aren’t included -->
+  <string name="ai_controls_see_whats_included">Podívejte se, co je a není zahrnuto</string>
+  <!-- Banner text shown when AI enhancements are blocked -->
+  <string name="ai_controls_blocked_info_banner">Nová a aktuální vylepšení AI jsou ve výchozím nastavení blokována. Níže odblokujte konkrétní funkce.</string>
+  <!-- Section header for the AI-powered features list -->
+  <string name="ai_controls_ai_powered_features">Funkce založené na umělé inteligenci</string>
   <!-- Title for the translations AI feature toggle -->
   <string name="ai_controls_translations_title">Překlady</string>
+  <!-- Description for the translations AI feature toggle -->
+  <string name="ai_controls_translations_description">Všechny překlady zůstávají soukromé ve vašem zařízení.</string>
+  <!-- Link text to navigate to more translations settings -->
+  <string name="ai_controls_more_translations_settings">Další nastavení překladu</string>
+  <!-- Link text to navigate to more page summary settings -->
+  <string name="ai_controls_more_page_summary_settings">Další nastavení souhrnu stránek</string>
   <!-- Title for the voice search AI feature toggle -->
   <string name="ai_controls_voice_search_title">Hlasové vyhledávání</string>
+  <!-- Description for the voice search AI feature toggle -->
+  <string name="ai_controls_voice_search_description">Zvuk je převáděn na text pomocí služby Google Speech Services.</string>
   <!-- Title for the block AI enhancements confirmation dialog -->
   <string name="ai_controls_block_dialog_title">Blokovat vylepšování umělou inteligencí?</string>
   <!-- Label shown above the list of features that will be blocked in the block AI dialog -->
@@ -584,7 +602,7 @@
   <!-- Onboarding label for 'Continue' button. -->
   <string name="onboarding_redesign_continue_button" tools:ignore="UnusedResources">Pokračovat</string>
   <!-- Marketing onboarding page title. 'Firefox' is intentionally hardcoded. -->
-  <string name="onboarding_marketing_redesign_title" tools:ignore="BrandUsage,UnusedResources">Pomozte nám rozvíjet Firefox</string>
+  <string name="onboarding_marketing_redesign_title" tools:ignore="BrandUsage">Pomozte nám rozvíjet Firefox</string>
   <!-- Marketing onboarding page opt-out checkbox. Unchecking the box does not increase data collection. Our data practices remain the same. 'Mozilla' is intentionally hardcoded. -->
   <string name="onboarding_marketing_redesign_opt_out_checkbox" tools:ignore="BrandUsage,UnusedResources">Podělte se s marketingovými partnery Mozilly o to, jak jste Firefox objevili a že ho používáte. Tyto údaje nejsou nikdy prodávány.</string>
   <!-- Marketing onboarding page clickable link text to "learn more" on how data is used. -->
@@ -688,9 +706,18 @@
     Marketing onboarding body. 'Firefox' and 'Mozilla' are intentionally hardcoded.
     %1$s is replaced by an active link, using nova_onboarding_marketing_body_link_text as text (“How we use the data”).
   -->
-  <string name="nova_onboarding_marketing_body" tools:ignore="BrandUsage">Podělte se s marketingovými partnery Mozilly o tom, jak jste objevili Firefox a že jej používáte. Tato data nejsou nikdy prodávána. %1$s</string>
+  <string name="nova_onboarding_marketing_body" tools:ignore="BrandUsage,UnusedResources">Podělte se s marketingovými partnery Mozilly o tom, jak jste objevili Firefox a že jej používáte. Tato data nejsou nikdy prodávána. %1$s</string>
+  <!--
+    Marketing onboarding body. 'Firefox' and 'Mozilla' are intentionally hardcoded.
+    “Platform you came from” refers to the external app, website, store, campaign, or other source that directed the user to Firefox.
+  -->
+  <string name="nova_onboarding_marketing_body_5" tools:ignore="BrandUsage,UnusedResources">Pomozte nám oslovit více lidí. Dovolte Mozille informovat platformu, odkud jste přišli, že používáte Firefox.</string>
   <!-- Marketing onboarding body link text. -->
   <string name="nova_onboarding_marketing_body_link_text">Jak data používáme</string>
+  <!-- Marketing onboarding primary button text. 'Firefox' is intentionally hardcoded. -->
+  <string name="nova_onboarding_marketing_primary_button_text" tools:ignore="BrandUsage">Pomozte Firefoxu</string>
+  <!-- Marketing onboarding secondary button text. -->
+  <string name="nova_onboarding_marketing_secondary_button_text">Ne, děkuji</string>
   <!-- Notifications onboarding title. 'Firefox' is intentionally hardcoded. -->
   <string name="nova_onboarding_notifications_title" tools:ignore="BrandUsage,UnusedResources">Oznámení vám pomáhají zůstat s Firefoxem ve větším bezpečí</string>
   <!-- Notifications onboarding subtitle. 'Firefox' is intentionally hardcoded. -->
@@ -847,7 +874,7 @@
   <!-- Preference for enabling "HTTPS-Only" mode -->
   <string name="preferences_https_only_title">Režim „pouze HTTPS“</string>
   <!-- Preference title for using the screen lock to hide tabs in private browsing -->
-  <string name="preferences_pbm_lock_screen_title">Používat zámek obrazovky pro skrytí panelů při anonymním prohlížení</string>
+  <string name="preferences_pbm_lock_screen_title">Pomocí zámku obrazovky skrývat panely v anonymním prohlížení</string>
   <!-- Informs the user how to access the tabs when "Use screen lock to hide tabs in private browsing" is enabled -->
   <string name="preferences_pbm_lock_screen_summary_3">Zobrazte si panely odemčením pomocí otisku prstu, PINu nebo obličeje. Zapnutím této možnosti také zabráníte pořizování snímků obrazovky a jejich sdílení.</string>
   <!-- Label for cookie banner section in quick settings panel. -->
@@ -1421,9 +1448,13 @@
   <!-- Preference for using the dynamic toolbar -->
   <string name="preference_gestures_dynamic_toolbar">Skrýt nástrojovou lištu při posouvání</string>
   <!-- Preference for showing the opened tabs by swiping up on the toolbar -->
+  <string name="preference_gestures_swipe_toolbar_show_tabs_2">Přejeďte prstem po panelu nástrojů ve svislém směru, abyste zobrazili otevřené panely</string>
+  <!-- Preference for showing the opened tabs by swiping up on the toolbar -->
   <string name="preference_gestures_swipe_toolbar_show_tabs">Zobrazit panely vytažením nástrojové lišty nahoru</string>
   <!-- Preference for switching tabs by swiping horizontally on the addressbar -->
   <string name="preference_gestures_swipe_toolbar_switch_tabs_2">Panely přepínat přejetím adresního řádku do stran</string>
+  <!-- Preference for switching for the shake to summarize toggle in page summaries and customize settings -->
+  <string name="preferences_shake_to_summarize">Vytvořit souhrn zatřesením</string>
   <!--
     Library
 
@@ -1675,6 +1706,10 @@
   <string name="pwa_site_controls_title_private">%1$s (anonymní režim)</string>
   <!-- Content description (not visible, for screen readers etc.) for the button to open the Tab Search feature to search through tabs. -->
   <string name="tab_manager_open_tab_search">Otevřít vyhledávání v panelech</string>
+  <!-- The header text displayed on the tab groups page when no tab groups are open -->
+  <string name="tab_manager_empty_tab_groups_page_header">Vyzkoušejte skupiny panelů – méně posouvání, více práce</string>
+  <!-- The description displayed on the tab groups page when no tab groups are open -->
+  <string name="tab_manager_empty_tab_groups_page_description">Vyberte panely a vytvořte skupinu. Budou zde uloženy a připraveny k použití, až je budete potřebovat.</string>
   <!--
     Tab Group
 
@@ -1698,6 +1733,8 @@
   <string name="tab_group_name_label" tools:ignore="UnusedResources" moz:removedIn="150">Název</string>
   <!-- Title for adding more tabs to a tab group. -->
   <string name="add_to_tab_group_title">Přidat do</string>
+  <!-- Content Description for "New tab group" panel. -->
+  <string name="add_to_new_tab_group_content_description">Přidat do nové skupiny panelů</string>
   <!-- Content Description for closing the "Add to Tab Group" panel. -->
   <string name="add_to_tab_group_bottom_sheet_close_content_description">Zavře panel pro přidání do skupiny</string>
   <!-- Label for adding to a new tab group. -->
@@ -1712,6 +1749,8 @@
     <item quantity="many">%1$d panelů</item>
     <item quantity="other">%1$d panelů</item>
   </plurals>
+  <!-- Content description for the grabber/handle of the tab group bottom sheet. -->
+  <string name="tab_group_sheet_dismiss_description">Zobrazit skupinu panelů, úchyt pro sbalení</string>
   <!-- Title for the Delete tab group confirmation dialog. -->
   <string name="delete_tab_group_confirmation_dialog_title">Smazat skupinu panelů?</string>
   <!-- Text shown in the body of the Delete tab group confirmation dialog. -->
@@ -1720,6 +1759,10 @@
   <string name="delete_tab_group_confirmation_dialog_confirm">Smazat skupinu</string>
   <!-- Text shown on the cancel button in the Delete tab group confirmation dialog. -->
   <string name="delete_tab_group_confirmation_dialog_cancel">Zrušit</string>
+  <!-- Title for the Close last tab and delete tab group confirmation dialog. -->
+  <string name="close_tab_and_delete_group_confirmation_dialog_title">Zavřít panel a smazat skupinu?</string>
+  <!-- Text shown in the body of the Close last tab and delete tab group confirmation dialog. -->
+  <string name="close_tab_and_delete_group_confirmation_dialog_body">Tímto se skupina natrvalo odstraní.</string>
   <!-- Text shown on the confirm button in the Close last tab and delete tab group confirmation dialog. -->
   <string name="close_tab_and_delete_group_confirmation_dialog_confirm">Smazat skupinu</string>
   <!-- Text shown on the cancel button in the Close last tab and delete tab group confirmation dialog. -->
@@ -1885,6 +1928,8 @@
   <string name="download_rename_error_exists_error">Soubor s názvem „%s“ již v tomto umístění existuje</string>
   <!-- Error message when renaming with an invalid file name. -->
   <string name="download_rename_error_invalid_name_error">Názvy souborů nemohou obsahovat znak „/“</string>
+  <!-- Error message shown when a user tries to rename a downloaded file but only changes the casing (e.g., "file.txt" to "File.txt"). -->
+  <string name="download_rename_error_case_only_error">Zadaný název obsahuje pouze velká nebo malá písmena. Zkuste zadat jiný název souboru.</string>
   <!-- Title for the alert dialog when the file cannot be renamed. -->
   <string name="download_rename_error_cannot_rename_title">Soubor se nedá přejmenovat</string>
   <!-- Description message for the alert dialog when the file cannot be renamed. -->
@@ -2138,6 +2183,8 @@
   <string name="bookmark_import_menu_button">Importovat ze souboru</string>
   <!-- Snackbar message shown when a bookmark import attempt fails. -->
   <string name="bookmark_import_failure_snackbar">Záložky se nepodařilo naimportovat. Zkuste to znovu.</string>
+  <!-- Default name for the folder created when importing bookmarks from a file. -->
+  <string name="bookmark_import_destination_default_name">Importované záložky</string>
   <!--
     Bookmark multi select title in app bar
     %1$d is the number of bookmarks selected
@@ -2666,6 +2713,8 @@
   </plurals>
   <!-- Text shown on the trackers blocked card when no trackers have been blocked yet -->
   <string name="trackers_blocked_empty">Jste chráněni</string>
+  <!-- Text shown below the trackers blocked card with typing animation -->
+  <string name="help_catch_trackers">Pomozte chytit sledovače</string>
   <!-- Preference for enhanced tracking protection for the standard protection settings -->
   <string name="preference_enhanced_tracking_protection_standard_default_1">Standardní (výchozí)</string>
   <!-- Preference description for enhanced tracking protection for the standard protection settings -->
@@ -2723,7 +2772,7 @@
   <!-- Option for enhanced tracking protection for the custom protection settings for cookies -->
   <string name="preference_enhanced_tracking_protection_custom_cookies_5">Izolovat cross-site cookies</string>
   <!-- Preference for Global Privacy Control for the custom privacy settings for Global Privacy Control. '&amp;' is replaced with the ampersand symbol: & -->
-  <string name="preference_enhanced_tracking_protection_custom_global_privacy_control">Požádat webové stránky, aby nesdílely a neprodávaly mé údaje</string>
+  <string name="preference_enhanced_tracking_protection_custom_global_privacy_control">Říkat webům, aby nesdílely ani neprodávaly vaše údaje</string>
   <!-- Preference for enhanced tracking protection for the custom protection settings for tracking content -->
   <string name="preference_enhanced_tracking_protection_custom_tracking_content">Sledující obsah</string>
   <!-- Option for enhanced tracking protection for the custom protection settings for tracking content -->
@@ -3109,6 +3158,8 @@
   <string name="ip_protection_menu_paused">Pozastaveno</string>
   <!-- Badge label shown in the menu item when the browser VPN has an error -->
   <string name="ip_protection_menu_error">Chyba</string>
+  <!-- Badge label shown in the menu item when the user is eligible to use the browser VPN but should authenticate or authorize it first. -->
+  <string name="ip_protection_menu_auth_required">Vyzkoušejte ho</string>
   <!-- Content description for the chevron button that opens the browser VPN settings screen -->
   <string name="ip_protection_navigate_settings">Otevřít nastavení VPN</string>
   <!--
@@ -3122,13 +3173,24 @@
   -->
   <string name="ip_protection_data_limit_reached_description">Využili jste všech %1$d GB vašich dat VPN. Přístup bude příští měsíc obnoven.</string>
   <!-- Label shown next to the browser protection icon in the address bar when the browser VPN is active -->
-  <string name="ip_protection_toolbar_pill_label" tools:ignore="UnusedResources">VPN zapnuta</string>
+  <string name="ip_protection_toolbar_pill_label">VPN zapnuta</string>
   <!-- Accessibility description for the browser VPN pill in the address bar when the VPN has been activated -->
-  <string name="ip_protection_toolbar_pill_description" tools:ignore="UnusedResources">VPN je aktivní.</string>
+  <string name="ip_protection_toolbar_pill_description">VPN je aktivní.</string>
   <!-- Label for the button that starts the browser VPN authentication or authorization flow on the settings screen -->
   <string name="ip_protection_get_started">Začít</string>
+  <!-- Headline for the browser VPN onboarding card. %s is the name of the app (for example "Firefox"). -->
+  <string name="ip_protection_onboarding_card_headline">Vyzkoušejte VPN vestavěnou přímo v aplikaci %s</string>
+  <!-- Used as text for a link in ip_protection_onboarding_body. Make sure to adapt capitalization if the link is in the middle of the sentence. -->
+  <string name="ip_protection_onboarding_body_link">Prohlížejte s extra ochranou</string>
   <!-- Label for the dismiss button on the onboarding bottom sheet. -->
   <string name="ip_protection_onboarding_not_now_button">Teď ne</string>
+  <!-- Snackbar (in-app pop-up notification) text to signal the browser VPN connection error -->
+  <string name="ip_protection_connection_error_snackbar">Nepodařilo se připojit k síti VPN. Zkuste to znovu za několik minut.</string>
+  <!--
+    Snackbar (in-app pop-up notification) text to signal the browser VPN has reached the monthly data limit.
+    %1$d is the total monthly allowance in GB (for example "50").
+  -->
+  <string name="ip_protection_data_limit_reached_snackbar">Bylo využito %1$d GB dat přes VPN. Příští měsíc se limit vynuluje.</string>
   <!--
     Autofill
 
@@ -4224,7 +4286,7 @@
   -->
   <string name="setup_checklist_task_default_browser">Nastavit jako výchozí prohlížeč</string>
   <!-- The title of the sign-in task for the setup checklist -->
-  <string name="setup_checklist_task_account_sync">Přihlaste se ke svému účtu</string>
+  <string name="setup_checklist_task_account_sync">Přihlaste se do svého účtu</string>
   <!-- The title of the theme selection task for the setup checklist -->
   <string name="setup_checklist_task_theme_selection">Výběr vzhledu</string>
   <!-- The title of the toolbar selection task for the setup checklist -->
@@ -4272,7 +4334,7 @@
   <!-- Authentication prompt title to disable the private tabs mode -->
   <string name="pbm_authentication_disable_lock">Vypnout zámek obrazovky s anonymními panely</string>
   <!-- Label for a preference shown when the device supports screen lock (e.g., PIN, pattern, or password) but the user has not set one up. -->
-  <string name="pbm_authentication_lock_device_feature_disabled">Nastavte si zámek obrazovky pro skrytí panelů</string>
+  <string name="pbm_authentication_lock_device_feature_disabled">Nastavte si zámek obrazovky ke skrývání panelů</string>
   <!-- Title text for the contextual feature recommendation (CFR) suggesting the user enable a screen lock to protect private tabs -->
   <string name="private_tab_cfr_title">Chcete skrýt anonymní panely pomocí zámku obrazovky?</string>
   <!-- Negative button text for the contextual feature recommendation (CFR) dismissing the screen lock suggestion -->
@@ -4389,6 +4451,8 @@
   <string name="sports_widget_match_live" tools:ignore="UnusedResources">ŽIVĚ</string>
   <!-- Title shown on the sports widget champion scoreboard row celebrating the soccer tournament winner. -->
   <string name="sports_widget_champions_title" tools:ignore="UnusedResources">Mistrovství světa ve fotbale 2026</string>
+  <!-- Title shown on the sports widget champion scoreboard celebrating the soccer tournament runners-up. Runners-up means second place. -->
+  <string name="sports_widget_runner_up_title" tools:ignore="UnusedResources">Druhé místo</string>
   <!-- Title shown on the sports widget champion scoreboard celebrating the soccer tournament third place winners. -->
   <string name="sports_widget_third_place_title" tools:ignore="UnusedResources">Třetí místo</string>
   <!-- Round name shown on the sports widget for the Round of 32 stage in the soccer tournament. -->
@@ -4463,6 +4527,8 @@
   <string name="sports_widget_remove" tools:ignore="UnusedResources">Odebrat</string>
   <!-- Sports widget card title shown after a team is eliminated, asking if the user still wants to continue following the soccer tournament. -->
   <string name="sports_widget_still_want_to_follow">Stále chcete sledovat?</string>
+  <!-- Sports widget card description shown after a team is eliminated, suggesting to choose another team. -->
+  <string name="sports_widget_choose_another_team">Vyberte si jiný tým, abyste byli v obraze ohledně mistrovství světa.</string>
   <!-- Sports widget button label to follow another team after the current team is eliminated. -->
   <string name="sports_widget_follow_another_team">Sledovat jiný tým</string>
   <!-- Sports widget card title shown before the soccer tournament begins on top of a timer that is counting down. -->
@@ -4495,6 +4561,61 @@
     Your translation will be automatically truncated at 2 characters to avoid layout issues
   -->
   <string name="sports_widget_countdown_minutes">M</string>
+  <!-- Content description (for accessibility, not displayed) for the close button on the sports widget card. -->
+  <string name="sports_widget_close_content_description">Zavřít</string>
+  <!-- Content description (for accessibility, not displayed) for the overflow (more options) menu button on the sports widget card. -->
+  <string name="sports_widget_more_options_content_description" tools:ignore="UnusedResources">Další možnosti</string>
+  <!--
+    Content description (for accessibility, not displayed) announcing the time remaining until the soccer tournament kickoff.
+    %1$d is the number of days, %2$d is the number of hours, and %3$d is the number of minutes.
+  -->
+  <string name="sports_widget_countdown_remaining_content_description">Zbývající čas. Dny: %1$d. Hodiny: %2$d. Minuty: %3$d.</string>
+  <!-- Content description (for accessibility, not displayed)  for the action that navigates to the World Cup website. -->
+  <string name="sports_widget_go_to_world_cup_site_content_description" tools:ignore="UnusedResources">Přejít na stránky Mistrovství světa</string>
+  <!--
+    Content description (for accessibility, not displayed)  announcing an upcoming soccer match.
+    %1$s is the home team name, %2$s is the away team name, %3$s is the match date, %4$s is the kickoff time.
+  -->
+  <string name="sports_widget_upcoming_match_content_description" tools:ignore="UnusedResources">Nadcházející: %1$s versus %2$s, %3$s v %4$s</string>
+  <!--
+    Content description (for accessibility, not displayed)  used for the sports widget card header announcing a live match for a group or stage.
+    %s is the soccer tournament group name or stage (e.g. Group A represented by sports_widget_group_a, Round of 32 represented by sports_widget_round_of_32,
+    or Final represented by sports_widget_final).
+  -->
+  <string name="sports_widget_live_game_content_description" tools:ignore="UnusedResources">%s, právě se hraje</string>
+  <!--
+    Content description (for accessibility, not displayed) announcing a live score.
+    %1$s is the home team name, %2$d is the home team score, %3$s is the away team name, %4$d is the away team score,
+    and %5$s is the match elapsed time (e.g. 72 minutes).
+  -->
+  <string name="sports_widget_live_score_content_description" tools:ignore="UnusedResources">%1$s %2$d, %3$s %4$d, %5$s, naživo</string>
+  <!--
+    Content description (for accessibility, not displayed) for a paginated item.
+    %1$s is the soccer tournament group name or stage (e.g. Group A represented by sports_widget_group_a, Round of 32 represented by sports_widget_round_of_32),
+    %2$d is the current page number, and %3$d is the total number of pages.
+  -->
+  <string name="sports_widget_page_position_content_description" tools:ignore="UnusedResources">%1$s, stránka %2$d z %3$d</string>
+  <!--
+    Content description (for accessibility, not displayed) for a page within the World Cup final results carousel.
+    %1$d is the current page number, and %2$d is the total number of pages.
+  -->
+  <string name="sports_widget_final_results_page_content_description" tools:ignore="UnusedResources">Konečné výsledky Mistrovství světa, stránka %1$d z %2$d</string>
+  <!-- Content description (for accessibility, not displayed) for the remove button that removes the sports widget from the homepage. -->
+  <string name="sports_widget_remove_content_description" tools:ignore="UnusedResources">Odstranit Mistrovství světa z domovské stránky</string>
+  <!-- Title shown on the sports widget immediately after the user has followed a team. %s is the selected team (e.g., "USA"). -->
+  <string name="sports_widget_team_followed_title" tools:ignore="UnusedResources">Sledujete: \n%s</string>
+  <!-- Description shown on the sports widget immediately after the user has followed a team -->
+  <string name="sports_widget_team_followed_description" tools:ignore="UnusedResources">S blížícím se turnajem se sem vraťte pro informace o zápasech.</string>
+  <!-- Sports widget match status label shown during first half of a match. -->
+  <string name="sports_widget_first_half" tools:ignore="UnusedResources">První poločas</string>
+  <!-- Sports widget match status label shown during second half of a match. -->
+  <string name="sports_widget_second_half" tools:ignore="UnusedResources">Druhý poločas</string>
+  <!-- Sports widget error card title shown when the user is offline. -->
+  <string name="sports_widget_error_connection_offline_title" tools:ignore="UnusedResources">Zdá se, že jste offline.</string>
+  <!-- Sports widget error card description shown when the user is offline. -->
+  <string name="sports_widget_error_connection_offline_description" tools:ignore="UnusedResources">Zkontrolujte své připojení k internetu a zkuste to znovu.</string>
+  <!-- Sports widget general group stage label in the soccer tournament. -->
+  <string name="sports_widget_group_stage" tools:ignore="UnusedResources">Skupinová fáze</string>
   <!-- ==== End of Terms of use popup prompt. ==== -->
 
   <!--

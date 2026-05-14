@@ -16,7 +16,7 @@
  * those token values directly so nova/activity-stream.css is self-contained.
  * Remove this file when `browser.nova.enabled` unifies both prefs and reaches Release.
  */
-:root:has(.nova-enabled) {
+:root.nova-tokens {
   /** background-color **/
   --background-color-box: light-dark(var(--color-white), var(--color-neutral-70));
   --background-color-box-info: light-dark(var(--color-neutral-20), var(--color-neutral-80));
@@ -214,7 +214,7 @@
 }
 
 @media (forced-colors) {
-  :root:has(.nova-enabled) {
+  :root.nova-tokens {
     /** background-color **/
     --background-color-box: var(--background-color-canvas);
     --background-color-box-info: var(--background-color-canvas);
@@ -1019,7 +1019,7 @@ main.newtab-main section {
   background-color: var(--background-color-canvas);
   border: 2px solid var(--card-border-color, var(--border-color-card));
   color: var(--text-color);
-  border-radius: var(--border-radius-medium);
+  border-radius: var(--border-radius-large);
   margin-block: 0 var(--space-xlarge);
   margin-inline: auto;
   overflow: hidden;
@@ -4066,9 +4066,6 @@ button.arrow-button:dir(rtl) {
 .nova-enabled .discovery-stream.ds-layout {
   display: grid;
 }
-.nova-enabled .discovery-stream.ds-layout.ds-layout-widgets {
-  grid-template-columns: subgrid;
-}
 .discovery-stream.ds-layout .ds-column-12 {
   grid-column-start: auto;
   grid-column-end: span 12;
@@ -4266,10 +4263,7 @@ button.arrow-button:dir(rtl) {
   max-width: max-content;
 }
 .nova-enabled .widgets-wrapper {
-  grid-column: 1/-1;
-  display: grid;
-  grid-template-columns: subgrid;
-  grid-template-rows: subgrid;
+  display: contents;
 }
 
 .classic-enabled .widgets-section-container {
@@ -4289,7 +4283,9 @@ button.arrow-button:dir(rtl) {
 .nova-enabled .widgets-section-container {
   grid-column: 1/-1;
   display: grid;
-  grid-template-columns: subgrid;
+  grid-template-columns: repeat(auto-fill, calc(4 * var(--col-width) + 3 * var(--space-medium)));
+  gap: var(--space-medium);
+  justify-content: center;
 }
 .widgets-section-container .widgets-title-container {
   display: flex;
@@ -4321,7 +4317,14 @@ button.arrow-button:dir(rtl) {
   font-weight: var(--font-weight-bold);
 }
 .nova-enabled .widgets-section-container h1 {
+  font-size: var(--font-size-heading-large);
+  font-weight: var(--font-weight-heading);
   color: var(--newtab-contextual-text-primary-color);
+}
+@container content-grid (inline-size >= calc(12 * 75px + 11 * 0.75rem)) {
+  .nova-enabled .widgets-section-container h1 {
+    font-size: var(--font-size-heading-xlarge);
+  }
 }
 .lightWallpaper .nova-enabled .widgets-section-container h1 {
   color-scheme: light;
@@ -4390,6 +4393,12 @@ button.arrow-button:dir(rtl) {
 .widgets-header-context-menu {
   position: relative;
 }
+.lightWallpaper .widgets-header-context-menu {
+  color-scheme: light;
+}
+.darkWallpaper .widgets-header-context-menu {
+  color-scheme: dark;
+}
 .widgets-header-context-menu .widgets-header-context-menu-button::part(button) {
   background-color: transparent;
 }
@@ -4422,7 +4431,7 @@ button.arrow-button:dir(rtl) {
 .nova-enabled .widgets-container {
   grid-column: 1/-1;
   display: grid;
-  grid-template-columns: subgrid;
+  grid-template-columns: repeat(auto-fill, var(--col-width));
   grid-auto-rows: var(--row-height);
   gap: var(--space-medium);
 }

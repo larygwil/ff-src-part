@@ -370,17 +370,13 @@
   <!--
     AI Controls settings
 
-    Label for the secret settings preference to enable AI controls
-  -->
-  <string name="preferences_debug_settings_ai_controls">הפעלת בקרי בינה מלאכותית</string>
-  <!--
-    AI Controls settings
-
     Title for the AI controls settings screen
   -->
   <string name="preferences_ai_controls">בקרי בינה מלאכותית</string>
   <!-- Headline text for the AI controls banner. %s is the name of the app (for example "Firefox"). -->
   <string name="ai_controls_banner_headline">תמיד יש לך בחירה ב־%s</string>
+  <!-- Supporting text for the AI controls banner. %s is a learn more link using ai_controls_learn_more as text. -->
+  <string name="ai_controls_banner_supporting_text_2">זה כולל האם להשתמש בתכונות המשופרות באמצעות בינה מלאכותית. %s</string>
   <!-- Supporting text for the AI controls banner -->
   <string name="ai_controls_banner_supporting_text">זה כולל האם להשתמש בתכונות המשופרות באמצעות בינה מלאכותית.</string>
   <!-- Link text for learning more about AI controls -->
@@ -612,7 +608,7 @@
   <!-- Onboarding label for 'Continue' button. -->
   <string name="onboarding_redesign_continue_button" tools:ignore="UnusedResources">המשך</string>
   <!-- Marketing onboarding page title. 'Firefox' is intentionally hardcoded. -->
-  <string name="onboarding_marketing_redesign_title" tools:ignore="BrandUsage,UnusedResources">עזרו לנו להצמיח את Firefox</string>
+  <string name="onboarding_marketing_redesign_title" tools:ignore="BrandUsage">עזרו לנו להצמיח את Firefox</string>
   <!-- Marketing onboarding page opt-out checkbox. Unchecking the box does not increase data collection. Our data practices remain the same. 'Mozilla' is intentionally hardcoded. -->
   <string name="onboarding_marketing_redesign_opt_out_checkbox" tools:ignore="BrandUsage,UnusedResources">שתפו כיצד גיליתם את Firefox וכי אתם משתמשים בו, עם שותפי הטכנולוגיה השיווקית של Mozilla. הנתונים האלה לעולם לא נמכרים.</string>
   <!-- Marketing onboarding page clickable link text to "learn more" on how data is used. -->
@@ -716,7 +712,7 @@
     Marketing onboarding body. 'Firefox' and 'Mozilla' are intentionally hardcoded.
     %1$s is replaced by an active link, using nova_onboarding_marketing_body_link_text as text (“How we use the data”).
   -->
-  <string name="nova_onboarding_marketing_body" tools:ignore="BrandUsage">שתפו כיצד גיליתם את Firefox וכי אתם משתמשים בו, עם שותפי הטכנולוגיה השיווקית של Mozilla. הנתונים האלה לעולם לא נמכרים. %1$s</string>
+  <string name="nova_onboarding_marketing_body" tools:ignore="BrandUsage,UnusedResources">שתפו כיצד גיליתם את Firefox וכי אתם משתמשים בו, עם שותפי הטכנולוגיה השיווקית של Mozilla. הנתונים האלה לעולם לא נמכרים. %1$s</string>
   <!-- Marketing onboarding body link text. -->
   <string name="nova_onboarding_marketing_body_link_text">כיצד אנו משתמשים בנתונים</string>
   <!-- Notifications onboarding title. 'Firefox' is intentionally hardcoded. -->
@@ -2222,6 +2218,8 @@
   <string name="bookmark_import_menu_button">ייבוא מקובץ</string>
   <!-- Snackbar message shown when a bookmark import attempt fails. -->
   <string name="bookmark_import_failure_snackbar">לא ניתן היה לייבא את הסימניות. נא לנסות שוב.</string>
+  <!-- Default name for the folder created when importing bookmarks from a file. -->
+  <string name="bookmark_import_destination_default_name">סימניות מיובאות</string>
   <!--
     Bookmark multi select title in app bar
     %1$d is the number of bookmarks selected
@@ -3207,9 +3205,9 @@
   -->
   <string name="ip_protection_data_limit_reached_description">השתמשת בכל %1$d ג״ב של נתוני ה־VPN שלך. הגישה תתאפס בחודש הבא.</string>
   <!-- Label shown next to the browser protection icon in the address bar when the browser VPN is active -->
-  <string name="ip_protection_toolbar_pill_label" tools:ignore="UnusedResources">‏VPN מופעל</string>
+  <string name="ip_protection_toolbar_pill_label">‏VPN מופעל</string>
   <!-- Accessibility description for the browser VPN pill in the address bar when the VPN has been activated -->
-  <string name="ip_protection_toolbar_pill_description" tools:ignore="UnusedResources">ה־VPN פעיל.</string>
+  <string name="ip_protection_toolbar_pill_description">ה־VPN פעיל.</string>
   <!-- Label for the button that starts the browser VPN authentication or authorization flow on the settings screen -->
   <string name="ip_protection_get_started">תחילת עבודה</string>
   <!-- Headline for the browser VPN onboarding card. %s is the name of the app (for example "Firefox"). -->
@@ -3224,6 +3222,13 @@
   <string name="ip_protection_onboarding_body_link">ניתן לגלוש עם הגנה נוספת</string>
   <!-- Label for the dismiss button on the onboarding bottom sheet. -->
   <string name="ip_protection_onboarding_not_now_button">לא כעת</string>
+  <!-- Snackbar (in-app pop-up notification) text to signal the browser VPN connection error -->
+  <string name="ip_protection_connection_error_snackbar">לא ניתן להתחבר ל־VPN. נא לנסות שוב בעוד כמה דקות.</string>
+  <!--
+    Snackbar (in-app pop-up notification) text to signal the browser VPN has reached the monthly data limit.
+    %1$d is the total monthly allowance in GB (for example "50").
+  -->
+  <string name="ip_protection_data_limit_reached_snackbar">נעשה שימוש ב־%1$d ג״ב של נתוני VPN. הגישה תתאפס בחודש הבא.</string>
   <!--
     Autofill
 
@@ -4633,6 +4638,18 @@
   <string name="sports_widget_final_results_page_content_description" tools:ignore="UnusedResources">תוצאות גמר המונדיאל, עמוד %1$d מתוך %2$d</string>
   <!-- Content description (for accessibility, not displayed) for the remove button that removes the sports widget from the homepage. -->
   <string name="sports_widget_remove_content_description" tools:ignore="UnusedResources">הסרת המונדיאל ממסך הבית</string>
+  <!-- Title shown on the sports widget immediately after the user has followed a team. %s is the selected team (e.g., "USA"). -->
+  <string name="sports_widget_team_followed_title" tools:ignore="UnusedResources">במעקב: \n%s</string>
+  <!-- Description shown on the sports widget immediately after the user has followed a team -->
+  <string name="sports_widget_team_followed_description" tools:ignore="UnusedResources">ניתן לבדוק שוב את פרטי המשחק ככל שהטורניר מתקרב.</string>
+  <!-- Sports widget match status label shown during first half of a match. -->
+  <string name="sports_widget_first_half" tools:ignore="UnusedResources">מחצית ראשונה</string>
+  <!-- Sports widget match status label shown during second half of a match. -->
+  <string name="sports_widget_second_half" tools:ignore="UnusedResources">מחצית שנייה</string>
+  <!-- Sports widget error card title shown when the user is offline. -->
+  <string name="sports_widget_error_connection_offline_title" tools:ignore="UnusedResources">נראה שאין חיבור לרשת.</string>
+  <!-- Sports widget error card description shown when the user is offline. -->
+  <string name="sports_widget_error_connection_offline_description" tools:ignore="UnusedResources">נא לבדוק את החיבור שלך לאינטרנט ולנסות שוב.</string>
   <!-- ==== End of Terms of use popup prompt. ==== -->
 
   <!--
