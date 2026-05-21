@@ -36,11 +36,11 @@ export default class IPProtectionLocationsElement extends MozLitElement {
 
   handlePromoButtonClick(event) {
     Glean.ipprotection.locationUpgradePromoClicked.record();
-    event.target.ownerGlobal.openWebLinkIn(LINKS.LOCATION_PROMO_URL, "tab");
+    event.target.documentGlobal.openWebLinkIn(LINKS.LOCATION_PROMO_URL, "tab");
   }
 
   promoTemplate() {
-    if (this.state?.hasUpgraded) {
+    if (this.state?.hasUpgraded || this.state?.upgradeNotAvailable) {
       return null;
     }
     return html`

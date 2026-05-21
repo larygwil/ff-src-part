@@ -170,7 +170,7 @@ const MESSAGES = () => {
         ],
       },
       targeting:
-        "'browser.ipProtection.hasUpgraded' | preferenceValue == false && 'browser.ipProtection.bandwidthThreshold' | preferenceValue == 50 && !hasActiveEnterprisePolicies && !activeNotifications && previousSessionEnd && (messageImpressions.IP_PROTECTION_CALLOUT_MOZILLA_VPN_UPGRADE_SECONDARY || []) | length == 0",
+        "'browser.ipProtection.hasUpgraded' | preferenceValue == false && 'browser.ipProtection.upgradeNotAvailable' | preferenceValue == false && 'browser.ipProtection.bandwidthThreshold' | preferenceValue == 50 && !hasActiveEnterprisePolicies && !activeNotifications && previousSessionEnd && (messageImpressions.IP_PROTECTION_CALLOUT_MOZILLA_VPN_UPGRADE_SECONDARY || []) | length == 0",
       trigger: {
         id: "preferenceObserver",
         params: ["browser.ipProtection.bandwidthThreshold"],
@@ -267,7 +267,7 @@ const MESSAGES = () => {
         ],
       },
       targeting:
-        "'browser.ipProtection.hasUpgraded' | preferenceValue == false && 'browser.ipProtection.bandwidthThreshold' | preferenceValue == 50 && !hasActiveEnterprisePolicies && !activeNotifications && previousSessionEnd && (messageImpressions.IP_PROTECTION_CALLOUT_MOZILLA_VPN_UPGRADE || []) | length == 0",
+        "'browser.ipProtection.hasUpgraded' | preferenceValue == false && 'browser.ipProtection.upgradeNotAvailable' | preferenceValue == false && 'browser.ipProtection.bandwidthThreshold' | preferenceValue == 50 && !hasActiveEnterprisePolicies && !activeNotifications && previousSessionEnd && (messageImpressions.IP_PROTECTION_CALLOUT_MOZILLA_VPN_UPGRADE || []) | length == 0",
       trigger: {
         id: "ipProtectionReady",
       },
@@ -1121,7 +1121,7 @@ const MESSAGES = () => {
     {
       id: "SMARTWINDOW_NEWTAB_CALLOUT",
       template: "feature_callout",
-      groups: ["cfr"],
+      groups: [],
       content: {
         id: "SMARTWINDOW_NEWTAB_CALLOUT",
         template: "multistage",
