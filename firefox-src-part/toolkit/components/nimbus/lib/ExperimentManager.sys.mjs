@@ -64,9 +64,9 @@ const CannotEnrollFeatureReason = Object.freeze({
 /**
  * @typedef {object} _CannotEnrollResult
  * @property {false} ok Whether or not enrollment is possible.
- * @property {string| undefined} featureId If reason = DOES_NOT_EXIST, the
+ * @property {string|undefined} featureId If reason = DOES_NOT_EXIST, the
  * feature that does not exist.
- * @property {string[]| undefined} conflictingEnrollments
+ * @property {Set<string>|undefined} conflictingEnrollments
  * If reason = ENROLLED_IN_FEATURE, an array of slugs that conflict based on
  * feature ID.
  * @property {CannotEnrollFeatureReason} reason Why enrollment is not possible.
@@ -602,7 +602,7 @@ export class ExperimentManager {
       };
     }
 
-    const conflictingEnrollments = [];
+    const conflictingEnrollments = new Set();
 
     for (const featureId of recipe.featureIds) {
       const feature = lazy.NimbusFeatures[featureId];
@@ -621,11 +621,11 @@ export class ExperimentManager {
 
       const enrollment = storeLookupByFeature(featureId);
       if (enrollment) {
-        conflictingEnrollments.push(enrollment.slug);
+        conflictingEnrollments.add(enrollment.slug);
       }
     }
 
-    if (conflictingEnrollments.length) {
+    if (conflictingEnrollments.size) {
       return {
         ok: false,
         reason: CannotEnrollFeatureReason.ENROLLED_IN_FEATURE,
@@ -740,7 +740,7 @@ export class ExperimentManager {
             status: lazy.NimbusTelemetry.EnrollmentStatus.NOT_ENROLLED,
             reason:
               lazy.NimbusTelemetry.EnrollmentStatusReason.FEATURE_CONFLICT,
-            conflict_slug: result.conflictingEnrollments.join(","),
+            conflict_slug: Array.from(result.conflictingEnrollments).join(","),
           });
           return null;
       }
@@ -829,16 +829,26 @@ export class ExperimentManager {
    * distinguish it from regular enrollments in telemetry.
    *
    * @param {object} recipe The recipe to enroll in.
-   * @param {string} branchSlug The slug of the branch to enroll in.
+   * @param {object|string} branchOrBranchSlug Either the slug of the branch to
+   * enroll in or the branch object.
    *
    * @returns {object} The resulting enrollment.
    */
-  async forceEnroll(recipe, branchSlug) {
-    const branch = recipe.branches.find(b => b.slug === branchSlug);
-    if (!branch) {
-      throw new Error(
-        `Could not force enroll into ${recipe.slug}: no such branch ${branchSlug}`
+  async forceEnroll(recipe, branchOrBranchSlug) {
+    let branch;
+    if (typeof branchOrBranchSlug === "string") {
+      branch = recipe.branches.find(b => b.slug === branchOrBranchSlug);
+
+      if (!branch) {
+        throw new Error(
+          `Could not force enroll into ${recipe.slug}: no such branch ${branchOrBranchSlug}`
+        );
+      }
+    } else {
+      lazy.log.warn(
+        "forceEnroll with an object branch is deprecated and will be removed in a future version"
       );
+      branch = branchOrBranchSlug;
     }
 
     const result = this.canEnroll(recipe);
@@ -876,7 +886,7 @@ export class ExperimentManager {
 
     const enrollment = await this._enroll(
       optInRecipe,
-      branchSlug,
+      branch.slug,
       lazy.NimbusTelemetry.EnrollmentSource.FORCE_ENROLLMENT
     );
 

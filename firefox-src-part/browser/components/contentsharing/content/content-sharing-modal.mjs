@@ -65,22 +65,32 @@ export class ContentSharingModal extends MozLitElement {
     copyButton: "#copy-button",
     viewPageButton: "#view-page",
     signInButton: "#sign-in",
+    loadingButton: "#loading-button",
     tooManyLinks: ".too-many-links",
     errorMessageBar: "moz-message-bar",
   };
 
   async getUpdateComplete() {
     await super.getUpdateComplete();
-    await this.previewCard.updateComplete;
+    await this.previewCard?.updateComplete;
   }
 
   connectedCallback() {
     super.connectedCallback();
 
     this.shareResult = window.arguments?.[0];
+    if (this.shareResult?.loadingPromise) {
+      this.shareResult.loadingPromise.then(result => {
+        this.shareResult = result;
+      });
+    }
   }
 
   close() {
+    // Borrowing a hack from unexpectedScriptLoad.js, which we use to ensure
+    // opened tabs are foregrounded. To be fixed in bug 2040823.
+    window.top.document.documentElement.removeAttribute("window-modal-open");
+
     window.close();
   }
 
@@ -99,14 +109,16 @@ export class ContentSharingModal extends MozLitElement {
   }
 
   linksInfoTemplate() {
-    if (this.shareResult.warnings.includes(WARNINGS.TOO_MANY_LINKS)) {
-      return html`<div
-        class="too-many-links"
-        data-l10n-id="content-sharing-modal-too-many-links"
-        data-l10n-args=${JSON.stringify({
-          count: MAX_ITEM_COUNT,
-        })}
-      ></div>`;
+    if (this.shareResult.warning === WARNINGS.TOO_MANY_LINKS) {
+      return html`<div class="too-many-links">
+        <img class="icon" src="chrome://global/skin/icons/error.svg" />
+        <span
+          data-l10n-id="content-sharing-modal-too-many-links"
+          data-l10n-args=${JSON.stringify({
+            count: MAX_ITEM_COUNT,
+          })}
+        ></span>
+      </div> `;
     }
 
     return html`<div
@@ -134,8 +146,12 @@ export class ContentSharingModal extends MozLitElement {
   }
 
   handleViewPageClick() {
+    Glean.collectionShare.ctaClicked.record({
+      button: "view-page",
+      signed_in: true,
+    });
     this.close();
-    this.documentGlobal.frameElement.documentGlobal.openTrustedLinkIn(
+    this.documentGlobal.frameElement.documentGlobal.openWebLinkIn(
       this.shareResult.url,
       "tab"
     );
@@ -143,6 +159,10 @@ export class ContentSharingModal extends MozLitElement {
 
   handleCopyClick() {
     window.navigator.clipboard.writeText(this.shareResult.url);
+    Glean.collectionShare.ctaClicked.record({
+      button: "copy-button",
+      signed_in: true,
+    });
 
     this.copyButton.setAttribute("iconsrc", COPIED_COPY_ICON);
     this.copyButton.setAttribute("data-l10n-id", COPIED_COPY_L10N_ID);
@@ -154,12 +174,16 @@ export class ContentSharingModal extends MozLitElement {
   }
 
   handleSignInClick() {
+    Glean.collectionShare.ctaClicked.record({
+      button: "sign-in",
+      signed_in: false,
+    });
     const accountSlug = lazy.CONTENT_SHARING_DEBUG
       ? "/accounts/dummy/login/"
       : "/accounts/fxa/login/";
     const signInURL = lazy.CONTENT_SHARING_SERVER_URL + accountSlug;
     this.close();
-    this.documentGlobal.frameElement.documentGlobal.openTrustedLinkIn(
+    this.documentGlobal.frameElement.documentGlobal.openWebLinkIn(
       signInURL,
       "tab"
     );
@@ -172,29 +196,44 @@ export class ContentSharingModal extends MozLitElement {
     event.preventDefault();
     this.close();
     // Need to do this explicity because just clicking isn't opening a tab
-    this.documentGlobal.frameElement.documentGlobal.openTrustedLinkIn(
+    this.documentGlobal.frameElement.documentGlobal.openWebLinkIn(
       event.target.href,
       "tab"
     );
   }
 
+  loadingTemplate() {
+    return html`<moz-button-group
+      ><moz-button
+        disabled
+        id="loading-button"
+        iconsrc="chrome://global/skin/icons/loading.svg"
+        data-l10n-id="content-sharing-modal-generating-page"
+        type="icon"
+      ></moz-button
+    ></moz-button-group>`;
+  }
+
   descriptionActionTemplate() {
+    if (this.shareResult.loadingPromise) {
+      return this.loadingTemplate();
+    }
+
     // If we got the url or
     // if there were no errors or
     // if were not signed in and got an unauthorized error
     if (
       this.shareResult.url ||
-      !this.shareResult.errors.length ||
+      !this.shareResult.error ||
       (!this.shareResult.isSignedIn &&
-        this.shareResult.errors.length === 1 &&
-        this.shareResult.errors.includes(ERRORS.UNAUTHORIZED))
+        this.shareResult.error === ERRORS.UNAUTHORIZED)
     ) {
       return html`<moz-button-group
         >${this.buttonsTemplate()}</moz-button-group
       >`;
     }
 
-    if (this.shareResult.errors.length) {
+    if (this.shareResult.error) {
       return html`<moz-message-bar
         type="critical"
         data-l10n-id="content-sharing-modal-generic-error"
@@ -206,6 +245,9 @@ export class ContentSharingModal extends MozLitElement {
   }
 
   buttonsTemplate() {
+    // Note: Avoid changing existing button IDs, because they are submitted
+    // with button click telemetry. If new buttons or added, or IDs change,
+    // be sure to update the list of buttons in metrics.yaml.
     if (this.shareResult.isSignedIn) {
       return html`<moz-button
           @click=${this.handleViewPageClick}
