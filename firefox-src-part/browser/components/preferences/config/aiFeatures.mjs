@@ -1321,6 +1321,9 @@ SettingGroupManager.registerGroups({
             id: "aiBlockedMessage",
             control: "moz-message-bar",
             l10nId: "preferences-ai-controls-blocked-message",
+            controlAttrs: {
+              role: "status",
+            },
           },
         ],
       },
@@ -1452,6 +1455,7 @@ SettingGroupManager.registerGroups({
               },
               {
                 id: "personalizeSmartWindowButton",
+                loadPane: "personalizeSmartWindow",
                 l10nId: "ai-window-personalize-button",
                 control: "moz-box-button",
               },
@@ -1569,6 +1573,7 @@ SettingGroupManager.registerGroups({
                 l10nId: "smart-window-model-custom-info",
                 controlAttrs: {
                   type: "info",
+                  role: "status",
                 },
                 options: [
                   {
@@ -1660,6 +1665,7 @@ SettingGroupManager.registerGroups({
           },
           {
             id: "manageMemoriesButton",
+            loadPane: "manageMemories",
             l10nId: "ai-window-manage-memories-button",
             control: "moz-box-button",
           },

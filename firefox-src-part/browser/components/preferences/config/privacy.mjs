@@ -266,7 +266,11 @@ export class PrivacySettingHelpers {
 
   static shouldDisableETPCategoryControls() {
     let policy = Services.policies.getActivePolicies();
-    return policy?.EnableTrackingProtection?.Locked || policy?.Cookies?.Locked;
+    return (
+      policy?.EnableTrackingProtection?.Locked ||
+      policy?.EnableTrackingProtection?.Category ||
+      policy?.Cookies?.Locked
+    );
   }
 }
 
@@ -603,6 +607,7 @@ SettingGroupManager.registerGroups({
         controlAttrs: {
           type: "warning",
           dismissable: true,
+          role: "status",
         },
       },
     ],
@@ -653,6 +658,7 @@ SettingGroupManager.registerGroups({
         supportPage: "how-do-i-turn-do-not-track-feature",
         controlAttrs: {
           dismissable: true,
+          role: "status",
         },
       },
     ],
@@ -712,6 +718,9 @@ SettingGroupManager.registerGroups({
         id: "deleteOnCloseInfo",
         l10nId: "sitedata-delete-on-close-private-browsing3",
         control: "moz-message-bar",
+        controlAttrs: {
+          role: "status",
+        },
       },
       {
         id: "manageDataSettingsGroup",
@@ -839,7 +848,6 @@ SettingGroupManager.registerGroups({
     iconSrc: "chrome://devtools/skin/images/globe.svg",
     headingLevel: 1,
     supportPage: "prefs-connection-settings",
-    subcategory: "netsettings",
     items: [
       {
         id: "connectionSettings",
@@ -931,6 +939,9 @@ SettingGroupManager.registerGroups({
         id: "deleteOnCloseInfo",
         l10nId: "sitedata-delete-on-close-private-browsing4",
         control: "moz-message-bar",
+        controlAttrs: {
+          role: "status",
+        },
       },
       {
         id: "historyMode",
@@ -947,6 +958,7 @@ SettingGroupManager.registerGroups({
               {
                 id: "customHistoryButton",
                 control: "moz-box-button",
+                loadPane: "history",
                 l10nId: "history-custom-button",
               },
             ],
@@ -1029,6 +1041,7 @@ SettingGroupManager.registerGroups({
           },
           {
             id: "dohAdvancedButton",
+            loadPane: "dnsOverHttps",
             l10nId: "preferences-doh-advanced-button",
             control: "moz-box-button",
           },
@@ -1045,6 +1058,9 @@ SettingGroupManager.registerGroups({
       {
         id: "dohStatusBox",
         control: "moz-message-bar",
+        controlAttrs: {
+          role: "status",
+        },
       },
       {
         id: "dohRadioGroup",
@@ -1114,6 +1130,7 @@ SettingGroupManager.registerGroups({
           {
             id: "etpStatusAdvancedButton",
             l10nId: "preferences-etp-status-advanced-button",
+            loadPane: "etp",
             control: "moz-box-button",
           },
         ],
@@ -1183,6 +1200,7 @@ SettingGroupManager.registerGroups({
               {
                 id: "etpCustomizeButton",
                 l10nId: "preferences-etp-customize-button",
+                loadPane: "etpCustomize",
                 control: "moz-box-button",
               },
             ],
@@ -1383,12 +1401,14 @@ SettingGroupManager.registerGroups({
     ],
   },
   connectionLink: {
+    subcategory: "netsettings",
     l10nId: "preferences-connection-link-section",
     iconSrc: "chrome://devtools/skin/images/globe.svg",
     items: [
       {
         id: "connectionLinkButton",
         l10nId: "preferences-connection-link-button",
+        loadPane: "connectionSecurity",
         control: "moz-box-button",
       },
     ],
@@ -3250,9 +3270,9 @@ Preferences.addSetting({
     } else if (val == "off") {
       value = "dohOffRadio";
     } else if (val == "custom" && deps.dohFallbackIfCustom.value) {
-      value = "dohEnabledRadio";
-    } else if (val == "custom" && !deps.dohFallbackIfCustom.value) {
       value = "dohStrictRadio";
+    } else if (val == "custom" && !deps.dohFallbackIfCustom.value) {
+      value = "dohEnabledRadio";
     }
     if (value) {
       Glean.securityDohSettings.modeChangedButton.record({
@@ -3277,9 +3297,9 @@ Preferences.addSetting({
   set: (val, deps) => {
     if (val == "custom") {
       if (deps.dohFallbackIfCustom.value) {
-        deps.dohMode.value = Ci.nsIDNSService.MODE_TRRFIRST;
-      } else {
         deps.dohMode.value = Ci.nsIDNSService.MODE_TRRONLY;
+      } else {
+        deps.dohMode.value = Ci.nsIDNSService.MODE_TRRFIRST;
       }
     } else if (val == "off") {
       deps.dohMode.value = Ci.nsIDNSService.MODE_TRROFF;
@@ -3328,20 +3348,20 @@ Preferences.addSetting({
   onUserChange: val => {
     if (val) {
       Glean.securityDohSettings.modeChangedButton.record({
-        value: "dohEnabledRadio",
+        value: "dohStrictRadio",
       });
     } else {
       Glean.securityDohSettings.modeChangedButton.record({
-        value: "dohStrictRadio",
+        value: "dohEnabledRadio",
       });
     }
   },
   get: (val, deps) => {
     // If we are in a custom mode, we need to get the value from the Setting
-    if (deps.dohMode.value == Ci.nsIDNSService.MODE_TRRFIRST) {
+    if (deps.dohMode.value == Ci.nsIDNSService.MODE_TRRONLY) {
       return true;
     }
-    if (deps.dohMode.value == Ci.nsIDNSService.MODE_TRRONLY) {
+    if (deps.dohMode.value == Ci.nsIDNSService.MODE_TRRFIRST) {
       return false;
     }
 
@@ -3352,10 +3372,10 @@ Preferences.addSetting({
     // Toggle the preference that controls the setting if are in a custom mode
     // This should be the only case where the checkbox is enabled, but we can be
     // careful and test.
-    if (deps.dohMode.value == Ci.nsIDNSService.MODE_TRRFIRST && !val) {
-      deps.dohMode.value = Ci.nsIDNSService.MODE_TRRONLY;
-    } else if (deps.dohMode.value == Ci.nsIDNSService.MODE_TRRONLY && val) {
+    if (deps.dohMode.value == Ci.nsIDNSService.MODE_TRRONLY && !val) {
       deps.dohMode.value = Ci.nsIDNSService.MODE_TRRFIRST;
+    } else if (deps.dohMode.value == Ci.nsIDNSService.MODE_TRRFIRST && val) {
+      deps.dohMode.value = Ci.nsIDNSService.MODE_TRRONLY;
     }
     // Propagate to the real preference
     return val;

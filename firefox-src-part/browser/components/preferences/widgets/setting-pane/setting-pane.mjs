@@ -11,6 +11,26 @@ import { SettingPaneManager } from "chrome://browser/content/preferences/config/
  */
 
 /**
+ * Whether the sub-pane back arrow should call `history.back()` (and let
+ * the browser restore the parent pane's saved scroll position) instead of
+ * doing a fresh navigation. True when the previous history entry is the
+ * current sub-pane's parent; false when the sub-pane was loaded directly
+ * (e.g. via the URL bar).
+ *
+ * @param {Window} win
+ * @param {string} parentCategory The friendly id of this sub-pane's parent.
+ * @returns {boolean}
+ */
+function shouldGoBackToParent(win, parentCategory) {
+  if (win.history.state?.previousCategory !== parentCategory) {
+    return false;
+  }
+  // Defense in depth: confirm with the Navigation API where available. If
+  // the API is missing, trust the recorded previous category.
+  return win.navigation?.canGoBack ?? true;
+}
+
+/**
  * @typedef {object} SettingPaneConfig
  * @property {string} [parent] The pane that links to this one.
  * @property {string} l10nId Fluent id for the heading/description.
@@ -34,6 +54,7 @@ export class SettingPane extends MozLitElement {
     config: { type: Object },
     showRedesignPromo: { type: Boolean, attribute: false },
     onSearchPane: { type: Boolean, reflect: true },
+    initialized: { type: Boolean, state: true },
   };
 
   /** @returns {MozPageHeader} */
@@ -61,6 +82,8 @@ export class SettingPane extends MozLitElement {
      * h2 stays above it in the heading hierarchy.
      */
     this.onSearchPane = false;
+    /** @type {boolean} */
+    this.initialized = false;
   }
 
   createRenderRoot() {
@@ -74,6 +97,10 @@ export class SettingPane extends MozLitElement {
   }
 
   goBack() {
+    if (shouldGoBackToParent(window, this.config.parent)) {
+      window.history.back();
+      return;
+    }
     window.gotoPref(this.config.parent);
   }
 
@@ -138,17 +165,20 @@ export class SettingPane extends MozLitElement {
    */
   handlePaneShown = e => {
     if (this.isSubPane && e.detail.category === this.name) {
-      this.pageHeaderEl.backButtonEl.focus();
+      // preventScroll so that a previously saved scroll position (restored
+      // by ScrollOffsets just before the paneshown event) is preserved.
+      this.pageHeaderEl.backButtonEl.focus({ preventScroll: true });
     }
   };
 
   init() {
-    if (!this.hasUpdated) {
+    if (!this.initialized) {
+      this.initialized = true;
       this.performUpdate();
     }
-    if (this.config.module) {
-      ChromeUtils.importESModule(this.config.module, { global: "current" });
-    }
+
+    // Import the modules necessary to load this pane.
+    SettingPaneManager.importPane(this.paneId);
 
     // Notify observers that the module is loaded. This needs to be done prior
     // to the initSettingGroup calls since the home pane relies on this event
@@ -158,7 +188,6 @@ export class SettingPane extends MozLitElement {
       `${this.config.id}-pane-loaded`
     );
 
-    SettingPaneManager.importPane(this.paneId);
     for (let groupId of this.config.groupIds) {
       window.initSettingGroup(groupId);
     }
@@ -228,6 +257,9 @@ export class SettingPane extends MozLitElement {
   }
 
   render() {
+    if (!this.initialized) {
+      return "";
+    }
     return html`
       ${this.settingsRedesignPromoTemplate()}
       <section>

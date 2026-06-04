@@ -1075,6 +1075,7 @@ SettingGroupManager.registerGroups({
     items: [
       {
         id: "profilesSettings",
+        loadPane: "profiles",
         control: "moz-box-button",
         l10nId: "preferences-profiles-settings-button",
       },
@@ -1085,6 +1086,7 @@ SettingGroupManager.registerGroups({
     headingLevel: 2,
     supportPage: "firefox-backup",
     iconSrc: "chrome://global/skin/icons/reload.svg",
+    subcategory: "backup",
     items: [
       {
         id: "backupSettings",

@@ -85,7 +85,7 @@
      up after searching. */
   z-index: 2;
   background-color: var(--background-color-canvas);
-  padding-top: 40px;
+  padding-top: var(--page-space-block-start);
   padding-bottom: var(--search-container-padding);
   padding-inline: var(--focus-outline-offset);
   /* Ensure focus indicators on elements below the search container
@@ -97,10 +97,8 @@
   width: 100%;
 }
 
-@media (max-width: 950px) {
-  #search-container:has(#policies-container-content:not([hidden])) {
-    padding-top: var(--space-small);
-  }
+#policies-container-content:not([hidden]) + #searchInput {
+  margin-block-start: var(--space-small);
 }
 
 .main-content {
@@ -108,11 +106,8 @@
   --search-container-margin: calc(var(--focus-outline-width) + var(--focus-outline-offset));
 
   contain: inline-size;
-  /* 72px matches moz-page-nav's --page-nav-margin-top, minus the 40px
-     padding-top already set in common-shared.css. */
-  margin-top: 32px;
   padding-top: 0;
-  scroll-padding-top: calc(40px + var(--search-container-padding) + var(--search-container-margin) + 40px);
+  scroll-padding-top: calc(calc(2 * var(--page-space-block-start)) + var(--search-container-padding) + var(--search-container-margin));
 
   @media (max-width: 950px) {
     padding-inline: var(--space-medium);
@@ -244,7 +239,7 @@ radio {
 
 /* stylelint-disable-next-line media-query-no-invalid */
 @media not -moz-pref("browser.settings-redesign.enabled") {
-  .spotlight:not(setting-group:has(> moz-card)) {
+  .spotlight {
     background-color: color-mix(in srgb, var(--color-accent-primary) 15%, transparent);
     outline: var(--border-color-selected) 1px dotted;
     animation: fade-out 0.5s ease-out 2s forwards;
@@ -252,22 +247,28 @@ radio {
     border: 1px solid transparent;
     border-radius: var(--border-radius-xsmall);
   }
+
+  [data-subcategory] {
+    margin-inline: -4px;
+    padding-inline: 4px;
+  }
 }
 
 /* stylelint-disable-next-line media-query-no-invalid */
 @media -moz-pref("browser.settings-redesign.enabled") {
-  .spotlight:not(setting-group:has(> moz-card)) {
-    outline: var(--border-color-selected) 2px solid;
-    outline-offset: var(--space-small);
+  .spotlight {
+    outline: 2px solid var(--border-color-selected);
     animation: fade-out 0.5s ease-out 2s forwards;
-    border-radius: var(--border-radius-large);
-  }
-}
 
-setting-group:has(> moz-card).spotlight {
-  outline: 2px solid var(--border-color-selected);
-  border-radius: var(--border-radius-medium);
-  animation: fade-out 0.5s ease-out 2s forwards;
+    setting-group& {
+      border-radius: var(--card-border-radius);
+    }
+
+    &:not(setting-group) {
+      border-radius: var(--border-radius-medium);
+      outline-offset: var(--space-small);
+    }
+  }
 }
 
 @keyframes fade-out {
@@ -275,11 +276,6 @@ setting-group:has(> moz-card).spotlight {
     background-color: transparent;
     outline-color: transparent;
   }
-}
-
-[data-subcategory]:not(setting-group:has(> moz-card)) {
-  margin-inline: -4px;
-  padding-inline: 4px;
 }
 
 .ac-site-icon {
@@ -385,6 +381,7 @@ setting-group:has(> moz-card).spotlight {
 /** SRD applications section START **/
 #applicationsHandlersView {
   --box-group-max-height: 500px;
+  container-type: inline-size;
 
   moz-box-item.first label {
     font-weight: var(--font-weight-semibold);
@@ -392,7 +389,7 @@ setting-group:has(> moz-card).spotlight {
 
   moz-box-item label[slot="actions"],
   .actionsMenu {
-    width: 270px;
+    width: clamp(140px, 50cqi, 270px);
   }
 
   moz-box-item[hidden] {

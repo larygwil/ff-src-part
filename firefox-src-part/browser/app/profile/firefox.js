@@ -326,6 +326,10 @@ pref("browser.startup.preXulSkeletonUI", true);
 pref("browser.startup.windowsLaunchOnLogin.enabled", true);
 // Whether to show the launch on login infobar notification
 pref("browser.startup.windowsLaunchOnLogin.disableLaunchOnLoginPrompt", false);
+// Whether new installs should default to launching Firefox on Windows login.
+// Set to false by DefaultWindowsLaunchOnLogin.applyExperimentOverride when
+// Nimbus opts users out. Read by StartupOSIntegration on first run.
+pref("browser.startup.windowsLaunchOnLogin.defaultEnabled", true);
 #endif
 
 // Show an upgrade dialog on major upgrades.
@@ -444,8 +448,8 @@ pref("browser.urlbar.deduplication.thresholdDays", 0);
 pref("browser.urlbar.scotchBonnet.enableOverride", true);
 
 pref("browser.urlbar.trustPanel.featureGate", true);
-pref("browser.urlbar.trustPanel.breachAlerts.featureGate", false);
-pref("browser.urlbar.trustPanel.breachAlerts", false);
+pref("browser.urlbar.trustPanel.breachAlerts.featureGate", true);
+pref("browser.urlbar.trustPanel.breachAlerts", true);
 
 // Whether or not Unified Search Button is shown always.
 pref("browser.urlbar.unifiedSearchButton.always", false);
@@ -2277,9 +2281,6 @@ pref("browser.smartwindow.chatStore.loglevel", "Error");
 pref("browser.smartwindow.conversation.logLevel", "Error");
 pref("browser.smartwindow.smartbarMentions.loglevel", "Error");
 
-// Smart Window user feedback collection
-pref("browser.smartwindow.userFeedbackCollection", false);
-
 // Block insecure active content on https pages
 pref("security.mixed_content.block_active_content", true);
 
@@ -2547,9 +2548,6 @@ pref("browser.contentblocking.report.lockwise.enabled", true);
 // not support this feature as of now. See Bug 1815751.
 pref("browser.contentblocking.report.monitor.enabled", false);
 
-// Disable Protections report's Proxy card by default.
-pref("browser.contentblocking.report.proxy.enabled", false);
-
 // Enable Protections report's Privacy Metrics card on Nightly only.
 #ifdef NIGHTLY_BUILD
   pref("browser.contentblocking.report.privacy_metrics.enabled", true);
@@ -2598,7 +2596,6 @@ pref("browser.contentblocking.report.monitor.preferences_url", "https://monitor.
 pref("browser.contentblocking.report.monitor.home_page_url", "https://monitor.firefox.com/user/dashboard");
 pref("browser.contentblocking.report.manage_devices.url", "https://accounts.firefox.com/settings/clients");
 pref("browser.contentblocking.report.endpoint_url", "https://monitor.firefox.com/user/breach-stats?includeResolved=true");
-pref("browser.contentblocking.report.proxy_extension.url", "https://fpn.firefox.com/browser?utm_source=firefox-desktop&utm_medium=referral&utm_campaign=about-protections&utm_content=about-protections");
 pref("browser.contentblocking.report.mobile-ios.url", "https://apps.apple.com/app/firefox-private-safe-browser/id989804926");
 pref("browser.contentblocking.report.mobile-android.url", "https://play.google.com/store/apps/details?id=org.mozilla.firefox&referrer=utm_source%3Dprotection_report%26utm_content%3Dmobile_promotion");
 pref("browser.contentblocking.report.vpn.url", "https://vpn.mozilla.org/?utm_source=firefox-browser&utm_medium=firefox-browser&utm_campaign=about-protections-card");
@@ -3497,8 +3494,13 @@ pref("browser.backup.enabled", true);
 pref("browser.backup.scheduled.enabled", false);
 
 // Prefs to control visibility and usability of the create backup and restore from backup features.
-pref("browser.backup.archive.enabled", true);
-pref("browser.backup.restore.enabled", true);
+#ifndef XP_MACOSX
+  pref("browser.backup.archive.enabled", true);
+  pref("browser.backup.restore.enabled", true);
+#else
+  pref("browser.backup.archive.enabled", false);
+  pref("browser.backup.restore.enabled", false);
+#endif
 
 // The number of SQLite database pages to backup per step.
 pref("browser.backup.sqlite.pages_per_step", 50);
@@ -3621,8 +3623,5 @@ pref("widget.support-xdg-config", true, locked);
 // A preference that enables Content Sharing
 pref("browser.contentsharing.enabled", false);
 
-// Controls whether the "New" badge is shown on the content sharing menu items
-pref("browser.contentsharing.newBadge.enabled", true);
-
 // When enabled, Firefox ignores the distribution.ini file if global.id is MozillaOnline.
-pref("distribution.mozillaonline.ignore", false);
+pref("distribution.mozillaonline.ignore", true);

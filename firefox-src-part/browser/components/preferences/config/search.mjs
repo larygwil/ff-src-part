@@ -1035,13 +1035,13 @@ Preferences.addSetting(
 
     /** @param {CustomEvent} event */
     async onUserReorder(event) {
-      const { draggedElement, targetIndex } = event.detail;
+      const { draggedElement, insertAt } = event.detail;
       let draggedEngineName = draggedElement.label;
       let draggedEngine = lazy.SearchService.getEngineByName(draggedEngineName);
       if (!draggedEngine) {
         return;
       }
-      await lazy.SearchService.moveEngine(draggedEngine, targetIndex);
+      await lazy.SearchService.moveEngine(draggedEngine, insertAt);
     }
     async getControlConfig() {
       /** @type {Partial<SettingControlConfig>} */
@@ -1143,6 +1143,9 @@ SettingGroupManager.registerGroups({
             id: "urlBarSuggestionPermanentPBMessage",
             l10nId: "search-suggestions-cant-show-2",
             control: "moz-message-bar",
+            controlAttrs: {
+              role: "status",
+            },
           },
         ],
       },
@@ -1150,7 +1153,7 @@ SettingGroupManager.registerGroups({
   },
   firefoxSuggest: {
     id: "locationBarGroup",
-    subcategory: "firefoxSuggest",
+    subcategory: "locationBar",
     items: [
       {
         id: "locationBarGroupHeader",

@@ -13,6 +13,7 @@ const { XPCOMUtils } = ChromeUtils.importESModule(
 );
 
 const MAX_PREVIEW_LINKS = 3;
+const WINDOW_BREAKPOINT_SIZE = 830;
 const lazy = {};
 
 XPCOMUtils.defineLazyPreferenceGetter(
@@ -51,9 +52,8 @@ import "chrome://global/content/elements/moz-message-bar.mjs";
 export class ContentSharingModal extends MozLitElement {
   static properties = {
     shareResult: { type: Object },
-    share: { type: Object },
-    error: { type: String },
-    isSignedIn: { type: Boolean },
+    size: { type: String, reflect: true },
+    loading: { type: Boolean },
   };
 
   static queries = {
@@ -75,15 +75,22 @@ export class ContentSharingModal extends MozLitElement {
     await this.previewCard?.updateComplete;
   }
 
-  connectedCallback() {
+  async connectedCallback() {
     super.connectedCallback();
 
-    this.shareResult = window.arguments?.[0];
-    if (this.shareResult?.loadingPromise) {
-      this.shareResult.loadingPromise.then(result => {
-        this.shareResult = result;
-      });
+    let { shareResult, loadingPromise, size } = window.arguments?.[0] ?? {};
+
+    this.shareResult = shareResult;
+    if (loadingPromise) {
+      this.loading = true;
+      this.shareResult = (await loadingPromise).shareResult;
+      this.loading = false;
     }
+
+    // The modal does not resize with the window so when the modal is opened
+    // from ContentSharingUtils the current windows width is passed. If the
+    // window width is less than 830, the modal will open in the "small" state.
+    this.size = size < WINDOW_BREAKPOINT_SIZE ? "small" : null;
   }
 
   close() {
@@ -113,7 +120,7 @@ export class ContentSharingModal extends MozLitElement {
       return html`<div class="too-many-links">
         <img class="icon" src="chrome://global/skin/icons/error.svg" />
         <span
-          data-l10n-id="content-sharing-modal-too-many-links"
+          data-l10n-id="content-sharing-modal-too-many-links-2"
           data-l10n-args=${JSON.stringify({
             count: MAX_ITEM_COUNT,
           })}
@@ -215,7 +222,7 @@ export class ContentSharingModal extends MozLitElement {
   }
 
   descriptionActionTemplate() {
-    if (this.shareResult.loadingPromise) {
+    if (this.loading) {
       return this.loadingTemplate();
     }
 
@@ -233,10 +240,17 @@ export class ContentSharingModal extends MozLitElement {
       >`;
     }
 
+    if (this.shareResult.error === ERRORS.INVALID_SCHEMA) {
+      return html`<moz-message-bar
+        type="critical"
+        data-l10n-id="content-sharing-modal-no-shareable-links"
+      ></moz-message-bar>`;
+    }
+
     if (this.shareResult.error) {
       return html`<moz-message-bar
         type="critical"
-        data-l10n-id="content-sharing-modal-generic-error"
+        data-l10n-id="content-sharing-modal-generic-error-2"
       ></moz-message-bar>`;
     }
 
@@ -252,7 +266,7 @@ export class ContentSharingModal extends MozLitElement {
       return html`<moz-button
           @click=${this.handleViewPageClick}
           id="view-page"
-          data-l10n-id="content-sharing-modal-view-page"
+          data-l10n-id="content-sharing-modal-view-page-2"
         ></moz-button
         ><moz-button
           id="copy-button"
@@ -266,7 +280,7 @@ export class ContentSharingModal extends MozLitElement {
     return html`<moz-button
       @click=${this.handleSignInClick}
       id="sign-in"
-      data-l10n-id="content-sharing-modal-sign-in"
+      data-l10n-id="content-sharing-modal-sign-in-2"
       type="primary"
     ></moz-button>`;
   }
@@ -287,6 +301,27 @@ export class ContentSharingModal extends MozLitElement {
     </div>`;
   }
 
+  previewTitleTemplate() {
+    if (this.shareResult.share.type === "tabs") {
+      return html`<div>
+        <img
+          class="share-icon"
+          src="chrome://browser/content/contentsharing/content-sharing-icon.svg"
+        />
+        <span class="share-title">${this.shareResult.share.title}</span>
+      </div>`;
+    }
+
+    return html`<span class="share-title">${this.shareResult.share.title}</span
+      ><span class="share-count"
+        ><img
+          class="share-icon"
+          src="chrome://browser/content/contentsharing/content-sharing-icon.svg"
+        />
+        ${this.shareResult.share.links.length}</span
+      >`;
+  }
+
   render() {
     if (!this.shareResult.share) {
       return null;
@@ -300,21 +335,12 @@ export class ContentSharingModal extends MozLitElement {
         rel="stylesheet"
         href="chrome://global/skin/in-content/common.css"
       />
-      <div id="backgroud-image"></div>
-      <div id="plain-backgroud"></div>
+      <div id="background-image"></div>
+      <div id="plain-background"></div>
       <div class="container">
         <div class="preview">
           <moz-card
-            ><label class="share-header"
-              ><span class="share-title">${this.shareResult.share.title}</span>
-              <span class="share-count"
-                ><img
-                  class="share-icon"
-                  src="chrome://browser/content/contentsharing/content-sharing-icon.svg"
-                />
-                ${this.shareResult.share.links.length}</span
-              ></label
-            >
+            ><label class="share-header">${this.previewTitleTemplate()}</label>
             <div class="link-preview-list">${this.linksTemplate()}</div>
           </moz-card>
         </div>
@@ -328,8 +354,16 @@ export class ContentSharingModal extends MozLitElement {
 
           <div class="description-content">
             <div>
-              <h2 data-l10n-id="content-sharing-modal-title"></h2>
-              <p data-l10n-id="content-sharing-modal-description"></p>
+              <h2
+                data-l10n-id=${this.shareResult.isSignedIn
+                  ? "content-sharing-modal-title-signed-in"
+                  : "content-sharing-modal-title-2"}
+              ></h2>
+              <p
+                data-l10n-id=${this.shareResult.isSignedIn
+                  ? "content-sharing-modal-description-signed-in"
+                  : "content-sharing-modal-description-2"}
+              ></p>
             </div>
             ${this.descriptionActionTemplate()}
           </div>

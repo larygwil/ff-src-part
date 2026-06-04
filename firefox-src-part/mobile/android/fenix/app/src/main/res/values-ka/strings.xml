@@ -23,6 +23,8 @@
   <string name="content_description_normal_browsing">ჩვეულებრივ თვალიერება</string>
   <!-- Placeholder text shown in the search bar before a user enters text for the default engine -->
   <string name="search_hint">მოძებნეთ ან შეიყვანეთ მისამართი</string>
+  <!-- Shorter placeholder text shown in the search bar when an additional action (voice search) is rendered alongside the hint. -->
+  <string name="search_hint_short">ძიება</string>
   <!-- Placeholder text shown in the search bar before a user enters text for a general engine -->
   <string name="search_hint_general_engine">ინტერნეტში ძიება</string>
   <!-- Placeholder text shown in search bar when using history search -->
@@ -38,7 +40,7 @@
   <!-- The supplementary text displayed on the private tabs page when no private tabs are open. %1$s is the name of the app (for example "Firefox") -->
   <string name="tab_manager_empty_private_tabs_page_description">%1$s არ დაიმახსოვრებს მონახულებულ გვერდებსა თუ ფუნთუშებს, მაგრამ ახლად ჩანიშნული გვერდები შენარჩუნდება.</string>
   <!-- The header text displayed on the normal tabs page when no normal tabs are open -->
-  <string name="tab_manager_empty_normal_tabs_page_header">ძიების დასაწყებად ახალი ჩანართის შექმნა</string>
+  <string name="tab_manager_empty_normal_tabs_page_header">ძიების დასაწყებად შექმენით ახალი ჩანართი</string>
   <!-- Tab tray multi select title in app bar. %1$d is the number of tabs selected -->
   <string name="tab_tray_multi_select_title">%1$d მონიშნულია</string>
   <!-- Tab tray multi select title in app bar when no tabs are selected -->
@@ -464,6 +466,8 @@
   <string name="search_suggestions_delete_history_item_snackbar">%1$s წაშლილია ისტორიიდან</string>
   <!-- Content description (not visible, for screen readers etc.): Button shown near a history search result allowing to delete it from browsing history. -->
   <string name="mozac_browser_awesomebar_remove_suggestion" tools:ignore="UnusedResources">ამ ჩანაწერის წაშლა ისტორიიდან</string>
+  <!-- Button in the app links prompt that keeps the user in the browser instead of opening the external app. %1$s is the name of the app (for example "Firefox"). -->
+  <string name="applinks_prompt_negative_button">დარჩეს %1$s</string>
   <!--
     Home onboarding
 
@@ -1643,6 +1647,8 @@
   <string name="tab_manager_search_bar_placeholder">ძიება თქვენს ჩანართებში</string>
   <!-- Text shown in the menu to view recently closed tabs -->
   <string name="tab_tray_menu_recently_closed">ბოლოს დახურული ჩანართები</string>
+  <!-- Text shown in the menu to select all tabs. -->
+  <string name="tab_tray_menu_select_all_tabs">ყველას მონიშვნა</string>
   <!-- Text shown in the menu to view account settings -->
   <string name="tab_tray_menu_account_settings">ანგარიშის პარამეტრები</string>
   <!-- Text shown in the menu to view tab settings -->
@@ -2695,6 +2701,15 @@
   <string name="preference_enhanced_tracking_protection_explanation_2">%s აგარიდებთ ცნობილი მეთვალყურეების უმეტესობას, რომლებიც თან დაგყვებათ ინტერნეტში.</string>
   <!-- Text displayed that links to website about enhanced tracking protection -->
   <string name="preference_enhanced_tracking_protection_explanation_learn_more">ვრცლად</string>
+  <plurals name="trackers_blocked_count_2">
+    <!--
+      Trackers blocked card on homepage
+
+      Text shown on the trackers blocked card. %d is the number of trackers blocked.
+    -->
+    <item quantity="one">%d მეთვალყურე შეიზღუდა</item>
+    <item quantity="other">%d მეთვალყურე შეიზღუდა</item>
+  </plurals>
   <plurals name="trackers_blocked_count">
     <!--
       Trackers blocked card on homepage
@@ -2832,6 +2847,8 @@
   <string name="etp_suspected_fingerprinters_description">ჩართავს ამოცნობისგან დაცვას ანაბეჭდით სავარაუდო ამომცნობებისგან.</string>
   <!-- Category of trackers (fingerprinters) that can be blocked by Enhanced Tracking Protection -->
   <string name="etp_known_fingerprinters_title">ცნობილი ამომცნობები</string>
+  <!-- Label for the fingerprinters category shown in the tracking protections dashboard breakdown -->
+  <string name="tracking_dashboard_fingerprinters_category_name">ამომცნობები</string>
   <!--
     Description of the SmartBlock Enhanced Tracking Protection feature. The * symbol is intentionally hardcoded here,
     as we use it on the UI to indicate which trackers have been partially unblocked.
@@ -3086,6 +3103,8 @@
   <string name="saved_logins_sort_strategy_last_used">ბოლოს გამოყენებული</string>
   <!-- Content description (not visible, for screen readers etc.) -->
   <string name="saved_logins_menu_dropdown_chevron_icon_content_description_2">პაროლების დალაგების მენიუ</string>
+  <!-- Label for button to import passwords from file. -->
+  <string name="passwords_import_menu_button">ფაილიდან გადმოტანა</string>
   <!--
     Email Masks
 
@@ -3119,9 +3138,9 @@
   <!-- Headline for the browser VPN promo card. %s is the name of the app (for example "Firefox"). -->
   <string name="ip_protection_promo_headline">%s ჩაშენებული VPN-ით</string>
   <!-- Body text for the browser VPN promo card . %s is a learn more link using ip_protection_learn_more as text. -->
-  <string name="ip_protection_promo_body_2">იმოგზაურეთ ინტერნეტში დამატებითი დაცვით, მდებარეობის დაფარვით, მათ შორის საჯარო WiFi-ქსელებში. %s</string>
+  <string name="ip_protection_promo_body_2">იმოგზაურეთ ინტერნეტში მეტად დაცულად მდებარეობის დაფარვით, მათ შორის საჯარო WiFi-ქსელებში. %s</string>
   <!-- Body text for the browser VPN promo card -->
-  <string name="ip_protection_promo_body">იმოგზაურეთ ინტერნეტში დამატებითი დაცვით, მდებარეობის დაფარვით, მათ შორის საჯარო WiFi-ქსელებში.</string>
+  <string name="ip_protection_promo_body">იმოგზაურეთ ინტერნეტში მეტად დაცულად მდებარეობის დაფარვით, მათ შორის საჯარო WiFi-ქსელებში.</string>
   <!-- Link text that opens additional information about the browser VPN -->
   <string name="ip_protection_learn_more">ვრცლად</string>
   <!-- Label for the monthly data allowance section on the browser VPN settings screen -->
@@ -4505,9 +4524,9 @@
   <!-- Sports widget section header for a list of upcoming soccer matches that have not yet started. -->
   <string name="sports_widget_upcoming" tools:ignore="UnusedResources">მოახლოებული</string>
   <!-- Sports widget match status suffix appended to match scores (e.g., "3 - 2 (Full time)") to indicate the match has been completed. -->
-  <string name="sports_widget_match_full_time_suffix">(დასრულებული)</string>
+  <string name="sports_widget_match_full_time_suffix">(დასრულდა)</string>
   <!-- Sports widget match status to indicate the match has been completed. -->
-  <string name="sports_widget_match_full_time_2">დასრულებული</string>
+  <string name="sports_widget_match_full_time_2">დასრულდა</string>
   <!--
     Sports widget card title encouraging the user to follow the soccer tournament. “Keep tabs on” is an informal expression
     meaning to stay updated on or regularly follow something (in this case, World Cup matches and updates).
@@ -4613,6 +4632,8 @@
     %1$d is the current page number, and %2$d is the total number of pages.
   -->
   <string name="sports_widget_final_results_page_content_description" tools:ignore="UnusedResources">მსოფლიო თასის საბოლოო შედეგები, გვერდი %1$d, სულ %2$d</string>
+  <!-- Content description (for accessibility, not displayed) for the World Cup final results page. -->
+  <string name="sports_widget_final_results_content_description">მსოფლიო თასის საბოლოო შედეგები</string>
   <!-- Content description (for accessibility, not displayed) for the remove button that removes the sports widget from the homepage. -->
   <string name="sports_widget_remove_content_description" tools:ignore="UnusedResources">მსოფლიო თასის მოცილება საწყისი გვერდიდან</string>
   <!-- Title shown on the sports widget immediately after the user has followed a team. %s is the selected team (e.g., "USA"). -->
@@ -4633,6 +4654,8 @@
   <string name="sports_widget_error_load_failed_title">შეხვედრის მონაცემები ახლა მიუწვდომელია.</string>
   <!-- Sports widget error card description shown when match data fails to load. -->
   <string name="sports_widget_error_load_failed_description">გაახლება სცადეთ რამდენიმე წუთში.</string>
+  <!-- Content description (for accessibility, not displayed) for teams which have not yet been determined in the match schedule. -->
+  <string name="sports_widget_team_to_be_determined">გუნდი დასადგენია</string>
   <!-- ==== End of Terms of use popup prompt. ==== -->
 
   <!--
@@ -4647,4 +4670,29 @@
   <string name="privacy_notice_updated_homepage_message_privacy_notice" tools:ignore="UnusedResources">პირადულობის განაცხადი</string>
   <!-- The second active link used in privacy_notice_updated_homepage_message -->
   <string name="privacy_notice_updated_homepage_message_learn_more" tools:ignore="UnusedResources">ვრცლად</string>
+  <!--
+    Firefox Labs
+
+    Banner title text on the Firefox Labs screen.
+  -->
+  <string name="firefox_labs_banner_title">მოსინჯეთ ჩვენი საცდელი შესაძლებლობები!</string>
+  <!--
+    Banner description text on the Firefox Labs screen. Provides information on what Firefox Labs does. %s is the name of the app (for example "Firefox Nightly").
+    Text will appear under the Firefox Labs banner title.
+  -->
+  <string name="firefox_labs_experimental_description">ჯერ კიდევ იხვეწება და ვითარდება, ამიტომ შეიძლება გავლენა ჰქონდეს, თუ როგორ იმუშავებს %s.</string>
+  <!-- Button text on the Firefox Labs screen for restoring all toggles back to the default settings. The button will turn off any experimental features. -->
+  <string name="firefox_labs_restore_default_button_text">ნაგულისხმევების აღდგენა</string>
+  <!-- The title used in a confirmation dialog on the Firefox Labs screen when toggling "on" or "off" an experimental feature that requires a restart. -->
+  <string name="firefox_labs_feature_dialog_title">საჭიროებს გადატვირთვას</string>
+  <!-- The text on the dialog on the Firefox Labs screen for the positive button when toggling "on" and "off" experimental features. This prompts the user to confirm that they want to restart the app. -->
+  <string name="firefox_labs_dialog_restart_button">ხელახლა გაშვება</string>
+  <!-- The text on the dialog on the Firefox Labs screen for the negative button when toggling "on" and "off" experimental features. This is used to cancel the action and return to the previous screen. -->
+  <string name="firefox_labs_dialog_cancel_button">გაუქმება</string>
+  <!-- The title used in a confirmation dialog on the Firefox Labs screen when restoring the application to its defaults by turning "off" any experimental features. -->
+  <string name="firefox_labs_restore_defaults_dialog_title">საჭიროებს გადატვირთვას</string>
+  <!-- The description used in a confirmation dialog on the Firefox Labs screen when restoring the application to its defaults by turning "off" any experimental features. %s is the name of the app (for example "Firefox Nightly") -->
+  <string name="firefox_labs_restore_defaults_dialog_message">ნაგულისხმევის აღსადგენად კვლავ გაუშვით %s.</string>
+  <!-- Text displayed on the Firefox Labs screen when there are no Labs experimental features present. -->
+  <string name="firefox_labs_no_labs_available_description">საცდელი შესაძლებლობები ამჟამად არაა</string>
 </resources>

@@ -257,7 +257,6 @@ ${
 
   /** @type {AutofillPlaceholder|null} */
   _autofillPlaceholder = null;
-  _autofillBackspaceState = null;
 
   _resultForCurrentValue = null;
   _untrimmedValue = "";
@@ -1519,6 +1518,15 @@ ${
     }
 
     if (
+      lazy.UrlbarPrefs.get("autoFill.adaptiveHistory.enabled") &&
+      result.autofill &&
+      result.payload?.url &&
+      !this.isPrivate
+    ) {
+      lazy.UrlbarUtils.clearAutofillBackspaceEntryForUrl(result.payload.url);
+    }
+
+    if (
       result.providerName == lazy.UrlbarProviderGlobalActions.name &&
       this.#providesSearchMode(result)
     ) {
@@ -1980,7 +1988,7 @@ ${
       ) {
         input = result.autofill.adaptiveHistoryInput;
       } else if (
-        lazy.UrlbarPrefs.get("autoFillAdaptiveHistoryEnabled") &&
+        lazy.UrlbarPrefs.get("autoFill.adaptiveHistory.enabled") &&
         result.autofill?.type == "origin" &&
         // Bug: 2026227: Investigate if we want to use a higher threshold
         this._lastSearchString?.length > 0
@@ -2004,28 +2012,32 @@ ${
       // Re-integration: If the user picks a non-autofill result for a URL
       // that has a blocked origin, clear the block.
       if (
-        lazy.UrlbarPrefs.get("autoFillAdaptiveHistoryEnabled") &&
+        lazy.UrlbarPrefs.get("autoFill.adaptiveHistory.enabled") &&
         !result.autofill &&
         result.type == lazy.UrlbarUtils.RESULT_TYPE.URL
       ) {
         let isOrigin = lazy.UrlbarUtils.isOriginUrl(url);
-        if (isOrigin) {
-          lazy.UrlbarUtils.clearOriginAutofillBlock(url)
-            .then(wasBlocked => {
-              if (wasBlocked) {
-                Glean.urlbarAutofill.reintegration.origin.add(1);
-              }
-            })
-            .catch(console.error);
-        } else {
-          lazy.UrlbarUtils.clearOriginPageAutofillBlock(url)
-            .then(wasBlocked => {
-              if (wasBlocked) {
-                Glean.urlbarAutofill.reintegration.url.add(1);
-              }
-            })
-            .catch(console.error);
-        }
+        let clear = isOrigin
+          ? lazy.UrlbarUtils.clearOriginAutofillBlock(url)
+          : lazy.UrlbarUtils.clearOriginPageAutofillBlock(url);
+        clear
+          .then(wasBlocked => {
+            if (!wasBlocked) {
+              return;
+            }
+            let level = isOrigin ? "origin" : "url";
+            Glean.urlbarAutofill.reintegration[level].add(1);
+
+            // For backspace-induced blocks, record the unblock delay: fast
+            // unblocks suggest the original block was accidental.
+            let entry = lazy.UrlbarUtils.getBackspaceBlock(url);
+            if (entry?.level === level) {
+              Glean.urlbarAutofill.reintegrationAfterBackspace[
+                level
+              ].accumulateSingleSample(Date.now() - entry.blockedAt);
+            }
+          })
+          .catch(console.error);
       }
     }
 
@@ -2210,12 +2222,6 @@ ${
       this._autofillPlaceholder.selectionEnd = this.value.length;
     }
 
-    // Reset backspace dismissal tracking when navigating to a non-autofill
-    // result. The placeholder may already be null if the user backspaced away
-    // the autofill text before arrowing down.
-    if (!result.autofill && this._autofillBackspaceState) {
-      this._autofillBackspaceState = null;
-    }
     return false;
   }
 
@@ -3563,7 +3569,6 @@ ${
   _resetSearchState() {
     this._lastSearchString = this.value;
     this._autofillPlaceholder = null;
-    this._autofillBackspaceState = null;
   }
 
   /**
@@ -5247,8 +5252,6 @@ ${
     this._isKeyDownWithMeta = false;
     this._isKeyDownWithMetaAndLeft = false;
 
-    this._autofillBackspaceState = null;
-
     Services.obs.notifyObservers(null, "urlbar-blur");
   }
 
@@ -5466,43 +5469,17 @@ ${
     }
 
     if (
-      lazy.UrlbarPrefs.get("autoFillAdaptiveHistoryEnabled") &&
-      event.inputType === "deleteContentBackward"
+      lazy.UrlbarPrefs.get("autoFill.adaptiveHistory.enabled") &&
+      event.inputType?.startsWith("deleteContent") &&
+      !this.isPrivate &&
+      this._autofillPlaceholder &&
+      this.value === this.userTypedValue &&
+      this._resultForCurrentValue?.payload?.url
     ) {
-      if (
-        !this._autofillBackspaceState &&
-        this._autofillPlaceholder &&
-        this._autofillPlaceholder.selectionStart <
-          this._autofillPlaceholder.selectionEnd
-      ) {
-        this._autofillBackspaceState = {
-          url: this._resultForCurrentValue?.payload?.url,
-          count: 0,
-        };
-      }
-      if (this._autofillBackspaceState) {
-        this._autofillBackspaceState.count++;
-        if (
-          this._autofillBackspaceState.count >=
-          lazy.UrlbarPrefs.get("autoFill.backspaceThreshold")
-        ) {
-          if (!this.isPrivate) {
-            let { url } = this._autofillBackspaceState;
-            if (url) {
-              let blockUntil =
-                Date.now() +
-                lazy.UrlbarPrefs.get("autoFill.backspaceBlockDurationMs");
-              lazy.UrlbarUtils.blockAutofill(url, blockUntil).catch(
-                console.error
-              );
-            }
-          }
-          this._autofillBackspaceState = null;
-        }
-      }
-    } else if (this._autofillBackspaceState) {
-      // Any non-backspace input resets the state.
-      this._autofillBackspaceState = null;
+      lazy.UrlbarUtils._lastRecordAutofillBackspacePromise =
+        lazy.UrlbarUtils.recordAutofillBackspace(
+          this._resultForCurrentValue.payload.url
+        );
     }
 
     let value = this.value;
