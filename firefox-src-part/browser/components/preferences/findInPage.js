@@ -228,12 +228,18 @@ var gSearchResultsPane = {
           }
         }
       }
-      let range = document.createRange();
-      range.setStart(startNode, startValue);
-      range.setEnd(endNode, endValue);
-      this.getFindSelection(startNode.documentGlobal).addRange(range);
+      try {
+        let range = document.createRange();
+        range.setStart(startNode, startValue);
+        range.setEnd(endNode, endValue);
+        this.getFindSelection(startNode.documentGlobal).addRange(range);
 
-      this.searchResultsHighlighted = true;
+        this.searchResultsHighlighted = true;
+      } catch (ex) {
+        // The range can span text nodes that don't share a selection root (e.g.
+        // across a shadow DOM boundary), which the find selection rejects. The
+        // match still counts as found, so don't let it abort the whole search.
+      }
     }
 
     return !!indices.length;
@@ -345,11 +351,12 @@ var gSearchResultsPane = {
         // is in the pane title (moz-page-header) or in content rendered
         // outside any setting-group (e.g. paneExperimental's description).
         if (child.localName === "setting-pane") {
-          let groupSelector =
+          const BASE_SELECTOR =
             "setting-group:not([data-hidden-from-search]):not([hidden]):not([data-hidden-by-setting-group])";
-          if (subQuery) {
-            groupSelector += ":not(.visually-hidden)";
-          }
+          let groupSelector = subQuery
+            ? `${BASE_SELECTOR}:not(.visually-hidden)`
+            : BASE_SELECTOR;
+
           let groups = child.querySelectorAll(groupSelector);
           let anyGroupMatched = false;
           for (let group of groups) {
@@ -365,9 +372,10 @@ var gSearchResultsPane = {
           if (!paneMatched) {
             paneMatched = await this.searchWithinNode(child, this.query);
             if (paneMatched) {
-              // Pane title or pane-level content matched but no specific
-              // group did — show all groups so the pane isn't empty.
-              for (let group of groups) {
+              // Pane title or pane-level content matched but no specific group
+              // did. Re-query with the base selector to make sure previously
+              // .visually-hidden groups get shown.
+              for (let group of child.querySelectorAll(BASE_SELECTOR)) {
                 group.classList.remove("visually-hidden");
               }
             }

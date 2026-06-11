@@ -60,7 +60,7 @@ XPCOMUtils.defineLazyPreferenceGetter(
   lazy,
   "BANDWIDTH_USAGE_ENABLED",
   "browser.ipProtection.bandwidth.enabled",
-  false
+  true
 );
 
 XPCOMUtils.defineLazyPreferenceGetter(
@@ -552,6 +552,13 @@ export class IPProtectionPanel {
     }
 
     this.#updateSiteData();
+
+    if (this.state.paused) {
+      this.setState({ isEnrolling: true });
+      lazy.IPPProxyManager.refreshUsage().finally(() => {
+        this.setState({ isEnrolling: false });
+      });
+    }
 
     this.setState({
       isSiteExceptionsEnabled: this.isExceptionsFeatureEnabled,
@@ -1177,12 +1184,18 @@ export class IPProtectionPanel {
       this.setState({ bandwidthWarning: false });
     } else if (event.type == "IPPProxyManager:UsageChanged") {
       const usage = event.detail.usage;
-      if (
-        !usage ||
-        usage.max == null ||
-        usage.remaining == null ||
-        !usage.reset
-      ) {
+      if (!usage) {
+        return;
+      }
+
+      if (usage.unlimited) {
+        Services.prefs.clearUserPref(BANDWIDTH_THRESHOLD_PREF);
+        Services.prefs.clearUserPref(BANDWIDTH_RESET_DATE_PREF);
+        this.setState({ bandwidthUsage: null, bandwidthWarning: false });
+        return;
+      }
+
+      if (usage.max == null || usage.remaining == null || !usage.reset) {
         return;
       }
 
@@ -1232,15 +1245,13 @@ export class IPProtectionPanel {
         this.#sendBandwidthResetTrigger();
       }
 
-      if (lazy.BANDWIDTH_USAGE_ENABLED) {
-        this.setState({
-          bandwidthUsage: {
-            remaining: Number(usage.remaining),
-            max: Number(usage.max),
-            reset: usage.reset,
-          },
-        });
-      }
+      this.setState({
+        bandwidthUsage: {
+          remaining: Number(usage.remaining),
+          max: Number(usage.max),
+          reset: usage.reset,
+        },
+      });
     } else if (event.type == "IPPUsageHelper:StateChanged") {
       this.setState({ bandwidthWarning: this.#shouldShowBandwidthWarning() });
     } else if (event.type == "IPProtection:UserShowLocations") {

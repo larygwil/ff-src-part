@@ -118,6 +118,10 @@ export class IPPFxaBaseAuthProvider extends IPPAuthProvider {
     return this.entitlement?.maxBytes ?? null;
   }
 
+  get limitedBandwidth() {
+    return this.entitlement?.limitedBandwidth ?? true;
+  }
+
   /**
    * Retrieves an FxA OAuth token and returns a disposable handle that revokes
    * it on disposal.

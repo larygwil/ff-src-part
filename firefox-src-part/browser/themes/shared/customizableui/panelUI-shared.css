@@ -2132,13 +2132,8 @@ radiogroup:focus-visible > .subviewradio[focused="true"] {
   display: none;
 }
 
-.panel-viewcontainer:has(.report-broken-site-view[visible]) {
-  min-height: auto !important;
-}
-
 .report-broken-site-view {
-  min-height: fit-content !important;
-  max-height: fit-content !important;
+  max-height: 80vh;
 
   &.wrong-tab-info {
     .favicon,
@@ -2208,7 +2203,8 @@ radiogroup:focus-visible > .subviewradio[focused="true"] {
   button.arrow-button {
     font-weight: normal;
     padding: var(--space-large) var(--space-medium);
-    margin: 0;
+    margin: 0 0 var(--space-large);
+    border: 0;
 
     > hbox > label {
       text-align: start;
@@ -2217,11 +2213,6 @@ radiogroup:focus-visible > .subviewradio[focused="true"] {
       display: block !important;
       text-wrap: balance;
       width: 100%;
-    }
-
-    &:last-of-type {
-      /* so the bottom of the focus outline doesn't get cut off under the following element */
-      margin-block-end: var(--space-small);
     }
 
     background: url("chrome://global/skin/icons/arrow-right.svg") no-repeat calc(100% - var(--panel-menuitem-padding-inline)) center;
@@ -2301,7 +2292,10 @@ radiogroup:focus-visible > .subviewradio[focused="true"] {
         background-repeat: no-repeat;
         -moz-context-properties: fill;
         fill: currentColor;
+      }
 
+      > summary,
+      > .data {
         /* prevent the keyboard-focus outlines from being partly cut off due to the summaries taking up the full width */
         outline-offset: calc(-1 * var(--default-focusring-width));
       }
@@ -2319,27 +2313,25 @@ radiogroup:focus-visible > .subviewradio[focused="true"] {
     }
   }
 
-  fieldset > label,
-  details > summary {
-    color: var(--button-text-color);
-    background-color: var(--button-background-color-ghost);
+  @media not (prefers-contrast) {
+    fieldset > label,
+    details > summary {
+      color: var(--button-text-color);
+      background-color: var(--button-background-color-ghost);
 
-    &:hover {
-      background-color: var(--button-background-color-hover);
-      color: var(--button-text-color-hover);
-    }
+      &:hover {
+        background-color: var(--button-background-color-hover);
+        color: var(--button-text-color-hover);
+      }
 
-    &:active {
-      background-color: var(--button-background-color-active);
-      color: var(--button-text-color-active);
-    }
+      &:active {
+        background-color: var(--button-background-color-active);
+        color: var(--button-text-color-active);
+      }
 
-    &:focus-visible {
-      outline: var(--focus-outline);
-    }
-
-    @media (prefers-contrast) {
-      outline: var(--button-border-color) solid var(--border-width);
+      &:focus-visible {
+        outline: var(--focus-outline);
+      }
     }
   }
 

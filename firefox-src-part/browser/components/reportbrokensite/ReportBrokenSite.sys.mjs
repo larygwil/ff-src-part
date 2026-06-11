@@ -8,7 +8,6 @@ const MINIMUM_DESCRIPTION_LENGTH = 10;
 const lazy = {};
 
 ChromeUtils.defineESModuleGetters(lazy, {
-  ClientEnvironment: "resource://normandy/lib/ClientEnvironment.sys.mjs",
   SafeBrowsing: "resource://gre/modules/SafeBrowsing.sys.mjs",
 });
 
@@ -18,7 +17,6 @@ export class ViewState {
   #detailsView;
   #previewView;
   #reportSentView;
-  #reasonOptions;
 
   #reportURL;
   currentTabURL;
@@ -43,10 +41,6 @@ export class ViewState {
       "report-broken-site-popup-reportSentView"
     );
     ViewState.#cache.set(doc, this);
-
-    this.#reasonOptions = Array.from(
-      this.#mainView.querySelectorAll(".reason-button")
-    );
   }
 
   static #cache = new WeakMap();
@@ -207,6 +201,12 @@ export class ViewState {
     const panelview = this.#doc.documentGlobal.PanelView.forNode(view);
     panelview.selectedElement = input;
     panelview.focusSelectedElement(true);
+    // Ignore the next mouse-move to prevent the focus from accidentally being
+    // cleared immediately when the user clicks on "Something else" (see bz2040437).
+    panelview.ignoreMouseMove = true;
+    input.addEventListener("blur", () => (panelview.ignoreMouseMove = false), {
+      once: true,
+    });
   }
 
   lastBlurredURLInputSelection;
@@ -287,46 +287,6 @@ export class ViewState {
     return this.#detailsView.querySelector(
       "#report-broken-site-details-description-error"
     );
-  }
-
-  randomizeReasonsOrdering() {
-    // As with QuickActionsLoaderDefault, we use the Normandy
-    // randomizationId as our PRNG seed to ensure that the same
-    // user should always get the same sequence.
-    const seed = [...lazy.ClientEnvironment.randomizationId]
-      .map(x => x.charCodeAt(0))
-      .reduce((sum, a) => sum + a, 0);
-
-    const items = [...this.#reasonOptions];
-    this.#shuffleArray(items, seed);
-    items[0].parentNode.append(...items);
-  }
-
-  #shuffleArray(array, seed) {
-    // We use SplitMix as it is reputed to have a strong distribution of values.
-    const prng = this.#getSplitMix32PRNG(seed);
-    for (let i = array.length - 1; i > 0; i--) {
-      const j = Math.floor(prng() * (i + 1));
-      [array[i], array[j]] = [array[j], array[i]];
-    }
-  }
-
-  // SplitMix32 is a splittable pseudorandom number generator (PRNG).
-  // License: MIT (https://github.com/attilabuti/SimplexNoise)
-  #getSplitMix32PRNG(a) {
-    return () => {
-      a |= 0;
-      a = (a + 0x9e3779b9) | 0;
-      var t = a ^ (a >>> 16);
-      t = Math.imul(t, 0x21f0aaad);
-      t = t ^ (t >>> 15);
-      t = Math.imul(t, 0x735a2d97);
-      return ((t = t ^ (t >>> 15)) >>> 0) / 4294967296;
-    };
-  }
-
-  restoreReasonsOrdering() {
-    this.#reasonOptions[0].parentNode.append(...this.#reasonOptions);
   }
 
   reset() {
@@ -445,8 +405,6 @@ export var ReportBrokenSite = new (class ReportBrokenSite {
 
   static SCREENSHOTS_ENABLED_PREF =
     "ui.new-webcompat-reporter.screenshots.enabled";
-  static REASON_RANDOMIZED_PREF =
-    "ui.new-webcompat-reporter.reason-dropdown.randomized";
   static SEND_MORE_INFO_PREF = "ui.new-webcompat-reporter.send-more-info-link";
   static NEW_REPORT_ENDPOINT_PREF =
     "ui.new-webcompat-reporter.new-report-endpoint";
@@ -490,8 +448,6 @@ export var ReportBrokenSite = new (class ReportBrokenSite {
   }
 
   #OBSERVED_PREFS = {
-    [ReportBrokenSite.REASON_RANDOMIZED_PREF]:
-      "onReasonRandomizationPrefChanged",
     [ReportBrokenSite.SCREENSHOTS_ENABLED_PREF]: "onScreenshotsPrefChanged",
     [ReportBrokenSite.SEND_MORE_INFO_PREF]: "onSendMoreInfoPrefChanged",
   };
@@ -529,14 +485,6 @@ export var ReportBrokenSite = new (class ReportBrokenSite {
     for (const { document } of windows) {
       const state = ViewState.get(document);
       checkFn(prefValue, state);
-    }
-  }
-
-  onReasonRandomizationPrefChanged(prefValue, state) {
-    if (prefValue) {
-      state.randomizeReasonsOrdering();
-    } else {
-      state.restoreReasonsOrdering();
     }
   }
 
@@ -580,6 +528,8 @@ export var ReportBrokenSite = new (class ReportBrokenSite {
     ReportBrokenSite.#hasCustomElements.add(window);
   }
 
+  #descriptionErrorTextPromise;
+
   init(win) {
     // Called in browser-init.js via the category manager registration
     // in BrowserComponents.manifest
@@ -595,6 +545,18 @@ export var ReportBrokenSite = new (class ReportBrokenSite {
       state.detailsViewDescriptionError,
       "report-broken-site-panel-invalid-description-label",
       { minLength: MINIMUM_DESCRIPTION_LENGTH }
+    );
+
+    // use Promise.resolve to avoid leaking document until shutdown
+    this.#descriptionErrorTextPromise ??= Promise.resolve(
+      document.l10n
+        .formatMessages([
+          {
+            id: "report-broken-site-panel-invalid-description-label",
+            args: { minLength: MINIMUM_DESCRIPTION_LENGTH },
+          },
+        ])
+        .then(result => result[0].value)
     );
 
     for (const id of ["menu_HelpPopup", "appMenu-popup"]) {
@@ -652,7 +614,7 @@ export var ReportBrokenSite = new (class ReportBrokenSite {
     });
 
     for (const input of state.urlInputs) {
-      input.addEventListener("input", e => this.#maybeDisableProgression(e));
+      input.addEventListener("input", e => this.#onURLEdited(e));
       input.addEventListener("reset", e => this.#onURLInputReset(e));
       input.addEventListener("change", e => this.#onURLInputChanged(e));
       input.addEventListener("blur", e => this.#saveURLInputSelectionRange(e));
@@ -738,7 +700,9 @@ export var ReportBrokenSite = new (class ReportBrokenSite {
     const { target } = event;
     const state = ViewState.get(target.documentGlobal.document);
     const { descriptionTextArea, isDescriptionValid } = state;
-    descriptionTextArea.setCustomValidity(isDescriptionValid ? "" : "invalid");
+    this.#descriptionErrorTextPromise.then(errorText =>
+      descriptionTextArea.setCustomValidity(isDescriptionValid ? "" : errorText)
+    );
     state.updateProgressDisabledState();
     return isDescriptionValid;
   }
@@ -778,9 +742,9 @@ export var ReportBrokenSite = new (class ReportBrokenSite {
     state.url = state.currentTabURL;
   }
 
-  #maybeDisableProgression({ target }) {
+  #onURLEdited({ target }) {
     const state = ViewState.get(target.documentGlobal.document);
-    state.updateProgressDisabledState();
+    state.url = target.input.value;
   }
 
   #onURLInputChanged({ target, detail }) {
@@ -1060,7 +1024,8 @@ export var ReportBrokenSite = new (class ReportBrokenSite {
       details.appendChild(summary);
 
       const info = state.createElement("div");
-      info.className = "data";
+      // text-link so it gets focus, but without the weird behavior of data-captures-focus.
+      info.className = "data text-link";
       for (const [k, v] of Object.entries(values)) {
         if (k == "isTabSpecific") {
           details.classList.add("tab-specific-data");
