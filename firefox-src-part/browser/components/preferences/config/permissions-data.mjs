@@ -480,11 +480,9 @@ Preferences.addSetting(
       const profilesBackupEnabledValue = /** @type {string} */ (
         dataCollectionPrefDeps.profilesBackupEnabled.value
       );
-      let profilesEnabledOn = JSON.parse(profilesBackupEnabledValue || "{}");
+      let profilesEnabledOn = JSON.parse(profilesBackupEnabledValue || "[]");
       let currentId = currentProfile.id;
-      let otherProfilesEnabled = Object.keys(profilesEnabledOn).some(
-        id => id != currentId
-      );
+      let otherProfilesEnabled = profilesEnabledOn.some(id => id != currentId);
       return otherProfilesEnabled && anyPrefChanged;
     },
   })

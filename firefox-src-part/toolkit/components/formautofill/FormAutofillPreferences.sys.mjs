@@ -130,7 +130,7 @@ export class FormAutofillPreferences {
             iconSrc: "chrome://browser/skin/payment-methods-16.svg",
             l10nArgs: {
               cardNumber: record["cc-number"].replace(/^(\*+)(\d+)$/, "$1 $2"),
-              expDate: record["cc-exp"].replace(/^(\d{4})-\d{2}$/, "XX/$1"),
+              expDate: record["cc-exp"].replace(/^(\d{4})-(\d{2})$/, "$2/$1"),
             },
             options: [
               {
@@ -200,14 +200,14 @@ export class FormAutofillPreferences {
           .filter(Boolean)
           .join(", ");
 
+        const label = record.name || record.organization || record.email;
         const config = {
           id: "address-item",
           control: "moz-box-item",
-          l10nId: "address-moz-box-item",
           iconSrc: "chrome://browser/skin/notification-icons/geo.svg",
-          l10nArgs: {
-            name: record.name || addressFormatted,
-            address: record.name ? addressFormatted : "",
+          controlAttrs: {
+            label: label || addressFormatted,
+            description: label ? addressFormatted : "",
           },
           options: [
             {

@@ -188,6 +188,8 @@ export class HistoryController {
    */
   #normalizeVisit(visit) {
     visit.time = visit.date.getTime();
+    visit.pageGuid = visit.guid;
+    visit.guid = `${visit.guid}|${visit.time}`;
     visit.title = visit.title || visit.url;
     visit.icon = `page-icon:${visit.url}`;
     visit.primaryL10nId = "fxviewtabrow-tabs-list-tab";

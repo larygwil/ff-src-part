@@ -1233,6 +1233,8 @@ SettingGroupManager.registerGroups({
           ".imageAlignment": "end",
           ".imageSrc":
             "chrome://browser/content/preferences/etp-toggle-promo.svg",
+          imagewidth: "large",
+          imagedisplay: "cover",
         },
       },
       {
@@ -1313,10 +1315,13 @@ SettingGroupManager.registerGroups({
                 value: Ci.nsICookieService.BEHAVIOR_REJECT_TRACKER.toString(),
                 l10nId:
                   "preferences-etp-custom-cookie-behavior-block-cross-site-cookies",
+                hidden:
+                  Services.prefs.getIntPref("network.cookie.cookieBehavior") !==
+                  Ci.nsICookieService.BEHAVIOR_REJECT_TRACKER,
               },
               {
                 value:
-                  Ci.nsICookieService.BEHAVIOR_REJECT_TRACKER_AND_PARTITION_FOREIGN.toString(),
+                  Ci.nsICookieService.BEHAVIOR_PARTITION_FOREIGN.toString(),
                 l10nId:
                   "preferences-etp-custom-cookie-behavior-isolate-cross-site-cookies",
               },
@@ -1324,6 +1329,9 @@ SettingGroupManager.registerGroups({
                 value: Ci.nsICookieService.BEHAVIOR_LIMIT_FOREIGN.toString(),
                 l10nId:
                   "preferences-etp-custom-cookie-behavior-block-unvisited",
+                hidden:
+                  Services.prefs.getIntPref("network.cookie.cookieBehavior") !==
+                  Ci.nsICookieService.BEHAVIOR_LIMIT_FOREIGN,
               },
               {
                 value: Ci.nsICookieService.BEHAVIOR_REJECT_FOREIGN.toString(),
@@ -2654,12 +2662,16 @@ Preferences.addSetting(
   })
 );
 
-// Trigger site data calculation the first time the privacy pane is shown in
-// this prefs document. siteDataSize, clearSiteDataButton, and siteDataSettings
-// all consume the resulting "sitedatamanager:*" notifications.
+// Trigger site data calculation the first time the privacy pane or the
+// search-results pane is shown in this prefs document. siteDataSize,
+// clearSiteDataButton, and siteDataSettings all consume the resulting
+// "sitedatamanager:*" notifications.
 {
   let onPaneShown = event => {
-    if (event.detail.category === "panePrivacy") {
+    if (
+      event.detail.category === "panePrivacy" ||
+      event.detail.category === "paneSearchResults"
+    ) {
       lazy.SiteDataManager.updateSites();
       window.removeEventListener("paneshown", onPaneShown);
     }
@@ -2902,9 +2914,13 @@ Preferences.addSetting({
       });
     }
   },
-  disabled({ privateBrowsingAutoStart }) {
-    // Disable history dropdown if PBM autostart is locked on.
-    return privateBrowsingAutoStart.locked && privateBrowsingAutoStart.value;
+  disabled({ privateBrowsingAutoStart, sanitizeOnShutdown }) {
+    // Disable history dropdown if PBM autostart is locked on, or if
+    // SanitizeOnShutdown policy locks clear-on-shutdown on (forces "custom").
+    return (
+      (privateBrowsingAutoStart.locked && privateBrowsingAutoStart.value) ||
+      (sanitizeOnShutdown.locked && sanitizeOnShutdown.value)
+    );
   },
   getControlConfig(config, { privateBrowsingAutoStart }, setting) {
     let l10nId = null;
@@ -2958,6 +2974,9 @@ Preferences.addSetting({
   visible({ historyMode }) {
     return PrivateBrowsingUtils.enabled && historyMode.value == "custom";
   },
+  disabled({ historyMode }) {
+    return historyMode.disabled;
+  },
 });
 Preferences.addSetting({
   id: "rememberHistory",
@@ -2988,8 +3007,8 @@ Preferences.addSetting({
   visible({ historyMode }) {
     return historyMode.value == "custom";
   },
-  disabled({ privateBrowsingAutoStart }) {
-    return privateBrowsingAutoStart.value;
+  disabled({ privateBrowsingAutoStart, historyMode }) {
+    return privateBrowsingAutoStart.value || historyMode.disabled;
   },
 });
 
@@ -3397,7 +3416,7 @@ Preferences.addSetting({
     return deps.dohURL.value;
   },
   set(val, deps) {
-    deps.dohURL.value = val;
+    deps.dohURL.value = val.trim();
   },
 });
 
@@ -3456,9 +3475,11 @@ Preferences.addSetting({
     if (this._custom) {
       return "custom";
     }
-    let currentURI = deps.dohURL.value;
-    if (!currentURI) {
-      currentURI = deps.dohDefaultURL.value;
+    let currentURI = deps.dohURL.value || deps.dohDefaultURL.value;
+    let resolvers = lazy.DoHConfigController.currentConfig.providerList;
+    if (!resolvers.some(p => p.uri == currentURI)) {
+      this._custom = true;
+      return "custom";
     }
     return currentURI;
   },

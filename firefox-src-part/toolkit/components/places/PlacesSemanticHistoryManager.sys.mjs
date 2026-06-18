@@ -24,6 +24,35 @@ ChromeUtils.defineESModuleGetters(lazy, {
   Region: "resource://gre/modules/Region.sys.mjs",
 });
 
+/**
+ * Returns whether two model configurations represent the same embedding model.
+ * Null and undefined are considered equivalent.
+ *
+ * @param {object} a
+ *   First embedding model configuration.
+ * @param {string|null|undefined} a.featureId
+ * @param {string|null|undefined} a.modelId
+ * @param {number|null|undefined} a.embeddingDimension
+ * @param {object} b
+ *   Second embedding model configuration.
+ * @param {string|null|undefined} b.featureId
+ * @param {string|null|undefined} b.modelId
+ * @param {number|null|undefined} b.embeddingDimension
+ * @returns {boolean}
+ *   True if the configurations describe the same embedding model.
+ */
+function modelConfigMatches(a, b) {
+  // SQLite NULLs come back as JS null; resolved configs may have undefined
+  // for absent fields. Treat the two as equivalent so a benign shape
+  // mismatch does not trigger a spurious drop-and-rebuild.
+  const eq = (x, y) => (x ?? null) === (y ?? null);
+  return (
+    eq(a.featureId, b.featureId) &&
+    eq(a.modelId, b.modelId) &&
+    eq(a.embeddingDimension, b.embeddingDimension)
+  );
+}
+
 ChromeUtils.defineLazyGetter(lazy, "logger", function () {
   return lazy.PlacesUtils.getLogger({ prefix: "PlacesSemanticHistoryManager" });
 });
@@ -94,6 +123,8 @@ const ONE_MiB = 1024 * 1024;
 // minimum title length threshold; Usage len(title || description) > MIN_TITLE_LENGTH
 const MIN_TITLE_LENGTH = 4;
 
+const DEFAULT_QUERY_OVERSAMPLE = 50;
+
 /**
  * PlacesSemanticHistoryManager manages the semantic.sqlite database and provides helper
  * methods for initializing, querying, and updating semantic data.
@@ -134,9 +165,6 @@ class PlacesSemanticHistoryManager {
    * Constructor for PlacesSemanticHistoryManager.
    *
    * @param {object} options - Configuration options.
-   * @param {string} [options.backend] - The backend to use for embeddings.
-   *   See EmbeddingsGenerator.sys.mjs for a list of available backends.
-   * @param {number} [options.embeddingSize=512] - Size of embeddings used for vector operations.
    * @param {number} [options.rowLimit=10000] - Maximum number of rows to process from the database.
    * @param {string} [options.samplingAttrib="frecency"] - Attribute used for sampling rows.
    * @param {number} [options.changeThresholdCount=3] - Threshold of changed rows to trigger updates.
@@ -145,8 +173,6 @@ class PlacesSemanticHistoryManager {
    * @param {number} [options.deferredTaskInterval=DEFERRED_TASK_INTERVAL_MS] - Interval for deferred task execution.
    */
   constructor({
-    backend = "static-embeddings",
-    embeddingSize = 512,
     rowLimit = 10000,
     samplingAttrib = "frecency",
     changeThresholdCount = 3,
@@ -168,12 +194,10 @@ class PlacesSemanticHistoryManager {
       this.#finalized = true;
       return;
     }
-    this.embedder = new lazy.EmbeddingsGenerator({
-      backend,
-      embeddingSize,
-    });
+
+    this.embedder = lazy.EmbeddingsGenerator.forPlaces();
     this.semanticDB = new lazy.PlacesSemanticHistoryDatabase({
-      embeddingSize,
+      embeddingSize: this.embedder.embeddingSize,
       fileName: "places_semantic.sqlite",
     });
     this.qualifiedForSemanticSearch =
@@ -194,7 +218,7 @@ class PlacesSemanticHistoryManager {
     );
 
     this.#rowLimit = rowLimit;
-    this.#embeddingSize = embeddingSize;
+    this.#embeddingSize = this.embedder.embeddingSize;
     this.#samplingAttrib = samplingAttrib;
     this.#changeThresholdCount = changeThresholdCount;
     this.#distanceThreshold = distanceThreshold;
@@ -246,6 +270,34 @@ class PlacesSemanticHistoryManager {
   }
 
   /**
+   * Ensures the semantic DB schema/config matches the currently resolved
+   * embedder model configuration.
+   *
+   * This is invoked lazily during the first `getConnection()` call.
+   *
+   * If the active on-disk model configuration differs from the embedder's
+   * current model context, the embedding tables are recreated to match the
+   * new model dimensions and feature identifiers.
+   *
+   * @param {object} conn
+   *   Active database connection.
+   */
+  async #reconcileModelState(conn) {
+    try {
+      const desired = this.embedder.modelContext;
+      const onDisk = await this.semanticDB.getActiveModelConfig(conn);
+      if (onDisk && !modelConfigMatches(onDisk, desired)) {
+        lazy.logger.info(
+          `Model switch detected: ${onDisk.featureId}/${onDisk.embeddingDimension} -> ${desired.featureId}/${desired.embeddingDimension}`
+        );
+        await this.semanticDB.replaceEmbeddingTables(desired, conn);
+      }
+    } catch (e) {
+      lazy.logger.error("Model reconciliation failed", e);
+    }
+  }
+
+  /**
    * Connects to the semantic.sqlite database and attaches the Places DB.
    *
    * @returns {Promise<object>}
@@ -268,12 +320,14 @@ class PlacesSemanticHistoryManager {
 
     // Avoid re-entrance using a cached promise rather than handing off a conn.
     if (!this.#promiseConn) {
-      this.#promiseConn = this.semanticDB.getConnection().then(conn => {
+      this.#promiseConn = (async () => {
+        const conn = await this.semanticDB.getConnection();
         // Kick off updates.
+        await this.#reconcileModelState(conn);
         this.#createOrUpdateTask();
         this.onPagesRankChanged();
         return conn;
-      });
+      })();
     }
     return this.#promiseConn;
   }
@@ -743,46 +797,16 @@ class PlacesSemanticHistoryManager {
             lazy.logger.error(`Unable to get inserted rowid for: ${url_hash}`);
             continue;
           }
-
-          // UPSERT or INSERT OR REPLACE are not yet supported by the sqlite-vec
-          // extension, so we must manage the conflict manually.
-          // See https://github.com/asg017/sqlite-vec/issues/127.
-          try {
-            await conn.executeCached(
-              `
-              INSERT INTO vec_history (rowid, embedding, embedding_coarse)
-              VALUES (:rowid, :vector, vec_quantize_binary(:vector))
-              `,
-              {
-                rowid,
-                vector: lazy.PlacesUtils.tensorToSQLBindable(tensor),
-              }
-            );
-          } catch (error) {
-            lazy.logger.trace(
-              `Error while inserting new vector, possible conflict. Error (${error.result}): ${error.message}`
-            );
-            // Ideally we'd check for `error.result == Cr.NS_ERROR_STORAGE_CONSTRAINT`,
-            // unfortunately sqlite-vec doesn't generate a SQLITE_CONSTRAINT
-            // error in this case, so we get a generic NS_ERROR_FAILURE.
-            await conn.executeCached(
-              `
-              DELETE FROM vec_history WHERE rowid = :rowid
-              `,
-              { rowid }
-            );
-            await conn.executeCached(
-              `
-              INSERT INTO vec_history (rowid, embedding, embedding_coarse)
-              VALUES (:rowid, :vector, vec_quantize_binary(:vector))
-              `,
-              {
-                rowid,
-                vector: lazy.PlacesUtils.tensorToSQLBindable(tensor),
-              }
-            );
-          }
-
+          await conn.executeCached(
+            `
+            INSERT OR REPLACE INTO vec_history (rowid, embedding)
+            VALUES (:rowid, :vector)
+            `,
+            {
+              rowid,
+              vector: lazy.PlacesUtils.tensorToSQLBindable(tensor),
+            }
+          );
           lazy.logger.info(
             `Added embedding and mapping for url_hash: ${url_hash}`
           );
@@ -884,23 +908,26 @@ class PlacesSemanticHistoryManager {
 
     let conn = await this.getConnection();
 
+    await conn.execute(`INSERT INTO vec_history(vec_history) VALUES(:cmd)`, {
+      cmd: `oversample=${DEFAULT_QUERY_OVERSAMPLE}`,
+    });
+
     let rows = await conn.executeCached(
       `
-      WITH coarse_matches AS (
-        SELECT rowid,
-               embedding
-        FROM vec_history
-        WHERE embedding_coarse match vec_quantize_binary(:vector)
-        ORDER BY distance
-        LIMIT 100
-      ),
+      WITH
       matches AS (
-        SELECT url_hash, vec_distance_cosine(embedding, :vector) AS distance
+        SELECT rowid AS vec_rowid, url_hash
         FROM vec_history_mapping
-        JOIN coarse_matches USING (rowid)
-        WHERE distance <= :distanceThreshold
+        JOIN vec_history USING (rowid)
+        WHERE embedding MATCH (:vector)
+        AND k=2
         ORDER BY distance
-        LIMIT 2
+      ),
+      scored AS (
+        SELECT matches.url_hash,
+               vec_distance_cosine(vec_history.embedding, :vector) AS distance
+        FROM matches
+        JOIN vec_history ON vec_history.rowid = matches.vec_rowid
       )
       SELECT id,
              title,
@@ -909,8 +936,9 @@ class PlacesSemanticHistoryManager {
              frecency,
              last_visit_date
       FROM moz_places
-      JOIN matches USING (url_hash)
+      JOIN scored USING (url_hash)
       WHERE ${lazy.PAGES_FRECENCY_FIELD} <> 0
+      AND distance <= :distanceThreshold
       ORDER BY distance
       `,
       {

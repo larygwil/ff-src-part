@@ -188,6 +188,8 @@ export default class RestoreFromBackup extends MozLitElement {
           payload.os_name = this.backupServiceState?.backupFileInfo?.osName;
           payload.os_version =
             this.backupServiceState?.backupFileInfo?.osVersion;
+          payload.os_build_number =
+            this.backupServiceState?.backupFileInfo?.osBuildNumber;
           payload.telemetry_enabled =
             this.backupServiceState?.backupFileInfo?.healthTelemetryEnabled;
         }

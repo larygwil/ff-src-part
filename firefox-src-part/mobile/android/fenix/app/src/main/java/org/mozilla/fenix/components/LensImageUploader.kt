@@ -7,8 +7,11 @@ package org.mozilla.fenix.components
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Matrix
 import android.net.Uri
+import androidx.annotation.VisibleForTesting
 import androidx.core.graphics.scale
+import androidx.exifinterface.media.ExifInterface
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import mozilla.components.concept.fetch.Client
@@ -115,13 +118,50 @@ class LensImageUploader(
         }
     }
 
-    private fun decodeBitmap(uri: Uri): Bitmap? {
-        return context.contentResolver.openInputStream(uri)?.use { inputStream ->
-            BitmapFactory.decodeStream(inputStream)
-        }
+    @VisibleForTesting
+    internal fun decodeBitmap(uri: Uri): Bitmap? {
+        val bitmap = context.contentResolver.openInputStream(uri)?.use { input ->
+            BitmapFactory.decodeStream(input)
+        } ?: return null
+
+        // Camera2 writes the capture orientation as an EXIF tag rather than rotating pixels,
+        // and BitmapFactory.decodeStream discards EXIF. Re-read the tag from a fresh stream and
+        // apply it so the upload reaches Lens upright.
+        val orientation = context.contentResolver.openInputStream(uri)?.use { input ->
+            ExifInterface(input).getAttributeInt(
+                ExifInterface.TAG_ORIENTATION,
+                ExifInterface.ORIENTATION_NORMAL,
+            )
+        } ?: ExifInterface.ORIENTATION_NORMAL
+
+        return applyExifOrientation(bitmap, orientation)
     }
 
-    private fun fetchBitmap(imageUrl: String): Bitmap? {
+    private fun applyExifOrientation(bitmap: Bitmap, orientation: Int): Bitmap {
+        val matrix = Matrix()
+        when (orientation) {
+            ExifInterface.ORIENTATION_ROTATE_90 -> matrix.postRotate(ROTATE_90)
+            ExifInterface.ORIENTATION_ROTATE_180 -> matrix.postRotate(ROTATE_180)
+            ExifInterface.ORIENTATION_ROTATE_270 -> matrix.postRotate(ROTATE_270)
+            ExifInterface.ORIENTATION_FLIP_HORIZONTAL -> matrix.preScale(-1f, 1f)
+            ExifInterface.ORIENTATION_FLIP_VERTICAL -> matrix.preScale(1f, -1f)
+            ExifInterface.ORIENTATION_TRANSPOSE -> {
+                matrix.postRotate(ROTATE_90)
+                matrix.preScale(-1f, 1f)
+            }
+            ExifInterface.ORIENTATION_TRANSVERSE -> {
+                matrix.postRotate(ROTATE_270)
+                matrix.preScale(-1f, 1f)
+            }
+            else -> return bitmap
+        }
+        val rotated = Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+        if (rotated !== bitmap) bitmap.recycle()
+        return rotated
+    }
+
+    @VisibleForTesting
+    internal fun fetchBitmap(imageUrl: String): Bitmap? {
         val request = Request(
             url = imageUrl,
             method = Request.Method.GET,
@@ -137,7 +177,14 @@ class LensImageUploader(
                 if (response.status !in SUCCESS_RANGE) return@use null
                 val bytes = response.body.useStream { readAtMost(it, MAX_DOWNLOAD_BYTES) }
                     ?: return@use null
-                decodeSampledBitmap(bytes)
+                val bitmap = decodeSampledBitmap(bytes) ?: return@use null
+                // BitmapFactory.decodeByteArray discards EXIF the same way decodeStream does;
+                // web JPEGs frequently carry an Orientation tag, so apply it here too.
+                val orientation = ExifInterface(ByteArrayInputStream(bytes)).getAttributeInt(
+                    ExifInterface.TAG_ORIENTATION,
+                    ExifInterface.ORIENTATION_NORMAL,
+                )
+                applyExifOrientation(bitmap, orientation)
             }
         } catch (_: IOException) {
             null
@@ -205,6 +252,9 @@ class LensImageUploader(
         private const val JPEG_QUALITY = 85
         private const val CONNECT_TIMEOUT_MS = 15_000
         private const val READ_TIMEOUT_MS = 30_000
+        private const val ROTATE_90 = 90f
+        private const val ROTATE_180 = 180f
+        private const val ROTATE_270 = 270f
 
         /** Hard cap on the bytes read from a remote image. Images above this are discarded. */
         private const val MAX_DOWNLOAD_BYTES = 20 * 1024 * 1024

@@ -13,6 +13,8 @@ ChromeUtils.importESModule(
 const lazy = XPCOMUtils.declareLazy({
   AddonSearchEngine:
     "moz-src:///toolkit/components/search/AddonSearchEngine.sys.mjs",
+  AppProvidedConfigEngine:
+    "moz-src:///toolkit/components/search/ConfigSearchEngine.sys.mjs",
   PlacesUtils: "resource://gre/modules/PlacesUtils.sys.mjs",
   SearchService: "moz-src:///toolkit/components/search/SearchService.sys.mjs",
   SearchUIUtils: "moz-src:///browser/components/search/SearchUIUtils.sys.mjs",
@@ -183,7 +185,7 @@ class EngineStore {
     this.notifyRowCountChanged(0, visibleEngines.length);
 
     gSearchPane.showRestoreDefaults(
-      engines.some(e => e.isAppProvided && e.hidden)
+      engines.some(e => e instanceof lazy.AppProvidedConfigEngine && e.hidden)
     );
   }
 
@@ -267,10 +269,11 @@ class EngineStore {
     var clonedObj = {
       iconURL: null,
     };
-    for (let i of ["id", "name", "alias", "hidden", "isAppProvided"]) {
+    for (let i of ["id", "name", "alias", "hidden"]) {
       clonedObj[i] = aEngine[i];
     }
     clonedObj.isAddonEngine = aEngine instanceof lazy.AddonSearchEngine;
+    clonedObj.isAppProvided = aEngine instanceof lazy.AppProvidedConfigEngine;
     clonedObj.isUserEngine = aEngine instanceof lazy.UserSearchEngine;
     clonedObj.originalEngine = aEngine;
 
@@ -354,7 +357,7 @@ class EngineStore {
 
     this.engines.splice(index, 1)[0];
 
-    if (aEngine.isAppProvided) {
+    if (aEngine instanceof lazy.AppProvidedConfigEngine) {
       gSearchPane.showRestoreDefaults(true);
     }
 

@@ -145,7 +145,7 @@ ContentAreaDropListener.prototype = {
       Ci.nsIURIFixup.FIXUP_FLAG_FIX_SCHEME_TYPOS |
       Ci.nsIURIFixup.FIXUP_FLAG_ALLOW_KEYWORD_LOOKUP;
     let info = Services.uriFixup.getFixupURIInfo(uriString, fixupFlags);
-    if (!info.fixedURI || info.keywordProviderName) {
+    if (!info.fixedURI || info.keywordProviderId) {
       // Loading a keyword search should always be fine for all cases.
       return uriString;
     }

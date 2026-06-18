@@ -39,6 +39,8 @@ function isoToMicroseconds(iso) {
  * @property {string|null} visitDate - ISO timestamp of last visit, or null.
  * @property {number} visitCount - Number of visits (defaults to 0).
  * @property {number} relevanceScore - Ranking score (semantic relevance or frecency fallback).
+ * @property {string|null} thumbnail - og:image URL from moz_places.preview_image_url,
+ *   or null when none is recorded or the row came from a Places history node.
  */
 
 /**
@@ -51,7 +53,7 @@ function isoToMicroseconds(iso) {
  * @returns {HistoryRow}              // normalized history entry
  */
 function buildHistoryRow(row, fromNode = false) {
-  let title, url, visitDateIso, visitCount, distance, frecency;
+  let title, url, visitDateIso, visitCount, distance, frecency, thumbnail;
 
   if (!fromNode) {
     // from semantic / SQL result (mozIStorageRow)
@@ -60,6 +62,7 @@ function buildHistoryRow(row, fromNode = false) {
     visitCount = row.getResultByName("visit_count");
     distance = row.getResultByName("distance");
     frecency = row.getResultByName("frecency");
+    thumbnail = row.getResultByName("preview_image_url") || null;
 
     // convert last_visit_date to ISO format
     const lastVisitRaw = row.getResultByName("last_visit_date");
@@ -77,6 +80,8 @@ function buildHistoryRow(row, fromNode = false) {
     url = row.uri;
     visitCount = row.accessCount;
     frecency = row.frecency;
+    // nsINavHistoryResultNode doesn't expose preview_image_url.
+    thumbnail = null;
 
     // convert time to ISO format
     const lastVisitDate = lazy.PlacesUtils.toDate(row.time);
@@ -96,6 +101,7 @@ function buildHistoryRow(row, fromNode = false) {
     visitDate: visitDateIso, // ISO timestamp format
     visitCount: visitCount || 0,
     relevanceScore: relevanceScore || 0, // Use embedding's distance as relevance score when available
+    thumbnail,
   };
 }
 
@@ -293,9 +299,11 @@ async function searchBrowsingHistoryTimeRange({
                  NULL AS distance,
                  visit_count,
                  frecency,
-                 last_visit_date
+                 last_visit_date,
+                 preview_image_url
           FROM moz_places
           WHERE frecency <> 0
+          AND hidden = 0
           AND (:startTs IS NULL OR last_visit_date >= :startTs)
           AND (:endTs IS NULL OR last_visit_date <= :endTs)
           ORDER BY last_visit_date DESC, frecency DESC
@@ -368,13 +376,12 @@ function extractVectorFromTensor(tensor) {
 /**
  * Semantic browsing history search using embeddings.
  *
- * This performs a two-stage retrieval for performance:
- * 1. Coarse search: over the quantized embeddings (`embedding_coarse`) to
- *    quickly select a dynamically sized candidate set (`coarseLimit`).
- *    This bounds the expensive cosine-distance computation.
- * 2. Refined search: computes the exact cosine distance for those candidates,
- *    applies the caller-provided `distanceThreshold`, and returns the best
- *    matches up to `historyLimit`.
+ * vec_history is rescore-indexed with a bit quantizer. vec0 internally does
+ * the coarse-then-refine pass: the bit-quantized index produces
+ * `k * oversample_search` candidates, then the exact cosine distance is
+ * computed on those candidates and the top `k` are returned. We keep the
+ * existing tuning intent (`coarseLimit = max(historyLimit * 15, 200)`) by
+ * deriving the oversample factor from it.
  *
  * @param {object} params
  * @param {string} params.searchTerm
@@ -399,27 +406,38 @@ async function searchBrowsingHistorySemantic({
   const vec = extractVectorFromTensor(tensor);
   const vector = lazy.PlacesUtils.tensorToSQLBindable(vec);
 
-  // Coarse-stage candidate pool (dynamic)
+  // Translate the legacy coarse-candidate pool size into vec0's oversample
+  // factor: candidates examined in the coarse pass = historyLimit * oversample.
+  // Clamp to vec0's accepted range (1..128).
   const coarseLimit = Math.max(historyLimit * 15, 200);
+  const oversample = Math.min(
+    128,
+    Math.max(1, Math.ceil(coarseLimit / historyLimit))
+  );
 
   let conn = await semanticManager.getConnection();
+
+  // Set the per-search oversample on the rescore column. This persists on
+  // the vec0 vtab until changed again.
+  await conn.execute(`INSERT INTO vec_history(vec_history) VALUES(:cmd)`, {
+    cmd: `oversample=${oversample}`,
+  });
+
   const results = await conn.executeCached(
     `
-    WITH coarse_matches AS (
-      SELECT rowid,
-             embedding
-      FROM vec_history
-      WHERE embedding_coarse match vec_quantize_binary(:vector)
-      ORDER BY distance
-      LIMIT :coarseLimit
+    WITH matches AS (
+      SELECT m.rowid AS vec_rowid, m.url_hash
+      FROM vec_history v
+      JOIN vec_history_mapping m USING (rowid)
+      WHERE v.embedding MATCH :vector
+        AND k = :limit
+      ORDER BY v.distance
     ),
-    matches AS (
-      SELECT url_hash, vec_distance_cosine(embedding, :vector) AS distance
-      FROM vec_history_mapping
-      JOIN coarse_matches USING (rowid)
-      WHERE distance <= :distanceThreshold
-      ORDER BY distance
-      LIMIT :limit
+    scored AS (
+      SELECT matches.url_hash,
+             vec_distance_cosine(vec_history.embedding, :vector) AS distance
+      FROM matches
+      JOIN vec_history ON vec_history.rowid = matches.vec_rowid
     )
     SELECT id,
            title,
@@ -427,10 +445,13 @@ async function searchBrowsingHistorySemantic({
            distance,
            visit_count,
            frecency,
-           last_visit_date
+           last_visit_date,
+           preview_image_url
     FROM moz_places
-    JOIN matches USING (url_hash)
+    JOIN scored USING (url_hash)
     WHERE frecency <> 0
+    AND hidden = 0
+    AND distance <= :distanceThreshold
     AND (:startTs IS NULL OR last_visit_date >= :startTs)
     AND (:endTs IS NULL OR last_visit_date <= :endTs)
     ORDER BY distance
@@ -439,7 +460,6 @@ async function searchBrowsingHistorySemantic({
       vector,
       distanceThreshold,
       limit: historyLimit,
-      coarseLimit,
       startTs,
       endTs,
     }

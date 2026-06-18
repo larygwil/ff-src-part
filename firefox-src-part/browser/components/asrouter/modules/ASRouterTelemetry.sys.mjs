@@ -190,22 +190,9 @@ export class ASRouterTelemetry {
     return { ping, pingType: "smart_window_promo" };
   }
 
-  /**
-   * Per Bug 1484035, Moments metrics comply with following policies:
-   * 1). In release, it collects impression_id, and treats bucket_id as message_id
-   * 2). In prerelease, it collects client_id and message_id
-   * 3). In shield experiments conducted in release, it collects client_id and message_id
-   */
   async applyMomentsPolicy(ping) {
-    if (
-      lazy.UpdateUtils.getUpdateChannel(true) === "release" &&
-      !this.isInCFRCohort
-    ) {
-      ping.message_id = "n/a";
-      ping.impression_id = this._impressionId;
-    } else {
-      ping.client_id = await this.telemetryClientId;
-    }
+    ping.client_id = await this.telemetryClientId;
+    ping.browser_session_id = lazy.browserSessionId;
     delete ping.action;
     return { ping, pingType: "moments" };
   }

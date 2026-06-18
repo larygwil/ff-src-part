@@ -851,11 +851,11 @@ export class StyleEditorUI extends EventEmitter {
     this.#copyUrlItem.hidden = !this.#contextMenuStyleSheet;
 
     if (this.#contextMenuStyleSheet) {
-      this.#openLinkNewTabItem.setAttribute(
+      this.#openLinkNewTabItem.toggleAttribute(
         "disabled",
         !this.#contextMenuStyleSheet.href
       );
-      this.#copyUrlItem.setAttribute(
+      this.#copyUrlItem.toggleAttribute(
         "disabled",
         !this.#contextMenuStyleSheet.href
       );

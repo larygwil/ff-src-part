@@ -165,6 +165,8 @@
   <string name="browser_menu_stop">Peata</string>
   <!-- Browser menu button that opens the extensions manager -->
   <string name="browser_menu_extensions">Lisad</string>
+  <!-- Browser menu group that contains additional settings in collapsed state -->
+  <string name="browser_menu_more_settings">Rohkem</string>
   <!-- Browser menu button that opens account settings -->
   <string name="browser_menu_account_settings">Konto andmed</string>
   <!-- Browser menu button that opens the settings menu -->
@@ -207,12 +209,8 @@
   <string name="browser_menu_new_private_tab">Uus privaatne kaart</string>
   <!-- Browser menu label that navigates to the Password screen -->
   <string name="browser_menu_passwords">Paroolid</string>
-  <!--
-    Browser Toolbar
-
-    Content description for the Home screen button on the browser toolbar
-  -->
-  <string name="browser_toolbar_home">Avaleht</string>
+  <!-- Browser menu label that bookmarks the currently visited page -->
+  <string name="browser_menu_bookmark_this_page_2">Lisa leht järjehoidjatesse</string>
   <!--
     Browser Toolbar
 
@@ -229,12 +227,6 @@
   <string name="default_locale_text">Järgitakse seadme keelt</string>
   <!-- Placeholder text shown in the search bar before a user enters text -->
   <string name="locale_search_hint">Otsi keelt</string>
-  <!--
-    Search Fragment
-
-    Button in the search view that lets a user search by scanning a QR code
-  -->
-  <string name="search_scan_button_2">Skanni QR-kood</string>
   <!--
     Search Fragment
 
@@ -575,6 +567,10 @@
   <string name="preference_top_toolbar">Üleval</string>
   <!-- Preference for using bottom toolbar -->
   <string name="preference_bottom_toolbar">All</string>
+  <!-- Preference for using simple toolbar -->
+  <string name="preference_simple_toolbar">Lihtne</string>
+  <!-- Preference for using expanded toolbar -->
+  <string name="preference_expanded_toolbar">Laiendatud</string>
   <!--
     Theme Preferences
 
@@ -615,8 +611,6 @@
   <string name="library_desktop_bookmarks_unfiled">Muud järjehoidjad</string>
   <!-- Option in Library to open History page -->
   <string name="library_history">Ajalugu</string>
-  <!-- Option in Library to open a new tab -->
-  <string name="library_new_tab">Uus kaart</string>
   <!-- Settings Page Title -->
   <string name="settings_title">Sätted</string>
   <!-- Content description (not visible, for screen readers etc.): "Close button for library settings" -->
@@ -789,6 +783,8 @@
     %1$d is the number of downloads selected
   -->
   <string name="download_multi_select_title">%1$d allalaadimist valitud</string>
+  <!-- Title for the dialog that is shown when there is not enough storage space to download a file. -->
+  <string name="download_file_has_not_enough_storage_dialog_title">Ei ole piisavalt ruumi</string>
   <!-- Text for the button to delete a single downloaded file item -->
   <string name="download_delete_item">Kustuta</string>
   <!-- Text for the button to share the download URL -->
@@ -896,12 +892,8 @@
   <string name="edit_bookmark_folder_fragment_title">Kausta muutmine</string>
   <!-- Bookmark URL editing field label -->
   <string name="bookmark_url_label">URL</string>
-  <!-- Bookmark FOLDER editing field label -->
-  <string name="bookmark_folder_label">KAUST</string>
   <!-- Text indicating which folder a bookmark or folder will be saved in -->
   <string name="bookmark_save_in_label">Salvestatakse</string>
-  <!-- Bookmark NAME editing field label -->
-  <string name="bookmark_name_label">NIMI</string>
   <!-- Label for a text input field for a bookmark or folder name -->
   <string name="bookmark_name_label_normal_case">Nimi</string>
   <!-- Bookmark select folder screen title -->
@@ -1017,8 +1009,6 @@
   <string name="collections_header">Kollektsioonid</string>
   <!-- Content description (not visible, for screen readers etc.): Opens the collection menu when pressed -->
   <string name="collection_menu_button_content_description">Kollektsioonide menüü</string>
-  <!-- Label to describe what collections are to a new user without any collections -->
-  <string name="no_collections_description2">Kogu asju, mis on sulle olulised.\nGrupeeri sarnaseid otsinguid, saite ja kaarte, et hiljem neile kiiresti ligi pääseda.</string>
   <!-- Title for the "select tabs" step of the collection creator -->
   <string name="create_collection_select_tabs">Kaartide valimine</string>
   <!-- Title for the "select collection" step of the collection creator -->
@@ -1496,6 +1486,8 @@
   <string name="saved_login_clear_username">Tühjenda kasutajanimi</string>
   <!-- Content Description (for screenreaders etc) read for the button to clear the hostname field while creating a login -->
   <string name="saved_login_clear_hostname">Tühjenda sait</string>
+  <!-- Delete text for the login detail menu delete button -->
+  <string name="login_detail_menu_delete_button">Kustuta</string>
   <!-- Content Description (for screenreaders etc) read for the button to open a site in logins -->
   <string name="saved_login_open_site">Ava sait brauseris</string>
   <!-- Content Description (for screenreaders etc) read for the button to reveal a password in logins -->
@@ -1791,8 +1783,6 @@
   <string name="google_search_engine_suggestion_header">Google\'i otsing</string>
   <!-- Default browser card text -->
   <string name="default_browser_experiment_card_text" tools:ignore="BrandUsage">Määra Firefox automaatselt avama linke, e-posti ja sõnumeid.</string>
-  <!-- Content description for close button in collection placeholder. -->
-  <string name="remove_home_collection_placeholder_content_description">Eemalda</string>
   <!-- Content description radio buttons with a link to more information -->
   <string name="radio_preference_info_content_description">Rohkema teabe jaoks puuduta</string>
   <!-- Content description for the action bar "up" button -->
@@ -1937,6 +1927,8 @@
   <string name="protection_panel_permissions_title">Õigused</string>
   <!-- Button text on the clear site data dialog to allow users to cancel the action and not clear the site data. -->
   <string name="clear_site_data_dialog_negative_button_text">Loobu</string>
+  <!-- The continue button label -->
+  <string name="micro_survey_continue_button_label" tools:ignore="UnusedResources">Jätka</string>
   <!-- TextField Design System Component -->
 
   <!-- Label for the primary action button to unlock private tabs -->

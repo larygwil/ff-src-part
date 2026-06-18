@@ -1603,35 +1603,51 @@ export class _ASRouter {
     switch (message.template) {
       case "cfr_doorhanger":
       case "milestone_message":
-        if (force) {
-          CFRPageActions.forceRecommendation(
-            browser,
-            message,
-            this.dispatchCFRAction
-          );
-        } else {
-          CFRPageActions.addRecommendation(
-            browser,
-            trigger.param && trigger.param.host,
-            message,
-            this.dispatchCFRAction
-          );
+        // @TODO Bug 2041980: Remove CFRPageActions entirely. For now these are
+        // just disabled outside of automated tests.
+        if (
+          Cu.isInAutomation ||
+          Services.env.exists("XPCSHELL_TEST_PROFILE_DIR") ||
+          Services.env.get("MOZ_AUTOMATION")
+        ) {
+          if (force) {
+            CFRPageActions.forceRecommendation(
+              browser,
+              message,
+              this.dispatchCFRAction
+            );
+          } else {
+            CFRPageActions.addRecommendation(
+              browser,
+              trigger.param && trigger.param.host,
+              message,
+              this.dispatchCFRAction
+            );
+          }
         }
         break;
       case "cfr_urlbar_chiclet":
-        if (force) {
-          CFRPageActions.forceRecommendation(
-            browser,
-            message,
-            this.dispatchCFRAction
-          );
-        } else {
-          CFRPageActions.addRecommendation(
-            browser,
-            null,
-            message,
-            this.dispatchCFRAction
-          );
+        // @TODO Bug 2041980: Remove CFRPageActions entirely. For now these are
+        // just disabled outside of automated tests.
+        if (
+          Cu.isInAutomation ||
+          Services.env.exists("XPCSHELL_TEST_PROFILE_DIR") ||
+          Services.env.get("MOZ_AUTOMATION")
+        ) {
+          if (force) {
+            CFRPageActions.forceRecommendation(
+              browser,
+              message,
+              this.dispatchCFRAction
+            );
+          } else {
+            CFRPageActions.addRecommendation(
+              browser,
+              null,
+              message,
+              this.dispatchCFRAction
+            );
+          }
         }
         break;
       case "toolbar_badge":
@@ -2423,15 +2439,6 @@ export class _ASRouter {
       template: "pb_newtab",
     });
     Glean.messagingSystem.messageRequestTime.stopAndAccumulate(timerId);
-
-    // Format urls if any are defined
-    ["infoLinkUrl"].forEach(key => {
-      if (message?.content?.[key]) {
-        message.content[key] = Services.urlFormatter.formatURL(
-          message.content[key]
-        );
-      }
-    });
 
     return { message };
   }

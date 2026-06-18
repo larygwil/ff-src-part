@@ -11,7 +11,11 @@
 const lazy = {};
 
 ChromeUtils.defineESModuleGetters(lazy, {
+  AppProvidedConfigEngine:
+    "moz-src:///toolkit/components/search/ConfigSearchEngine.sys.mjs",
   BrowserUtils: "resource://gre/modules/BrowserUtils.sys.mjs",
+  ConfigSearchEngine:
+    "moz-src:///toolkit/components/search/ConfigSearchEngine.sys.mjs",
   OpenSearchManager:
     "moz-src:///browser/components/search/OpenSearchManager.sys.mjs",
   PrivateBrowsingUtils: "resource://gre/modules/PrivateBrowsingUtils.sys.mjs",
@@ -159,7 +163,11 @@ export class SearchModeSwitcher {
       let engine = lazy.UrlbarSearchUtils.getEngineByName(
         this.#input.searchMode?.engineName
       );
-      if (engine && engine.isConfigEngine && !engine.hasBeenUsed) {
+      if (
+        engine &&
+        engine instanceof lazy.ConfigSearchEngine &&
+        !engine.hasBeenUsed
+      ) {
         engine.markAsUsed();
       }
     }
@@ -612,6 +620,13 @@ export class SearchModeSwitcher {
       this.#panelList.focusWalker.currentNode = this.#panelList;
       this.#panelList.focusWalker.nextNode();
     }
+
+    // Hide footer separator if there are no menuitems between both separators.
+    footerSeparator.toggleAttribute(
+      "hidden",
+      footerSeparator.previousElementSibling == installedEngineSeparator
+    );
+
     this.#panelList.dispatchEvent(new Event("rebuild"));
   }
 
@@ -658,7 +673,7 @@ export class SearchModeSwitcher {
     menuitem.setAttribute("title", engine.name);
     menuitem.setAttribute("closemenu", "none");
 
-    if (engine.isNew() && engine.isAppProvided) {
+    if (engine.isNew() && engine instanceof lazy.AppProvidedConfigEngine) {
       menuitem.setAttribute("badge-type", "new");
     }
 
@@ -742,7 +757,9 @@ export class SearchModeSwitcher {
     if (this.#input.sapName == "urlbar") {
       // TODO do we really need to distinguish here?
       Glean.urlbarUnifiedsearchbutton.picked[
-        searchEngine.isConfigEngine ? "builtin_search" : "addon_search"
+        searchEngine instanceof lazy.ConfigSearchEngine
+          ? "builtin_search"
+          : "addon_search"
       ].add(1);
     }
   }

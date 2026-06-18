@@ -1,4 +1,4 @@
-import { MESSAGE_CONV_ID_INDEX } from "./ChatSql.sys.mjs";
+import { MESSAGE_CONV_ID_INDEX, LLM_TELEMETRY_TABLE } from "./ChatSql.sys.mjs";
 
 /*
  This Source Code Form is subject to the terms of the Mozilla Public
@@ -147,6 +147,46 @@ async function applyV7(conn, version) {
   `);
 }
 
+// Add tool_ui_data_jsonb column to the message table
+// so toolUIData rendered proper UI type from ADD_UI_TOOL
+async function applyV8(conn, version) {
+  if (version >= 8) {
+    return;
+  }
+
+  const columns = await getColumns(conn, "message");
+  if (columns.has("tool_ui_data_jsonb")) {
+    return;
+  }
+
+  await conn.execute("ALTER TABLE message ADD COLUMN tool_ui_data_jsonb BLOB");
+}
+
+// Create a new table for LLM telemetry
+async function applyV9(conn, version) {
+  if (version >= 9) {
+    return;
+  }
+
+  await conn.execute(LLM_TELEMETRY_TABLE);
+}
+
+// Persist serp URLs to conversation table
+async function applyV10(conn, version) {
+  if (version >= 10) {
+    return;
+  }
+
+  const columns = await getColumns(conn, "conversation");
+  if (columns.has("serp_urls_for_anonymous_fetch_jsonb")) {
+    return;
+  }
+
+  await conn.execute(
+    "ALTER TABLE conversation ADD COLUMN serp_urls_for_anonymous_fetch_jsonb BLOB"
+  );
+}
+
 /**
  * Array of migration functions to run in the order they should be run in.
  *
@@ -159,4 +199,7 @@ export const migrations = [
   applyV5,
   applyV6,
   applyV7,
+  applyV8,
+  applyV9,
+  applyV10,
 ];

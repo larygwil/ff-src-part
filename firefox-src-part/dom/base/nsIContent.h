@@ -63,7 +63,7 @@ class nsIContent : public nsINode {
   // If you're using the external API, the only thing you can know about
   // nsIContent is that it exists with an IID
 
-  explicit nsIContent(already_AddRefed<mozilla::dom::NodeInfo>&& aNodeInfo)
+  explicit nsIContent(already_AddRefed<mozilla::dom::NodeInfo> aNodeInfo)
       : nsINode(std::move(aNodeInfo)) {
     MOZ_ASSERT(mNodeInfo);
     MOZ_ASSERT(static_cast<nsINode*>(this) == reinterpret_cast<nsINode*>(this));
@@ -586,6 +586,13 @@ class nsIContent : public nsINode {
       nsIPrincipal* aSubjectPrincipal = nullptr) const;
 
   void GetEventTargetParent(mozilla::EventChainPreVisitor& aVisitor) override;
+
+  /**
+   * Whenever a HeadingReset or HeadingOffset attribute changes on an ancestor,
+   * or a node is slotted/unslotted, all descendant heading elements (including
+   * those in shadow trees and assigned to slots) should be updated.
+   */
+  void UpdateHeadingElementsOffsetChange();
 
   bool IsPurple() const { return mRefCnt.IsPurple(); }
 
