@@ -230,7 +230,9 @@ async function createShortcut(aTaskbarTab, aFileIcon, aRegistry, aWindow) {
   }
 
   if (AppConstants.platform === "linux") {
-    let appId = "org.mozilla.firefox.webapp-" + aTaskbarTab.id;
+    let appId = lazy.TaskbarTabsUtils._determineNewDesktopEntryName(
+      aTaskbarTab.id
+    );
     await lazy.ShellService.createLinuxDesktopEntry(
       appId,
       aTaskbarTab.name,

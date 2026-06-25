@@ -387,6 +387,26 @@ export const AIWindowUI = {
   },
 
   /**
+   * Restores the per-tab model selection on the sidebar ai-window. A null
+   * modelChoiceId falls back to the global default model.
+   *
+   * @param {Window} win
+   * @param {?string} modelChoiceId
+   */
+  updateSidebarModel(win, modelChoiceId) {
+    if (!this.isSidebarOpen(win)) {
+      return;
+    }
+
+    const aiWindowEl = this._getSidebarAiWindow(win);
+    if (!aiWindowEl?.restoreModelChoiceOverride) {
+      return;
+    }
+
+    aiWindowEl.restoreModelChoiceOverride(modelChoiceId);
+  },
+
+  /**
    * Triggers updating the starter prompts on the active ai-window
    * for the given chrome window. The target is resolved by mode:
    * sidebar uses the chrome window's sidebar ai-window, fullpage

@@ -744,6 +744,7 @@ toolbar[keyNav]:not([collapsed], [customizing]) toolbartabstop,
   toolbarpaletteitem[place="palette"] > & > .toolbarbutton-badge-stack > .toolbarbutton-icon {
     min-height: 16px;
     max-height: 16px;
+    max-width: var(--size-image-small);
   }
 }
 

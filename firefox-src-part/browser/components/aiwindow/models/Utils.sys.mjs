@@ -21,14 +21,21 @@ import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs";
 const APIKEY_PREF = "browser.smartwindow.apiKey";
 export const MODEL_PREF = "browser.smartwindow.model";
 const ENDPOINT_PREF = "browser.smartwindow.endpoint";
+const CUSTOM_ENDPOINT_PREF = "browser.smartwindow.customEndpoint";
+const CUSTOM_MODEL_CHOICE_ID = "0";
 const GENERIC_MODEL_NAME = "generic";
 const MODEL_CHOICE_PREF = "browser.smartwindow.firstrun.modelChoice";
 
 const lazy = XPCOMUtils.declareLazy({
   RemoteSettings: "resource://services-settings/remote-settings.sys.mjs",
   getFxAccountsSingleton: "resource://gre/modules/FxAccounts.sys.mjs",
-  modelChoice: { pref: MODEL_CHOICE_PREF, default: "" },
 });
+
+/**
+ * The default endpoint used for preset models
+ */
+const DEFAULT_ENDPOINT =
+  "https://mlpa-prod-prod-mozilla.global.ssl.fastly.net/v1";
 
 /**
  * Default engine ID used for all AI Window features
@@ -373,6 +380,21 @@ export class openAIEngine {
   #flowId = null;
 
   /**
+   * Base URL for this engine instance. Resolved during build time from
+   * the selected model choice.
+   *
+   * @type {string | null}
+   */
+  #baseURL = null;
+
+  /**
+   * Resolved API key for this engine instance.
+   *
+   * @type {string | null}
+   */
+  #apiKey = null;
+
+  /**
    * Gets the Remote Settings client for AI window configurations.
    *
    * @returns {RemoteSettingsClient}
@@ -403,7 +425,37 @@ export class openAIEngine {
    * @returns {boolean} True if the endpoint pref has a user-set value.
    */
   static hasCustomEndpoint() {
-    return Services.prefs.prefHasUserValue(ENDPOINT_PREF);
+    return Services.prefs.prefHasUserValue(CUSTOM_ENDPOINT_PREF);
+  }
+
+  /**
+   * Whether the current engine instance uses a custom model endpoint.
+   *
+   * @returns {boolean}
+   */
+  get isCustomEndpoint() {
+    return this.#baseURL !== null && this.#baseURL !== openAIEngine.endpoint;
+  }
+
+  /**
+   * Returns the endpoint and API key for a model choice.
+   *
+   * @param {string} [modelChoiceId] - Selected model choice id
+   * @returns {{baseURL: string, apiKey: string}}
+   * @throws {Error} If the custom model choice is selected but not configured.
+   */
+  static resolveEndpointConfig(modelChoiceId) {
+    if (modelChoiceId === CUSTOM_MODEL_CHOICE_ID) {
+      const baseURL = Services.prefs.getStringPref(CUSTOM_ENDPOINT_PREF, "");
+      if (!baseURL) {
+        throw new Error("Custom model choice selected but not configured");
+      }
+      return {
+        baseURL,
+        apiKey: Services.prefs.getStringPref(APIKEY_PREF, ""),
+      };
+    }
+    return { baseURL: openAIEngine.endpoint, apiKey: "" };
   }
 
   /**
@@ -415,9 +467,19 @@ export class openAIEngine {
    * @param {string} options.purpose
    * @param {string|null} [options.flowId]
    * @param {string} options.feature
+   * @param {string} [options.baseURL] - Endpoint base URL
+   * @param {string} [options.apiKey] - API key for the endpoint
    * @returns {Promise<openAIEngine>}
    */
-  static async build({ model, serviceType, purpose, flowId, feature }) {
+  static async build({
+    model,
+    serviceType,
+    purpose,
+    flowId,
+    feature,
+    baseURL = openAIEngine.endpoint,
+    apiKey = "",
+  }) {
     const engine = new openAIEngine();
     const engineId = `${DEFAULT_ENGINE_ID}-${feature}-${model}`;
     engine.#engineId = engineId;
@@ -426,13 +488,17 @@ export class openAIEngine {
     engine.#serviceType = serviceType;
     engine.#purpose = purpose;
     engine.#flowId = flowId;
+    engine.#baseURL = baseURL;
+    engine.#apiKey = apiKey;
     engine.engineInstance = await openAIEngine.#createOpenAIEngine(
       engineId,
       serviceType,
       purpose,
       model,
       flowId,
-      feature
+      feature,
+      baseURL,
+      apiKey
     );
     return engine;
   }
@@ -473,13 +539,15 @@ export class openAIEngine {
   /**
    * Creates an OpenAI engine instance
    *
-   * @param {string} engineId     The identifier for the engine instance
-   * @param {string} serviceType  The type of message to be sent ("ai", "memories", "s2s")
-   * @param {string} purpose      The purpose of the request, used for telemetry tracking
-   * @param {string | null} modelId  The resolved model ID (already contains fallback logic)
-   * @param {string | null} flowId   Flow ID for correlating frontend and backend telemetry
-   * @param {string | null} featureId  Feature name passed to PipelineOptions
-   * @returns {Promise<object>}   The configured engine instance
+   * @param {string} engineId - The identifier for the engine instance
+   * @param {string} serviceType - The type of message to be sent ("ai", "memories", "s2s")
+   * @param {string} purpose - The purpose of the request, used for telemetry tracking
+   * @param {string | null} modelId - The resolved model ID (already contains fallback logic)
+   * @param {string | null} flowId - Flow ID for correlating frontend and backend telemetry
+   * @param {string | null} featureId - Feature name passed to PipelineOptions
+   * @param {string} baseURL - The endpoint base URL for this engine instance
+   * @param {string} apiKey - The API key for this engine instance
+   * @returns {Promise<object>} - The configured engine instance
    */
   static async #createOpenAIEngine(
     engineId,
@@ -487,7 +555,9 @@ export class openAIEngine {
     purpose,
     modelId = null,
     flowId = null,
-    featureId = null
+    featureId = null,
+    baseURL,
+    apiKey
   ) {
     const extraHeadersPref = Services.prefs.getStringPref(
       "browser.smartwindow.extraHeaders",
@@ -503,9 +573,9 @@ export class openAIEngine {
 
     try {
       const engineInstance = await openAIEngine._createEngine({
-        apiKey: this.hasCustomEndpoint() ? this.apiKey : "",
+        apiKey,
         backend: "openai",
-        baseURL: this.endpoint,
+        baseURL,
         engineId,
         featureId,
         flowId,
@@ -546,7 +616,7 @@ export class openAIEngine {
     } catch (ex) {
       // Skip the token retry flow when using a custom endpoint,
       // as the retry logic only applies to FxAccounts tokens.
-      if (!this._is401Error(ex) || openAIEngine.hasCustomEndpoint()) {
+      if (!this._is401Error(ex) || this.isCustomEndpoint) {
         throw ex;
       }
 
@@ -603,7 +673,9 @@ export class openAIEngine {
       this.#purpose,
       this.model,
       this.#flowId,
-      this.feature
+      this.feature,
+      this.#baseURL,
+      this.#apiKey
     );
   }
 
@@ -643,7 +715,7 @@ export class openAIEngine {
     } catch (ex) {
       // Skip the token retry flow when using a custom endpoint,
       // as the retry logic only applies to FxAccounts tokens.
-      if (!this._is401Error(ex) || openAIEngine.hasCustomEndpoint()) {
+      if (!this._is401Error(ex) || this.isCustomEndpoint) {
         throw ex;
       }
 
@@ -704,7 +776,7 @@ XPCOMUtils.defineLazyPreferenceGetter(
   openAIEngine,
   "endpoint",
   ENDPOINT_PREF,
-  "https://mlpa-prod-prod-mozilla.global.ssl.fastly.net/v1"
+  DEFAULT_ENDPOINT
 );
 
 XPCOMUtils.defineLazyPreferenceGetter(openAIEngine, "apiKey", APIKEY_PREF, "");
@@ -764,7 +836,7 @@ export async function resolveChatModelChoice(
  * @param {string} choiceId - Model choice ID (e.g., "1", "2", "3", "0")
  * @returns {Promise<{model: string, ownerName: string}|null>} null if choiceId is falsy
  */
-export async function getModelForChoice(choiceId = lazy.modelChoice) {
+export async function getModelForChoice(choiceId = getCurrentModelChoiceId()) {
   if (!choiceId) {
     return null;
   }
@@ -828,11 +900,11 @@ export function getCachedModelsData() {
 }
 
 export function getCurrentModelName() {
-  return getCachedModelsData()[lazy.modelChoice]?.model ?? "";
+  return getCachedModelsData()[getCurrentModelChoiceId()]?.model ?? "";
 }
 
 export function getCurrentModelChoiceId() {
-  return lazy.modelChoice;
+  return Services.prefs.getStringPref(MODEL_CHOICE_PREF, "");
 }
 
 /**

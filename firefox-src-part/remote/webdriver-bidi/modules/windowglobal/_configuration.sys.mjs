@@ -49,8 +49,12 @@ class _ConfigurationModule extends WindowGlobalBiDiModule {
   async observe(subject, topic) {
     if (topic === "content-document-global-created") {
       const window = subject;
-      // Ignore events without a window.
-      if (window !== this.messageHandler.window) {
+      // Ignore events without a window or with the wrong innerWindowId.
+      if (
+        window !== this.messageHandler.window ||
+        window.windowGlobalChild?.innerWindowId !==
+          this.messageHandler.innerWindowId
+      ) {
         return;
       }
 

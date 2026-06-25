@@ -915,17 +915,21 @@ nsIContent* nsINode::GetSelectionRootContent(
 
   if (nsPresContext* presContext = aPresShell->GetPresContext()) {
     if (nsContentUtils::GetHTMLEditor(presContext)) {
-      // When there is an HTMLEditor, selection root should be one of focused
-      // editing host, <body> or root of the (sub)tree which this node belong.
-
-      // If this node is in design mode or this node is not editable, selection
-      // root should be the <body> if this node is not in any subtrees and there
-      // is a <body> or the root of the shadow DOM if this node is in a shadow
-      // or the document element.
-      // XXX If this node is not connected, it seems that this should return
-      // nullptr because this node is not selectable.
-      if (!IsInComposedDoc() || IsInDesignMode() ||
-          !HasFlag(NODE_IS_EDITABLE)) {
+      // If there is an HTMLEditor, this node may be in an editing host. If
+      // so, even if this node is not editable, the selection root should be
+      // the closest editing host.
+      if (IsContent() && IsInComposedDoc() && !IsInDesignMode()) {
+        if (nsIContent* const editableContent =
+                AsContent()->GetInclusiveEditableAncestor()) {
+          return editableContent->GetEditingHost();
+        }
+      }
+      // If there is an HTMLEditor and this node is in the design mode, we
+      // should return the <body>. Otherwise, if this is not connected to the
+      // document, return the subtree.
+      else if (IsInDesignMode() || !IsInComposedDoc()) {
+        // XXX If this node is not connected, it seems that this should return
+        // nullptr because this node is not selectable.
         Element* const bodyOrDocumentElement = [&]() -> Element* {
           if (Element* const bodyElement = OwnerDoc()->GetBodyElement()) {
             return bodyElement;
@@ -938,13 +942,8 @@ nsIContent* nsINode::GetSelectionRootContent(
                    ? bodyOrDocumentElement
                    : GetRootForContentSubtree(AsContent());
       }
-      // If this node is editable but not in the design mode, this is always an
-      // editable node in an editing host of contenteditable.  In this case,
-      // let's use the editing host element as selection root.
-      MOZ_ASSERT(IsEditable());
-      MOZ_ASSERT(!IsInDesignMode());
-      MOZ_ASSERT(IsContent());
-      return AsContent()->GetEditingHost();
+      // This node is not managed by HTMLEditor. So, let's fallback to the
+      // normal path.
     }
   }
 
@@ -969,21 +968,28 @@ nsIContent* nsINode::GetSelectionRootContent(
   // This node might be in another subtree, if so, we should find this subtree's
   // root.  Otherwise, we can return the content simply.
   NS_ENSURE_TRUE(content, nullptr);
-  if (!nsContentUtils::IsInSameAnonymousTree(this, content)) {
-    content = GetRootForContentSubtree(AsContent());
-    // Fixup for ShadowRoot because the ShadowRoot itself does not have a frame.
-    // Use the host as the root.
-    if (ShadowRoot* shadowRoot = ShadowRoot::FromNode(content)) {
-      content = shadowRoot->GetHost();
-      if (content && bool(aAllowCrossShadowBoundary)) {
-        content = content->GetSelectionRootContent(
-            aPresShell, aIgnoreOwnIndependentSelection,
-            aAllowCrossShadowBoundary);
-      }
-    }
+  if (nsContentUtils::IsInSameAnonymousTree(this, content)) {
+    return content;
   }
-
-  return content;
+  content = GetRootForContentSubtree(AsContent());
+  // Fixup for ShadowRoot because the ShadowRoot itself does not have a frame.
+  // Use the host as the root.
+  ShadowRoot* const shadowRoot = ShadowRoot::FromNode(content);
+  if (!shadowRoot) {
+    return content;
+  }
+  Element* const hostElement = shadowRoot->GetHost();
+  // If there is no host element, perhaps, the shadow is a UA shadow and was
+  // detached since content shadow cannot be deatched.
+  if (!hostElement) [[unlikely]] {
+    MOZ_ASSERT(shadowRoot->IsUAShadowRootSlow());
+    return content;
+  }
+  return bool(aAllowCrossShadowBoundary)
+             ? hostElement->GetSelectionRootContent(
+                   aPresShell, aIgnoreOwnIndependentSelection,
+                   aAllowCrossShadowBoundary)
+             : hostElement;
 }
 
 nsFrameSelection* nsINode::GetFrameSelection() const {

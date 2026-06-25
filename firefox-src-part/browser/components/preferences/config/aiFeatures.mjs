@@ -44,7 +44,7 @@ Preferences.addAll([
   { id: "browser.smartwindow.memories.generateFromConversation", type: "bool" },
   { id: "browser.smartwindow.memories.generateFromHistory", type: "bool" },
   { id: "browser.smartwindow.model", type: "string" },
-  { id: "browser.smartwindow.preferences.endpoint", type: "string" },
+  { id: "browser.smartwindow.customEndpoint", type: "string" },
   { id: "browser.smartwindow.isDefaultWindow", type: "bool" },
   { id: "browser.smartwindow.sidebar.openByDefault", type: "bool" },
   { id: "browser.smartwindow.tos.consentTime", type: "int" },
@@ -715,11 +715,6 @@ Preferences.addSetting({
 });
 
 Preferences.addSetting({
-  id: "smartWindowEndpoint",
-  pref: "browser.smartwindow.endpoint",
-});
-
-Preferences.addSetting({
   id: "smartWindowModel",
   pref: "browser.smartwindow.model",
 });
@@ -730,8 +725,8 @@ Preferences.addSetting({
 });
 
 Preferences.addSetting({
-  id: "smartWindowPreferencesEndpoint",
-  pref: "browser.smartwindow.preferences.endpoint",
+  id: "smartWindowCustomEndpoint",
+  pref: "browser.smartwindow.customEndpoint",
 });
 
 Preferences.addSetting({
@@ -748,8 +743,7 @@ Preferences.addSetting({
     deps: [
       "smartWindowModel",
       "smartWindowFirstRunModelChoice",
-      "smartWindowEndpoint",
-      "smartWindowPreferencesEndpoint",
+      "smartWindowCustomEndpoint",
     ],
     get(_, deps) {
       if (customRadioSelected) {
@@ -775,21 +769,13 @@ Preferences.addSetting({
         // If the user has previously saved a custom model, switching back to
         // the custom radio re-activates that saved configuration so the form
         // reflects the active state and Save stays disabled until edited.
-        const savedEndpoint = deps.smartWindowPreferencesEndpoint.value;
-        if (savedEndpoint && prev !== "0") {
-          deps.smartWindowEndpoint.value = savedEndpoint;
+        if (deps.smartWindowCustomEndpoint.value && prev !== "0") {
           deps.smartWindowFirstRunModelChoice.value = "0";
         }
         setting.onChange();
         return;
       }
       // Switching to preset
-      const endpointEl = document.getElementById("customModelEndpoint");
-      const currentEndpoint = endpointEl?.value?.trim();
-      if (currentEndpoint) {
-        deps.smartWindowPreferencesEndpoint.value = currentEndpoint;
-      }
-      Services.prefs.clearUserPref("browser.smartwindow.endpoint");
       deps.smartWindowFirstRunModelChoice.value = value;
     },
     onUserChange(value, _) {
@@ -826,24 +812,6 @@ function getCustomModelFieldValue(id, fallback = "") {
   return field.value?.trim() ?? "";
 }
 
-function getCustomModelEndpointValue(deps) {
-  const defaultEndpoint = Services.prefs
-    .getDefaultBranch("")
-    .getStringPref("browser.smartwindow.endpoint", "");
-
-  if (
-    deps.smartWindowEndpoint.value &&
-    deps.smartWindowEndpoint.value !== defaultEndpoint
-  ) {
-    return deps.smartWindowEndpoint.value;
-  }
-
-  if (deps.smartWindowPreferencesEndpoint.value) {
-    return deps.smartWindowPreferencesEndpoint.value;
-  }
-  return "";
-}
-
 function getCustomModelFormValues(deps) {
   return {
     modelName: getCustomModelFieldValue(
@@ -852,7 +820,7 @@ function getCustomModelFormValues(deps) {
     ),
     endpoint: getCustomModelFieldValue(
       "customModelEndpoint",
-      getCustomModelEndpointValue(deps)
+      deps.smartWindowCustomEndpoint.value || ""
     ),
     authToken: getCustomModelFieldValue(
       "customModelAuthToken",
@@ -862,14 +830,11 @@ function getCustomModelFormValues(deps) {
 }
 
 function hasUnsavedCustomModelChanges(deps) {
-  // Compare each form value to what is actually saved. The endpoint reference
-  // uses getCustomModelEndpointValue because smartWindowEndpoint is cleared
-  // when the user temporarily switches to a preset radio - in that state, the
-  // last saved custom endpoint lives in smartWindowPreferencesEndpoint.
+  // Compare each form value to what is actually saved.
   const { modelName, endpoint, authToken } = getCustomModelFormValues(deps);
   return (
     modelName !== (deps.smartWindowModel.value || "") ||
-    endpoint !== getCustomModelEndpointValue(deps) ||
+    endpoint !== (deps.smartWindowCustomEndpoint.value || "") ||
     authToken !== (deps.smartWindowApiKey.value || "")
   );
 }
@@ -908,14 +873,10 @@ Preferences.addSetting({
 
 Preferences.addSetting({
   id: "customModelEndpoint",
-  deps: [
-    "smartWindowEndpoint",
-    "smartWindowPreferencesEndpoint",
-    "modelSelection",
-  ],
+  deps: ["smartWindowCustomEndpoint", "modelSelection"],
   visible: deps => deps.modelSelection.value === "0",
   get(_, deps) {
-    return getCustomModelEndpointValue(deps);
+    return deps.smartWindowCustomEndpoint.value || "";
   },
 });
 
@@ -949,9 +910,8 @@ Preferences.addSetting({
   deps: [
     "smartWindowFirstRunModelChoice",
     "smartWindowModel",
-    "smartWindowEndpoint",
     "smartWindowApiKey",
-    "smartWindowPreferencesEndpoint",
+    "smartWindowCustomEndpoint",
     "modelSelection",
     "customModelSaveRow",
   ],
@@ -966,9 +926,8 @@ Preferences.addSetting({
   deps: [
     "smartWindowFirstRunModelChoice",
     "smartWindowModel",
-    "smartWindowEndpoint",
     "smartWindowApiKey",
-    "smartWindowPreferencesEndpoint",
+    "smartWindowCustomEndpoint",
     "modelSelection",
     "customModelSaveRow",
   ],
@@ -998,9 +957,8 @@ Preferences.addSetting({
     // Save custom selection pref
     deps.smartWindowFirstRunModelChoice.value = "0";
     deps.smartWindowModel.value = modelName;
-    deps.smartWindowEndpoint.value = modelEndpoint;
     deps.smartWindowApiKey.value = modelAuthToken;
-    deps.smartWindowPreferencesEndpoint.value = modelEndpoint;
+    deps.smartWindowCustomEndpoint.value = modelEndpoint;
   },
 });
 

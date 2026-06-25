@@ -461,11 +461,14 @@ export function createEditor(inputElement) {
   editorElement.className = inputElement.className;
   editorElement.id = inputElement.id;
   editorElement.value = inputElement.value ?? "";
+
+  const isSidebarMode =
+    window.browsingContext?.embedderElement?.id === lazy.AIWindowUI.BROWSER_ID;
   document.l10n
     .formatValues(PLACEHOLDER_HINT_L10N_IDS.map(id => ({ id })))
     .then(hints => {
       editorElement.placeholderHints = hints;
-      editorElement.showPlaceholderAnimation = true;
+      editorElement.showPlaceholderAnimation = !isSidebarMode;
     })
     .catch(console.error);
 
@@ -476,8 +479,7 @@ export function createEditor(inputElement) {
     container.querySelector("smartwindow-panel-list")
   );
   panelList.placeholderL10nId = "smartbar-mentions-list-no-results-label";
-  panelList.sidebarMode =
-    window.browsingContext?.embedderElement?.id === lazy.AIWindowUI.BROWSER_ID;
+  panelList.sidebarMode = isSidebarMode;
 
   const mentionsPlugin = setupMentionsPlugin(editorElement, panelList);
   editorElement.plugins = [mentionsPlugin];

@@ -50,6 +50,7 @@
     <color name="fx_mobile_surface_container_lowest">@color/novaGray85</color>
     <color name="fx_mobile_autofill_text">@color/novaVioletDesaturated30A55</color>
     <color name="fx_mobile_selected_text">@color/novaGray45A80</color>
+    <color name="fx_mobile_icon_private">@color/novaViolet50</color>
     <color name="fx_mobile_scrim">@color/novaBlackA50</color>
 
     <color name="fx_mobile_splashscreen_background">#210340</color>
@@ -93,10 +94,6 @@
     <color name="fx_mobile_icon_color_accent_green">@color/photonGreen20</color>
     <color name="fx_mobile_icon_color_accent_yellow">@color/photonYellow20</color>
 
-    <!-- Border -->
-    <!-- Active tab (Nav), Selected tab, Active form -->
-    <color name="fx_mobile_border_color_accent">@color/photonViolet40</color>
-
     <!-- Normal theme colors for dark mode -->
     <color name="accent_normal_theme">@color/photonViolet50</color>
     <color name="accent_high_contrast_normal_theme">@color/photonViolet40</color>
@@ -134,9 +131,6 @@
     <!-- Tab Counter colors -->
     <color name="mozac_ui_tabcounter_default_tint" tools:ignore="UnusedResources">@color/fx_mobile_on_surface</color>
     <color name="mozac_ui_tabcounter_default_text" tools:ignore="UnusedResources">@color/fx_mobile_on_surface</color>
-
-    <!-- Private Mode mask icon circle fill colors -->
-    <color name="mozac_ui_private_mode_circle_fill" tools:ignore="UnusedResources">@color/photonPurple60</color>
 
     <!-- Account Sync Avatar fill colors -->
     <color name="mozac_ui_avatar_warning_bg_fill_critical">@color/fx_mobile_on_surface_variant</color>

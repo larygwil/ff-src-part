@@ -370,7 +370,7 @@ Object.assign(Chat, {
         ChromeUtils.addProfilerMarker("SmartWindow", {}, "chat-no-tool-calls");
         // Debug logging: Mark the end of the streaming loop for this turn
         logConversationStream(currentTurn, "STREAM END");
-        if (!openAIEngine.hasCustomEndpoint()) {
+        if (!engineInstance.isCustomEndpoint) {
           // We only run telemetry on our own endpoints
           runLLMaJTelemetry(conversation, engineInstance);
         }

@@ -190,10 +190,13 @@ var gBrowserInit = {
       let extraOptions = window.arguments[1];
       if (extraOptions.hasKey("taskbartab")) {
         let taskbarTabId = extraOptions.getPropertyAsAString("taskbartab");
-        window.document.documentElement.setAttribute(
-          "windowclass",
-          "org.mozilla.firefox.webapp-" + taskbarTabId
-        );
+        let taskbarTabClass = extraOptions.get("taskbartabclass");
+        if (taskbarTabClass) {
+          window.document.documentElement.setAttribute(
+            "windowclass",
+            taskbarTabClass
+          );
+        }
         window.document.documentElement.setAttribute(
           "taskbartab",
           taskbarTabId

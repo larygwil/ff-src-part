@@ -65,7 +65,6 @@
     <ID>ForbiddenSuppress:HomeFragment.kt$HomeFragment$@Suppress("LongMethod")</ID>
     <ID>ForbiddenSuppress:Homepage.kt$@Suppress("LongMethod", "CyclomaticComplexMethod", "CognitiveComplexMethod")</ID>
     <ID>ForbiddenSuppress:InstalledAddonDetailsFragment.kt$InstalledAddonDetailsFragment$@SuppressWarnings("LongMethod")</ID>
-    <ID>ForbiddenSuppress:LegacyWallpaperMigration.kt$LegacyWallpaperMigration$@Suppress("CognitiveComplexMethod")</ID>
     <ID>ForbiddenSuppress:ListItem.kt$@Suppress("CognitiveComplexMethod")</ID>
     <ID>ForbiddenSuppress:ListItem.kt$@Suppress("LongMethod")</ID>
     <ID>ForbiddenSuppress:LoginsMiddleware.kt$LoginsMiddleware$@Suppress("LongMethod", "CyclomaticComplexMethod")</ID>
@@ -73,7 +72,6 @@
     <ID>ForbiddenSuppress:MainMenu.kt$@Suppress("LongParameterList", "LongMethod", "CognitiveComplexMethod")</ID>
     <ID>ForbiddenSuppress:MainMenu.kt$@Suppress("LongParameterList", "LongMethod", "CyclomaticComplexMethod", "CognitiveComplexMethod")</ID>
     <ID>ForbiddenSuppress:MarketingDataOnboardingPage.kt$@Suppress("LongMethod")</ID>
-    <ID>ForbiddenSuppress:MarketingDataOnboardingPageRedesign.kt$@Suppress("LongMethod")</ID>
     <ID>ForbiddenSuppress:Menu.kt$@Suppress("LongMethod", "CognitiveComplexMethod")</ID>
     <ID>ForbiddenSuppress:MenuDialogFragment.kt$MenuDialogFragment$@Suppress("LongMethod", "CyclomaticComplexMethod", "CognitiveComplexMethod")</ID>
     <ID>ForbiddenSuppress:MenuDialogMiddleware.kt$MenuDialogMiddleware$@Suppress("LongParameterList", "CyclomaticComplexMethod")</ID>
@@ -86,9 +84,7 @@
     <ID>ForbiddenSuppress:MozillaAccountMenuItem.kt$@SuppressWarnings("LongMethod")</ID>
     <ID>ForbiddenSuppress:NotificationManager.kt$NotificationManager$@SuppressWarnings("MagicNumber")</ID>
     <ID>ForbiddenSuppress:OnboardingFragment.kt$OnboardingFragment$@Suppress("LongMethod")</ID>
-    <ID>ForbiddenSuppress:OnboardingPage.kt$@Suppress("LongMethod")</ID>
     <ID>ForbiddenSuppress:OnboardingScreen.kt$@Suppress("LongParameterList", "LongMethod")</ID>
-    <ID>ForbiddenSuppress:OnboardingScreenRedesign.kt$@Suppress("LongParameterList", "LongMethod")</ID>
     <ID>ForbiddenSuppress:OnboardingTelemetryRecorder.kt$OnboardingTelemetryRecorder$@Suppress("LongMethod")</ID>
     <ID>ForbiddenSuppress:PagedHistoryProvider.kt$DefaultPagedHistoryProvider$@Suppress("MagicNumber")</ID>
     <ID>ForbiddenSuppress:PrivateBrowsingFragment.kt$PrivateBrowsingFragment$@Suppress("CognitiveComplexMethod")</ID>
@@ -129,7 +125,6 @@
     <ID>ForbiddenSuppress:TabsTrayBanner.kt$@Suppress("LongMethod", "LongParameterList")</ID>
     <ID>ForbiddenSuppress:TabsTrayBanner.kt$@Suppress("LongParameterList", "LongMethod")</ID>
     <ID>ForbiddenSuppress:TelemetryMiddleware.kt$TelemetryMiddleware$@Suppress("TooGenericExceptionCaught", "CognitiveComplexMethod", "NestedBlockDepth", "LongMethod", "CyclomaticComplexMethod")</ID>
-    <ID>ForbiddenSuppress:ThemeOnboardingPage.kt$@Suppress("LongMethod")</ID>
     <ID>ForbiddenSuppress:ToolbarHorizontalGesturesHandler.kt$ToolbarHorizontalGesturesHandler$@Suppress("CognitiveComplexMethod")</ID>
     <ID>ForbiddenSuppress:TopSites.kt$@Suppress( "LongMethod", "LongParameterList", "Deprecation", )</ID>
     <ID>ForbiddenSuppress:TrackingProtectionPanelView.kt$TrackingProtectionPanelView$@Suppress("CognitiveComplexMethod")</ID>
@@ -216,7 +211,6 @@
     <ID>HardcodedPaddingUsage:DownloadsScreen.kt$(vertical = 12.dp)</ID>
     <ID>HardcodedPaddingUsage:EditFolderScreen.kt$( start = 16.dp, end = 16.dp, top = 32.dp, )</ID>
     <ID>HardcodedPaddingUsage:EditFolderScreen.kt$(start = 16.dp)</ID>
-    <ID>HardcodedPaddingUsage:EditTabGroup.kt$( bottom = 12.dp, )</ID>
     <ID>HardcodedPaddingUsage:EditTabGroup.kt$(all = 16.dp)</ID>
     <ID>HardcodedPaddingUsage:EditTabGroup.kt$(end = 12.dp)</ID>
     <ID>HardcodedPaddingUsage:EditTabGroup.kt$(horizontal = 24.dp, vertical = 16.dp)</ID>
@@ -248,7 +242,6 @@
     <ID>HardcodedPaddingUsage:IPProtectionBottomSheet.kt$(bottom = 16.dp, start = 16.dp, end = 16.dp)</ID>
     <ID>HardcodedPaddingUsage:IPProtectionBottomSheet.kt$(horizontal = 8.dp, vertical = 4.dp)</ID>
     <ID>HardcodedPaddingUsage:IPProtectionMenuItem.kt$(horizontal = 12.dp)</ID>
-    <ID>HardcodedPaddingUsage:IPProtectionPreference.kt$(horizontal = 16.dp, vertical = 14.dp)</ID>
     <ID>HardcodedPaddingUsage:IPProtectionPreference.kt$(horizontal = 8.dp)</ID>
     <ID>HardcodedPaddingUsage:InactiveTabs.kt$(all = 16.dp)</ID>
     <ID>HardcodedPaddingUsage:InactiveTabs.kt$(horizontal = 12.dp)</ID>
@@ -262,12 +255,6 @@
     <ID>HardcodedPaddingUsage:MainMenu.kt$( start = 8.dp, top = if (accessPoint != MenuAccessPoint.Home &amp;&amp; (isBottomToolbar || isExpandedToolbarEnabled) ) { 0.dp } else { 8.dp }, end = 8.dp, bottom = if (accessPoint != MenuAccessPoint.Home &amp;&amp; (isBottomToolbar || isExpandedToolbarEnabled) ) { 84.dp } else { 16.dp }, )</ID>
     <ID>HardcodedPaddingUsage:MainMenu.kt$(start = 40.dp)</ID>
     <ID>HardcodedPaddingUsage:ManagePrivacyPreferencesDialog.kt$(16.dp)</ID>
-    <ID>HardcodedPaddingUsage:MarketingDataOnboardingPage.kt$(bottom = 24.dp)</ID>
-    <ID>HardcodedPaddingUsage:MarketingDataOnboardingPage.kt$(horizontal = 16.dp)</ID>
-    <ID>HardcodedPaddingUsage:MarketingDataOnboardingPage.kt$(horizontal = 16.dp, vertical = 32.dp)</ID>
-    <ID>HardcodedPaddingUsage:MarketingDataOnboardingPage.kt$(horizontal = 20.dp)</ID>
-    <ID>HardcodedPaddingUsage:MarketingDataOnboardingPageRedesign.kt$( horizontal = 16.dp, vertical = if (state.isSmallDevice) 0.dp else 24.dp, )</ID>
-    <ID>HardcodedPaddingUsage:MarketingDataOnboardingPageRedesign.kt$(start = 20.dp, end = 32.dp)</ID>
     <ID>HardcodedPaddingUsage:MenuBanner.kt$(end = 16.dp)</ID>
     <ID>HardcodedPaddingUsage:MenuBanner.kt$(start = 24.dp, top = 12.dp, bottom = 10.dp)</ID>
     <ID>HardcodedPaddingUsage:MenuBanner.kt$(top = 8.dp, end = 12.dp)</ID>
@@ -293,13 +280,7 @@
     <ID>HardcodedPaddingUsage:NeverTranslateSitesPreference.kt$(start = 72.dp, end = 16.dp, bottom = 16.dp, top = 16.dp)</ID>
     <ID>HardcodedPaddingUsage:NimbusExperiments.kt$( start = 16.dp, end = 16.dp, top = 16.dp, bottom = 8.dp, )</ID>
     <ID>HardcodedPaddingUsage:NimbusExperiments.kt$( start = 16.dp, end = 16.dp, top = 8.dp, bottom = 8.dp, )</ID>
-    <ID>HardcodedPaddingUsage:OnboardingPage.kt$(bottom = if (pageState.secondaryButton == null) 32.dp else 24.dp)</ID>
-    <ID>HardcodedPaddingUsage:OnboardingPage.kt$(horizontal = 16.dp)</ID>
-    <ID>HardcodedPaddingUsage:OnboardingPage.kt$(horizontal = 16.dp, vertical = 32.dp)</ID>
-    <ID>HardcodedPaddingUsage:OnboardingPageRedesign.kt$( horizontal = 16.dp, vertical = if (isSmallDevice) 0.dp else 24.dp, )</ID>
-    <ID>HardcodedPaddingUsage:OnboardingPageRedesign.kt$(start = 20.dp, end = 32.dp)</ID>
     <ID>HardcodedPaddingUsage:OnboardingScreen.kt$(bottom = 16.dp)</ID>
-    <ID>HardcodedPaddingUsage:OnboardingScreenRedesign.kt$(bottom = 16.dp)</ID>
     <ID>HardcodedPaddingUsage:PageSummariesSettingsFragment.kt$PageSummariesSettingsFragment$(horizontal = 16.dp)</ID>
     <ID>HardcodedPaddingUsage:PrivateBrowsingDescription.kt$(horizontal = 24.dp)</ID>
     <ID>HardcodedPaddingUsage:PrivateSuggestionsCard.kt$( top = 20.dp, start = 20.dp, end = 20.dp, bottom = 10.dp, )</ID>
@@ -367,20 +348,7 @@
     <ID>HardcodedPaddingUsage:TabStripCard.kt$(8.dp)</ID>
     <ID>HardcodedPaddingUsage:TabTools.kt$(all = 16.dp)</ID>
     <ID>HardcodedPaddingUsage:TabTools.kt$(start = 16.dp)</ID>
-    <ID>HardcodedPaddingUsage:TermsOfServiceOnboardingPage.kt$(bottom = 24.dp)</ID>
-    <ID>HardcodedPaddingUsage:TermsOfServiceOnboardingPage.kt$(horizontal = 10.dp)</ID>
-    <ID>HardcodedPaddingUsage:TermsOfServiceOnboardingPage.kt$(horizontal = 16.dp)</ID>
-    <ID>HardcodedPaddingUsage:TermsOfServiceOnboardingPage.kt$(vertical = 32.dp)</ID>
-    <ID>HardcodedPaddingUsage:TermsOfServiceOnboardingPageRedesign.kt$( horizontal = 16.dp, vertical = if (pageState.isSmallDevice) 0.dp else 24.dp, )</ID>
-    <ID>HardcodedPaddingUsage:TermsOfServiceOnboardingPageRedesign.kt$(end = 12.dp)</ID>
-    <ID>HardcodedPaddingUsage:TermsOfServiceOnboardingPageRedesign.kt$(horizontal = 8.dp)</ID>
     <ID>HardcodedPaddingUsage:TermsOfUseBottomSheet.kt$(start = 36.dp, end = 36.dp, bottom = 32.dp)</ID>
-    <ID>HardcodedPaddingUsage:ThemeOnboardingPage.kt$(horizontal = 16.dp, vertical = 24.dp)</ID>
-    <ID>HardcodedPaddingUsage:ThemeOnboardingPage.kt$(vertical = 6.dp)</ID>
-    <ID>HardcodedPaddingUsage:ToolbarOnboardingPage.kt$(horizontal = 16.dp, vertical = 24.dp)</ID>
-    <ID>HardcodedPaddingUsage:ToolbarOnboardingPage.kt$(vertical = 6.dp)</ID>
-    <ID>HardcodedPaddingUsage:ToolbarOnboardingPageRedesign.kt$( horizontal = 16.dp, vertical = if (pageState.isSmallDevice) 0.dp else 24.dp, )</ID>
-    <ID>HardcodedPaddingUsage:ToolbarOnboardingPageRedesign.kt$(start = 20.dp, end = 32.dp)</ID>
     <ID>HardcodedPaddingUsage:TopSites.kt$(horizontal = 4.dp)</ID>
     <ID>HardcodedPaddingUsage:TopSites.kt$(top = 8.dp)</ID>
     <ID>HardcodedPaddingUsage:TrackerCategoryDetailsPanel.kt$(horizontal = 16.dp)</ID>
@@ -417,7 +385,6 @@
     <ID>HardcodedPaddingUsage:WebCompatReporter.kt$(vertical = 6.dp)</ID>
     <ID>HardcodedPaddingUsage:WebCompatReporterPreviewSheet.kt$(top = 72.dp)</ID>
     <ID>HardcodedPaddingUsage:Wordmark.kt$(end = 10.dp)</ID>
-    <ID>LongMethod:ThemeOnboardingPage.kt$@Composable private fun SelectableImageItem( boxWithConstraintsScope: BoxWithConstraintsScope, themeOption: ThemeOption, selectedOption: ThemeOptionType, onClick: (ThemeOptionType) -&gt; Unit, )</ID>
     <ID>MaterialTextButtonUsage:AppLinksPromptFragment.kt$import androidx.compose.material3.TextButton</ID>
     <ID>MaterialTextButtonUsage:HomeSectionHeader.kt$import androidx.compose.material3.TextButton</ID>
     <ID>MaterialTextButtonUsage:WallpaperOnboarding.kt$import androidx.compose.material3.TextButton</ID>
@@ -426,14 +393,10 @@
     <ID>MaterialTypographyUsage:DownloadsScreen.kt$MaterialTheme.typography</ID>
     <ID>MaterialTypographyUsage:FontSizeSlider.kt$MaterialTheme.typography</ID>
     <ID>MaterialTypographyUsage:IPProtectionBottomSheet.kt$MaterialTheme.typography</ID>
-    <ID>MaterialTypographyUsage:MarketingDataOnboardingPageRedesign.kt$MaterialTheme.typography</ID>
     <ID>MaterialTypographyUsage:NimbusExperiments.kt$MaterialTheme.typography</ID>
-    <ID>MaterialTypographyUsage:OnboardingPageRedesign.kt$MaterialTheme.typography</ID>
     <ID>MaterialTypographyUsage:RenameAndChangeLocationDialogContent.kt$MaterialTheme.typography</ID>
     <ID>MaterialTypographyUsage:SyncedTabsList.kt$MaterialTheme.typography</ID>
     <ID>MaterialTypographyUsage:TabGroupColors.kt$MaterialTheme.typography</ID>
-    <ID>MaterialTypographyUsage:TermsOfServiceOnboardingPageRedesign.kt$MaterialTheme.typography</ID>
-    <ID>MaterialTypographyUsage:ToolbarOnboardingPageRedesign.kt$MaterialTheme.typography</ID>
     <ID>MaxLineLength:TelemetryMiddleware.kt$TelemetryMiddleware$@Suppress("TooGenericExceptionCaught", "CognitiveComplexMethod", "NestedBlockDepth", "LongMethod", "CyclomaticComplexMethod")</ID>
     <ID>UndocumentedPublicClass:AboutItem.kt$AboutItem</ID>
     <ID>UndocumentedPublicClass:AboutItem.kt$AboutItem$Crashes : AboutItem</ID>
@@ -725,7 +688,6 @@
     <ID>UndocumentedPublicFunction:CollectionsListAdapter.kt$CollectionsListAdapter$fun getSelectedCollection()</ID>
     <ID>UndocumentedPublicFunction:Context.kt$fun Context.asActivity()</ID>
     <ID>UndocumentedPublicFunction:Context.kt$fun Context.getPreferenceKey( @StringRes resourceId: Int, ): String</ID>
-    <ID>UndocumentedPublicFunction:Context.kt$fun Context.settings()</ID>
     <ID>UndocumentedPublicFunction:CounterPreference.kt$CounterPreference$fun increment()</ID>
     <ID>UndocumentedPublicFunction:CounterPreference.kt$CounterPreference$fun underMaxCount()</ID>
     <ID>UndocumentedPublicFunction:CreditCardItemViewHolder.kt$CreditCardItemViewHolder$fun bind(creditCard: CreditCard)</ID>

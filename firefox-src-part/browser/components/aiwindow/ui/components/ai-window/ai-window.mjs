@@ -138,6 +138,7 @@ const PREF_MEMORIES_HISTORY =
 const PREF_MEMORIES_HAS_SEEN_MEMORIES =
   "browser.smartwindow.memories.hasSeenMemories";
 const PREF_MODEL_CHOICE = "browser.smartwindow.firstrun.modelChoice";
+const PREF_CUSTOM_ENDPOINT = "browser.smartwindow.customEndpoint";
 const TAB_FAVICON_CHAT =
   "chrome://browser/content/aiwindow/assets/ask-icon.svg";
 const PREF_CHAT_INTERACTION_COUNT = "browser.smartwindow.chat.interactionCount";
@@ -216,6 +217,7 @@ export class AIWindow extends MozLitElement {
   #swapDocShellsChromeWindow = null;
   #hasMemories = false;
   #selectedModelChoiceId = null;
+  #hasModelChoiceOverride = false;
 
   get #kitMention() {
     return this.shadowRoot?.querySelector("kit-mention");
@@ -403,8 +405,7 @@ export class AIWindow extends MozLitElement {
     this.promoMessage = null;
     this.showDisclaimer = this.mode !== MODE.FULLPAGE;
     this.isGenerating = false;
-    this.selectedModelId = lazy.getCurrentModelName();
-    this.#selectedModelChoiceId = lazy.getCurrentModelChoiceId();
+    this.#setModelChoice(lazy.getCurrentModelChoiceId());
 
     // Apply chat-active immediately if restoring a conversation
     if (this.#hostBrowser?.getAttribute("data-conversation-id")) {
@@ -540,6 +541,10 @@ export class AIWindow extends MozLitElement {
     Services.prefs.addObserver(
       PREF_MODEL_CHOICE,
       this.#onModelChoicePrefChanged
+    );
+    Services.prefs.addObserver(
+      PREF_CUSTOM_ENDPOINT,
+      this.#onCustomEndpointPrefChanged
     );
 
     this.#loadPendingConversation();
@@ -759,6 +764,10 @@ export class AIWindow extends MozLitElement {
       PREF_MODEL_CHOICE,
       this.#onModelChoicePrefChanged
     );
+    Services.prefs.removeObserver(
+      PREF_CUSTOM_ENDPOINT,
+      this.#onCustomEndpointPrefChanged
+    );
 
     // Clean up smartbar toggle button
     if (this.#smartbarToggleButton) {
@@ -851,34 +860,78 @@ export class AIWindow extends MozLitElement {
   }
 
   #onModelChoicePrefChanged = async () => {
-    const defaultModelChoiceId = Services.prefs.getStringPref(
-      PREF_MODEL_CHOICE,
-      ""
-    );
-    const defaultModelData = this.availableModels[defaultModelChoiceId];
-    if (!defaultModelData) {
+    if (this.#hasModelChoiceOverride) {
       return;
     }
-    await this.#switchModel({
-      modelId: defaultModelData.model,
-      modelChoiceId: defaultModelChoiceId,
-    });
+    const defaultModelChoiceId = lazy.getCurrentModelChoiceId();
+    if (!this.availableModels[defaultModelChoiceId]) {
+      return;
+    }
+    // Switch without override so the tab stays in sync with global setting.
+    await this.#switchModel(defaultModelChoiceId, { isTabOverride: false });
     this.#updateSmartbarModels(this.#smartbar);
   };
 
   #handleModelChange = async event => {
-    const { modelId, modelChoiceId } = event.detail;
-    await this.#switchModel({ modelId, modelChoiceId });
+    await this.#switchModel(event.detail.modelChoiceId, {
+      isTabOverride: true,
+    });
   };
 
-  async #switchModel({ modelId, modelChoiceId }) {
-    this.selectedModelId = modelId;
+  #onCustomEndpointPrefChanged = async () => {
+    await this.#loadAvailableModels();
+    const defaultModelChoiceId = lazy.getCurrentModelChoiceId();
+    if (
+      !this.#hasModelChoiceOverride &&
+      this.availableModels[defaultModelChoiceId]
+    ) {
+      await this.#switchModel(defaultModelChoiceId, { isTabOverride: false });
+    }
+
+    this.#updateSmartbarModels(this.#smartbar);
+  };
+
+  /**
+   * Sets the selected model choice.
+   *
+   * @param {string} modelChoiceId
+   */
+  #setModelChoice(modelChoiceId) {
     this.#selectedModelChoiceId = modelChoiceId;
+    this.selectedModelId =
+      this.availableModels?.[modelChoiceId]?.model ??
+      lazy.getCurrentModelName();
+  }
+
+  async #switchModel(modelChoiceId, { isTabOverride }) {
+    this.#setModelChoice(modelChoiceId);
+    // Switching another model than the global default overrides the choice for
+    // the current tab.
+    this.#hasModelChoiceOverride =
+      isTabOverride && modelChoiceId !== lazy.getCurrentModelChoiceId();
 
     // Update the system prompt for the new model
     if (this.#conversation?.messages.length) {
       await this.#conversation.updateSystemPromptForModel(modelChoiceId);
     }
+
+    if (isTabOverride) {
+      this.#dispatchChromeEvent(
+        "ai-window:model-changed",
+        this.#getAIWindowEventOptions()
+      );
+    }
+  }
+
+  /**
+   * Restores per tab model choice overrides.
+   *
+   * @param {?string} modelChoiceId - Override model choice id
+   */
+  restoreModelChoiceOverride(modelChoiceId) {
+    this.#hasModelChoiceOverride = modelChoiceId !== null;
+    this.#setModelChoice(modelChoiceId ?? lazy.getCurrentModelChoiceId());
+    this.#updateSmartbarModels(this.#smartbar);
   }
 
   #handleOpenModelSettings = () => {
@@ -1718,7 +1771,8 @@ export class AIWindow extends MozLitElement {
     this.#updateBrowserTabbable();
     this.#smartbar?.unsuppressStartQuery();
     if (this.#smartbar?.inputField) {
-      this.#smartbar.inputField.showPlaceholderAnimation = true;
+      this.#smartbar.inputField.showPlaceholderAnimation =
+        this.mode === MODE.FULLPAGE;
     }
   }
 
@@ -1787,12 +1841,17 @@ export class AIWindow extends MozLitElement {
       const callContext = await lazy.loadCallContext(lazy.MODEL_FEATURES.CHAT, {
         modelChoiceIdOverride: this.#selectedModelChoiceId,
       });
+      const { baseURL, apiKey } = lazy.openAIEngine.resolveEndpointConfig(
+        this.#selectedModelChoiceId
+      );
       const engineInstance = await lazy.openAIEngine.build({
         model: callContext.model,
         serviceType: callContext.serviceType,
         purpose: callContext.purpose,
         flowId: this.conversationId,
         feature: lazy.MODEL_FEATURES.CHAT,
+        baseURL,
+        apiKey,
       });
 
       if (inputText) {
@@ -1886,8 +1945,11 @@ export class AIWindow extends MozLitElement {
         this.isGenerating
       );
     }
-    if (changedProps.has("availableModels") && this.#smartbar) {
-      this.#updateSmartbarModels(this.#smartbar);
+    if (changedProps.has("availableModels")) {
+      this.#setModelChoice(this.#selectedModelChoiceId);
+      if (this.#smartbar) {
+        this.#updateSmartbarModels(this.#smartbar);
+      }
     }
   }
 
@@ -2226,6 +2288,9 @@ export class AIWindow extends MozLitElement {
         pageUrl: lazy.getCurrentTabUrl(window),
         conversation: this.#conversation,
         conversationId: this.#getDataConvId(),
+        modelChoiceId: this.#hasModelChoiceOverride
+          ? this.#selectedModelChoiceId
+          : null,
 
         // The tab this ai-window instance relates to: for fullpage that's
         // the tab hosting the element; for sidebar (no owner tab), fall

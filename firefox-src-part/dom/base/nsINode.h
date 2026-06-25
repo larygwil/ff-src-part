@@ -1853,6 +1853,12 @@ class nsINode : public mozilla::dom::EventTarget {
    *                    For example, when this is a text control element,
    *                    return the document's selection root if "No" or return
    *                    the native anonymous <div> if "Yes".
+   * @param aAllowCrossShadowBoundary
+   *                    If "Yes", the result may be shadow including DOM
+   *                    ancestor element.
+   * @return Return the selection root element.
+   *         - If this is in an editing host, return the editing host even if
+   *           this is not editable.
    */
   nsIContent* GetSelectionRootContent(
       mozilla::PresShell* aPresShell,

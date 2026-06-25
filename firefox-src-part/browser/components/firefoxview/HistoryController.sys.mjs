@@ -161,18 +161,15 @@ export class HistoryController {
     }
     for (const { items } of entries) {
       for (const item of items) {
-        switch (sortOption) {
-          case "datesite": {
-            // item is a [ domain, visit[] ] entry.
-            const [, visits] = item;
-            for (const visit of visits) {
-              this.#normalizeVisit(visit);
-            }
-            break;
+        if (sortOption === "datesite" && !searchQuery) {
+          // item is a [ domain, visit[] ] entry.
+          const [, visits] = item;
+          for (const visit of visits) {
+            this.#normalizeVisit(visit);
           }
-          default:
-            // item is a single visit.
-            this.#normalizeVisit(item);
+        } else {
+          // item is a single visit.
+          this.#normalizeVisit(item);
         }
       }
     }

@@ -87,6 +87,12 @@ export class UrlbarProviderHistoryUrlHeuristic extends UrlbarProvider {
           hash('http://' || :strippedURL),
           hash('http://www.' || :strippedURL)
         )
+        AND url IN (
+          'https://' || :strippedURL,
+          'https://www.' || :strippedURL,
+          'http://' || :strippedURL,
+          'http://www.' || :strippedURL
+        )
         AND frecency <> 0
       ORDER BY
         _title NOTNULL DESC,

@@ -40,6 +40,7 @@
     <attr name="colorSurfaceDimVariant" format="reference" />
     <attr name="colorAutofillText" format="reference" />
     <attr name="colorSelectedText" format="reference" />
+    <attr name="colorIconPrivate" format="reference" />
 
     <!-- Color palette attributes -->
     <attr name="accent" format="reference" />

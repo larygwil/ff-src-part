@@ -91,6 +91,7 @@ let JSWINDOWACTORS = {
     matches: ["chrome://global/content/megalist/megalist.html"],
     allFrames: true,
     enablePreference: "browser.contextual-password-manager.enabled",
+    remoteTypes: ["parent"],
   },
 
   AboutLogins: {
@@ -202,6 +203,7 @@ let JSWINDOWACTORS = {
     },
 
     matches: ["about:tabcrashed*"],
+    remoteTypes: ["parent"],
   },
 
   AboutWelcome: {
@@ -577,6 +579,7 @@ let JSWINDOWACTORS = {
       "about:opentabs",
       "about:aichatcontent",
     ],
+    remoteTypes: ["parent", "privilegedabout"],
   },
 
   LinkHandler: {

@@ -547,9 +547,15 @@ class nsIContent : public nsINode {
   /**
    * If the content is a part of HTML editor, this returns editing
    * host content.  When the content is in designMode, this returns its body
-   * element.  Also, when the content isn't editable, this returns null.
+   * element.
    */
   mozilla::dom::Element* GetEditingHost() const;
+
+  /**
+   * If this is editable, return `this`.
+   * Otherwise, return the inclusive editable ancestor.
+   */
+  nsIContent* GetInclusiveEditableAncestor() const;
 
   bool SupportsLangAttr() const {
     return IsHTMLElement() || IsSVGElement() || IsXULElement();
