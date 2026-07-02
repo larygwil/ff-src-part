@@ -1284,6 +1284,55 @@ ConnectionData.prototype = Object.freeze({
       );
     });
   },
+
+  attachDatabase(path, name) {
+    let deferred = Promise.withResolvers();
+    let index = this._statementCounter++;
+    let self = this;
+    let errors = [];
+
+    let pending = this._dbConn.attachDatabase(path, name, {
+      handleResult(_result) {},
+      handleError(error) {
+        self._logger.warn(
+          "Error when attaching database (" +
+            error.result +
+            "): " +
+            error.message
+        );
+        errors.push(error);
+      },
+      handleCompletion(reason) {
+        self._logger.debug("attachDatabase #" + index + " finished.");
+        self._pendingStatements.delete(index);
+
+        switch (reason) {
+          case Ci.mozIStorageStatementCallback.REASON_FINISHED:
+          case Ci.mozIStorageStatementCallback.REASON_CANCELED:
+            deferred.resolve(reason);
+            break;
+          case Ci.mozIStorageStatementCallback.REASON_ERROR: {
+            let error = new Error(
+              "Error(s) encountered during ATTACH DATABASE: " +
+                errors.map(e => e.message).join(", ")
+            );
+            error.errors = errors;
+            error.result = convertStorageErrorResult(errors[0]?.result);
+            deferred.reject(error);
+            break;
+          }
+          default:
+            deferred.reject(
+              new Error("Unknown completion reason code: " + reason)
+            );
+            break;
+        }
+      },
+    });
+
+    this._pendingStatements.set(index, pending);
+    return deferred.promise;
+  },
 });
 
 /**
@@ -2169,6 +2218,10 @@ OpenedConnection.prototype = {
       pagesPerStep,
       stepDelayMs
     );
+  },
+
+  attachDatabase(path, name) {
+    return this._connectionData.attachDatabase(path, name);
   },
 };
 // This is frozen after the prototype has been assigned to allow TypeScript
