@@ -628,12 +628,12 @@
   <!-- Marketing onboarding body. 'Firefox' and 'Mozilla' are intentionally hardcoded. -->
   <string name="nova_onboarding_marketing_body_2" tools:ignore="BrandUsage">Partagez la manière dont vous avez découvert Firefox et que vous l’utilisez, avec les partenaires marketing de Mozilla. Ces données ne sont jamais vendues.</string>
   <!-- Marketing onboarding body. 'Firefox' and 'Mozilla' are intentionally hardcoded. -->
-  <string name="nova_onboarding_marketing_body_3" tools:ignore="BrandUsage">Vous pouvez nous aider à toucher un plus large public en autorisant Mozilla à signaler aux canaux où nous faisons la promotion de Firefox que vous utilisez Firefox.</string>
+  <string name="nova_onboarding_marketing_body_3" tools:ignore="BrandUsage,UnusedResources">Vous pouvez nous aider à toucher un plus large public en autorisant Mozilla à signaler aux canaux où nous faisons la promotion de Firefox que vous utilisez Firefox.</string>
   <!--
     Marketing onboarding body. 'Firefox' and 'Mozilla' are intentionally hardcoded.
     “Platform you came from” refers to the external app, website, store, campaign, or other source that directed the user to Firefox.
   -->
-  <string name="nova_onboarding_marketing_body_4" tools:ignore="BrandUsage">Vous pouvez nous aider à toucher un plus large public en autorisant Mozilla à signaler à la plateforme d’où vous venez que vous utilisez Firefox.</string>
+  <string name="nova_onboarding_marketing_body_4" tools:ignore="BrandUsage,UnusedResources">Vous pouvez nous aider à toucher un plus large public en autorisant Mozilla à signaler à la plateforme d’où vous venez que vous utilisez Firefox.</string>
   <!--
     Marketing onboarding body. 'Firefox' and 'Mozilla' are intentionally hardcoded.
     “Platform you came from” refers to the external app, website, store, campaign, or other source that directed the user to Firefox.
@@ -663,7 +663,7 @@
   <!-- Marketing onboarding body link text. -->
   <string name="nova_onboarding_marketing_body_link_text_1">En savoir plus</string>
   <!-- Marketing onboarding primary button text. 'Firefox' is intentionally hardcoded. -->
-  <string name="nova_onboarding_marketing_primary_button_text" tools:ignore="BrandUsage">Aider Firefox</string>
+  <string name="nova_onboarding_marketing_primary_button_text" tools:ignore="BrandUsage,UnusedResources">Aider Firefox</string>
   <!-- Marketing onboarding primary button text. -->
   <string name="nova_onboarding_marketing_primary_button_text_2">Autoriser et continuer</string>
   <!-- Marketing onboarding secondary button text. -->
@@ -1967,6 +1967,8 @@
   <string name="webcompat_reporter_label_whats_broken_3">Qu’est-ce qui ne fonctionne pas\u00a0?</string>
   <!-- Content description for the icon button that clears the selected broken site reason in the WebCompat Reporter. -->
   <string name="webcompat_reporter_clear_reason_content_description">Effacer le motif sélectionné</string>
+  <!-- The error message of the description when the user selects "Something else" as the reason, but left the description empty or too short. -->
+  <string name="webcompat_reporter_description_error">Veuillez saisir au moins 10 caractères</string>
   <!-- The label/title of a field in the Web Compat Reporter feature for explaining a high-level reason why the site is broken. -->
   <string name="webcompat_reporter_label_whats_broken_2">Quel est le problème ?</string>
   <!-- The placeholder text for the dropdown where a user selects a high-level reason why the site is broken. -->
@@ -3947,6 +3949,8 @@
     %s is a placeholder for the name of the certificate authority that issued the certificate.
   -->
   <string name="connection_security_panel_verified_by">Vérifié par %s</string>
+  <!-- Content description (not visible, for screen readers etc.) for the handle used to drag the protections dashboard to the bottom of the screen and close it. -->
+  <string name="tracker_protections_dashboard_close_handlebar_content_description">Fermer le tableau de bord</string>
   <!--
     Text for the connection security panel when the site uses a QWAC.
     %s is a placeholder for the organization for which the certificate was issued.
@@ -4070,7 +4074,25 @@
   <string name="microsurvey_sync_title" tools:ignore="BrandUsage,UnusedResources">Êtes-vous satisfait·e de la synchronisation de Firefox ?</string>
   <!-- Text shown in the survey title for 'describe your experience so far' microsurvey. Note: The word "Firefox" should NOT be translated. -->
   <string name="microsurvey_describe_your_experience_title" tools:ignore="BrandUsage,UnusedResources">Aidez-nous à améliorer Firefox. Quelle proposition décrit le mieux votre expérience\u00a0?</string>
-  <!-- Uninstall Survey -->
+  <!--
+    Uninstall Survey
+
+    Title text for the uninstall survey dialog, asking the user for the reason they are removing the app
+  -->
+  <string name="microsurvey_uninstall_survey_title">Votre avis compte. Pourquoi effectuez-vous la désinstallation\u00a0?</string>
+  <!-- Uninstall survey answer option -->
+  <string name="uninstall_survey_option_1">Problèmes avec des pages web</string>
+  <!-- Uninstall survey answer option -->
+  <string name="uninstall_survey_option_2">Problèmes de vidéo et de téléchargement</string>
+  <!-- Uninstall survey answer option -->
+  <string name="uninstall_survey_option_3">Problèmes de performances</string>
+  <!-- Uninstall survey answer option -->
+  <string name="uninstall_survey_option_4">Problèmes de fonctionnement et de conception</string>
+  <!-- Uninstall survey answer option -->
+  <string name="uninstall_survey_option_5">Problèmes liés à la vie privée</string>
+  <!-- Uninstall survey answer option -->
+  <string name="uninstall_survey_option_6">Problèmes de paiement et d’abonnement</string>
+  <!-- Button label shown at the bottom of the uninstall survey -->
   <string name="uninstall_survey_button_label">Envoyer vos commentaires et désinstaller</string>
   <!--
     Accessibility
@@ -4461,7 +4483,7 @@
   <!-- Round name shown on the sports widget for the quarter-finals stage in the soccer tournament. -->
   <string name="sports_widget_quarter_final">Quarts de finale</string>
   <!-- Round name shown on the sports widget for the semi-finals stage in the soccer tournament. -->
-  <string name="sports_widget_semi_final">Demi-finale</string>
+  <string name="sports_widget_semi_final">Demi-finales</string>
   <!-- Round name shown on the sports widget for the final stage in the soccer tournament. -->
   <string name="sports_widget_final">Finale</string>
   <!-- Round name shown on the sports widget for the bronze final stage in the soccer tournament. -->
@@ -4709,6 +4731,8 @@
   <string name="firefox_labs_feature_enable_dialog_message">Pour activer cette fonctionnalité, redémarrez %s.</string>
   <!-- The description text that is displayed in the confirmation dialog on the Firefox Labs screen for toggling "off" experimental features. %s is the name of the app (for example "Firefox Nightly") -->
   <string name="firefox_labs_feature_disable_dialog_message">Pour désactiver cette fonctionnalité, redémarrez %s.</string>
+  <!-- Helper text shown beneath a Firefox Labs item when it is blocked from being turned on. -->
+  <string name="firefox_labs_feature_conflict">Cette fonctionnalité n’est pas disponible à l‘essai.</string>
   <!-- Text displayed on the Firefox Labs screen when there are no Labs experimental features present. -->
   <string name="firefox_labs_no_labs_available_description">Aucune fonctionnalité expérimentale à essayer pour l’instant</string>
 </resources>

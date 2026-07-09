@@ -628,12 +628,12 @@
   <!-- Marketing onboarding body. 'Firefox' and 'Mozilla' are intentionally hardcoded. -->
   <string name="nova_onboarding_marketing_body_2" tools:ignore="BrandUsage">Del hvordan du oppdaget Firefox, og at du bruker den, med Mozillas markedsføringspartnere. Disse dataene selges aldri.</string>
   <!-- Marketing onboarding body. 'Firefox' and 'Mozilla' are intentionally hardcoded. -->
-  <string name="nova_onboarding_marketing_body_3" tools:ignore="BrandUsage">Du kan hjelpe oss med å nå flere ved å la Mozilla informere kanalene der vi markedsfører Firefox om at du er en Firefox-bruker.</string>
+  <string name="nova_onboarding_marketing_body_3" tools:ignore="BrandUsage,UnusedResources">Du kan hjelpe oss med å nå flere ved å la Mozilla informere kanalene der vi markedsfører Firefox om at du er en Firefox-bruker.</string>
   <!--
     Marketing onboarding body. 'Firefox' and 'Mozilla' are intentionally hardcoded.
     “Platform you came from” refers to the external app, website, store, campaign, or other source that directed the user to Firefox.
   -->
-  <string name="nova_onboarding_marketing_body_4" tools:ignore="BrandUsage">Du kan hjelpe oss med å nå flere personer ved å la Mozilla informere plattformen du kom fra om at du bruker Firefox.</string>
+  <string name="nova_onboarding_marketing_body_4" tools:ignore="BrandUsage,UnusedResources">Du kan hjelpe oss med å nå flere personer ved å la Mozilla informere plattformen du kom fra om at du bruker Firefox.</string>
   <!--
     Marketing onboarding body. 'Firefox' and 'Mozilla' are intentionally hardcoded.
     “Platform you came from” refers to the external app, website, store, campaign, or other source that directed the user to Firefox.
@@ -663,7 +663,7 @@
   <!-- Marketing onboarding body link text. -->
   <string name="nova_onboarding_marketing_body_link_text_1">Les mer</string>
   <!-- Marketing onboarding primary button text. 'Firefox' is intentionally hardcoded. -->
-  <string name="nova_onboarding_marketing_primary_button_text" tools:ignore="BrandUsage">Hjelp Firefox</string>
+  <string name="nova_onboarding_marketing_primary_button_text" tools:ignore="BrandUsage,UnusedResources">Hjelp Firefox</string>
   <!-- Marketing onboarding primary button text. -->
   <string name="nova_onboarding_marketing_primary_button_text_2">Tillat og fortsett</string>
   <!-- Marketing onboarding secondary button text. -->
@@ -845,9 +845,9 @@
   <!-- Preference for accessibility -->
   <string name="preferences_accessibility">Tilgjengelighet</string>
   <!-- Preference to override the Mozilla account server -->
-  <string name="preferences_override_account_server" tools:ignore="BrandUsage">Selvvalgt server for Mozilla-konto</string>
+  <string name="preferences_override_account_server" tools:ignore="BrandUsage">Tilpasset server for Mozilla-konto</string>
   <!-- Preference to override the Sync token server -->
-  <string name="preferences_override_sync_tokenserver">Selvvalgt synkroniseringsserver</string>
+  <string name="preferences_override_sync_tokenserver">Tilpasset synkroniseringsserver</string>
   <!-- Preference category for account information -->
   <string name="preferences_category_account">Konto</string>
   <!-- Preference for changing where the AddressBar is positioned -->
@@ -1967,6 +1967,8 @@
   <string name="webcompat_reporter_label_whats_broken_3">Hva fungerer ikke?</string>
   <!-- Content description for the icon button that clears the selected broken site reason in the WebCompat Reporter. -->
   <string name="webcompat_reporter_clear_reason_content_description">Fjern valgt årsak</string>
+  <!-- The error message of the description when the user selects "Something else" as the reason, but left the description empty or too short. -->
+  <string name="webcompat_reporter_description_error">Skriv inn minst 10 tegn</string>
   <!-- The label/title of a field in the Web Compat Reporter feature for explaining a high-level reason why the site is broken. -->
   <string name="webcompat_reporter_label_whats_broken_2">Hva er ødelagt?</string>
   <!-- The placeholder text for the dropdown where a user selects a high-level reason why the site is broken. -->
@@ -3947,6 +3949,8 @@
     %s is a placeholder for the name of the certificate authority that issued the certificate.
   -->
   <string name="connection_security_panel_verified_by">Bekreftet av: %s</string>
+  <!-- Content description (not visible, for screen readers etc.) for the handle used to drag the protections dashboard to the bottom of the screen and close it. -->
+  <string name="tracker_protections_dashboard_close_handlebar_content_description">Lukk dashbordet</string>
   <!--
     Text for the connection security panel when the site uses a QWAC.
     %s is a placeholder for the organization for which the certificate was issued.
@@ -4070,7 +4074,25 @@
   <string name="microsurvey_sync_title" tools:ignore="BrandUsage,UnusedResources">Hvor fornøyd er du med synkroniseringsopplevelsen i Firefox?</string>
   <!-- Text shown in the survey title for 'describe your experience so far' microsurvey. Note: The word "Firefox" should NOT be translated. -->
   <string name="microsurvey_describe_your_experience_title" tools:ignore="BrandUsage,UnusedResources">Hjelp oss med å forbedre Firefox. Hva beskriver best opplevelsen din så langt?</string>
-  <!-- Uninstall Survey -->
+  <!--
+    Uninstall Survey
+
+    Title text for the uninstall survey dialog, asking the user for the reason they are removing the app
+  -->
+  <string name="microsurvey_uninstall_survey_title">Din tilbakemelding er viktig. Hvorfor avinstallerer du?</string>
+  <!-- Uninstall survey answer option -->
+  <string name="uninstall_survey_option_1">Nettsideproblemer</string>
+  <!-- Uninstall survey answer option -->
+  <string name="uninstall_survey_option_2">Video- og nedlastingsproblemer</string>
+  <!-- Uninstall survey answer option -->
+  <string name="uninstall_survey_option_3">Ytelsesproblemer</string>
+  <!-- Uninstall survey answer option -->
+  <string name="uninstall_survey_option_4">Funksjons- og designproblemer</string>
+  <!-- Uninstall survey answer option -->
+  <string name="uninstall_survey_option_5">Personvernrelaterte problemer</string>
+  <!-- Uninstall survey answer option -->
+  <string name="uninstall_survey_option_6">Betalings- og abonnementsproblemer</string>
+  <!-- Button label shown at the bottom of the uninstall survey -->
   <string name="uninstall_survey_button_label">Send tilbakemelding og avinstaller</string>
   <!--
     Accessibility
@@ -4709,6 +4731,8 @@
   <string name="firefox_labs_feature_enable_dialog_message">For å slå på denne funksjonen, start %s på nytt.</string>
   <!-- The description text that is displayed in the confirmation dialog on the Firefox Labs screen for toggling "off" experimental features. %s is the name of the app (for example "Firefox Nightly") -->
   <string name="firefox_labs_feature_disable_dialog_message">For å slå av denne funksjonen, start %s på nytt.</string>
+  <!-- Helper text shown beneath a Firefox Labs item when it is blocked from being turned on. -->
+  <string name="firefox_labs_feature_conflict">Funksjonen er ikke tilgjengelig for testing.</string>
   <!-- Text displayed on the Firefox Labs screen when there are no Labs experimental features present. -->
   <string name="firefox_labs_no_labs_available_description">Ingen eksperimentelle funksjoner å prøve akkurat nå</string>
 </resources>

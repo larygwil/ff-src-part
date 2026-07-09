@@ -24,6 +24,7 @@ XPCOMUtils.defineLazyServiceGetters(lazy, {
 ChromeUtils.defineESModuleGetters(lazy, {
   AddonManager: "resource://gre/modules/AddonManager.sys.mjs",
   AddonManagerPrivate: "resource://gre/modules/AddonManager.sys.mjs",
+  AddonRepository: "resource://gre/modules/addons/AddonRepository.sys.mjs",
   BookmarksPolicies: "resource:///modules/policies/BookmarksPolicies.sys.mjs",
   CustomizableUI:
     "moz-src:///browser/components/customizableui/CustomizableUI.sys.mjs",
@@ -1601,14 +1602,16 @@ export var Policies = {
             extensionSettings[extensionID].installation_mode ==
               "normal_installed"
           ) {
-            if (!extensionSettings[extensionID].install_url) {
-              throw new Error(`Missing install_url for ${extensionID}`);
+            const existingAddon = addons.get(extensionID);
+            if (extensionSettings[extensionID].install_url) {
+              installAddonFromURL(
+                extensionSettings[extensionID].install_url,
+                extensionID,
+                existingAddon
+              );
+            } else if (!existingAddon) {
+              installAddonFromRepository(extensionID);
             }
-            installAddonFromURL(
-              extensionSettings[extensionID].install_url,
-              extensionID,
-              addons.get(extensionID)
-            );
             manager.disallowFeature(`uninstall-extension:${extensionID}`);
             if (
               extensionSettings[extensionID].installation_mode ==
@@ -1742,6 +1745,13 @@ export var Policies = {
           param.Weather,
           param.Locked
         );
+        // The Nova layout (enabled by default) binds the weather toggle to a
+        // different pref, so set it too.
+        PoliciesUtils.setDefaultPref(
+          "browser.newtabpage.activity-stream.widgets.weather.enabled",
+          param.Weather,
+          param.Locked
+        );
       }
       if ("TopSites" in param) {
         PoliciesUtils.setDefaultPref(
@@ -1766,22 +1776,12 @@ export var Policies = {
       }
       if ("Pocket" in param) {
         PoliciesUtils.setDefaultPref(
-          "browser.newtabpage.activity-stream.feeds.system.topstories",
-          param.Pocket,
-          param.Locked
-        );
-        PoliciesUtils.setDefaultPref(
           "browser.newtabpage.activity-stream.feeds.section.topstories",
           param.Pocket,
           param.Locked
         );
       }
       if ("Stories" in param) {
-        PoliciesUtils.setDefaultPref(
-          "browser.newtabpage.activity-stream.feeds.system.topstories",
-          param.Stories,
-          param.Locked
-        );
         PoliciesUtils.setDefaultPref(
           "browser.newtabpage.activity-stream.feeds.section.topstories",
           param.Stories,
@@ -1799,6 +1799,20 @@ export var Policies = {
         PoliciesUtils.setDefaultPref(
           "browser.newtabpage.activity-stream.showSponsored",
           param.SponsoredStories,
+          param.Locked
+        );
+      }
+      // The "Support Firefox" toggle in the settings UI is a parent control for
+      // the two sponsored child settings. When both are locked by policy, lock
+      // it to their combined value so it can't be toggled to no effect.
+      if (
+        param.Locked &&
+        "SponsoredTopSites" in param &&
+        "SponsoredStories" in param
+      ) {
+        PoliciesUtils.setDefaultPref(
+          "browser.newtabpage.activity-stream.showSponsoredCheckboxes",
+          param.SponsoredTopSites || param.SponsoredStories,
           param.Locked
         );
       }
@@ -3663,6 +3677,22 @@ function applyExtensionGuards(extensionSettings) {
     };
   }
   lazy.setEnterpriseGuards(guards);
+}
+
+function installAddonFromRepository(extensionID) {
+  lazy.AddonRepository.getAddonsByIDs([extensionID])
+    .then(repoAddons => {
+      if (!repoAddons[0]?.sourceURI) {
+        lazy.log.error(
+          `No XPI URL found on AMO for ${extensionID}. Please use install_url for add-ons not listed on addons.mozilla.org.`
+        );
+        return;
+      }
+      installAddonFromURL(repoAddons[0].sourceURI.spec, extensionID, null);
+    })
+    .catch(err => {
+      lazy.log.error(`Failed to retrieve ${extensionID} from AMO: ${err}`);
+    });
 }
 
 /**

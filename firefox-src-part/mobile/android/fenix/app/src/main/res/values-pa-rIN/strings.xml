@@ -149,6 +149,8 @@
   <string name="home_screen_shortcut_open_new_private_tab_2">ਨਵੀਂ ਪ੍ਰਾਈਵੇਟ ਟੈਬ</string>
   <!-- Shortcut action to open Passwords screen -->
   <string name="home_screen_shortcut_passwords">ਪਾਸਵਰਡ</string>
+  <!-- Shortcut action to open uninstall survey -->
+  <string name="home_screen_shortcut_uninstall_survey">ਅਣ-ਇੰਸਟਾਲ, ਕਿਓ?</string>
   <!--
     Recent Tabs
 
@@ -626,12 +628,12 @@
   <!-- Marketing onboarding body. 'Firefox' and 'Mozilla' are intentionally hardcoded. -->
   <string name="nova_onboarding_marketing_body_2" tools:ignore="BrandUsage">ਤੁਸੀਂ Firefox ਨੂੰ ਕਿਵੇਂ ਲੱਭਿਆ ਅਤੇ ਇਸ ਨੂੰ ਕਿਵੇਂ ਵਰਤਦੇ ਹੋ, ਉਸ ਜਾਣਕਾਰੀ ਨੂੰ Mozilla ਦੇ ਮਾਰਕੀਟਿੰਗ ਹਿੱਸੇਦਾਰਾਂ ਨਾਲ ਸਾਂਝਾ ਕਰੋ। ਇਹ ਡਾਟੇ ਨੂੰ ਕਦੇ ਨਹੀਂ ਵੇਚਿਆ ਜਾਂਦਾ ਹੈ।</string>
   <!-- Marketing onboarding body. 'Firefox' and 'Mozilla' are intentionally hardcoded. -->
-  <string name="nova_onboarding_marketing_body_3" tools:ignore="BrandUsage">ਤੁਸੀਂ Mozilla ਨੂੰ ਜਾਣਕਾਰੀ ਚੈਨਲਾਂ, ਜਿੱਥੇ ਅਸੀਂ Firefox ਲਈ ਪ੍ਰਚਾਰ ਕਰਦੇ ਹਾਂ ਕਿ ਤੁਸੀਂ ਇੱਕ Firefox ਵਰਤੋਂਕਾਰ ਹੈ, ਦੀ ਇਜਾਜ਼ਤ ਦੇ ਕੇ ਹੋਰ ਲੋਕਾਂ ਤੱਕ ਸਾਨੂੰ ਪਹੁੰਚਣ ਲਈ ਮਦਦ ਕਰ ਸਕਦੇ ਹੋ।</string>
+  <string name="nova_onboarding_marketing_body_3" tools:ignore="BrandUsage,UnusedResources">ਤੁਸੀਂ Mozilla ਨੂੰ ਜਾਣਕਾਰੀ ਚੈਨਲਾਂ, ਜਿੱਥੇ ਅਸੀਂ Firefox ਲਈ ਪ੍ਰਚਾਰ ਕਰਦੇ ਹਾਂ ਕਿ ਤੁਸੀਂ ਇੱਕ Firefox ਵਰਤੋਂਕਾਰ ਹੈ, ਦੀ ਇਜਾਜ਼ਤ ਦੇ ਕੇ ਹੋਰ ਲੋਕਾਂ ਤੱਕ ਸਾਨੂੰ ਪਹੁੰਚਣ ਲਈ ਮਦਦ ਕਰ ਸਕਦੇ ਹੋ।</string>
   <!--
     Marketing onboarding body. 'Firefox' and 'Mozilla' are intentionally hardcoded.
     “Platform you came from” refers to the external app, website, store, campaign, or other source that directed the user to Firefox.
   -->
-  <string name="nova_onboarding_marketing_body_4" tools:ignore="BrandUsage">ਤੁਸੀਂ Mozilla ਨੂੰ ਪਲੇਟਫਾਰਮ ਉੱਤੇ ਤੁਹਾਡੇ Firefox ਵਰਤਣ ਬਾਰੇ ਜਾਣਕਾਰੀ ਦੇ ਕੇ ਸਾਨੂੰ ਲੋਕਾਂ ਤੱਕ ਅੱਪੜਨ ਲਈ ਮਦਦ ਕਰ ਸਕਦੇ ਹੋ।</string>
+  <string name="nova_onboarding_marketing_body_4" tools:ignore="BrandUsage,UnusedResources">ਤੁਸੀਂ Mozilla ਨੂੰ ਪਲੇਟਫਾਰਮ ਉੱਤੇ ਤੁਹਾਡੇ Firefox ਵਰਤਣ ਬਾਰੇ ਜਾਣਕਾਰੀ ਦੇ ਕੇ ਸਾਨੂੰ ਲੋਕਾਂ ਤੱਕ ਅੱਪੜਨ ਲਈ ਮਦਦ ਕਰ ਸਕਦੇ ਹੋ।</string>
   <!--
     Marketing onboarding body. 'Firefox' and 'Mozilla' are intentionally hardcoded.
     “Platform you came from” refers to the external app, website, store, campaign, or other source that directed the user to Firefox.
@@ -661,7 +663,7 @@
   <!-- Marketing onboarding body link text. -->
   <string name="nova_onboarding_marketing_body_link_text_1">ਹੋਰ ਜਾਣੋ</string>
   <!-- Marketing onboarding primary button text. 'Firefox' is intentionally hardcoded. -->
-  <string name="nova_onboarding_marketing_primary_button_text" tools:ignore="BrandUsage">Firefox ਦੀ ਮਦਦ ਕਰੋ</string>
+  <string name="nova_onboarding_marketing_primary_button_text" tools:ignore="BrandUsage,UnusedResources">Firefox ਦੀ ਮਦਦ ਕਰੋ</string>
   <!-- Marketing onboarding primary button text. -->
   <string name="nova_onboarding_marketing_primary_button_text_2">ਸਹਿਮਤ ਅਤੇ ਜਾਰੀ ਰੱਖੋ</string>
   <!-- Marketing onboarding secondary button text. -->
@@ -1965,6 +1967,8 @@
   <string name="webcompat_reporter_label_whats_broken_3">ਕੀ ਕੰਮ ਨਹੀਂ ਕਰ ਰਿਹਾ ਹੈ?</string>
   <!-- Content description for the icon button that clears the selected broken site reason in the WebCompat Reporter. -->
   <string name="webcompat_reporter_clear_reason_content_description">ਚੁਣੇ ਕਾਰਨ ਨੂੰ ਮਿਟਾਓ</string>
+  <!-- The error message of the description when the user selects "Something else" as the reason, but left the description empty or too short. -->
+  <string name="webcompat_reporter_description_error">ਘੱਟੋ-ਘੱਟ 10 ਅੱਖਰ ਦਿਓ</string>
   <!-- The label/title of a field in the Web Compat Reporter feature for explaining a high-level reason why the site is broken. -->
   <string name="webcompat_reporter_label_whats_broken_2">ਕੀ ਖ਼ਰਾਬ ਹੈ?</string>
   <!-- The placeholder text for the dropdown where a user selects a high-level reason why the site is broken. -->
@@ -2447,6 +2451,8 @@
   <string name="preferences_take_survey">ਸਰਵੇਖਣ ਭਰੋ</string>
   <!-- Preference for not taking the short survey. -->
   <string name="preferences_not_take_survey">ਨਹੀਂ, ਧੰਨਵਾਦ</string>
+  <!-- Error message shown in a Toast when the system fails to trigger the device uninstallation prompt. -->
+  <string name="uninstall_survey_error_failed">ਸਿਸਟਮ ਅਣ-ਇੰਸਟਾਲ ਪਰੋਂਓਟ ਖੋਲ੍ਹਣ ਲਈ ਅਸਫ਼ਲ ਹੈ। ਸਿੱਧਾ ਸਿਸਟਮ ਅਣ-ਇੰਸਟਾਲ ਕਾਰਵਾਈ ਨੂੰ ਵਰਤੋਂ।</string>
   <!--
     Snackbar
 
@@ -3943,6 +3949,8 @@
     %s is a placeholder for the name of the certificate authority that issued the certificate.
   -->
   <string name="connection_security_panel_verified_by">%s ਵਲੋਂ ਤਸਦੀਕ ਕੀਤਾ</string>
+  <!-- Content description (not visible, for screen readers etc.) for the handle used to drag the protections dashboard to the bottom of the screen and close it. -->
+  <string name="tracker_protections_dashboard_close_handlebar_content_description">ਡੈਸ਼ਬੋਰਡ ਨੂੰ ਬੰਦ ਕਰੋ</string>
   <!--
     Text for the connection security panel when the site uses a QWAC.
     %s is a placeholder for the organization for which the certificate was issued.
@@ -4066,6 +4074,26 @@
   <string name="microsurvey_sync_title" tools:ignore="BrandUsage,UnusedResources">Firefox ਵਿੱਚ ਸਿੰਕ ਤਜਰਬੇ ਨਾਲ ਤੁਸੀਂ ਕਿੰਨੇ ਸੰਤੁਸ਼ਟ ਹੋ?</string>
   <!-- Text shown in the survey title for 'describe your experience so far' microsurvey. Note: The word "Firefox" should NOT be translated. -->
   <string name="microsurvey_describe_your_experience_title" tools:ignore="BrandUsage,UnusedResources">Firefox ਨੂੰ ਵਧੀਆ ਬਣਾਉਣ ਲਈ ਸਾਡੀ ਮਦਦ ਕਰੋ। ਹੁਣ ਤੱਕ ਦੇ ਤੁਹਾਡੇ ਤਜਰਬੇ ਨੂੰ ਕੀ ਵਧੀਆ ਦਰਸਾਉਂਦਾ ਹੈ?</string>
+  <!--
+    Uninstall Survey
+
+    Title text for the uninstall survey dialog, asking the user for the reason they are removing the app
+  -->
+  <string name="microsurvey_uninstall_survey_title">ਤੁਹਾਡੇ ਸੁਝਾਅ ਸਾਡੇ ਲਈ ਅਸਰ ਰੱਖਦੇ ਹਨ। ਤੁਸੀਂ ਅਣ-ਇੰਸਟਾਲ ਕਿਉਂ ਕਰ ਰਹੇ ਹੋ?</string>
+  <!-- Uninstall survey answer option -->
+  <string name="uninstall_survey_option_1">ਵੈੱਬ-ਸਫ਼ੇ ਨਾਲ ਮਸਲੇ</string>
+  <!-- Uninstall survey answer option -->
+  <string name="uninstall_survey_option_2">ਵੀਡੀਓ ਅਤੇ ਡਾਊਨੋਲਡ ਮਸਲੇ</string>
+  <!-- Uninstall survey answer option -->
+  <string name="uninstall_survey_option_3">ਕਾਰਗੁਜ਼ਾਰੀ ਸੰਬੰਧੀ ਮਸਲੇ</string>
+  <!-- Uninstall survey answer option -->
+  <string name="uninstall_survey_option_4">ਫੰਕਸ਼ਨ ਅਤੇ ਡਿਜ਼ਾਇਨ ਮਸਲੇ</string>
+  <!-- Uninstall survey answer option -->
+  <string name="uninstall_survey_option_5">ਪਰਦੇਦਾਰੀ ਨਾਲ ਸੰਬੰਧਿਤ ਮਸਲੇ</string>
+  <!-- Uninstall survey answer option -->
+  <string name="uninstall_survey_option_6">ਭੁਗਤਾਨ ਅਤੇ ਮੈਂਬਰੀ ਮਸਲੇ</string>
+  <!-- Button label shown at the bottom of the uninstall survey -->
+  <string name="uninstall_survey_button_label">ਸੁਝਾਅ ਭੇਜੋ ਅਤੇ ਅਣ-ਇੰਸਟਾਲ ਕਰੋ</string>
   <!--
     Accessibility
 
@@ -4703,6 +4731,8 @@
   <string name="firefox_labs_feature_enable_dialog_message">ਇਹ ਫ਼ੀਚਰ ਨੂੰ ਚਾਲੂ ਕਰਨ ਵਾਸਤੇ %s ਨੂੰ ਮੁੜ-ਸ਼ੁਰੂ ਕਰੋ।</string>
   <!-- The description text that is displayed in the confirmation dialog on the Firefox Labs screen for toggling "off" experimental features. %s is the name of the app (for example "Firefox Nightly") -->
   <string name="firefox_labs_feature_disable_dialog_message">ਇਹ ਫ਼ੀਚਰ ਨੂੰ ਬੰਦ ਕਰਨ ਵਾਸਤੇ %s ਨੂੰ ਮੁੜ-ਸ਼ੁਰੂ ਕਰੋ।</string>
+  <!-- Helper text shown beneath a Firefox Labs item when it is blocked from being turned on. -->
+  <string name="firefox_labs_feature_conflict">ਫ਼ੀਚਰ ਅਜ਼ਮਾਉਣ ਲਈ ਤਿਆਰ ਨਹੀਂ ਹੈ।</string>
   <!-- Text displayed on the Firefox Labs screen when there are no Labs experimental features present. -->
   <string name="firefox_labs_no_labs_available_description">ਹੁਣੇ ਵਰਤਣ ਲਈ ਕੋਈ ਤਜਰਬੇ ਅਧੀਨ ਫ਼ੀਚਰ ਮੌਜੂਦ ਨਹੀਂ ਹੈ</string>
 </resources>

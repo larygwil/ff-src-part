@@ -628,12 +628,12 @@
   <!-- Marketing onboarding body. 'Firefox' and 'Mozilla' are intentionally hardcoded. -->
   <string name="nova_onboarding_marketing_body_2" tools:ignore="BrandUsage">Споделете с маркетинговите партньори на Mozilla как сте открили Firefox и че го използвате. Тези данни никога не се продават.</string>
   <!-- Marketing onboarding body. 'Firefox' and 'Mozilla' are intentionally hardcoded. -->
-  <string name="nova_onboarding_marketing_body_3" tools:ignore="BrandUsage">Можете да ни помогнете да достигнем до повече хора, като позволите на Mozilla да информира каналите, където популяризираме Firefox, че вие сте потребител на Firefox.</string>
+  <string name="nova_onboarding_marketing_body_3" tools:ignore="BrandUsage,UnusedResources">Можете да ни помогнете да достигнем до повече хора, като позволите на Mozilla да информира каналите, където популяризираме Firefox, че вие сте потребител на Firefox.</string>
   <!--
     Marketing onboarding body. 'Firefox' and 'Mozilla' are intentionally hardcoded.
     “Platform you came from” refers to the external app, website, store, campaign, or other source that directed the user to Firefox.
   -->
-  <string name="nova_onboarding_marketing_body_4" tools:ignore="BrandUsage">Можете да ни помогнете да достигнем до повече хора, като позволите на Mozilla да информира платформата, от която идвате, че използвате Firefox.</string>
+  <string name="nova_onboarding_marketing_body_4" tools:ignore="BrandUsage,UnusedResources">Можете да ни помогнете да достигнем до повече хора, като позволите на Mozilla да информира платформата, от която идвате, че използвате Firefox.</string>
   <!--
     Marketing onboarding body. 'Firefox' and 'Mozilla' are intentionally hardcoded.
     “Platform you came from” refers to the external app, website, store, campaign, or other source that directed the user to Firefox.
@@ -663,7 +663,7 @@
   <!-- Marketing onboarding body link text. -->
   <string name="nova_onboarding_marketing_body_link_text_1">Научете повече</string>
   <!-- Marketing onboarding primary button text. 'Firefox' is intentionally hardcoded. -->
-  <string name="nova_onboarding_marketing_primary_button_text" tools:ignore="BrandUsage">Помогнете на Firefox</string>
+  <string name="nova_onboarding_marketing_primary_button_text" tools:ignore="BrandUsage,UnusedResources">Помогнете на Firefox</string>
   <!-- Marketing onboarding primary button text. -->
   <string name="nova_onboarding_marketing_primary_button_text_2">Разрешаване и продължаване</string>
   <!-- Marketing onboarding secondary button text. -->
@@ -1967,6 +1967,8 @@
   <string name="webcompat_reporter_label_whats_broken_3">Какво не работи?</string>
   <!-- Content description for the icon button that clears the selected broken site reason in the WebCompat Reporter. -->
   <string name="webcompat_reporter_clear_reason_content_description">Изчистване на избраната причина</string>
+  <!-- The error message of the description when the user selects "Something else" as the reason, but left the description empty or too short. -->
+  <string name="webcompat_reporter_description_error">Моля, въведете поне 10 знака</string>
   <!-- The label/title of a field in the Web Compat Reporter feature for explaining a high-level reason why the site is broken. -->
   <string name="webcompat_reporter_label_whats_broken_2">Какво е повредено?</string>
   <!-- The placeholder text for the dropdown where a user selects a high-level reason why the site is broken. -->
@@ -3947,6 +3949,8 @@
     %s is a placeholder for the name of the certificate authority that issued the certificate.
   -->
   <string name="connection_security_panel_verified_by">Проверено от %s</string>
+  <!-- Content description (not visible, for screen readers etc.) for the handle used to drag the protections dashboard to the bottom of the screen and close it. -->
+  <string name="tracker_protections_dashboard_close_handlebar_content_description">Затваряне на таблото</string>
   <!--
     Text for the connection security panel when the site uses a QWAC.
     %s is a placeholder for the organization for which the certificate was issued.
@@ -4070,7 +4074,25 @@
   <string name="microsurvey_sync_title" tools:ignore="BrandUsage,UnusedResources">Доколко сте доволни от синхронизирането във Firefox?</string>
   <!-- Text shown in the survey title for 'describe your experience so far' microsurvey. Note: The word "Firefox" should NOT be translated. -->
   <string name="microsurvey_describe_your_experience_title" tools:ignore="BrandUsage,UnusedResources">Помогнете ни да подобрим Firefox. Кое описва най-добре преживяването ви досега?</string>
-  <!-- Uninstall Survey -->
+  <!--
+    Uninstall Survey
+
+    Title text for the uninstall survey dialog, asking the user for the reason they are removing the app
+  -->
+  <string name="microsurvey_uninstall_survey_title">Вашата обратна връзка е от значение. Защо деинсталирате?</string>
+  <!-- Uninstall survey answer option -->
+  <string name="uninstall_survey_option_1">Проблеми с уеб страницата</string>
+  <!-- Uninstall survey answer option -->
+  <string name="uninstall_survey_option_2">Проблеми с видеото и изтеглянето</string>
+  <!-- Uninstall survey answer option -->
+  <string name="uninstall_survey_option_3">Проблеми с производителността</string>
+  <!-- Uninstall survey answer option -->
+  <string name="uninstall_survey_option_4">Проблеми с функционирането и дизайна</string>
+  <!-- Uninstall survey answer option -->
+  <string name="uninstall_survey_option_5">Проблеми, свързани с поверителността</string>
+  <!-- Uninstall survey answer option -->
+  <string name="uninstall_survey_option_6">Проблеми с плащането и абонаментите</string>
+  <!-- Button label shown at the bottom of the uninstall survey -->
   <string name="uninstall_survey_button_label">Изпращане на обратна връзка и премахване</string>
   <!--
     Accessibility
@@ -4709,6 +4731,8 @@
   <string name="firefox_labs_feature_enable_dialog_message">За да включите тази функция, рестартирайте %s.</string>
   <!-- The description text that is displayed in the confirmation dialog on the Firefox Labs screen for toggling "off" experimental features. %s is the name of the app (for example "Firefox Nightly") -->
   <string name="firefox_labs_feature_disable_dialog_message">За да изключите тази функция, рестартирайте %s.</string>
+  <!-- Helper text shown beneath a Firefox Labs item when it is blocked from being turned on. -->
+  <string name="firefox_labs_feature_conflict">Тази функция не е налична за изпробване.</string>
   <!-- Text displayed on the Firefox Labs screen when there are no Labs experimental features present. -->
   <string name="firefox_labs_no_labs_available_description">В момента няма експериментални функции</string>
 </resources>
