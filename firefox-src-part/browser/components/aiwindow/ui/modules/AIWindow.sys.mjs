@@ -17,6 +17,8 @@ const FIRSTRUN_URL = "chrome://browser/content/aiwindow/firstrun.html";
 const FIRSTRUN_URI = Services.io.newURI(FIRSTRUN_URL);
 const PREF_SMARTWINDOW_ENABLED = "browser.smartwindow.enabled";
 const PREF_SMARTWINDOW_CONSENT_TIME = "browser.smartwindow.tos.consentTime";
+const PREF_SMARTWINDOW_LAST_USAGE_TIME =
+  "browser.smartwindow.lastSmartWindowUsageTime";
 const PREF_AI_CONTROL_SMARTWINDOW = "browser.ai.control.smartWindow";
 const PREF_AI_CONTROL_DEFAULT = "browser.ai.control.default";
 const PREF_MEMORIES_CONVERSATION =
@@ -46,6 +48,7 @@ ChromeUtils.defineESModuleGetters(lazy, {
     "moz-src:///browser/components/aiwindow/services/MemoryStore.sys.mjs",
   NewTabPagePreloading:
     "moz-src:///browser/components/tabbrowser/NewTabPagePreloading.sys.mjs",
+  NimbusFeatures: "resource://nimbus/ExperimentAPI.sys.mjs",
   ONLOGOUT_NOTIFICATION: "resource://gre/modules/FxAccountsCommon.sys.mjs",
   PanelMultiView:
     "moz-src:///browser/components/customizableui/PanelMultiView.sys.mjs",
@@ -129,6 +132,7 @@ export const AIWindow = {
     Services.obs.addObserver(this, "tabstrip-orientation-change");
     lazy.SmartWindowTelemetry.init();
     lazy.getAllModelsData(); // loads model data into cache for about:preferences
+    lazy.NimbusFeatures.smartWindow.onUpdate(this.onNimbusUpdate);
     this._initialized = true;
 
     // On startup/restart, if the first window initialized is an
@@ -172,7 +176,15 @@ export const AIWindow = {
       this.handlePlacesEvents
     );
 
+    lazy.NimbusFeatures.smartWindow.offUpdate(this.onNimbusUpdate);
+
     this._initialized = false;
+  },
+
+  onNimbusUpdate() {
+    if (lazy.NimbusFeatures.smartWindow.getVariable("enabled")) {
+      Services.prefs.setBoolPref(PREF_SMARTWINDOW_ENABLED, true);
+    }
   },
 
   observe(_subject, topic) {
@@ -372,6 +384,7 @@ export const AIWindow = {
     ) {
       return;
     }
+
     if (this.isAIWindowActive(win)) {
       // Window already opened as Smart via the BrowserContentHandler
       // startup gate, which uses ToS consentTime as a synchronous proxy for
@@ -384,6 +397,19 @@ export const AIWindow = {
       return;
     }
     await this._authorizeAndToggleWindow(win, "startup");
+  },
+
+  /**
+   * Records the current time (in seconds) as the last time a Smart Window was
+   * in use. Called whenever a Smart Window goes away — either by switching back
+   * to classic or by closing the window — so message targeting can measure how
+   * long it has been since the user last had a Smart Window open.
+   */
+  _recordSmartWindowUsage() {
+    Services.prefs.setIntPref(
+      PREF_SMARTWINDOW_LAST_USAGE_TIME,
+      Math.floor(Date.now() / 1000)
+    );
   },
 
   /**
@@ -467,6 +493,7 @@ export const AIWindow = {
     );
     if (willOpenImmersive) {
       propBag.setPropertyAsBool("aiwindow-immersive-view", true);
+      propBag.setPropertyAsBool("aiwindow-new-window", true);
     }
 
     return args;
@@ -784,6 +811,7 @@ export const AIWindow = {
         // SessionStore entry before closeSidebar fires.
         this._uninitTabStateManager(win);
         lazy.AIWindowUI.closeSidebar(win);
+        this._recordSmartWindowUsage();
         Glean.smartWindow.classicSwitch.record({ duration_ms, opened_tabs });
       }
     }
@@ -809,6 +837,7 @@ export const AIWindow = {
       const duration_ms = this._consumeActiveDuration(win);
       const opened_tabs = win.gBrowser?.tabs.length ?? 0;
       Glean.smartWindow.closeWindow.record({ duration_ms, opened_tabs });
+      this._recordSmartWindowUsage();
     }
     this._uninitTabStateManager(win);
     this._windowStates.delete(win);
@@ -941,6 +970,7 @@ export const AIWindow = {
     if (!this.isAIWindowActiveAndEnabled(win)) {
       root.toggleAttribute("hide-ai-sidebar", shouldHideSidebarForNewtab);
       root.removeAttribute("aiwindow-immersive-view");
+      root.removeAttribute("aiwindow-new-window");
       root.removeAttribute("aiwindow-has-nav-forward");
       return;
     }
@@ -956,14 +986,31 @@ export const AIWindow = {
 
     /* sets attr only for first run for css reasons */
     const isFirstRun = currentURI.equalsExceptRef(FIRSTRUN_URI);
+    // A new window has a single tab; once more tabs are open the window is no
+    // longer in dedicated new-window mode and the navbar reappears.
+    const isNewWindow = win.gBrowser.tabs.length === 1;
     root.toggleAttribute("aiwindow-first-run", isFirstRun && isImmersiveView);
     root.toggleAttribute("aiwindow-immersive-view", isImmersiveView);
+    const wasNewWindow = root.hasAttribute("aiwindow-new-window");
+    root.toggleAttribute("aiwindow-new-window", isImmersiveView && isNewWindow);
+    if (wasNewWindow && !root.hasAttribute("aiwindow-new-window")) {
+      Services.obs.notifyObservers(
+        win,
+        "ai-window-state-changed",
+        "nav-bar-visible"
+      );
+    }
 
     const canGoForward =
       isImmersiveView &&
       !isFirstRun &&
       (win.gBrowser.selectedBrowser?.webNavigation?.canGoForward ?? false);
     root.toggleAttribute("aiwindow-has-nav-forward", canGoForward);
+
+    const askButton = win.document.getElementById("smartwindow-ask-button");
+    if (askButton) {
+      askButton.hidden = isImmersiveView;
+    }
 
     // Set attr on the specific browser that has content to override color scheme
     win.gBrowser.selectedBrowser?.toggleAttribute(

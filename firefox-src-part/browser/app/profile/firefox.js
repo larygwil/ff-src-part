@@ -332,6 +332,7 @@ pref("browser.startup.windowsLaunchOnLogin.disableLaunchOnLoginPrompt", false);
 // by default for everyone. A Nimbus enrollment overrides this in either
 // direction.
 pref("browser.startup.windowsLaunchOnLogin.defaultEnabled", false);
+pref("browser.startup.windowsLaunchOnLogin.alreadyApplied", false);
 #endif
 
 // Show an upgrade dialog on major upgrades.
@@ -1440,6 +1441,11 @@ pref("browser.sessionstore.resume_from_crash", true);
 pref("browser.sessionstore.resume_session_once", false);
 pref("browser.sessionstore.resuming_after_os_restart", false);
 
+// Determines the behavior for opening new tab when users resume sessions
+pref("browser.sessionstore.newTabOnRestore", false);
+// Toggles the visibility of the newTabOnRestore setting in about:preferences
+pref("browser.sessionstore.newTabOnRestore.showSetting", false);
+
 // Toggle for the behavior to include closed tabs from all windows in
 // recently-closed tab lists & counts, and re-open tabs into the current window
 pref("browser.sessionstore.closedTabsFromAllWindows", true);
@@ -2233,6 +2239,7 @@ pref("browser.ml.chat.prompts.4", '{"id":"proofread", "l10nId":"genai-prompts-pr
 pref("browser.ml.chat.provider", "");
 pref("browser.ml.chat.shortcuts", true);
 pref("browser.ml.chat.shortcuts.custom", true);
+pref("browser.ml.chat.shortcuts.smartwindow", true);
 pref("browser.ml.chat.shortcuts.longPress", 60000);
 pref("browser.ml.chat.shortcut.onboardingMouseoverCount", 0);
 pref("browser.ml.chat.sidebar", true);
@@ -2617,13 +2624,8 @@ pref("browser.protections_panel.infoMessage.seen", false);
 // Always enable newtab segregation using containers
 pref("privacy.usercontext.about_newtab_segregation.enabled", true);
 // Enable Contextual Identity Containers
-#ifdef NIGHTLY_BUILD
-  pref("privacy.userContext.enabled", true);
-  pref("privacy.userContext.ui.enabled", true);
-#else
-  pref("privacy.userContext.enabled", false);
-  pref("privacy.userContext.ui.enabled", false);
-#endif
+pref("privacy.userContext.enabled", true);
+pref("privacy.userContext.ui.enabled", true);
 pref("privacy.userContext.extension", "");
 // allows user to open container menu on a left click instead of a new
 // tab in the default container
