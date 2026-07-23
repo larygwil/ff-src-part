@@ -226,6 +226,7 @@ class SpecialContentScriptMetadataServer {
       browser.scripting
         .insertCSS({
           css: cssToInject,
+          cssOrigin: "user",
           target: {
             tabId: tab.id,
             frameIds: [frameId],

@@ -70,6 +70,13 @@ export class AIActionResult extends MozLitElement {
 
   #handleToggle() {
     this.isExpanded = !this.isExpanded;
+    this.dispatchEvent(
+      new CustomEvent("action-result-toggle", {
+        detail: { isExpanded: this.isExpanded },
+        bubbles: true,
+        composed: true,
+      })
+    );
   }
 
   render() {

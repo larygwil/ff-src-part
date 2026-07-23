@@ -1444,6 +1444,14 @@ export class ModelHub {
   #lastDownloadOk = new Map();
 
   /**
+   * Tracks the start time (ms) of each model download session, used to report
+   * the total download time for the whole model on completion.
+   *
+   * @type {Map<string, number>}
+   */
+  #downloadStartTime = new Map();
+
+  /**
    * Create an instance of ModelHub.
    *
    * @param {object} [config]
@@ -1910,13 +1918,17 @@ export class ModelHub {
     const isSuccess = this.#lastDownloadOk.get(sessionId);
     const step = isSuccess ? "end_download_success" : "end_download_failed";
     this.#lastDownloadOk.delete(sessionId);
+    const startTime = this.#downloadStartTime.get(sessionId);
+    this.#downloadStartTime.delete(sessionId);
+    const duration =
+      startTime === undefined ? 0 : Math.floor(ChromeUtils.now() - startTime);
     Glean.firefoxAiRuntime.modelDownload.record({
       modelDownloadId: sessionId,
       featureId,
       engineId,
       modelId: model,
       step,
-      duration: 0,
+      duration,
       modelRevision: revision,
       error: isSuccess
         ? ""
@@ -2093,6 +2105,7 @@ export class ModelHub {
     );
 
     if (!this.#lastDownloadOk.has(sessionId)) {
+      this.#downloadStartTime.set(sessionId, ChromeUtils.now());
       Glean.firefoxAiRuntime.modelDownload.record({
         modelDownloadId: sessionId,
         featureId,
@@ -2107,7 +2120,7 @@ export class ModelHub {
     }
     this.#lastDownloadOk.set(sessionId, false);
 
-    const start = Date.now();
+    const start = ChromeUtils.now();
     Glean.firefoxAiRuntime.modelDownload.record({
       modelDownloadId: sessionId,
       featureId,
@@ -2148,7 +2161,7 @@ export class ModelHub {
       });
 
       this.#lastDownloadOk.set(sessionId, true);
-      const end = Date.now();
+      const end = ChromeUtils.now();
       const duration = Math.floor(end - start);
       Glean.firefoxAiRuntime.modelDownload.record({
         modelDownloadId: sessionId,
@@ -2187,7 +2200,7 @@ export class ModelHub {
       return [localFilePath, headers];
     } catch (error) {
       caughtError = error;
-      const end = Date.now();
+      const end = ChromeUtils.now();
       const duration = Math.floor(end - start);
       Glean.firefoxAiRuntime.modelDownload.record({
         modelDownloadId: sessionId,

@@ -3212,28 +3212,19 @@ export const SearchService = new (class SearchService {
     let extensionEngines = this.#getEnginesByExtensionID(extension.id);
 
     for (let engine of extensionEngines) {
-      let isDefault = engine == this.defaultEngine;
-      let isDefaultPrivate = engine == this.defaultPrivateEngine;
-
       let originalName = engine.name;
 
       await engine.update({
         extension,
       });
 
-      if (engine.name != originalName) {
-        if (isDefault) {
-          this._settings.setVerifiedMetaDataAttribute(
-            "defaultEngineId",
-            engine.id
-          );
-        }
-        if (isDefaultPrivate) {
-          this._settings.setVerifiedMetaDataAttribute(
-            "privateDefaultEngineId",
-            engine.id
-          );
-        }
+      // If the name has changed, and we aren't using the pre-saved orders,
+      // clear the sorted engines cache so that we'll update the orders next
+      // time it is accessed.
+      if (
+        engine.name != originalName &&
+        !this._settings.getMetaDataAttribute("useSavedOrder")
+      ) {
         this._cachedSortedEngines = null;
       }
     }
@@ -3461,6 +3452,31 @@ export const SearchService = new (class SearchService {
   #onSeparateDefaultPrefChanged(prefName, previousValue, currentValue) {
     // Clear out the sorted engines settings, so that we re-sort it if necessary.
     this._cachedSortedEngines = null;
+
+    if (
+      prefName === "browser.search.separatePrivateDefault" &&
+      !previousValue &&
+      currentValue
+    ) {
+      if (this.#appDefaultEngine(true) != this.#appDefaultEngine(false)) {
+        // The app has a distinct private default, which allows it to specify a
+        // different engine (e.g., for active experiments, user choice, or partner
+        // routing). Prioritize that app default when enabling this option.
+        this._settings.setMetaDataAttribute(
+          "privateDefaultEngineId",
+          this.#appDefaultEngine(true).id
+        );
+      } else {
+        // If the app defaults don't differ but the user has customized their
+        // normal engine, we shouldn't force them back to a generic default.
+        // Start them off with the engine they are already comfortable using.
+        this._settings.setMetaDataAttribute(
+          "privateDefaultEngineId",
+          this.defaultEngine.id
+        );
+      }
+    }
+
     // We should notify if the normal default, and the currently saved private
     // default are different. Otherwise, save the energy.
     if (this.defaultEngine != this._getEngineDefault(true)) {
@@ -3489,6 +3505,8 @@ export const SearchService = new (class SearchService {
         null,
         eventReason
       );
+      this._settings.setMetaDataAttribute("privateDefaultEngineId", "");
+      this.#currentPrivateEngine = null;
     }
   }
 
@@ -3573,6 +3591,29 @@ export const SearchService = new (class SearchService {
   }
 
   /**
+   * @type { Record<"private"|"normal", ?Parameters<typeof Glean.searchEngineDefault.changed.record>[0]>}
+   *   Records the previous changed event details that were sent on telemetry.
+   */
+  #previousEngineChangedEvent = { private: null, normal: null };
+
+  /**
+   * Determines if the current event record has the same details as the previous
+   * one or not. This only matches against the `new_` fields because the
+   * `previous_engine_id` may indeed have changed from an earlier event.
+   *
+   * @param {Parameters<typeof Glean.searchEngineDefault.changed.record>[0]} previous
+   * @param {Parameters<typeof Glean.searchEngineDefault.changed.record>[0]} current
+   */
+  #changedEventIsSame(previous, current) {
+    return (
+      previous.new_engine_id == current.new_engine_id &&
+      previous.new_display_name == current.new_display_name &&
+      previous.new_load_path == current.new_load_path &&
+      previous.new_submission_url == current.new_submission_url
+    );
+  }
+
+  /**
    * Records the telemetry event when the default engine has changed, and
    * also updates the related non-event probes.
    *
@@ -3611,11 +3652,26 @@ export const SearchService = new (class SearchService {
       new_submission_url: submissionURL.slice(0, 100),
       change_reason: changeReason,
     };
-    if (isPrivate) {
-      Glean.searchEnginePrivate.changed.record(extraArgs);
-    } else {
-      Glean.searchEngineDefault.changed.record(extraArgs);
+
+    let previousEventType = isPrivate ? "private" : "normal";
+    let previousEvent = this.#previousEngineChangedEvent[previousEventType];
+
+    if (
+      changeReason != this.CHANGE_REASON.ENGINE_UPDATE ||
+      !previousEvent ||
+      // For engine updates, we don't send the event unless the details are
+      // different.
+      !this.#changedEventIsSame(previousEvent, extraArgs)
+    ) {
+      if (isPrivate) {
+        Glean.searchEnginePrivate.changed.record(extraArgs);
+      } else {
+        Glean.searchEngineDefault.changed.record(extraArgs);
+      }
     }
+
+    this.#previousEngineChangedEvent[previousEventType] = extraArgs;
+
     this.#recordDefaultEngineTelemetryData();
   }
 

@@ -3,6 +3,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
+import { Message } from "moz-src:///browser/components/aiwindow/models/Message.sys.mjs";
+
+/** @typedef {import("./ChatConversation.sys.mjs").PooledHistoryResult} PooledHistoryResult */
+
 const TOKEN_LABELS = {
   EXISTING_MEMORY: "existing_memory",
   SEARCH: "search",
@@ -46,29 +50,13 @@ function normalizeFollowUp(value) {
  */
 
 /**
- * A message in a conversation.
+ * A chat message.
  */
-export class ChatMessage {
-  id;
-  createdDate;
-  parentMessageId;
+export class ChatMessage extends Message {
   revisionRootMessageId;
-  ordinal;
   isActiveBranch;
-  role;
-  modelId;
-  params;
-  usage;
-
-  /**
-   * The message content object.
-   *
-   * @type {TextContent | FunctionContent}
-   */
-  content;
   convId;
   pageUrl;
-  turnIndex;
   memoriesEnabled;
   memoriesFlagSource;
   memoriesApplied;
@@ -77,6 +65,7 @@ export class ChatMessage {
   pageHistoryDeleted;
   tokens;
   toolUIData;
+  historyResults;
   kit;
 
   /**
@@ -127,6 +116,11 @@ export class ChatMessage {
    * @param {?boolean} param.pageHistoryDeleted - Whether pageUrl was removed due
    * to a history removal action like Forget This Site or Delete Page
    * @param {?object} param.toolUIData - Tool UI data to render with this message
+   * @param {?string} param.toolCallId - id of the tool call this message responds to (role == tool)
+   * @param {?string} param.toolName - function name for tool messages (role == tool)
+   * @param {PooledHistoryResult[]} [param.historyResults = []] - Snapshot of the
+   * conversation history results pool as of this message's completion, used to
+   * restore the history thumbnail grid.
    */
   constructor({
     ordinal,
@@ -150,21 +144,28 @@ export class ChatMessage {
     isActiveBranch = true,
     pageHistoryDeleted = false,
     toolUIData = null,
-  }) {
-    this.id = id;
-    this.createdDate = createdDate;
-    this.parentMessageId = parentMessageId;
+    toolCallId = null,
+    toolName = null,
+    historyResults = [],
+  } = {}) {
+    super({
+      id,
+      createdDate,
+      ordinal,
+      role,
+      content,
+      turnIndex,
+      parentMessageId,
+      modelId,
+      params,
+      usage,
+      toolCallId,
+      toolName,
+    });
     this.revisionRootMessageId = revisionRootMessageId;
     this.isActiveBranch = isActiveBranch;
-    this.ordinal = ordinal;
-    this.role = role;
-    this.modelId = modelId;
-    this.params = params;
-    this.usage = usage;
-    this.content = content;
     this.convId = convId;
     this.pageUrl = pageUrl;
-    this.turnIndex = turnIndex;
     this.memoriesEnabled = memoriesEnabled;
     this.memoriesFlagSource = memoriesFlagSource;
     this.memoriesApplied = memoriesApplied;
@@ -172,6 +173,7 @@ export class ChatMessage {
     this.followUpSuggestions = followUpSuggestions;
     this.pageHistoryDeleted = pageHistoryDeleted;
     this.toolUIData = toolUIData;
+    this.historyResults = historyResults;
     this.tokens = {
       search: [],
       existing_memory: [],

@@ -67,6 +67,9 @@ XPCOMUtils.defineLazyPreferenceGetter(
 );
 
 const EMBED_TEXT_KEY = "combined_text";
+// Cap the items compared when scoring cluster cohesion so the O(n^2) pairwise
+// cost stays bounded for unexpectedly large clusters (20 items => 190 pairs).
+const MAX_COHESION_ITEMS = 20;
 export const CLUSTER_METHODS = {
   KMEANS: "KMEANS",
 };
@@ -1312,6 +1315,11 @@ export class SmartTabGroupingManager extends AIFeature {
         bestResultCluster = curResult;
       }
     }
+    // Attach a per-group quality score (average pairwise cosine similarity) so
+    // callers can rank/threshold the suggested groups by confidence.
+    bestResultCluster?.clusterRepresentations.forEach(rep => {
+      rep.cohesion = rep.getCohesion();
+    });
     return bestResultCluster;
   }
 
@@ -1907,6 +1915,45 @@ class EmbeddingCluster {
       totalDistance += euclideanDistance(this.centroid, embedding, true);
     });
     return totalDistance;
+  }
+
+  /**
+   * Cohesion of the cluster: the average pairwise cosine similarity between its
+   * items' embeddings. Ranges from ~0 (unrelated) to 1 (near-identical). Used as
+   * a quality/confidence score for the group. Returns 0 for clusters with fewer
+   * than two items (no pair to compare).
+   *
+   * The pairwise comparison is O(n^2). Clusters larger than MAX_COHESION_ITEMS
+   * are first reduced to that many items, sampled evenly across the cluster, and
+   * those are compared exhaustively, so an unexpectedly large cluster can't cause
+   * a quadratic blow-up and no pair is measured twice.
+   *
+   * @returns {number}
+   */
+  getCohesion() {
+    const all = this.embeddings;
+    const total = all ? all.length : 0;
+    if (total < 2) {
+      return 0;
+    }
+    let embeddings = all;
+    if (total > MAX_COHESION_ITEMS) {
+      embeddings = [];
+      const step = total / MAX_COHESION_ITEMS;
+      for (let i = 0; i < MAX_COHESION_ITEMS; i++) {
+        embeddings.push(all[Math.floor(i * step)]);
+      }
+    }
+    const n = embeddings.length;
+    let sum = 0;
+    let pairs = 0;
+    for (let a = 0; a < n; a++) {
+      for (let b = a + 1; b < n; b++) {
+        sum += cosSim(embeddings[a], embeddings[b]);
+        pairs++;
+      }
+    }
+    return sum / pairs;
   }
 
   /**

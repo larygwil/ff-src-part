@@ -608,6 +608,7 @@ class HistoryMenu extends PlacesMenu {
       hiddenTabsMenu: "hiddenTabsMenu",
       undoWindowMenu: "historyUndoWindowMenu",
       syncTabsMenuitem: "sync-tabs-menuitem",
+      remoteTabsPromo: "historyRemoteTabsPromo",
     };
     for (let [key, elemId] of Object.entries(elements)) {
       this[key] = document.getElementById(elemId);
@@ -703,6 +704,21 @@ class HistoryMenu extends PlacesMenu {
     // by HistoryMenu do not have this menuitem.
     if (!this.syncTabsMenuitem) {
       return;
+    }
+
+    // Show the promo to users who can't yet see remote tabs (see
+    // getSyncPromoState). Clicking it performs the state-specific action, which
+    // we stash in a data-action attribute for the command handler. When it
+    // applies we hide the synced-tabs menuitem, so only one is ever visible.
+    if (this.remoteTabsPromo) {
+      const promoState = gSync.getSyncPromoState(["tabs"]);
+      if (promoState) {
+        this.remoteTabsPromo.dataset.action = promoState;
+        this.remoteTabsPromo.hidden = false;
+        this.syncTabsMenuitem.hidden = true;
+        return;
+      }
+      this.remoteTabsPromo.hidden = true;
     }
 
     if (!PlacesUIUtils.shouldShowTabsFromOtherComputersMenuitem()) {
@@ -874,6 +890,24 @@ var BookmarksEventHandler = {
       } else {
         // This is a static non-Places node.
         targetURI = tooltipNode.getAttribute("targetURI");
+      }
+      // bhTooltip is only attached (directly or via popupsinherittooltip) to
+      // toolbarbuttons on the bookmarks toolbar/appmenu and to menu/menuitem
+      // entries in places popups. The croppable label is the child generated
+      // by the custom element fragment. crop=end labels clip via overflow on
+      // the element itself, so scrollWidth/clientWidth reflect cropping.
+      let isLabelCropped = label =>
+        !!label && label.scrollWidth > label.clientWidth;
+      switch (tooltipNode.localName) {
+        case "toolbarbutton":
+          cropped = isLabelCropped(
+            tooltipNode.querySelector(".toolbarbutton-text")
+          );
+          break;
+        case "menu":
+        case "menuitem":
+          cropped = isLabelCropped(tooltipNode.querySelector(".menu-text"));
+          break;
       }
     }
 

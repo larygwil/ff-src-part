@@ -7,10 +7,10 @@
 // conversation starter/followup generation functions
 
 import {
-  openAIEngine,
   renderPrompt,
   MODEL_FEATURES,
 } from "moz-src:///browser/components/aiwindow/models/Utils.sys.mjs";
+import { openAIEngine } from "moz-src:///browser/components/aiwindow/models/openAIEngine.sys.mjs";
 
 import { MESSAGE_ROLE } from "moz-src:///browser/components/aiwindow/ui/modules/ChatStore.sys.mjs";
 
@@ -19,7 +19,7 @@ import { sanitizeUntrustedContent } from "moz-src:///browser/components/aiwindow
 
 const lazy = {};
 ChromeUtils.defineESModuleGetters(lazy, {
-  loadCallContext:
+  buildConversation:
     "moz-src:///browser/components/aiwindow/models/PromptLoader.sys.mjs",
   loadPrompt:
     "moz-src:///browser/components/aiwindow/models/PromptLoader.sys.mjs",
@@ -110,18 +110,34 @@ const formatJson = obj => {
 
 export const NewTabStarterGenerator = {
   writingPrompts: [
-    "Write a first draft",
-    "Improve writing",
-    "Proofread a message",
+    "aiwindow-starter-writing-first-draft",
+    "aiwindow-starter-writing-improve",
+    "aiwindow-starter-writing-proofread",
   ],
 
-  planningPrompts: ["Simplify a topic", "Brainstorm ideas", "Help make a plan"],
+  planningPrompts: [
+    "aiwindow-starter-planning-simplify",
+    "aiwindow-starter-planning-brainstorm",
+    "aiwindow-starter-planning-plan",
+  ],
 
   // TODO: discuss with design about updating phrasing to "pages" instead of "tabs"
   browsingPrompts: [
-    { text: "Find tabs in history", minTabs: 0, needsHistory: true },
-    { text: "Summarize tabs", minTabs: 1, needsHistory: false },
-    { text: "Compare tabs", minTabs: 2, needsHistory: false },
+    {
+      id: "aiwindow-starter-browsing-history",
+      minTabs: 0,
+      needsHistory: true,
+    },
+    {
+      id: "aiwindow-starter-browsing-summarize",
+      minTabs: 1,
+      needsHistory: false,
+    },
+    {
+      id: "aiwindow-starter-browsing-compare",
+      minTabs: 2,
+      needsHistory: false,
+    },
   ],
 
   getRandom(arr) {
@@ -129,13 +145,13 @@ export const NewTabStarterGenerator = {
   },
 
   /**
-   * Generate conversation starter prompts based on number of open tabs and browsing history prefs.
+   * Generate conversation starter prompt l10n ids based on number of open tabs and browsing history prefs.
    * "places.history.enabled" covers "Remember browsing and download history" while
    * "browser.privatebrowsing.autostart" covers "Always use private mode" and "Never remember history".
    * We need to check both prefs to cover all cases where history can be disabled.
    *
    * @param {number} tabCount - number of open tabs
-   * @returns {Promise<Array>} Array of {text, type} suggestion objects
+   * @returns {Array<{l10nId: string, type: string}>} suggestion objects with l10nId and type
    */
   async getPrompts(tabCount) {
     const historyEnabled = Services.prefs.getBoolPref("places.history.enabled");
@@ -154,16 +170,12 @@ export const NewTabStarterGenerator = {
       ? this.getRandom(validBrowsingPrompts)
       : null;
 
-    const prompts = [
-      { text: writingPrompt, type: "chat" },
-      { text: planningPrompt, type: "chat" },
-    ];
-
+    const ids = [writingPrompt, planningPrompt];
     if (browsingPrompt) {
-      prompts.push({ text: browsingPrompt.text, type: "chat" });
+      ids.push(browsingPrompt.id);
     }
 
-    return prompts;
+    return ids.map(l10nId => ({ l10nId, type: "chat" }));
   },
 };
 
@@ -215,8 +227,9 @@ export async function generateConversationStartersSidebar(
     // while awaiting inference.
     contextTabs = null;
 
-    const callContext = await lazy.loadCallContext(
-      MODEL_FEATURES.CONVERSATION_SUGGESTIONS_SIDEBAR_STARTER
+    const conversation = await lazy.buildConversation(
+      MODEL_FEATURES.CONVERSATION_SUGGESTIONS_SIDEBAR_STARTER,
+      { flowId }
     );
     const [
       { prompt: conversationStarterSystemPrompt },
@@ -229,14 +242,6 @@ export async function generateConversationStartersSidebar(
         MODEL_FEATURES.CONVERSATION_SUGGESTIONS_ASSISTANT_LIMITATIONS
       ),
     ]);
-    const engineInstance = await openAIEngine.build({
-      model: callContext.model,
-      serviceType: callContext.serviceType,
-      purpose: callContext.purpose,
-      flowId,
-      feature: MODEL_FEATURES.CONVERSATION_SUGGESTIONS_SIDEBAR_STARTER,
-    });
-    const inferenceParams = callContext.parameters;
 
     // Base template
     const base = renderPrompt(conversationStarterPrompt, {
@@ -244,6 +249,7 @@ export async function generateConversationStartersSidebar(
       open_tabs: openedTabs,
       n: String(n),
       date: today,
+      locale: Services.locale.appLocaleAsBCP47,
       assistant_limitations: assistantLimitations,
     });
 
@@ -255,20 +261,13 @@ export async function generateConversationStartersSidebar(
       filled = await addMemoriesToPrompt(base, conversationMemoriesPrompt);
     }
 
+    conversation.setSystemMessage(conversationStarterSystemPrompt);
+    conversation.addUserMessage(filled);
+
     const fxAccountToken = await openAIEngine.getFxAccountToken();
     signal.throwIfAborted();
 
-    let runPromise = engineInstance.run({
-      args: [
-        {
-          role: "system",
-          content: conversationStarterSystemPrompt,
-        },
-        { role: "user", content: filled },
-      ],
-      fxAccountToken,
-      ...inferenceParams,
-    });
+    let runPromise = conversation.run({ fxAccountToken });
     runPromise = Promise.race([
       runPromise,
       new Promise((_, reject) => {
@@ -325,8 +324,9 @@ export async function generateFollowupPrompts(
           })
         : "No tab";
 
-    const callContext = await lazy.loadCallContext(
-      MODEL_FEATURES.CONVERSATION_SUGGESTIONS_FOLLOWUP
+    const conversation = await lazy.buildConversation(
+      MODEL_FEATURES.CONVERSATION_SUGGESTIONS_FOLLOWUP,
+      { flowId }
     );
     const [
       { prompt: conversationFollowupPrompt },
@@ -337,14 +337,6 @@ export async function generateFollowupPrompts(
         MODEL_FEATURES.CONVERSATION_SUGGESTIONS_ASSISTANT_LIMITATIONS
       ),
     ]);
-    const engineInstance = await openAIEngine.build({
-      model: callContext.model,
-      serviceType: callContext.serviceType,
-      purpose: callContext.purpose,
-      flowId,
-      feature: MODEL_FEATURES.CONVERSATION_SUGGESTIONS_FOLLOWUP,
-    });
-    const inferenceParams = callContext.parameters;
 
     const base = renderPrompt(conversationFollowupPrompt, {
       current_tab: currentTabStr,
@@ -362,15 +354,13 @@ export async function generateFollowupPrompts(
       filled = await addMemoriesToPrompt(base, conversationMemoriesPrompt);
     }
 
-    const result = await engineInstance.run({
-      messages: [
-        {
-          role: "system",
-          content: "Return only the requested suggestions, one per line.",
-        },
-        { role: "user", content: filled },
-      ],
-      ...inferenceParams,
+    conversation.setSystemMessage(
+      "Return only the requested suggestions, one per line."
+    );
+    conversation.addUserMessage(filled);
+
+    const result = await conversation.run({
+      fxAccountToken: await openAIEngine.getFxAccountToken(),
     });
 
     const prompts = cleanInferenceOutput(result);

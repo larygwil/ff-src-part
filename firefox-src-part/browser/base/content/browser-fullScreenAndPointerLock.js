@@ -503,13 +503,10 @@ var FullScreen = {
     let translate = shiftSize > 0 ? `0 ${shiftSize}px` : "";
     gNavToolbox.classList.toggle("fullscreen-floating-toolbox", shiftSize > 0);
     gNavToolbox.style.translate = translate;
-    gURLBar.style.translate = gURLBar.hasAttribute("breakout") ? translate : "";
-    let searchbar = document.getElementById("searchbar-new");
-    if (searchbar) {
-      searchbar.style.translate = searchbar.hasAttribute("breakout")
-        ? translate
-        : "";
-    }
+    gURLBar.style.setProperty("--toolbar-shift-translate", translate);
+    document
+      .getElementById("searchbar-new")
+      ?.style.setProperty("--toolbar-shift-translate", translate);
     if (shiftSize > 0) {
       // If the mouse tracking missed our fullScreenToggler, then the toolbox
       // might not have been shown before the menubar is animated down. Make
@@ -649,6 +646,11 @@ var FullScreen = {
       }
     }
     document.documentElement.setAttribute("inDOMFullscreen", true);
+    // DOM fullscreen hides the nav toolbox, so the sidebar should hide too.
+    document.documentElement.toggleAttribute(
+      "fullscreenNavToolboxHidden",
+      true
+    );
 
     XULBrowserWindow.onEnterDOMFullscreen();
 
@@ -748,6 +750,12 @@ var FullScreen = {
     );
 
     document.documentElement.removeAttribute("inDOMFullscreen");
+    // Leaving DOM fullscreen may return to F11 fullscreen with the nav toolbox
+    // still collapsed, so only clear the attribute if the chrome is showing.
+    document.documentElement.toggleAttribute(
+      "fullscreenNavToolboxHidden",
+      this._isChromeCollapsed
+    );
 
     return needToWaitForChildExit;
   },
@@ -902,14 +910,14 @@ var FullScreen = {
     }
   },
 
-  // UrlbarController listener method
+  // UrlbarChildController listener method
   onViewOpen() {
     if (!this._isChromeCollapsed) {
       this._isPopupOpen = true;
     }
   },
 
-  // UrlbarController listener method
+  // UrlbarChildController listener method
   onViewClose() {
     this._isPopupOpen = false;
     this.hideNavToolbox(true);
@@ -960,6 +968,7 @@ var FullScreen = {
     }
 
     this._isChromeCollapsed = false;
+    document.documentElement.removeAttribute("fullscreenNavToolboxHidden");
     Services.obs.notifyObservers(
       gNavToolbox,
       "fullscreen-nav-toolbox",
@@ -1028,6 +1037,10 @@ var FullScreen = {
     gNavToolbox.style.marginTop =
       -gNavToolbox.getBoundingClientRect().height + "px";
     this._isChromeCollapsed = true;
+    document.documentElement.toggleAttribute(
+      "fullscreenNavToolboxHidden",
+      true
+    );
     Services.obs.notifyObservers(
       gNavToolbox,
       "fullscreen-nav-toolbox",

@@ -130,6 +130,7 @@ export class AIWindowMenu {
         if (url === win.BROWSER_NEW_TAB_URL) {
           AIWindowUI.openInFullWindow(targetBrowser, conversation);
         } else {
+          AIWindow.restoreTabConversation(targetBrowser, conversation);
           AIWindowUI.openSidebar(targetBrowser.documentGlobal, conversation);
         }
       },

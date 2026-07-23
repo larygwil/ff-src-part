@@ -29,8 +29,9 @@
   }
 
   a:focus-visible {
+    outline: var(--focus-outline);
+    outline-offset: var(--focus-outline-offset);
     accent-color: var(--smartwindow-assistant-accent-color-focus);
-    outline-style: inset;
   }
 
   /* making sure links keep the same color while being printed */

@@ -229,7 +229,11 @@ export class BackupUIParent extends JSWindowActorParent {
       let iconURL = this.#bs.getIconFromFilePath(path);
       let filename = PathUtils.filename(path);
 
-      if (!filter) {
+      if (filter) {
+        // Strictly update path picked from the file picker. No other message actions
+        // should be able to set the backup file to restore path.
+        this.#bs.setBackupFileToRestore(path);
+      } else {
         if (alsoDeleteLastBackup) {
           try {
             await this.#bs.deleteLastBackup();
@@ -249,20 +253,32 @@ export class BackupUIParent extends JSWindowActorParent {
         iconURL,
       };
     } else if (message.name == "GetBackupFileInfo") {
-      let { backupFile } = message.data;
-      try {
-        await this.#bs.getBackupFileInfo(backupFile);
-      } catch (e) {
-        /**
-         * TODO: (Bug 1905156) display a localized version of error in the restore dialog.
-         */
+      let backupFile = this.#bs.state.backupFileToRestore;
+      if (backupFile) {
+        try {
+          await this.#bs.loadBackupFileInfo(backupFile);
+        } catch (e) {
+          /**
+           * TODO: (Bug 1905156) display a localized version of error in the restore dialog.
+           */
+        }
       }
     } else if (message.name == "FindBackupsInWellKnownLocations") {
       let { source } = message.data;
       await this.#bs.findBackupsInWellKnownLocations({
-        validateFile: true,
         source,
       });
+    } else if (message.name == "ProbeDefaultBackupDir") {
+      let readAccessGranted = await this.#bs.probeDefaultDirAccess(
+        message.data?.parentDirPath
+      );
+      return { readAccessGranted };
+    } else if (message.name == "PrepareRestoreDialog") {
+      let { source } = message.data;
+      let result = await this.#bs.findBackupsInWellKnownLocations({
+        source,
+      });
+      return result;
     } else if (message.name == "RestoreFromBackupChooseFile") {
       const window = this.browsingContext.topChromeWindow;
       this.#bs.filePickerForRestore(window);

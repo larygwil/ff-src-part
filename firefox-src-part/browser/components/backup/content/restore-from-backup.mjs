@@ -111,10 +111,6 @@ export default class RestoreFromBackup extends MozLitElement {
 
     this.addEventListener("BackupUI:SelectNewFilepickerPath", this);
     this.addEventListener("BackupUI:StateWasUpdated", this);
-
-    // Resize the textarea when the window is resized
-    this._handleWindowResize = () => this.resizeTextarea();
-    window.addEventListener("resize", this._handleWindowResize);
   }
 
   maybeGetBackupFileInfo() {
@@ -128,18 +124,10 @@ export default class RestoreFromBackup extends MozLitElement {
 
   disconnectedCallback() {
     super.disconnectedCallback();
-    if (this._handleWindowResize) {
-      window.removeEventListener("resize", this._handleWindowResize);
-      this._handleWindowResize = null;
-    }
   }
 
   updated(changedProperties) {
     super.updated(changedProperties);
-
-    // Resize the textarea. This only runs once on initial render,
-    // and once each time one of our reactive properties is changed.
-    this.resizeTextarea();
 
     if (changedProperties.has("backupServiceState")) {
       // If we got a recovery error, recoveryInProgress should be false
@@ -163,7 +151,7 @@ export default class RestoreFromBackup extends MozLitElement {
 
   handleEvent(event) {
     if (event.type == "BackupUI:SelectNewFilepickerPath") {
-      let { path, iconURL } = event.detail;
+      let { iconURL } = event.detail;
       this._fileIconURL = iconURL;
 
       // Check the backup info again even if it was the same file.
@@ -197,7 +185,7 @@ export default class RestoreFromBackup extends MozLitElement {
         Services.obs.notifyObservers(null, "browser-backup-glean-sent");
       });
 
-      this.getBackupFileInfo(path);
+      this.getBackupFileInfo();
     } else if (event.type == "BackupUI:StateWasUpdated") {
       this.#initializedResolvers.resolve();
       if (this.#backupFileReadPromise) {
@@ -225,8 +213,8 @@ export default class RestoreFromBackup extends MozLitElement {
     );
   }
 
-  getBackupFileInfo(pathToFile = null) {
-    let backupFile = pathToFile || this.backupServiceState?.backupFileToRestore;
+  getBackupFileInfo() {
+    let backupFile = this.backupServiceState?.backupFileToRestore;
     if (!backupFile || this.#lastBackupInfoFilename === backupFile) {
       return;
     }
@@ -236,9 +224,6 @@ export default class RestoreFromBackup extends MozLitElement {
       new CustomEvent("BackupUI:GetBackupFileInfo", {
         bubbles: true,
         composed: true,
-        detail: {
-          backupFile,
-        },
       })
     );
   }
@@ -271,27 +256,6 @@ export default class RestoreFromBackup extends MozLitElement {
         },
       })
     );
-  }
-
-  handleTextareaResize() {
-    this.resizeTextarea();
-  }
-
-  /**
-   * Resizes the textarea to adjust to the size of the content within
-   */
-  resizeTextarea() {
-    const target = this.filePicker;
-    if (!target) {
-      return;
-    }
-
-    const hasValue = target.value && !!target.value.trim().length;
-
-    target.style.height = "auto";
-    if (hasValue) {
-      target.style.height = target.scrollHeight + "px";
-    }
   }
 
   /**
@@ -430,9 +394,11 @@ export default class RestoreFromBackup extends MozLitElement {
   }
 
   inputTemplate(iconURL) {
-    const styles = styleMap(
-      iconURL ? { backgroundImage: `url(${iconURL})` } : {}
-    );
+    const styles = styleMap({
+      ...(iconURL ? { backgroundImage: `url(${iconURL})` } : {}),
+      fieldSizing: "content",
+      width: "100%",
+    });
     const backupFileName = this.backupServiceState?.backupFileToRestore || "";
 
     const { backupFileInfo, recoveryErrorCode } = this.backupServiceState || {};
@@ -457,7 +423,6 @@ export default class RestoreFromBackup extends MozLitElement {
         readonly
         .value=${backupFileName}
         style=${styles}
-        @input=${this.handleTextareaResize}
         aria-invalid=${String(!!hasInlineFileError)}
         aria-describedby=${describedBy}
         data-l10n-id="restore-from-backup-filepicker-input"

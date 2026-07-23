@@ -4,59 +4,85 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-/**
- * This module defines utility functions and classes needed for invoking LLMs such as:
- * - Creating and running OpenAI engine instances
- * - Rendering prompts from files
- */
-
-import { createEngine } from "chrome://global/content/ml/EngineProcess.sys.mjs";
-import {
-  OAUTH_CLIENT_ID,
-  SCOPE_PROFILE_UID,
-  SCOPE_SMART_WINDOW,
-} from "resource://gre/modules/FxAccountsCommon.sys.mjs";
+import { openAIEngine } from "moz-src:///browser/components/aiwindow/models/openAIEngine.sys.mjs";
 import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs";
 
-const APIKEY_PREF = "browser.smartwindow.apiKey";
+// Re-exported for back-compat with existing tests that import openAIEngine
+// from Utils. New code should import it from openAIEngine.sys.mjs directly.
+export { openAIEngine };
+
 export const MODEL_PREF = "browser.smartwindow.model";
-const ENDPOINT_PREF = "browser.smartwindow.endpoint";
-const CUSTOM_ENDPOINT_PREF = "browser.smartwindow.customEndpoint";
-const CUSTOM_MODEL_CHOICE_ID = "0";
-const GENERIC_MODEL_NAME = "generic";
+export const GENERIC_MODEL_NAME = "generic";
 const MODEL_CHOICE_PREF = "browser.smartwindow.firstrun.modelChoice";
+// TODO Bug 2053495: remove with mistral release pref
+const MISTRAL_RELEASE_PREF = "browser.smartwindow.mistralRelease";
+
+const RS_AI_WINDOW_COLLECTION = "ai-window-prompts";
 
 const lazy = XPCOMUtils.declareLazy({
   RemoteSettings: "resource://services-settings/remote-settings.sys.mjs",
-  getFxAccountsSingleton: "resource://gre/modules/FxAccounts.sys.mjs",
 });
 
-/**
- * The default endpoint used for preset models
- */
-const DEFAULT_ENDPOINT =
-  "https://mlpa-prod-prod-mozilla.global.ssl.fastly.net/v1";
+let _remoteClient = null;
 
 /**
- * Default engine ID used for all AI Window features
+ * Gets the Remote Settings client for AI window configurations. Subscribes
+ * the model-data cache to RS sync events on first use and caches the client
+ * until the model pref changes.
+ *
+ * @returns {RemoteSettingsClient}
  */
-export const DEFAULT_ENGINE_ID = "smart-openai";
+export function getRemoteClient() {
+  if (_remoteClient) {
+    return _remoteClient;
+  }
+  const client = lazy.RemoteSettings(RS_AI_WINDOW_COLLECTION, {
+    bucketName: "main",
+  });
+  client.on("sync", async () => {
+    try {
+      await refreshModelsDataCache();
+    } catch (e) {
+      console.error("Failed to refresh models cache on sync", e);
+    }
+  });
+  _remoteClient = client;
+  return client;
+}
 
 /**
- * Observer for model preference changes.
- * Invalidates the Remote Settings client cache when user changes their model preference.
+ * Test-only seam: install a fake client. Subsequent `getRemoteClient()` calls
+ * return it until cleared.
+ *
+ * @param {object} client
  */
+export function _setRemoteClientForTesting(client) {
+  _remoteClient = client;
+}
+
+/**
+ * Test-only seam: clears the cached Remote Settings client.
+ */
+export function _clearRemoteClientForTesting() {
+  _remoteClient = null;
+}
+
 const modelPrefObserver = {
   observe(_subject, topic, data) {
     if (topic === "nsPref:changed" && data === MODEL_PREF) {
       console.warn(
         "Model preference changed, invalidating Remote Settings cache"
       );
-      openAIEngine._remoteClient = null;
+      _remoteClient = null;
     }
   },
 };
 Services.prefs.addObserver(MODEL_PREF, modelPrefObserver);
+
+/**
+ * Default engine ID used for all AI Window features
+ */
+export const DEFAULT_ENGINE_ID = "smart-openai";
 
 /**
  * Feature identifiers for AI Window model, configurations and prompts.
@@ -91,6 +117,10 @@ export const MODEL_FEATURES = Object.freeze({
   REAL_TIME_CONTEXT_TAB: "real-time-context-tab",
   REAL_TIME_CONTEXT_MENTIONS: "real-time-context-mentions",
   MEMORIES_RELEVANT_CONTEXT: "memories-relevant-context",
+  // agents
+  AGENT_MONITOR: "agent-monitor",
+  // search agent
+  SEARCH_ANSWER_GENERATION: "search-answer-generation",
 });
 
 /** @typedef {(typeof MODEL_FEATURES)[keyof typeof MODEL_FEATURES]} ModelFeature */
@@ -101,6 +131,7 @@ export const MODEL_FEATURES = Object.freeze({
 export const SERVICE_TYPES = Object.freeze({
   AI: "ai",
   MEMORIES: "memories",
+  AGENT: "agent",
 });
 
 /**
@@ -111,6 +142,8 @@ export const PURPOSES = Object.freeze({
   TITLE_GENERATION: "title-generation",
   CONVERSATION_STARTERS_SIDEBAR: "convo-starters-sidebar",
   MEMORY_GENERATION: "memory-generation",
+  // agents
+  MONITOR: "monitor",
 });
 
 /**
@@ -123,16 +156,19 @@ export const PURPOSES = Object.freeze({
  * Keep ui/test/browser/head.js MOCK_RS_RECORDS aligned with this table.
  */
 export const FEATURE_MAJOR_VERSIONS = Object.freeze({
-  [MODEL_FEATURES.CHAT]: 7,
+  // TODO Bug 2053495: remove with mistral release pref (CHAT becomes 9)
+  get [MODEL_FEATURES.CHAT]() {
+    return Services.prefs.getBoolPref(MISTRAL_RELEASE_PREF, false) ? 9 : 8;
+  },
   [MODEL_FEATURES.TITLE_GENERATION]: 1,
   [MODEL_FEATURES.CONVERSATION_STARTERS_SIDEBAR_SYSTEM]: 1,
-  [MODEL_FEATURES.CONVERSATION_SUGGESTIONS_SIDEBAR_STARTER]: 2,
+  [MODEL_FEATURES.CONVERSATION_SUGGESTIONS_SIDEBAR_STARTER]: 3,
   [MODEL_FEATURES.CONVERSATION_SUGGESTIONS_FOLLOWUP]: 1,
   [MODEL_FEATURES.CONVERSATION_SUGGESTIONS_ASSISTANT_LIMITATIONS]: 1,
   [MODEL_FEATURES.CONVERSATION_SUGGESTIONS_MEMORIES]: 1,
   // memories generation feature versions
   [MODEL_FEATURES.MEMORIES_INITIAL_GENERATION_SYSTEM]: 3,
-  [MODEL_FEATURES.MEMORIES_INITIAL_GENERATION_USER]: 3,
+  [MODEL_FEATURES.MEMORIES_INITIAL_GENERATION_USER]: 4,
   [MODEL_FEATURES.MEMORIES_DEDUPLICATION_SYSTEM]: 1,
   [MODEL_FEATURES.MEMORIES_DEDUPLICATION_USER]: 1,
   [MODEL_FEATURES.MEMORIES_QUALITY_AND_SENSITIVITY_FILTER_SYSTEM]: 1,
@@ -145,6 +181,10 @@ export const FEATURE_MAJOR_VERSIONS = Object.freeze({
   [MODEL_FEATURES.REAL_TIME_CONTEXT_DATE]: 1,
   [MODEL_FEATURES.REAL_TIME_CONTEXT_TAB]: 1,
   [MODEL_FEATURES.REAL_TIME_CONTEXT_MENTIONS]: 1,
+  // agents
+  [MODEL_FEATURES.AGENT_MONITOR]: 1,
+  // search agent
+  [MODEL_FEATURES.SEARCH_ANSWER_GENERATION]: 1,
 });
 
 /**
@@ -198,6 +238,9 @@ export function checkMajorVersion(recordVersion, comparisonVersion) {
 /*
  * Fallback model data - matches Remote Settings shape
  * Used when Remote Settings lookup fails
+ *
+ * TODO Bug 2053495: remove with mistral release pref (delete FALLBACK_MODELS,
+ * keep FALLBACK_MODELS_V2)
  */
 export const FALLBACK_MODELS = {
   0: { model: "custom-model", ownerName: "", labelId: "custom" },
@@ -215,6 +258,31 @@ export const FALLBACK_MODELS = {
     model: "gpt-oss-120b",
     ownerName: "OpenAI",
     labelId: "personal",
+  },
+};
+
+export const FALLBACK_MODELS_V2 = {
+  0: { model: "custom-model", ownerName: "", labelId: "custom" },
+  1: {
+    model: "gemini-3.1-flash-lite",
+    ownerName: "Google",
+    labelId: "fast",
+    shortName: "Gemini 3.1 Flash Lite",
+    brandName: "Gemini",
+  },
+  2: {
+    model: "qwen3-235b-a22b-instruct-2507-maas",
+    ownerName: "Alibaba",
+    labelId: "allpurpose",
+    shortName: "Qwen 3 235B",
+    brandName: "Qwen",
+  },
+  3: {
+    model: "mistral-small-2603",
+    ownerName: "Mistral",
+    labelId: "personal",
+    shortName: "Mistral Small 4",
+    brandName: "Mistral",
   },
 };
 
@@ -312,481 +380,44 @@ export function selectMainConfig(
 }
 
 /**
- * openAIEngine class
+ * Reads the bundled display metadata from a chat config record. The
+ * `model_details` field is JSON that can arrive either as an object or as a
+ * stringified blob, so handle both. Returns null when absent.
  *
- * Contains methods to create engine instances and estimate token usage.
+ * @param {object} record
+ * @returns {{ownerName: string, labelId: string, shortName: string, brandName: string}|null}
  */
-export class openAIEngine {
-  /**
-   * Exposing createEngine for testing purposes.
-   */
-  static _createEngine = createEngine;
+function parseModelDetails(record) {
+  const raw = record?.model_details;
 
-  /**
-   *  The Remote Settings collection name for AI window prompt configurations
-   */
-  static RS_AI_WINDOW_COLLECTION = "ai-window-prompts";
-
-  /**
-   * Cached Remote Settings client
-   * Cache is invalidated when user changes MODEL_PREF pref via modelPrefObserver
-   *
-   * @type {RemoteSettingsClient | null}
-   */
-  static _remoteClient = null;
-
-  /**
-   * Main feature name. Retained on the instance so _recreateEngine() can
-   * rebuild after 401 retry without the caller re-supplying it.
-   *
-   * @type {string | null}
-   */
-  feature = null;
-
-  /**
-   * Resolved model name for LLM inference. Retained on the instance for
-   * _recreateEngine() (same reason as `feature`).
-   *
-   * @type {string | null}
-   */
-  model = null;
-
-  /**
-   * Engine ID used for creating the engine instance
-   *
-   * @type {string | null}
-   */
-  #engineId = null;
-
-  /**
-   * Service type used for creating the engine instance
-   *
-   * @type {string | null}
-   */
-  #serviceType = null;
-
-  /**
-   * Purpose used for creating the engine instance
-   *
-   * @type {string | null}
-   */
-  #purpose = null;
-
-  /**
-   * Flow ID for correlating frontend and backend telemetry.
-   *
-   * @type {string | null}
-   */
-  #flowId = null;
-
-  /**
-   * Base URL for this engine instance. Resolved during build time from
-   * the selected model choice.
-   *
-   * @type {string | null}
-   */
-  #baseURL = null;
-
-  /**
-   * Resolved API key for this engine instance.
-   *
-   * @type {string | null}
-   */
-  #apiKey = null;
-
-  /**
-   * Gets the Remote Settings client for AI window configurations.
-   *
-   * @returns {RemoteSettingsClient}
-   */
-  static getRemoteClient() {
-    if (openAIEngine._remoteClient) {
-      return openAIEngine._remoteClient;
-    }
-
-    const client = lazy.RemoteSettings(openAIEngine.RS_AI_WINDOW_COLLECTION, {
-      bucketName: "main",
-    });
-    client.on("sync", async () => {
-      try {
-        await refreshModelsDataCache();
-      } catch (e) {
-        console.error("Failed to refresh models cache on sync", e);
-      }
-    });
-
-    openAIEngine._remoteClient = client;
-    return client;
+  if (!raw) {
+    return null;
   }
-
-  /**
-   * Checks whether a custom endpoint is configured via pref.
-   *
-   * @returns {boolean} True if the endpoint pref has a user-set value.
-   */
-  static hasCustomEndpoint() {
-    return Services.prefs.prefHasUserValue(CUSTOM_ENDPOINT_PREF);
+  let details;
+  try {
+    details = typeof raw === "string" ? JSON.parse(raw) : raw;
+  } catch (e) {
+    console.warn("Failed to parse model_details", e);
+    return null;
   }
-
-  /**
-   * Whether the current engine instance uses a custom model endpoint.
-   *
-   * @returns {boolean}
-   */
-  get isCustomEndpoint() {
-    return this.#baseURL !== null && this.#baseURL !== openAIEngine.endpoint;
-  }
-
-  /**
-   * Returns the endpoint and API key for a model choice.
-   *
-   * @param {string} [modelChoiceId] - Selected model choice id
-   * @returns {{baseURL: string, apiKey: string}}
-   * @throws {Error} If the custom model choice is selected but not configured.
-   */
-  static resolveEndpointConfig(modelChoiceId) {
-    if (modelChoiceId === CUSTOM_MODEL_CHOICE_ID) {
-      const baseURL = Services.prefs.getStringPref(CUSTOM_ENDPOINT_PREF, "");
-      if (!baseURL) {
-        throw new Error("Custom model choice selected but not configured");
-      }
-      return {
-        baseURL,
-        apiKey: Services.prefs.getStringPref(APIKEY_PREF, ""),
-      };
-    }
-    return { baseURL: openAIEngine.endpoint, apiKey: "" };
-  }
-
-  /**
-   * Builds an openAIEngine instance.
-   *
-   * @param {object} options
-   * @param {string} options.model
-   * @param {string} options.serviceType
-   * @param {string} options.purpose
-   * @param {string|null} [options.flowId]
-   * @param {string} options.feature
-   * @param {string} [options.baseURL] - Endpoint base URL
-   * @param {string} [options.apiKey] - API key for the endpoint
-   * @returns {Promise<openAIEngine>}
-   */
-  static async build({
-    model,
-    serviceType,
-    purpose,
-    flowId,
-    feature,
-    baseURL = openAIEngine.endpoint,
-    apiKey = "",
-  }) {
-    const engine = new openAIEngine();
-    const engineId = `${DEFAULT_ENGINE_ID}-${feature}-${model}`;
-    engine.#engineId = engineId;
-    engine.feature = feature;
-    engine.model = model;
-    engine.#serviceType = serviceType;
-    engine.#purpose = purpose;
-    engine.#flowId = flowId;
-    engine.#baseURL = baseURL;
-    engine.#apiKey = apiKey;
-    engine.engineInstance = await openAIEngine.#createOpenAIEngine(
-      engineId,
-      serviceType,
-      purpose,
-      model,
-      flowId,
-      feature,
-      baseURL,
-      apiKey
-    );
-    return engine;
-  }
-
-  /**
-   * Retrieves the Firefox account token
-   *
-   * @returns {Promise<string|null>}   The Firefox account token (string) or null
-   */
-  static async getFxAccountToken() {
-    try {
-      const fxAccounts = lazy.getFxAccountsSingleton();
-      return await fxAccounts.getOAuthToken({
-        scope: [SCOPE_SMART_WINDOW, SCOPE_PROFILE_UID],
-        client_id: OAUTH_CLIENT_ID,
-      });
-    } catch (error) {
-      console.warn("Error obtaining FxA token:", error);
-      return null;
-    }
-  }
-
-  /**
-   * Checks if an error is an HTTP 429 from MLPA. MLPA returns 429 for several
-   * sub-conditions (budget overage, QPS rate limit, upstream limit, etc.)
-   * callers should back off the same way regardless of the sub-code.
-   *
-   * @param {Error} error  The error to check
-   * @returns {boolean}    True if the error is a 429
-   */
-  static is429Error(error) {
-    if (!error) {
-      return false;
-    }
-    return error.status === 429 || !!error.message?.includes("429 status code");
-  }
-
-  /**
-   * Creates an OpenAI engine instance
-   *
-   * @param {string} engineId - The identifier for the engine instance
-   * @param {string} serviceType - The type of message to be sent ("ai", "memories", "s2s")
-   * @param {string} purpose - The purpose of the request, used for telemetry tracking
-   * @param {string | null} modelId - The resolved model ID (already contains fallback logic)
-   * @param {string | null} flowId - Flow ID for correlating frontend and backend telemetry
-   * @param {string | null} featureId - Feature name passed to PipelineOptions
-   * @param {string} baseURL - The endpoint base URL for this engine instance
-   * @param {string} apiKey - The API key for this engine instance
-   * @returns {Promise<object>} - The configured engine instance
-   */
-  static async #createOpenAIEngine(
-    engineId,
-    serviceType,
-    purpose,
-    modelId = null,
-    flowId = null,
-    featureId = null,
-    baseURL,
-    apiKey
-  ) {
-    const extraHeadersPref = Services.prefs.getStringPref(
-      "browser.smartwindow.extraHeaders",
-      "{}"
-    );
-    let extraHeaders = {};
-    try {
-      extraHeaders = JSON.parse(extraHeadersPref);
-    } catch (e) {
-      console.error("Failed to parse extra headers from prefs:", e);
-      Services.prefs.clearUserPref("browser.smartwindow.extraHeaders");
-    }
-
-    try {
-      const engineInstance = await openAIEngine._createEngine({
-        apiKey,
-        backend: "openai",
-        baseURL,
-        engineId,
-        featureId,
-        flowId,
-        modelId,
-        modelRevision: "main",
-        taskName: "text-generation",
-        serviceType,
-        purpose,
-        extraHeaders,
-      });
-      return engineInstance;
-    } catch (error) {
-      console.error("Failed to create OpenAI engine:", error);
-      throw error;
-    }
-  }
-
-  /**
-   * Wrapper around engine.run to send message to the LLM
-   * Will eventually use `usage` from the LiteLLM API response for token telemetry
-   *
-   * @param {Map<string, any>} content  OpenAI formatted messages to be sent to the LLM
-   * @returns {object}                  LLM response
-   */
-  async run(content) {
-    return await this._runWithAuth(content);
-  }
-
-  /**
-   * Helper method to handle 401 authentication errors and retry with new token.
-   *
-   * @param {Map<string, any>} content  OpenAI formatted messages to be sent to the LLM
-   * @returns {object}                  LLM response
-   */
-  async _runWithAuth(content) {
-    try {
-      return await this.engineInstance.run(content);
-    } catch (ex) {
-      // Skip the token retry flow when using a custom endpoint,
-      // as the retry logic only applies to FxAccounts tokens.
-      if (!this._is401Error(ex) || this.isCustomEndpoint) {
-        throw ex;
-      }
-
-      console.warn(
-        "LLM request returned a 401 - revoking our token and retrying"
-      );
-
-      const fxAccounts = lazy.getFxAccountsSingleton();
-      const oldToken = content.fxAccountToken;
-      if (oldToken) {
-        await fxAccounts.removeCachedOAuthToken({ token: oldToken });
-      }
-
-      await this._recreateEngine();
-
-      const newToken = await openAIEngine.getFxAccountToken();
-      const updatedContent = { ...content, fxAccountToken: newToken };
-
-      try {
-        return await this.engineInstance.run(updatedContent);
-      } catch (retryEx) {
-        if (!this._is401Error(retryEx)) {
-          throw retryEx;
-        }
-
-        console.warn(
-          "Retry LLM request still returned a 401 - revoking our token and failing"
-        );
-
-        if (newToken) {
-          await fxAccounts.removeCachedOAuthToken({ token: newToken });
-        }
-
-        throw retryEx;
-      }
-    }
-  }
-
-  /**
-   * Recreates the engine instance with current configuration.
-   *
-   * @returns {Promise<void>}
-   * @private
-   */
-  async _recreateEngine() {
-    if (!this.#engineId || !this.#serviceType) {
-      console.warn("Cannot recreate engine: missing engineId or serviceType");
-      return;
-    }
-
-    this.engineInstance = await openAIEngine.#createOpenAIEngine(
-      this.#engineId,
-      this.#serviceType,
-      this.#purpose,
-      this.model,
-      this.#flowId,
-      this.feature,
-      this.#baseURL,
-      this.#apiKey
-    );
-  }
-
-  /**
-   * Checks if an error is a 401 authentication error.
-   *
-   * @param {Error} error  The error to check
-   * @returns {boolean}    True if the error is a 401 error
-   * @private
-   */
-  _is401Error(error) {
-    if (!error) {
-      return false;
-    }
-
-    return error.status === 401 || error.message?.includes("401 status code");
-  }
-
-  /**
-   * Helper async generator to handle 401 authentication errors and retry with new token for streaming requests.
-   *
-   * @param {Map<string, any>} options  OpenAI formatted messages with streaming and tooling options to be sent to the LLM
-   * @yields {object}                   LLM streaming response chunks
-   */
-  async *_runWithGeneratorAuth(options) {
-    // Extract signal before passing options to engineInstance — AbortSignal
-    // cannot be cloned via postMessage (structured clone algorithm).
-    const { signal, ...engineOptions } = options;
-    try {
-      const generator = this.engineInstance.runWithGenerator(engineOptions);
-      for await (const chunk of generator) {
-        if (signal?.aborted) {
-          return;
-        }
-        yield chunk;
-      }
-    } catch (ex) {
-      // Skip the token retry flow when using a custom endpoint,
-      // as the retry logic only applies to FxAccounts tokens.
-      if (!this._is401Error(ex) || this.isCustomEndpoint) {
-        throw ex;
-      }
-
-      console.warn(
-        "LLM streaming request returned a 401 - revoking our token and retrying"
-      );
-
-      const fxAccounts = lazy.getFxAccountsSingleton();
-      const oldToken = options.fxAccountToken;
-      if (oldToken) {
-        await fxAccounts.removeCachedOAuthToken({ token: oldToken });
-      }
-
-      await this._recreateEngine();
-
-      const newToken = await openAIEngine.getFxAccountToken();
-      const updatedOptions = { ...engineOptions, fxAccountToken: newToken };
-
-      try {
-        const generator = this.engineInstance.runWithGenerator(updatedOptions);
-        for await (const chunk of generator) {
-          if (signal?.aborted) {
-            return;
-          }
-          yield chunk;
-        }
-      } catch (retryEx) {
-        if (!this._is401Error(retryEx)) {
-          throw retryEx;
-        }
-
-        console.warn(
-          "Retry LLM streaming request still returned a 401 - revoking our token and failing"
-        );
-
-        if (newToken) {
-          await fxAccounts.removeCachedOAuthToken({ token: newToken });
-        }
-
-        throw retryEx;
-      }
-    }
-  }
-
-  /**
-   * Wrapper around engine.runWithGenerator to send message to the LLM
-   * Will eventually use `usage` from the LiteLLM API response for token telemetry
-   *
-   * @param {Map<string, any>} options  OpenAI formatted messages with streaming and tooling options to be sent to the LLM
-   * @returns {AsyncGenerator}          LLM streaming response
-   */
-  runWithGenerator(options) {
-    return this._runWithGeneratorAuth(options);
-  }
+  return {
+    ownerName: details.ownerName ?? "",
+    labelId: details.labelId ?? "",
+    shortName: details.shortName ?? "",
+    brandName: details.brandName ?? "",
+  };
 }
-
-XPCOMUtils.defineLazyPreferenceGetter(
-  openAIEngine,
-  "endpoint",
-  ENDPOINT_PREF,
-  DEFAULT_ENDPOINT
-);
-
-XPCOMUtils.defineLazyPreferenceGetter(openAIEngine, "apiKey", APIKEY_PREF, "");
 
 /**
  * Resolves chat model metadata for a given choice ID from Remote Settings.
+ * Display fields (ownerName, labelId, shortName, brandName) come from the
+ * record's own `model_details` bundle so a row is always internally consistent,
+ * regardless of how choice IDs are ordered server-side. The `model` used for
+ * inference is kept from the top-level record field.
  *
  * @param {string} choiceId - Model choice ID (e.g., "1", "2", "3")
  * @param {number} [maxMajorVersion] - Maximum major version to include
- * @returns {Promise<{model: string, ownerName: string}|null>}
+ * @returns {Promise<ModelChoiceData|null>}
  *   Returns null if choice ID not found in Remote Settings
  */
 export async function resolveChatModelChoice(
@@ -794,15 +425,13 @@ export async function resolveChatModelChoice(
   maxMajorVersion = FEATURE_MAJOR_VERSIONS[MODEL_FEATURES.CHAT]
 ) {
   if (choiceId === "0") {
-    // Custom model - no RS lookup needed
-    return {
-      model: "custom-model",
-      ownerName: "",
-    };
+    // Custom model - no RS lookup needed. Return the complete custom entry from
+    // the fallback so it carries its label like every other choice.
+    return getActiveFallbackModels()[choiceId];
   }
 
   try {
-    const client = openAIEngine.getRemoteClient();
+    const client = getRemoteClient();
     const allRecords = await client.get();
 
     const record = selectMainConfig(
@@ -817,9 +446,13 @@ export async function resolveChatModelChoice(
       return null;
     }
 
+    const details = parseModelDetails(record);
     return {
       model: record.model,
-      ownerName: record.owner_name ?? "",
+      ownerName: details?.ownerName || record.owner_name || "",
+      labelId: details?.labelId ?? "",
+      shortName: details?.shortName ?? "",
+      brandName: details?.brandName ?? "",
     };
   } catch (error) {
     console.warn(
@@ -828,6 +461,33 @@ export async function resolveChatModelChoice(
     );
     return null;
   }
+}
+
+/**
+ * Returns the active fallback models based on the mistral release pref.
+ *
+ * @returns {typeof FALLBACK_MODELS}
+ */
+function getActiveFallbackModels() {
+  // TODO Bug 2053495: remove with mistral release pref (always FALLBACK_MODELS_V2)
+  return Services.prefs.getBoolPref(MISTRAL_RELEASE_PREF, false)
+    ? FALLBACK_MODELS_V2
+    : FALLBACK_MODELS;
+}
+
+/**
+ * Single source of truth for the order model choices are shown in across the
+ * UI (smartbar selector, settings, onboarding). Choice IDs keep their
+ * server-defined identity; only the display position lives here. Change this
+ * list to reorder every surface at once.
+ *
+ * @returns {string[]} Choice IDs in display order.
+ */
+export function getModelDisplayOrder() {
+  // TODO Bug 2053495: remove with mistral release pref (always ["3", "1", "2"])
+  return Services.prefs.getBoolPref(MISTRAL_RELEASE_PREF, false)
+    ? ["3", "1", "2"]
+    : ["1", "2", "3"];
 }
 
 /**
@@ -841,26 +501,42 @@ export async function getModelForChoice(choiceId = getCurrentModelChoiceId()) {
     return null;
   }
 
-  const labelId = FALLBACK_MODELS[choiceId]?.labelId;
   const resolved = await resolveChatModelChoice(choiceId);
   if (resolved) {
-    return { ...resolved, labelId };
+    return resolved;
   }
 
-  if (choiceId in FALLBACK_MODELS) {
-    return FALLBACK_MODELS[choiceId];
+  const fallbackModels = getActiveFallbackModels();
+  if (choiceId in fallbackModels) {
+    return fallbackModels[choiceId];
   }
 
   return { model: "unknown", ownerName: "unknown" };
 }
 
 /**
+ * @typedef {object} ModelChoiceData
+ * @property {string} model - Model identifier for LLM inference
+ * @property {string} ownerName - Display name of the model's owner
+ * @property {string} [labelId] - Fallback label identifier for the choice
+ * @property {string} [shortName] - Display name of the model collection
+ * @property {string} [brandName] - Short brand name for the model
+ */
+
+/**
  *
- * @type {{[key: string]: {model: string, ownerName: string}}|null}
+ * @type {{[key: string]: ModelChoiceData}|null}
  * holds model metadata -- this should replace FALLBACK_MODELS where sync calls are needed
  * see getCachedModelsData() below
  */
 let _modelsDataCache = null;
+
+// The active model set depends on the mistral release pref. If it changes at
+// runtime, drop the cached data so the next read rebuilds against the new pref.
+// TODO Bug 2053495: remove with mistral release pref
+Services.prefs.addObserver(MISTRAL_RELEASE_PREF, () => {
+  _modelsDataCache = null;
+});
 
 export async function refreshModelsDataCache() {
   _modelsDataCache = null;
@@ -870,21 +546,26 @@ export async function refreshModelsDataCache() {
 /**
  * Gets metadata for all models, with fallback. Result is cached after first call.
  *
- * @returns {Promise<{[key: string]: {model: string, ownerName: string}}>}
+ * @returns {Promise<{[key: string]: ModelChoiceData}>}
  */
 export async function getAllModelsData() {
   if (_modelsDataCache) {
     return _modelsDataCache;
   }
-  const modelData = { ...FALLBACK_MODELS };
+  const fallbackModels = getActiveFallbackModels();
+  const modelData = { ...fallbackModels };
   // RS reads from a local dump. Only the first call sets up RS state,
   // subsequent calls are cached
   const entries = await Promise.all(
-    ["1", "2", "3"].map(async id => [id, await getModelForChoice(id)])
+    getModelDisplayOrder().map(async id => [id, await getModelForChoice(id)])
   );
   for (const [id, data] of entries) {
-    // Preserve labelId from fallback when merging with RS data
-    modelData[id] = { ...data, labelId: FALLBACK_MODELS[id]?.labelId };
+    // Each entry already carries a consistent bundle (from the record's own
+    // model_details, or the fallback map when RS is unavailable), so use it
+    // as-is rather than re-stitching fields by choice ID.
+    if (data) {
+      modelData[id] = data;
+    }
   }
   _modelsDataCache = modelData;
   return _modelsDataCache;
@@ -893,10 +574,10 @@ export async function getAllModelsData() {
 /**
  * Returns cached model data synchronously, or FALLBACK_MODELS if not yet fetched.
  *
- * @returns {{[key: string]: {model: string, ownerName: string}}}
+ * @returns {{[key: string]: ModelChoiceData}}
  */
 export function getCachedModelsData() {
-  return _modelsDataCache ?? FALLBACK_MODELS;
+  return _modelsDataCache ?? getActiveFallbackModels();
 }
 
 export function getCurrentModelName() {
@@ -930,4 +611,32 @@ export function renderPrompt(rawPromptContent, stringsToReplace = {}) {
   }
 
   return finalPromptContent;
+}
+
+/**
+ * Extracts a JSON value from an LLM response (handles markdown-formatted code
+ * blocks). Returns the fallback when the response is not parseable JSON.
+ *
+ * @param {any} response  LLM response
+ * @param {any} fallback  Fallback value if parsing fails to protect downstream code
+ * @returns {any}         Parsed JSON value, or the fallback
+ */
+export function parseAndExtractJSON(response, fallback) {
+  const rawContent = response?.finalOutput ?? "";
+  const markdownMatch = rawContent.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+  const payload = markdownMatch ? markdownMatch[1] : rawContent;
+  try {
+    return JSON.parse(payload);
+  } catch (e) {
+    // If we can't parse a JSON from the LLM response, return a tailored fallback value to prevent downstream code failures
+    if (e instanceof SyntaxError) {
+      console.warn(
+        `Could not parse JSON from LLM response; using fallback (${fallback}): ${e.message}`
+      );
+      return fallback;
+    }
+    throw new Error(
+      `Unexpected error parsing JSON from LLM response: ${e.message}`
+    );
+  }
 }

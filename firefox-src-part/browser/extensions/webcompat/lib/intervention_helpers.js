@@ -241,6 +241,7 @@ class ContentScriptRegistrationsBuilder {
       isolated = false,
       match_origin_as_fallback = false,
       run_at = "document_start",
+      user_styles = false,
     } = contentScriptDescriptor;
 
     // We track whether the metadata we need to build the registrations later
@@ -252,6 +253,7 @@ class ContentScriptRegistrationsBuilder {
       isolated,
       match_origin_as_fallback,
       run_at,
+      user_styles,
     });
 
     // Note: we can update these to use Map.getOrInsert() once ESR 140 is EOL.
@@ -275,13 +277,21 @@ class ContentScriptRegistrationsBuilder {
     for (const [config, fileTypes] of this.#regs) {
       const reg = {};
 
-      const { all_frames, isolated, match_origin_as_fallback, run_at } =
-        JSON.parse(config);
+      const {
+        all_frames,
+        isolated,
+        match_origin_as_fallback,
+        run_at,
+        user_styles,
+      } = JSON.parse(config);
 
       // The registration's ID is based on this data, so we only specify
       // the non-default values to make them easier to parse at a glance.
       if (all_frames) {
         reg.allFrames = true;
+      }
+      if (user_styles) {
+        reg.cssOrigin = "user";
       }
       if (!isolated) {
         reg.world = "MAIN";
@@ -671,16 +681,8 @@ var InterventionHelpers = {
     replace_colon_in_rv_with_space: ua => {
       return ua.replace("rv:", "rv ");
     },
-    reduce_firefox_version_by_one: ua => {
-      const [head, fx, tail] = ua.split(/(firefox\/)/i);
-      if (!fx || !tail) {
-        return ua;
-      }
-      const major = parseInt(tail);
-      if (!major) {
-        return ua;
-      }
-      return `${head}${fx}${major - 1}${tail.slice(major.toString().length)}`;
+    browser_version: (ua, config) => {
+      return UAHelpers.changeBrowserVersion(ua, config);
     },
     add_Safari: (ua, config) => {
       config.withFirefox = true;
