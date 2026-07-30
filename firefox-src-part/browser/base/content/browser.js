@@ -638,6 +638,20 @@ customElements.setElementCreationCallback(
   }
 );
 
+// The "Group my tabs" panel and flyout (Smart Window) render their content with
+// these light-DOM custom elements; both live in one module.
+for (const smartwindowGroupTabsTag of [
+  "smartwindow-group-tabs-card",
+  "smartwindow-group-tabs-flyout",
+]) {
+  customElements.setElementCreationCallback(smartwindowGroupTabsTag, () => {
+    ChromeUtils.importESModule(
+      "chrome://browser/content/aiwindow/components/smartwindow-group-tabs.mjs",
+      { global: "current" }
+    );
+  });
+}
+
 var gBrowser;
 var gContextMenu = null; // nsContextMenu instance
 var gMultiProcessBrowser = window.docShell.QueryInterface(
@@ -3824,6 +3838,11 @@ function CanCloseWindow() {
   return true;
 }
 
+// Guards against dispatching the lastWindowClose trigger a second time if
+// the user attempts to close this window again while a message from a
+// previous attempt is still pending via WindowIsClosing.
+let gLastWindowCloseTriggerHandled = false;
+
 function WindowIsClosing(event) {
   let source;
   if (event) {
@@ -3851,15 +3870,93 @@ function WindowIsClosing(event) {
   // method should trigger canClose on BrowserDOMWindow. However, by
   // that point it's too late to be able to show a prompt for
   // PermitUnload. So we do it here, when we still can.
-  if (CanCloseWindow()) {
-    // This flag ensures that the later canClose call does nothing.
-    // It's only needed to make tests pass, since they detect the
-    // prompt even when it's not actually shown.
-    window.skipNextCanClose = true;
-    return true;
+  if (!CanCloseWindow()) {
+    return false;
   }
 
-  return false;
+  // This flag ensures that the later canClose call does nothing.
+  // It's only needed to make tests pass, since they detect the
+  // prompt even when it's not actually shown.
+  window.skipNextCanClose = true;
+
+  let isLastWindow = !Array.from(browserWindows()).some(
+    w => !w.closed && w != window
+  );
+
+  // If closing this window would trigger (or just triggered) the "closing
+  // multiple tabs" warning, don't also show a lastWindowClose message right
+  // after it.
+  //
+  // Closing the last window on Windows/Linux is treated like quitting and the
+  // warning for that case comes from BrowserGlue's own dialog (via
+  // browser-lastwindow-close-requested), whose tab count excludes pinned
+  // tabs. Closing the last window on macOS (which doesn't quit) instead goes
+  // through gBrowser.warnAboutClosingTabs(), whose tab count includes pinned
+  // tabs. Mirror whichever one actually applies.
+  let isLastWindowNonMac = isLastWindow && AppConstants.platform != "macosx";
+  let shouldWarnForTabs =
+    Services.prefs.getBoolPref("browser.tabs.warnOnClose") &&
+    (isLastWindowNonMac
+      ? gBrowser.visibleTabs.length - gBrowser.pinnedTabCount >= 2
+      : gBrowser.openTabs.length > 1);
+
+  const { ASRouter } = ChromeUtils.importESModule(
+    "resource:///modules/asrouter/ASRouter.sys.mjs"
+  );
+  const { TaskbarTabsUtils } = ChromeUtils.importESModule(
+    "resource:///modules/taskbartabs/TaskbarTabsUtils.sys.mjs"
+  );
+  if (gLastWindowCloseTriggerHandled) {
+    // The user is closing this window again while a message from a previous
+    // close attempt is still pending. Let this close proceed but record it,
+    // since it means that message (and any action it may still be running) may
+    // never finish.
+    Glean.messagingSystem.lastWindowCloseTriggerBypassed.add(1);
+  } else if (
+    isLastWindow &&
+    // Web app (Taskbar Tabs) windows aren't a normal browsing window this
+    // trigger targets, even though they keep the toolbar visible and don't
+    // change windowtype, so they otherwise look like one to the checks here.
+    !TaskbarTabsUtils.isTaskbarTabWindow(window) &&
+    !shouldWarnForTabs &&
+    ASRouter.initialized &&
+    // Pre-check for messages so we don't hold up every last-window close when
+    // users are not eligible for a lastWindowClose message.
+    ASRouter.hasMessageForTrigger("lastWindowClose")
+  ) {
+    // Cancel this close attempt while the message shows. Showing (and waiting
+    // for) the message is async. We re-request the close via window.close()
+    // once the message resolves. The guard flag is to avoid dispatching a
+    // second message if the user tries to close the window again before the
+    // first one resolves.
+    gLastWindowCloseTriggerHandled = true;
+    ASRouter.sendTriggerMessage(
+      {
+        browser: gBrowser.selectedBrowser,
+        id: "lastWindowClose",
+      },
+      // Providers should already be loaded from normal browsing. Skip
+      // reloading them here since we're delaying the window close on this.
+      true
+    )
+      .then(({ closedPromise }) => closedPromise)
+      .catch(e => console.error("ASRouter lastWindowClose trigger: ", e))
+      .finally(() => {
+        gLastWindowCloseTriggerHandled = false;
+        // WindowIsClosing only runs because it's assigned to window.onclose
+        // (see browser-main.js), which the native widget invokes on a
+        // close-button click. Script calling .close() directly, like this line
+        // does, never invokes window.onclose. We rely on that rather than
+        // calling WindowIsClosing() ourselves, since this close attempt already
+        // resulted in showing the message and waiting for it, and calling
+        // WindowIsClosing() again would re-open the messaging trigger too,
+        // risking a second message.
+        window.close();
+      });
+    return false;
+  }
+
+  return true;
 }
 
 /**

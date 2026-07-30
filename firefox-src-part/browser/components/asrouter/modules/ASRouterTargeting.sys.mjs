@@ -1185,6 +1185,16 @@ const TargetingGetters = {
     return lazy.WindowsLaunchOnLogin.getLaunchOnLoginEnabled();
   },
 
+  // Whether launch on login could be enabled, i.e. it isn't overridden by
+  // Windows Settings or enterprise policy. Used to avoid offering launch on
+  // login to users for whom enabling it would silently no-op.
+  get launchOnLoginAllowedByPolicy() {
+    if (AppConstants.platform !== "win") {
+      return false;
+    }
+    return lazy.WindowsLaunchOnLogin.getLaunchOnLoginApproved();
+  },
+
   get isMSIX() {
     if (AppConstants.platform !== "win") {
       return false;

@@ -39,7 +39,7 @@ ChromeUtils.defineESModuleGetters(lazy, {
     "moz-src:///browser/components/aiwindow/ui/modules/FeedbackModal.sys.mjs",
   ChatConversation:
     "moz-src:///browser/components/aiwindow/ui/modules/ChatConversation.sys.mjs",
-  TopSites: "resource:///modules/topsites/TopSites.sys.mjs",
+  AboutNewTab: "resource:///modules/AboutNewTab.sys.mjs",
   URILoadingHelper: "resource:///modules/URILoadingHelper.sys.mjs",
   MEMORIES_FLAG_SOURCE:
     "moz-src:///browser/components/aiwindow/ui/modules/ChatEnums.sys.mjs",
@@ -227,6 +227,7 @@ export class AIWindow extends MozLitElement {
   #sidebarStarterCache = new Map();
   #smartbarResizeObserver = null;
   #windowModeObserver = null;
+  #topSitesObserver = null;
   #swapDocShellsChromeWindow = null;
   #hasMemories = false;
   #selectedModelChoiceId = null;
@@ -573,6 +574,15 @@ export class AIWindow extends MozLitElement {
       this.#onCustomEndpointPrefChanged
     );
 
+    // AboutNewTab populates its Top Sites store asynchronously, so on a fresh
+    // browser start the store can still be empty when we first read it. Reload
+    // whenever it changes so the row appears once the feed is ready.
+    this.#topSitesObserver = () => this.#syncTopSites();
+    Services.obs.addObserver(
+      this.#topSitesObserver,
+      "newtab-top-sites-changed"
+    );
+
     this.#loadPendingConversation();
     this.#setupWindowModeObserver();
 
@@ -794,6 +804,15 @@ export class AIWindow extends MozLitElement {
       PREF_CUSTOM_ENDPOINT,
       this.#onCustomEndpointPrefChanged
     );
+
+    // Clean up Top Sites store observer
+    if (this.#topSitesObserver) {
+      Services.obs.removeObserver(
+        this.#topSitesObserver,
+        "newtab-top-sites-changed"
+      );
+      this.#topSitesObserver = null;
+    }
 
     // Clean up smartbar toggle button
     if (this.#smartbarToggleButton) {
@@ -1299,8 +1318,8 @@ export class AIWindow extends MozLitElement {
 
   /**
    * Loads the user's Top Sites and renders a single row of them below the
-   * Smartbar in fullpage mode. TopSites.getSites() already excludes sponsored
-   * sites; we only keep the first MAX_TOP_SITES entries to fit a single row.
+   * Smartbar in fullpage mode. Sponsored sites are filtered out; we only keep
+   * the first MAX_TOP_SITES entries to fit a single row.
    *
    * @private
    */
@@ -1330,10 +1349,10 @@ export class AIWindow extends MozLitElement {
     }
   }
 
-  async #loadTopSites() {
+  #loadTopSites() {
     let sites = [];
     try {
-      sites = await lazy.TopSites.getSites();
+      sites = lazy.AboutNewTab.getTopSites();
     } catch (e) {
       lazy.log.error("[TopSites] Failed to load top sites:", e);
     }
@@ -1343,7 +1362,7 @@ export class AIWindow extends MozLitElement {
     }
 
     this.topSites = (sites ?? [])
-      .filter(site => site?.url)
+      .filter(site => site?.url && !site.sponsored_position)
       .slice(0, MAX_TOP_SITES);
 
     if (this.topSites.length) {
@@ -2364,7 +2383,8 @@ export class AIWindow extends MozLitElement {
           newMessage.content?.name,
           cfg.label,
           newMessage.content?.body,
-          newMessage.content?.args
+          newMessage.content?.args,
+          cfg.link
         ),
       };
     }
@@ -2660,7 +2680,7 @@ export class AIWindow extends MozLitElement {
       .at(-1);
     const lastToolName =
       lastToolCall?.content?.body?.tool_calls?.[0]?.function?.name;
-    if (lastToolName === "run_search") {
+    if (lastToolName === "search_the_web") {
       const args = lastToolCall.content.body.tool_calls[0].function.arguments;
       try {
         const { query } = JSON.parse(args || "{}");

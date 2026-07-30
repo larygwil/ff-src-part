@@ -103,6 +103,19 @@
   padding-inline: calc(var(--swgt-row-padding-inline) + var(--space-small));
 }
 
+/* The card takes programmatic focus when the panel opens (to move screen-reader
+ * focus into the dialog); it is not a keyboard stop, so it shows no ring. The
+ * controls inside it do. */
+.swgt-card:focus-visible {
+  outline: none;
+}
+
+.swgt-row:focus-visible,
+.swgt-flyout-header:focus-visible {
+  outline: var(--focus-outline);
+  outline-offset: var(--focus-outline-inset);
+}
+
 .swgt-create-all {
   font-size: 1.1em;
   padding-block: var(--space-large);

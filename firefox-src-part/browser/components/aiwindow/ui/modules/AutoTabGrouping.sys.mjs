@@ -31,9 +31,10 @@ XPCOMUtils.defineLazyPreferenceGetter(
   4
 );
 
+const BUTTON_ITEM_ID = "smartwindow-group-tabs-button";
 const PANEL_ID = "smartwindow-group-tabs-panel";
 const FLYOUT_ID = "smartwindow-group-tabs-flyout";
-const HTML_NS = "http://www.w3.org/1999/xhtml";
+const CARD_TAG = "smartwindow-group-tabs-card";
 const FLYOUT_HIDE_DELAY_MS = 160;
 
 /**
@@ -42,8 +43,10 @@ const FLYOUT_HIDE_DELAY_MS = 160;
  * AutoTabGroupingSuggestions) and creates the ones the user picks.
  *
  * The whole feature is gated behind browser.smartwindow.autoTabGrouping.enabled
- * (default false). This module owns only the panel UI and lifecycle; all ML and
- * tab-analysis logic lives in AutoTabGroupingSuggestions.
+ * (default false). This module owns the XUL panels, their lifecycle, and all ML
+ * and tab-group work; the panel and flyout markup are rendered by the
+ * smartwindow-group-tabs-card / -flyout custom elements, which report user
+ * intent back through events.
  */
 export const AutoTabGrouping = {
   _nextId: 1,
@@ -111,12 +114,12 @@ export const AutoTabGrouping = {
       return;
     }
     const doc = win.document;
-    const anchor = doc.getElementById("smartwindow-group-tabs-button");
-    const button = doc.getElementById("smartwindow-group-tabs-button-inner");
+    const anchor = doc.getElementById(BUTTON_ITEM_ID);
     const popupSet = doc.getElementById("mainPopupSet");
     if (!anchor || !popupSet) {
       return;
     }
+    const button = doc.getElementById("smartwindow-group-tabs-button-inner");
 
     const panel = this._buildPanelSkeleton(win);
     popupSet.appendChild(panel);
@@ -138,6 +141,7 @@ export const AutoTabGrouping = {
     };
     const onKeyDown = event => {
       if (event.key === "Escape") {
+        panel._restoreFocus = true;
         panel.hidePopup();
       }
     };
@@ -146,6 +150,7 @@ export const AutoTabGrouping = {
       "popupshown",
       () => {
         button?.setAttribute("aria-expanded", "true");
+        panel._card.focus();
         win.addEventListener("mousedown", onMouseDown, true);
         win.addEventListener("keydown", onKeyDown, true);
       },
@@ -163,6 +168,9 @@ export const AutoTabGrouping = {
           this._panels.delete(win);
         }
         panel.remove();
+        if (panel._restoreFocus) {
+          button?.focus();
+        }
       },
       { once: true }
     );
@@ -172,37 +180,51 @@ export const AutoTabGrouping = {
     const state = this._getState(win);
     if (!state.computed) {
       // _computeSuggestions flips state.computing synchronously (when there are
-      // enough tabs), so rendering right after shows the loading state. If a
+      // enough tabs), so syncing right after shows the loading state. If a
       // previous open is still clustering, this awaits that same run.
       const done = this._computeSuggestions(win);
-      this._renderCard(win, panel);
+      this._syncCard(win, panel);
       await done;
       // The panel may have been closed (or replaced) while the models ran.
       if (this._panels.get(win) !== panel) {
         return;
       }
     }
-    this._renderCard(win, panel);
+    this._syncCard(win, panel);
   },
 
   /**
    * @param {ChromeWindow} win
-   * @returns {XULElement} A detached main panel with its card ref attached.
+   * @returns {XULElement} A detached main panel hosting the card element, with
+   *   its events wired to the model actions.
    */
   _buildPanelSkeleton(win) {
     const doc = win.document;
 
     const panel = this._createBarePanel(win, PANEL_ID);
-    panel.setAttribute("role", "dialog");
 
-    const card = doc.createElementNS(HTML_NS, "div");
-    card.className = "swgt-card";
+    const card = doc.createElement(CARD_TAG);
+    card.addEventListener("create-all", () =>
+      this._createSuggestions(
+        win,
+        panel,
+        this._getState(win).suggestions.slice()
+      )
+    );
+    card.addEventListener("create-one", e =>
+      this._createById(win, panel, e.detail.id)
+    );
+    card.addEventListener("preview", e =>
+      this._showFlyoutById(win, panel, e.detail.id, e.detail.anchor)
+    );
+    card.addEventListener("preview-end", () => this._scheduleHideFlyout(panel));
     panel.appendChild(card);
 
     panel._card = card;
     panel._flyoutPanel = null;
     panel._activeRow = null;
     panel._hideTimer = 0;
+    panel._restoreFocus = false;
     return panel;
   },
 
@@ -238,16 +260,18 @@ export const AutoTabGrouping = {
       return panel._flyoutPanel;
     }
     const flyoutPanel = this._createBarePanel(win, FLYOUT_ID);
-    const flyout = win.document.createElementNS(HTML_NS, "div");
-    flyout.className = "swgt-flyout";
-    flyoutPanel.appendChild(flyout);
+    const flyoutEl = win.document.createElement(FLYOUT_ID);
+    flyoutEl.addEventListener("create-one", e =>
+      this._createById(win, panel, e.detail.id)
+    );
+    flyoutPanel.appendChild(flyoutEl);
     flyoutPanel.addEventListener("mouseenter", () =>
       this._cancelHideFlyout(panel)
     );
     flyoutPanel.addEventListener("mouseleave", () =>
       this._scheduleHideFlyout(panel)
     );
-    flyoutPanel._flyout = flyout;
+    flyoutPanel._flyoutEl = flyoutEl;
 
     win.document.getElementById("mainPopupSet").appendChild(flyoutPanel);
     panel._flyoutPanel = flyoutPanel;
@@ -255,150 +279,55 @@ export const AutoTabGrouping = {
   },
 
   /**
-   * (Re)render the card body from the window's state. Called after clustering
-   * finishes and whenever a suggestion is consumed.
+   * Push the window's state onto the card element, which re-renders. Called
+   * after clustering finishes and whenever a suggestion is consumed. A new array
+   * is passed so the element sees a change.
    *
    * @param {ChromeWindow} win
    * @param {XULElement} panel
    */
-  _renderCard(win, panel) {
-    const doc = win.document;
-    const card = panel._card;
-    card.textContent = "";
+  _syncCard(win, panel) {
+    const state = this._getState(win);
     this._hideFlyout(panel);
 
-    const header = doc.createElementNS(HTML_NS, "h1");
-    header.className = "swgt-header";
-    header.textContent = "Group my tabs";
-    card.appendChild(header);
+    const card = panel._card;
+    card.computing = state.computing;
+    card.suggestions = [...state.suggestions];
+  },
 
-    const state = this._getState(win);
-
-    if (state.computing) {
-      this._appendMessage(win, card, "Finding groups…");
-      return;
-    }
-
-    if (!state.suggestions.length) {
-      this._appendMessage(win, card, "No suggestions right now");
-      return;
-    }
-
-    const createAll = this._createRow(win);
-    createAll.classList.add("swgt-create-all");
-    this._appendLabel(win, createAll, "Create all suggested groups");
-    createAll.addEventListener("click", () =>
-      this._createSuggestions(win, panel, state.suggestions.slice())
-    );
-    card.appendChild(createAll);
-
-    card.appendChild(this._createSection(win, "Suggested groups"));
-    for (const suggestion of state.suggestions) {
-      card.appendChild(this._createSuggestionRow(win, panel, suggestion));
+  _createById(win, panel, id) {
+    const suggestion = this._getState(win).suggestions.find(s => s.id === id);
+    if (suggestion) {
+      this._createSuggestions(win, panel, [suggestion]);
     }
   },
 
-  _createSuggestionRow(win, panel, suggestion) {
-    const doc = win.document;
-    const row = this._createRow(win);
-
-    const tiles = doc.createElementNS(HTML_NS, "div");
-    tiles.className = "swgt-tiles";
-    for (const info of suggestion.tabInfos.slice(0, 3)) {
-      const tile = doc.createElementNS(HTML_NS, "span");
-      tile.className = "swgt-tile";
-      tile.style.background = info.tileColor;
-      tile.textContent = info.letter;
-      tiles.appendChild(tile);
-    }
-    row.appendChild(tiles);
-
-    this._appendLabel(win, row, suggestion.label);
-
-    const chevron = doc.createElementNS(HTML_NS, "span");
-    chevron.className = "swgt-chevron";
-    chevron.textContent = "›";
-    row.appendChild(chevron);
-
-    row.addEventListener("mouseenter", () => {
+  _showFlyoutById(win, panel, id, anchorRow) {
+    const suggestion = this._getState(win).suggestions.find(s => s.id === id);
+    if (suggestion) {
       this._cancelHideFlyout(panel);
-      this._showFlyout(win, panel, row, suggestion);
-    });
-    row.addEventListener("mouseleave", () => this._scheduleHideFlyout(panel));
-    row.addEventListener("click", () =>
-      this._createSuggestions(win, panel, [suggestion])
-    );
-    return row;
+      this._showFlyout(win, panel, anchorRow, suggestion);
+    }
   },
 
-  _showFlyout(win, panel, row, suggestion) {
-    const doc = win.document;
+  _showFlyout(win, panel, anchorRow, suggestion) {
     const flyoutPanel = this._ensureFlyoutPanel(win, panel);
-    const flyout = flyoutPanel._flyout;
-    flyout.textContent = "";
+    flyoutPanel._flyoutEl.suggestion = suggestion;
 
-    const headerBtn = doc.createElementNS(HTML_NS, "button");
-    headerBtn.className = "swgt-flyout-header";
-    headerBtn.type = "button";
-
-    const title = doc.createElementNS(HTML_NS, "span");
-    title.className = "swgt-flyout-title";
-    const dot = doc.createElementNS(HTML_NS, "span");
-    dot.className = "swgt-dot";
-    dot.style.background = this._colorVar(suggestion.color);
-    title.appendChild(dot);
-    const titleText = doc.createElementNS(HTML_NS, "span");
-    titleText.textContent = "Create group";
-    title.appendChild(titleText);
-    headerBtn.appendChild(title);
-
-    const count = suggestion.tabInfos.length;
-    const subtitle = doc.createElementNS(HTML_NS, "span");
-    subtitle.className = "swgt-flyout-subtitle";
-    subtitle.textContent = `${suggestion.label} · ${count} tab${
-      count > 1 ? "s" : ""
-    }`;
-    headerBtn.appendChild(subtitle);
-
-    headerBtn.addEventListener("click", () =>
-      this._createSuggestions(win, panel, [suggestion])
-    );
-    flyout.appendChild(headerBtn);
-
-    const list = doc.createElementNS(HTML_NS, "div");
-    list.className = "swgt-flyout-list";
-    for (const info of suggestion.tabInfos) {
-      const tab = doc.createElementNS(HTML_NS, "div");
-      tab.className = "swgt-flyout-tab";
-      const tile = doc.createElementNS(HTML_NS, "span");
-      tile.className = "swgt-tile";
-      tile.style.background = info.tileColor;
-      tile.textContent = info.letter;
-      tab.appendChild(tile);
-      const label = doc.createElementNS(HTML_NS, "span");
-      label.className = "swgt-flyout-tab-label";
-      label.textContent = info.brand
-        ? `${info.brand} · ${info.title}`
-        : info.title;
-      tab.appendChild(label);
-      list.appendChild(tab);
-    }
-    flyout.appendChild(list);
-
-    if (panel._activeRow && panel._activeRow !== row) {
+    if (panel._activeRow && panel._activeRow !== anchorRow) {
       panel._activeRow.classList.remove("is-active");
     }
-    row.classList.add("is-active");
-    panel._activeRow = row;
+    anchorRow.classList.add("is-active");
+    panel._activeRow = anchorRow;
 
     // Float the flyout to the left of the hovered row, top-aligned with it.
     // moveToAnchor repositions without a hide/show flicker when the pointer
     // slides between rows.
     const flyoutState = flyoutPanel.state;
     if (flyoutState === "open" || flyoutState === "showing") {
-      flyoutPanel.moveToAnchor(row, "start_before", 0, 0);
+      flyoutPanel.moveToAnchor(anchorRow, "start_before", 0, 0);
     } else {
-      flyoutPanel.openPopup(row, "start_before", 0, 0, false, false);
+      flyoutPanel.openPopup(anchorRow, "start_before", 0, 0, false, false);
     }
   },
 
@@ -414,6 +343,9 @@ export const AutoTabGrouping = {
   _scheduleHideFlyout(panel) {
     this._cancelHideFlyout(panel);
     const win = panel.ownerGlobal;
+    if (!win) {
+      return;
+    }
     panel._hideTimer = win.setTimeout(() => {
       panel._hideTimer = 0;
       this._hideFlyout(panel);
@@ -425,38 +357,6 @@ export const AutoTabGrouping = {
       panel.ownerGlobal.clearTimeout(panel._hideTimer);
       panel._hideTimer = 0;
     }
-  },
-
-  _createRow(win) {
-    const row = win.document.createElementNS(HTML_NS, "button");
-    row.className = "swgt-row";
-    row.type = "button";
-    return row;
-  },
-
-  _createSection(win, text) {
-    const section = win.document.createElementNS(HTML_NS, "div");
-    section.className = "swgt-section";
-    section.textContent = text;
-    return section;
-  },
-
-  _appendLabel(win, row, text) {
-    const label = win.document.createElementNS(HTML_NS, "span");
-    label.className = "swgt-row-label";
-    label.textContent = text;
-    row.appendChild(label);
-  },
-
-  _appendMessage(win, card, text) {
-    const msg = win.document.createElementNS(HTML_NS, "div");
-    msg.className = "swgt-message";
-    msg.textContent = text;
-    card.appendChild(msg);
-  },
-
-  _colorVar(name) {
-    return `var(--tab-group-${name})`;
   },
 
   /**
@@ -491,6 +391,7 @@ export const AutoTabGrouping = {
 
     const consumed = new Set(suggestions.map(s => s.id));
     state.suggestions = state.suggestions.filter(s => !consumed.has(s.id));
+    panel._restoreFocus = true;
     panel.hidePopup();
   },
 
@@ -508,6 +409,9 @@ export const AutoTabGrouping = {
     }
     if (state.computePromise) {
       return state.computePromise;
+    }
+    if (!lazy.AutoTabGroupingSuggestions.isAvailable) {
+      return Promise.resolve();
     }
     const candidates = lazy.AutoTabGroupingSuggestions.getCandidateTabs(win);
     if (candidates.length < lazy.minCandidateTabs) {

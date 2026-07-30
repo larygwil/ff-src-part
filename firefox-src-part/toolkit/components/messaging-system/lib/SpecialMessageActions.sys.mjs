@@ -57,6 +57,7 @@ ChromeUtils.defineESModuleGetters(lazy, {
   TaskbarTabs: "resource:///modules/taskbartabs/TaskbarTabs.sys.mjs",
   UIState: "resource://services-sync/UIState.sys.mjs",
   UITour: "moz-src:///browser/components/uitour/UITour.sys.mjs",
+  WindowsLaunchOnLogin: "resource://gre/modules/WindowsLaunchOnLogin.sys.mjs",
 });
 
 export const SpecialMessageActions = {
@@ -123,11 +124,19 @@ export const SpecialMessageActions = {
   /**
    * Pin Firefox to taskbar.
    *
-   * @param {Window} window Reference to a window object
-   * @param {boolean} pin Private Browsing Mode if true
+   * @param {Window} window
+   * @param {object} options
+   * @param {boolean} options.privatePin Whether the pinned launcher should open
+   *   a private window. Defaults to false.
+   * @param {boolean} options.fireAndForget User confirmation is often necessary
+   *   due to OS restrictions. This means an OS notification appears asking for
+   *   confirmation. By default, this API will only resolve when the user has
+   *   confirmed the action, so it will hang until the prompt is dismissed. This
+   *   parameter makes the API resolve after the prompt is shown, but before the
+   *   user has confirmed or rejected the action. Defaults to false.
    */
-  pinFirefoxToTaskbar(window, privateBrowsing = false) {
-    return window.getShellService().pinToTaskbar(privateBrowsing);
+  pinFirefoxToTaskbar(window, { privatePin, fireAndForget } = {}) {
+    return window.getShellService().pinToTaskbar(privatePin, fireAndForget);
   },
 
   /**
@@ -855,7 +864,7 @@ export const SpecialMessageActions = {
         );
         break;
       case "PIN_FIREFOX_TO_TASKBAR":
-        await this.pinFirefoxToTaskbar(window, action.data?.privatePin);
+        await this.pinFirefoxToTaskbar(window, action.data);
         break;
       case "PIN_TASKBAR_TAB":
         return this.pinTaskbarTab(action.data);
@@ -863,12 +872,15 @@ export const SpecialMessageActions = {
         await this.pinToStartMenu(window);
         break;
       case "PIN_AND_DEFAULT":
-        // We must explicitly await pinning to the taskbar before
-        // trying to set as default. If we fall back to setting
-        // as default through the Windows Settings menu that interferes
-        // with showing the pinning notification as we no longer have
-        // window focus.
-        await this.pinFirefoxToTaskbar(window, action.data?.privatePin);
+        // If setDefaultBrowser is called before the pinning action, the OS will
+        // focus the Settings window, preventing the pinning confirmation toast
+        // from appearing. So we must pin first and await the action. There are
+        // two ways of doing this, however. By default, the set default prompt
+        // and Settings window will not appear until the user has accepted or
+        // rejected the pinning toast. The `fireAndForget` param will wait only
+        // for the pinning toast to be shown, so both toasts will appear at
+        // approximately the same time, but timed to avoid the race.
+        await this.pinFirefoxToTaskbar(window, action.data);
         await this.setDefaultBrowser(window);
         break;
       case "SET_DEFAULT_BROWSER":
@@ -895,20 +907,12 @@ export const SpecialMessageActions = {
           action.data?.openInFirefox ?? false
         );
         break;
-      case "CONFIRM_LAUNCH_ON_LOGIN": {
-        const { WindowsLaunchOnLogin } = ChromeUtils.importESModule(
-          "resource://gre/modules/WindowsLaunchOnLogin.sys.mjs"
-        );
-        await WindowsLaunchOnLogin.createLaunchOnLogin();
+      case "CONFIRM_LAUNCH_ON_LOGIN":
+        await lazy.WindowsLaunchOnLogin.createLaunchOnLogin();
         break;
-      }
-      case "REMOVE_LAUNCH_ON_LOGIN": {
-        const { WindowsLaunchOnLogin } = ChromeUtils.importESModule(
-          "resource://gre/modules/WindowsLaunchOnLogin.sys.mjs"
-        );
-        await WindowsLaunchOnLogin.removeLaunchOnLogin();
+      case "REMOVE_LAUNCH_ON_LOGIN":
+        await lazy.WindowsLaunchOnLogin.removeLaunchOnLogin();
         break;
-      }
       case "CREATE_GROUP_FROM_CURRENT_TAB": {
         let tab =
           window.gBrowser.getTabForBrowser(browser) ??

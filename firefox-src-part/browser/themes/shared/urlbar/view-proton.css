@@ -398,7 +398,7 @@
   -moz-context-properties: fill, fill-opacity;
   border-radius: var(--border-radius-circle);
 
-  &:not(:hover, [selected], [primary], [open]) {
+  &:not(:hover, [selected], [primary], [aria-expanded="true"]) {
     @media (prefers-contrast) {
       outline: 1px solid currentColor;
       outline-offset: -1px;
@@ -418,12 +418,12 @@
     }
   }
 
-  .urlbarView-row:is([row-selectable]:hover, [selected]) > &:not(:hover, [open]) {
+  .urlbarView-row:is([row-selectable]:hover, [selected]) > &:not(:hover, [aria-expanded="true"]) {
     color: var(--urlbarView-result-button-selected-color);
     background-color: var(--urlbarView-result-button-selected-background-color);
   }
 
-  &:is(:hover, [open]) {
+  &:is(:hover, [aria-expanded="true"]) {
     color: var(--urlbarView-result-button-hover-color);
     background-color: var(--urlbarView-result-button-hover-background-color);
   }
@@ -442,7 +442,7 @@
   .urlbarView-results:not([disable-resultmenu-autohide])
     > .urlbarView-row:not(:hover, [selected], [descendant-selected])
     > .urlbarView-row-buttons
-    > &:not([open]):first-child:empty {
+    > &:not([aria-expanded="true"]):first-child:empty {
     /* The realtime suggestions' style will be broken if the width will be
        changed by hover. Thus we use the visibility instead of display to keep
        the element size */
@@ -497,7 +497,7 @@
   flex-basis: initial;
   flex-shrink: 0;
 
-  &:not(:hover, [open]) {
+  &:not(:hover, [aria-expanded="true"]) {
     background-color: var(--button-background-color);
   }
 

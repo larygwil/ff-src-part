@@ -204,19 +204,18 @@ export class MLEngineChild extends JSProcessActorChild {
 
   /**
    * Resolves a requested backend to a concrete backend identifier. "best-onnx"
-   * is handled locally: return the cached choice if one exists, otherwise
-   * optimistically try onnx-native (the caller's engine creation will update
-   * the cache on success or fallback). Other "best-*" values defer to the
-   * parent.
+   * returns the cached choice if one exists, otherwise optimistically tries
+   * onnx-native (the caller's engine creation will update the cache on success
+   * or fallback). Any other value is already concrete.
    *
-   * @param {?string} backend - Requested backend or a "best-*" value.
-   * @returns {Promise<string>} Resolved backend identifier.
+   * @param {string} backend - Requested backend or "best-onnx".
+   * @returns {string} Resolved backend identifier.
    */
   chooseBestBackend(backend) {
     if (backend === lazy.BACKENDS.bestOnnx) {
-      return Promise.resolve(gBestOnnxBackend ?? lazy.BACKENDS.onnxNative);
+      return gBestOnnxBackend ?? lazy.BACKENDS.onnxNative;
     }
-    return this.sendQuery("MLEngine:ChooseBestBackend", backend);
+    return backend;
   }
 
   /**
@@ -409,7 +408,7 @@ class EngineDispatcher {
 
     const requestedBackend = pipelineOptions.backend;
     this.pipelineOptions.backend =
-      await this.mlEngineChild.chooseBestBackend(requestedBackend);
+      this.mlEngineChild.chooseBestBackend(requestedBackend);
 
     // Retrigger validation
     this.pipelineOptions = new lazy.PipelineOptions(this.pipelineOptions);

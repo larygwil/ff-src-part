@@ -11,6 +11,7 @@ const KEY_NAMES_TO_CODES = {
   ArrowLeft: "VK_LEFT",
   ArrowRight: "VK_RIGHT",
   ArrowUp: "VK_UP",
+  Enter: "VK_RETURN",
 };
 
 /**
@@ -295,7 +296,10 @@ export class CustomKeysParent extends JSWindowActorParent {
         data.keycode =
           KEY_NAMES_TO_CODES[event.key] ??
           ShortcutUtils.getKeycodeAttribute(event.key);
-        if (event.key == "Backspace") {
+        if (
+          event.key == "Backspace" ||
+          (event.key == "Enter" && !modifiers.length)
+        ) {
           data.isValid = false;
         }
       }

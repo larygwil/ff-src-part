@@ -7,6 +7,7 @@ import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs";
 const lazy = {};
 
 ChromeUtils.defineESModuleGetters(lazy, {
+  BrowserUtils: "resource://gre/modules/BrowserUtils.sys.mjs",
   SmartTabGroupingManager:
     "moz-src:///browser/components/tabbrowser/SmartTabGrouping.sys.mjs",
 });
@@ -58,6 +59,13 @@ const TAB_GROUP_COLORS = [
  */
 export const AutoTabGroupingSuggestions = {
   _manager: null,
+
+  get isAvailable() {
+    return (
+      Services.prefs.getBoolPref("browser.ml.enable", false) &&
+      lazy.SmartTabGroupingManager.isAllowed
+    );
+  },
 
   get manager() {
     if (!this._manager) {
@@ -154,23 +162,27 @@ export const AutoTabGroupingSuggestions = {
   },
 
   _tabInfo(tab) {
-    let host = "";
-    try {
-      host = tab.linkedBrowser?.currentURI?.host || "";
-    } catch (e) {
-      host = "";
+    // Derive a user-visible site label from the tab's URI.
+    const uri = tab.linkedBrowser?.currentURI;
+    let site = "";
+    if (uri) {
+      try {
+        site = lazy.BrowserUtils.formatURIForDisplay(uri, {
+          onlyBaseDomain: true,
+        });
+      } catch (e) {
+        site = "";
+      }
     }
-    host = host.replace(/^www\./, "");
-    const title = tab.label || host || "Tab";
-    const brandSource = host || title;
-    const brand = brandSource
-      ? brandSource.split(".")[0].replace(/^./, c => c.toUpperCase())
-      : "";
-    const letter = (brand || title || "•").trim()[0] || "•";
+    const title = tab.label || site;
+    // Only show the site next to the title when it adds information.
+    const siteName = site && site !== title ? site : "";
+    const identifier = site || title;
+    const letter = identifier.trim()[0]?.toUpperCase() || "•";
     const colorName =
-      TAB_GROUP_COLORS[this._hash(brandSource) % TAB_GROUP_COLORS.length];
+      TAB_GROUP_COLORS[this._hash(identifier) % TAB_GROUP_COLORS.length];
     const tileColor = `var(--tab-group-${colorName})`;
-    return { letter, tileColor, host, title, brand: host ? brand : "" };
+    return { letter, tileColor, title, siteName };
   },
 
   _hash(str) {

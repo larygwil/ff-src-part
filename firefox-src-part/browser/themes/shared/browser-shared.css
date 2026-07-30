@@ -1720,6 +1720,11 @@ popupnotificationcontent {
   margin-inline-start: auto;
 }
 
+/* Smart Window Toolbar styling. */
+:root[ai-window] #nav-bar {
+  padding-inline-end: var(--toolbar-padding-inline);
+}
+
 /* AI window: hide nav bar on new window or firstrun */
 :root[ai-window][aiwindow-new-window],
 :root[ai-window][aiwindow-first-run] {
@@ -1759,7 +1764,7 @@ popupnotificationcontent {
     display: none;
   }
 
-  #TabsToolbar > .toolbar-items {
+  #TabsToolbar-customization-target > *:not(#ai-window-toggle) {
     /* stylelint-disable-next-line stylelint-plugin-mozilla/use-design-tokens -- to be addressed in 2033919 */
     opacity: 0.2;
     pointer-events: none;

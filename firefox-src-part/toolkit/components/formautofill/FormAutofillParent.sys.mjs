@@ -475,6 +475,10 @@ export class FormAutofillParent extends JSWindowActorParent {
       }
 
       const iframeBC = BrowsingContext.get(field.browsingContextId);
+      if (!iframeBC || iframeBC.parent != browsingContext) {
+        continue;
+      }
+
       const [fields] = await this.identifyAllSubTreeFields(
         iframeBC,
         focusedBCId,

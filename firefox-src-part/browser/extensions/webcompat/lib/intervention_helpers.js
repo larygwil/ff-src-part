@@ -358,11 +358,13 @@ class AbstractSpecialContentScriptKey {
       return;
     }
 
-    const { all_frames, match_origin_as_fallback } = contentScriptDefinition;
+    const { all_frames, match_origin_as_fallback, user_styles } =
+      contentScriptDefinition;
 
     this.needed_on_all_frames ||= all_frames || specialKeyData.all_frames;
     this.must_match_origin_as_fallback ||=
       match_origin_as_fallback || specialKeyData.match_origin_as_fallback;
+    this.user_styles ||= user_styles || specialKeyData.user_styles;
 
     // For the key's data, we can specify just the values, or the values plus metadata like all_frames.
     this.values.push(
@@ -553,9 +555,11 @@ class InjectCSSKey extends AbstractSpecialContentScriptKey {
     if (this.needed) {
       const sheets = interventionConfig.css;
       const whichSheets = [...new Set(this.values.flat())];
-      metadata[this.constructor.metadataKey] = whichSheets
-        .map(name => sheets[name] ?? "")
-        .join("\n");
+      metadata[this.constructor.metadataKey] = {
+        allFrames: this.all_frames,
+        css: whichSheets.map(name => sheets[name] ?? "").join("\n"),
+        useUserStyles: this.user_styles,
+      };
     }
   }
 }
@@ -1046,12 +1050,17 @@ var InterventionHelpers = {
         await browser.scripting.registerContentScripts(
           newContentScriptsToRegister
         );
-      } catch (_) {
-        for (const script of newContentScriptsToRegister) {
-          try {
-            await browser.scripting.registerContentScripts([script]);
-          } catch (e) {
-            console.error("Error registering content script", script, e);
+      } catch (e) {
+        // If we get a "JSProcessActorChild cannot send at the moment" error, we can ignore it.
+        if (e.name != "InvalidStateError") {
+          for (const script of newContentScriptsToRegister) {
+            try {
+              await browser.scripting.registerContentScripts([script]);
+            } catch (e2) {
+              if (e2.name != "InvalidStateError") {
+                console.error("Error registering content script", script, e2);
+              }
+            }
           }
         }
       }

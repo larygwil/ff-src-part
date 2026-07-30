@@ -39,6 +39,8 @@ ChromeUtils.defineESModuleGetters(lazy, {
     "moz-src:///browser/components/aiwindow/ui/modules/AIWindowAccountAuth.sys.mjs",
   AIWindowMenu:
     "moz-src:///browser/components/aiwindow/ui/modules/AIWindowMenu.sys.mjs",
+  AutoTabGroupingSuggestions:
+    "moz-src:///browser/components/aiwindow/ui/modules/AutoTabGroupingSuggestions.sys.mjs",
   BrowserWindowTracker: "resource:///modules/BrowserWindowTracker.sys.mjs",
   HomePage: "resource:///modules/HomePage.sys.mjs",
   AIWindowUI:
@@ -361,7 +363,11 @@ export const AIWindow = {
       return;
     }
     const enabled = Services.prefs.getBoolPref(PREF_AUTO_TAB_GROUPING, false);
-    button.hidden = !(enabled && this.isAIWindowActive(win));
+    button.hidden = !(
+      enabled &&
+      this.isAIWindowActive(win) &&
+      lazy.AutoTabGroupingSuggestions.isAvailable
+    );
   },
 
   get isDefaultWindow() {
@@ -1032,7 +1038,10 @@ export const AIWindow = {
         PREF_AUTO_TAB_GROUPING,
         false
       );
-      groupTabsButton.hidden = isImmersiveView || !groupTabsEnabled;
+      groupTabsButton.hidden =
+        isImmersiveView ||
+        !groupTabsEnabled ||
+        !lazy.AutoTabGroupingSuggestions.isAvailable;
     }
 
     // Set attr on the specific browser that has content to override color scheme

@@ -140,19 +140,42 @@ export function migrateMemoryStoreVersionOneToTwo(memories) {
     if (!m.type) {
       m.type = MEMORY_TYPE_SHORT_TERM_MEMORY;
     }
-    // Move source into sources array
-    if (m.source) {
-      m.sources = [m.source];
-      delete m.source;
-    }
+
     // Normalize source_ids
     m.source_ids = normalizeSourceIds(m.source_ids);
+    // Create sources array if it's missing and move source into it
+    if (!m.sources) {
+      // Fill source if available, otherwise infer from source_ids
+      // Fall back to "history" if source_ids don't exist
+      if (m.source) {
+        m.sources = [m.source];
+      } else if (
+        m.source_ids.history_source_ids.length &&
+        m.source_ids.conversation_source_ids.length
+      ) {
+        m.sources = [SESSION];
+      } else if (m.source_ids.conversation_source_ids.length) {
+        m.sources = [CONVERSATION];
+      } else {
+        m.sources = [HISTORY];
+      }
+    }
+    // Delete source
+    delete m.source;
     // Add sensitivity category, assume not sensitive
     if (!m.sensitivity_category) {
       m.sensitivity_category = MEMORY_SENSITIVITY_CATEGORY_NOT_SENSITIVE;
     }
+    // Make sure soft deletion flag exists
+    if (typeof m.is_deleted !== "boolean") {
+      m.is_deleted = false;
+    }
 
     /** Descriptive fields */
+    // Backfill empty reasoning if it doesn't exist
+    if (!m.reasoning) {
+      m.reasoning = "";
+    }
     // Add tags
     if (!m.tags) {
       m.tags = [];
@@ -169,25 +192,25 @@ export function migrateMemoryStoreVersionOneToTwo(memories) {
       }
     }
     // Delete category and intent
-    if (m.category) {
-      delete m.category;
-    }
-    if (m.intent) {
-      delete m.intent;
-    }
+    delete m.category;
+    delete m.intent;
     // Rename entities to keywords if it exists, otherwise add the keywords array
-    if (m.entities) {
+    if (Array.isArray(m.entities)) {
       m.keywords = m.entities;
-      delete m.entities;
     } else {
       m.keywords = [];
     }
+    delete m.entities;
     // Add component summaries
     if (!m.component_summaries) {
       m.component_summaries = [];
     }
 
     /** Tracker fields */
+    // Make sure updated_at exists
+    if (!m.updated_at) {
+      m.updated_at = Date.now();
+    }
     // If created_at doesn't exist, set it to updated_at
     // By this point, we've lost the actual created_at timestamp
     if (!m.created_at) {
@@ -211,10 +234,9 @@ export function migrateMemoryStoreVersionOneToTwo(memories) {
       }
     }
 
-    // Delete score
-    if (m.score) {
-      delete m.score;
-    }
+    // Delete score if it exists
+    // Score is not a v2 field
+    delete m.score;
 
     // Add frecency & strength last
     m.frecency = computeMemoryFrecency(m);

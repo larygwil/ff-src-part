@@ -3365,39 +3365,97 @@ html {
   }
 
   .system-prompt-spotlight {
-    .inline-icon-container {
-      display: flex;
-    }
+    user-select: none;
 
-    .welcome-text {
-      align-items: flex-start;
-      padding: 5px;
+    .main-content {
+      // Imitating the rules in commonDialog.css
+      min-width: 29em;
+      font-size: 12px;
+      padding: 16px 12px;
+      border-radius: var(--border-radius-medium);
 
-      h2 {
-        text-align: start;
-        margin: 0;
-        margin-block: 10px 15px;
+      &.no-steps {
+        margin-inline: auto;
       }
-    }
 
-    .brand-logo {
-      margin-block: var(--space-xxsmall);
-    }
+      .main-content-inner {
+        gap: 16px;
 
-    .multi-select-container {
-      margin-inline-start: 23px;
-      margin-block-end: 17px;
-    }
+        .inline-icon-container {
+          display: flex;
+          flex-flow: row wrap;
+          align-items: center;
+          gap: 6px;
 
-    .additional-cta-container {
-      display: flex;
-      flex-direction: row-reverse;
-      padding-inline-end: 15px;
-    }
+          .logo-container {
+            display: flex;
 
-    .main-content.no-steps {
-      padding-bottom: var(--space-medium);
-      margin-inline: auto;
+            .brand-logo {
+              margin: 0;
+            }
+          }
+        }
+
+        .welcome-text {
+          align-items: flex-start;
+          padding: 0;
+          margin: 0 4px;
+          gap: 16px;
+
+          h1 {
+            font-size: 12px;
+            letter-spacing: normal;
+            margin: 0;
+          }
+
+          h2 {
+            font-size: 12px;
+            letter-spacing: normal;
+            text-align: start;
+            margin: 0;
+          }
+        }
+
+        .multi-select-container {
+          margin: 0;
+          font-size: 12px;
+          gap: 8px;
+
+          .checkbox-container {
+            margin: 0 4px;
+
+            // Replace the inline margin on the checkbox with an inline padding
+            // on the label, so that if you hover in the space between the label
+            // and the checkbox, the area is still clickable and you still get
+            // the hover styles. This happens automatically with XUL dialogs
+            // (like the one we're imitating) due to their use of a <checkbox>
+            // element, but we don't have that in HTML, so we need to do it
+            // manually.
+            > input {
+              margin: 0;
+            }
+
+            > label {
+              padding-inline: var(--checkbox-margin-inline) 0;
+            }
+          }
+        }
+
+        .additional-cta-container {
+          display: flex;
+          flex-direction: row-reverse;
+        }
+
+        .primary,
+        .secondary,
+        .additional-cta,
+        .submenu-button {
+          font-size: 12px;
+          line-height: normal;
+          padding: var(--button-padding);
+          margin: 0 4px;
+        }
+      }
     }
   }
 

@@ -1059,6 +1059,7 @@ export class AIChatContent extends MozLitElement {
       <ai-action-result
         .labelL10nId=${summary?.l10nId}
         .labelL10nArgs=${summary?.l10nArgs}
+        .labelLink=${summary?.link ?? null}
         .rows=${this.#buildGroupedActionLogRows(toolMsgs)}
         .isExpanded=${this.#actionResultExpandState.get(key) ?? false}
         @action-result-toggle=${e =>

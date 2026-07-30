@@ -1640,6 +1640,12 @@ export class _ASRouter {
       ? MessageLoaderUtils._delocalizeValues(originalMessage)
       : originalMessage;
 
+    // Callers that need to know when it's safe to act on the fact that a
+    // message finished being shown (currently only browser.js's
+    // lastWindowClose trigger, which waits on this before letting the window
+    // close) can await this. Most templates are fire-and-forget and never
+    // reassign it, so it stays resolved.
+    let closedPromise = Promise.resolve();
     switch (message.template) {
       case "cfr_doorhanger":
       case "milestone_message":
@@ -1729,7 +1735,10 @@ export class _ASRouter {
         );
         break;
       case "spotlight":
-        lazy.Spotlight.showSpotlightDialog(
+        // Deliberately the only template that reassigns closedPromise: it's
+        // the only template with a modal, so it's the only one browser.js's
+        // lastWindowClose trigger needs to wait on before closing the window.
+        closedPromise = lazy.Spotlight.showSpotlightDialog(
           browser,
           message,
           this.dispatchCFRAction
@@ -1776,7 +1785,7 @@ export class _ASRouter {
       }
     }
 
-    return { message };
+    return { message, closedPromise };
   }
 
   async addScreenImpression(screen) {
@@ -2547,6 +2556,33 @@ export class _ASRouter {
         ex
       );
     }
+  }
+
+  /**
+   * Synchronous check for whether any currently loaded message could possibly
+   * respond to the given trigger, without evaluating targeting. Intended for
+   * callers that want to avoid a full sendTriggerMessage call when nothing
+   * could show regardless. Besides the trigger match itself, this also rules
+   * out messages we already know can't show because they're blocked or over
+   * their frequency cap, since both of those are cheap, synchronous checks.
+   * Targeting is the only part that requires the async evaluation a full
+   * sendTriggerMessage call goes through.
+   *
+   * A false result means nothing will show. A true result means a message
+   * match is possible, but targeting still has to run to know for sure.
+   *
+   * @param {string} triggerId
+   * @returns {boolean}
+   */
+  hasMessageForTrigger(triggerId) {
+    return this.state.messages.some(
+      m =>
+        lazy.ASRouterTargeting.getMessageTriggers(m).some(
+          t => t.id === triggerId
+        ) &&
+        this.isUnblockedMessage(m) &&
+        this.isBelowFrequencyCaps(m)
+    );
   }
 
   /**

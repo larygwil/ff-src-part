@@ -53,7 +53,7 @@ const DEFAULT_DELETE_TIMEOUT_MS = 5000;
 const LOCAL_CHROME_PREFIX = "chrome://";
 
 // Default indexedDB revision.
-const DEFAULT_MODEL_REVISION = 7;
+const DEFAULT_MODEL_REVISION = 8;
 
 // One-shot engineId renames applied during the 6 -> 7 schema migration. Keys
 // are the obsolete engineIds, values are the replacements. Used to preserve
@@ -61,6 +61,13 @@ const DEFAULT_MODEL_REVISION = 7;
 const RENAMED_ENGINE_IDS = {
   // Bug 1967279: Link Preview engineId rename.
   wllamapreview: "link-preview",
+};
+
+// One-shot taskName renames applied during the 7 -> 8 schema migration. The
+// taskName is part of the tasks store key, so without this rewrite a renamed
+// task would miss the cache and re-download its model files.
+const RENAMED_TASK_NAMES = {
+  "wllama-text-generation": "llama-text-generation",
 };
 
 const DEFAULT_DB_NAME = "modelFiles";
@@ -426,15 +433,16 @@ class IndexedDBCache {
     const newVersion = db.version;
     lazy.console.debug(`Migrating from version ${oldVersion} to ${newVersion}`);
     try {
-      // Version 5 -> 6 only added optional header fields; no rewrite needed.
-      if (oldVersion === 5 && newVersion === 6) {
-        return { destructive: false };
-      }
-
-      // Version 6 -> 7 renames engineIds in place to preserve OPFS files for
-      // users who already downloaded models under a since-renamed engineId.
-      if (oldVersion === 6 && newVersion === 7) {
-        if (db.objectStoreNames.contains(this.enginesStoreName)) {
+      // Schemas from version 5 onwards are migrated in place with the
+      // cumulative steps below. Version 5 -> 6 only added optional header
+      // fields; no rewrite needed.
+      if (oldVersion >= 5 && oldVersion < newVersion) {
+        // Version 6 -> 7 renames engineIds in place to preserve OPFS files for
+        // users who already downloaded models under a since-renamed engineId.
+        if (
+          oldVersion < 7 &&
+          db.objectStoreNames.contains(this.enginesStoreName)
+        ) {
           const store = transaction.objectStore(this.enginesStoreName);
           store.openCursor().onsuccess = event => {
             const cursor = event.target.result;
@@ -459,6 +467,28 @@ class IndexedDBCache {
             cursor.continue();
           };
         }
+
+        // Version 7 -> 8 rewrites renamed taskNames. The taskName is part of
+        // the tasks store key, so the row is re-inserted under its new key.
+        if (
+          oldVersion < 8 &&
+          db.objectStoreNames.contains(this.taskStoreName)
+        ) {
+          const store = transaction.objectStore(this.taskStoreName);
+          store.openCursor().onsuccess = event => {
+            const cursor = event.target.result;
+            if (!cursor) {
+              return;
+            }
+            const row = cursor.value;
+            if (RENAMED_TASK_NAMES[row.taskName]) {
+              store.put({ ...row, taskName: RENAMED_TASK_NAMES[row.taskName] });
+              cursor.delete();
+            }
+            cursor.continue();
+          };
+        }
+
         return { destructive: false };
       }
 

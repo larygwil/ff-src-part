@@ -647,7 +647,6 @@ toolbar[keyNav]:not([collapsed], [customizing]) toolbartabstop,
 #smartwindow-ask-button {
   align-items: center;
   padding-inline-start: var(--smartwindow-ask-btn-inline-start-padding);
-  padding-inline-end: var(--toolbar-padding-inline);
 }
 
 #smartwindow-ask-button-inner {

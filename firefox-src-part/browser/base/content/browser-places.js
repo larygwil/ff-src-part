@@ -858,11 +858,25 @@ var BookmarksEventHandler = {
    */
   onCommand: function BEH_onCommand(aEvent) {
     var target = aEvent.originalTarget;
+    var eventAction = target.dataset.action;
+
     if (target._placesNode) {
       PlacesUIUtils.openNodeWithEvent(target._placesNode, aEvent);
       // Only record interactions through the Bookmarks Toolbar
       if (target.closest("#PersonalToolbar")) {
         Glean.browserEngagement.bookmarksToolbarBookmarkOpened.add(1);
+      }
+    } else if (eventAction) {
+      switch (eventAction) {
+        case "signin":
+          gSync.openFxAEmailFirstPage("bookmarks-top-menu");
+          break;
+        case "turnonsync":
+          gSync.openSyncSetupForEntryPoint("bookmarks-top-menu");
+          break;
+        case "connectdevice":
+          gSync.openConnectAnotherDevice("bookmarks-top-menu");
+          break;
       }
     }
   },
@@ -2029,6 +2043,12 @@ var BookmarkingUI = {
     if (event.target.id != "bookmarksMenuPopup") {
       return;
     }
+
+    var promoState = gSync.getSyncPromoState(["bookmarks"]);
+    var remoteTabsPromo = document.getElementById("bookmarksRemoteTabsPromo");
+
+    remoteTabsPromo.dataset.action = promoState;
+    remoteTabsPromo.hidden = !promoState;
 
     document.getElementById("menu_mobileBookmarks").hidden =
       !SHOW_MOBILE_BOOKMARKS;

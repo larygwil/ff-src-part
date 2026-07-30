@@ -4,7 +4,10 @@
 
 import { CryptoWrapper } from "resource://services-sync/record.sys.mjs";
 
-import { SCORE_INCREMENT_XLARGE } from "resource://services-sync/constants.sys.mjs";
+import {
+  MASTER_PASSWORD_LOCKED,
+  SCORE_INCREMENT_XLARGE,
+} from "resource://services-sync/constants.sys.mjs";
 import { CollectionValidator } from "resource://services-sync/collection_validator.sys.mjs";
 import { BridgedEngine } from "resource://services-sync/bridged_engine.sys.mjs";
 import {
@@ -233,6 +236,22 @@ RustPasswordEngine.prototype = {
 
     this._log.info("Got a bridged engine!");
     this._tracker.modified = true;
+  },
+
+  // A background sync must never trigger an interactive Primary Password prompt
+  // from the Rust logins store. When the Primary Password is locked, record the
+  // master-password-locked login state so the scheduler backs off (matching the
+  // legacy PasswordEngine) and skip this sync without prompting. Syncing resumes
+  // automatically once the Primary Password is unlocked.
+  async _sync() {
+    if (!Services.logins.isLoggedIn) {
+      this._log.info(
+        "Skipping passwords sync because the Primary Password is locked."
+      );
+      this.service.status.login = MASTER_PASSWORD_LOCKED;
+      return;
+    }
+    await super._sync();
   },
 };
 Object.setPrototypeOf(RustPasswordEngine.prototype, BridgedEngine.prototype);

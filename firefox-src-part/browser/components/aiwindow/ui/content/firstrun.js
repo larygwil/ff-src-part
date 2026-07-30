@@ -9,6 +9,7 @@ ChromeUtils.defineESModuleGetters(lazy, {
   AboutWelcomeParent: "resource:///actors/AboutWelcomeParent.sys.mjs",
   AIWindow:
     "moz-src:///browser/components/aiwindow/ui/modules/AIWindow.sys.mjs",
+  NimbusFeatures: "resource://nimbus/ExperimentAPI.sys.mjs",
   Region: "resource://gre/modules/Region.sys.mjs",
 });
 const MODEL_PREF = "browser.smartwindow.firstrun.modelChoice";
@@ -24,6 +25,12 @@ const IS_DEFAULT_WINDOW_PREF = "browser.smartwindow.isDefaultWindow";
 const MEMORIES_CHATS_CHECKBOX_ID = "memories-chats";
 const MEMORIES_BROWSING_CHECKBOX_ID = "memories-browsing";
 const SET_DEFAULT_CHECKBOX_ID = "set-default-window";
+// Screens that must always be shown during first run and cannot be hidden via
+// the hiddenOnboardingScreenIds Nimbus variable.
+const NON_REMOVABLE_SCREEN_IDS = new Set([
+  "AI_WINDOW_CHOOSE_MODEL",
+  "AI_WINDOW_MEMORIES",
+]);
 const { getAllModelsData, getModelDisplayOrder } = ChromeUtils.importESModule(
   "moz-src:///browser/components/aiwindow/models/Utils.sys.mjs"
 );
@@ -177,334 +184,227 @@ function buildModelCards(modelData, promotedChoiceId) {
   });
 }
 
-function createAIWindowConfig(modelData) {
-  const promotedChoiceId = getPromotedChoiceId(modelData);
-  if (promotedChoiceId) {
-    Services.prefs.setStringPref(MODEL_PREF, promotedChoiceId);
-  }
+/**
+ * Reads the comma-separated screen ids that should be hidden during first run
+ * onboarding from the smartWindow Nimbus feature, falling back to the
+ * browser.smartwindow.firstrun.hiddenOnboardingScreenIds pref for dev testing.
+ *
+ * @returns {Set<string>} The set of screen ids to hide.
+ */
+function getHiddenOnboardingScreenIds() {
+  const value =
+    lazy.NimbusFeatures.smartWindow.getVariable("hiddenOnboardingScreenIds") ??
+    "";
+  return new Set(
+    value
+      .split(",")
+      .map(id => id.trim())
+      .filter(Boolean)
+  );
+}
 
-  return {
-    id: "AI_WINDOW_WELCOME",
-    template: "spotlight",
-    transitions: true,
-    modal: "tab",
-    backdrop: "transparent",
-    screens: [
-      {
-        id: "AI_WINDOW_INTRO",
-        auto_advance: {
-          actionEl: "primary_button",
-          actionTimeMS: autoAdvanceMS,
+function getScreens(modelData, promotedChoiceId) {
+  return [
+    {
+      id: "AI_WINDOW_INTRO",
+      auto_advance: {
+        actionEl: "primary_button",
+        actionTimeMS: autoAdvanceMS,
+      },
+      force_hide_steps_indicator: true,
+      content: {
+        fullscreen: true,
+        hide_secondary_section: "responsive",
+        position: "center",
+        paddingBottom: "0px",
+        background: "transparent",
+        screen_style: {
+          overflow: "hidden",
+          width: "100%",
         },
-        force_hide_steps_indicator: true,
-        content: {
-          fullscreen: true,
-          hide_secondary_section: "responsive",
-          position: "center",
-          paddingBottom: "0px",
-          background: "transparent",
-          screen_style: {
-            overflow: "hidden",
-            width: "100%",
-          },
-          title: {
-            fontWeight: 350,
-            fontSize: "39px",
-            letterSpacing: 0,
-            lineHeight: "56px",
-            textAlign: "center",
-            string_id: "aiwindow-firstrun-title",
-          },
-          primary_button: {
-            label: "",
-            action: {
-              navigate: true,
-            },
+        title: {
+          fontWeight: 350,
+          fontSize: "39px",
+          letterSpacing: 0,
+          lineHeight: "56px",
+          textAlign: "center",
+          string_id: "aiwindow-firstrun-title",
+        },
+        primary_button: {
+          label: "",
+          action: {
+            navigate: true,
           },
         },
       },
-      {
-        id: "AI_WINDOW_CHOOSE_MODEL",
-        force_hide_steps_indicator: true,
-        content: {
-          position: "center",
-          background: "transparent",
-          screen_style: {
-            width: "100%",
+    },
+    {
+      id: "AI_WINDOW_CHOOSE_MODEL",
+      force_hide_steps_indicator: true,
+      content: {
+        position: "center",
+        background: "transparent",
+        screen_style: {
+          width: "100%",
+        },
+        title: {
+          string_id: isMistralRelease
+            ? "aiwindow-firstrun-model-title-v2"
+            : "aiwindow-firstrun-model-title",
+          fontSize: "40px",
+          fontWeight: "350",
+          letterSpacing: 0,
+          lineHeight: "normal",
+        },
+        subtitle: {
+          string_id: isMistralRelease
+            ? "aiwindow-firstrun-model-subtitle-v2"
+            : "aiwindow-firstrun-model-subtitle",
+          fontSize: "17px",
+          fontWeight: 320,
+        },
+        tiles: {
+          type: "single-select",
+          selected: promotedChoiceId ? `model_${promotedChoiceId}` : "none",
+          autoTrigger: false,
+          action: {
+            picker: "<event>",
           },
-          title: {
-            string_id: isMistralRelease
-              ? "aiwindow-firstrun-model-title-v2"
-              : "aiwindow-firstrun-model-title",
-            fontSize: "40px",
-            fontWeight: "350",
-            letterSpacing: 0,
-            lineHeight: "normal",
+          data: buildModelCards(modelData, promotedChoiceId),
+        },
+        primary_button: {
+          disabled: "hasActiveSingleSelect",
+          label: {
+            string_id: "aiwindow-firstrun-next-button",
           },
-          subtitle: {
-            string_id: isMistralRelease
-              ? "aiwindow-firstrun-model-subtitle-v2"
-              : "aiwindow-firstrun-model-subtitle",
-            fontSize: "17px",
-            fontWeight: 320,
-          },
-          tiles: {
-            type: "single-select",
-            selected: promotedChoiceId ? `model_${promotedChoiceId}` : "none",
-            autoTrigger: false,
-            action: {
-              picker: "<event>",
-            },
-            data: buildModelCards(modelData, promotedChoiceId),
-          },
-          primary_button: {
-            disabled: "hasActiveSingleSelect",
-            label: {
-              string_id: "aiwindow-firstrun-next-button",
-            },
-            action: {
-              navigate: true,
-            },
+          action: {
+            navigate: true,
           },
         },
       },
-      {
-        id: "AI_WINDOW_MEMORIES",
-        force_hide_steps_indicator: true,
-        content: {
-          position: "center",
-          background: "transparent",
-          screen_style: {
-            width: "100%",
+    },
+    {
+      id: "AI_WINDOW_MEMORIES",
+      force_hide_steps_indicator: true,
+      content: {
+        position: "center",
+        background: "transparent",
+        screen_style: {
+          width: "100%",
+        },
+        title: {
+          fontWeight: 350,
+          string_id: "aiwindow-firstrun-memories-title",
+        },
+        subtitle: {
+          fontWeight: 320,
+          string_id: "aiwindow-firstrun-memories-subtitle",
+          width: "100%",
+        },
+        primary_button: {
+          label: {
+            string_id: "aiwindow-firstrun-back-button",
           },
-          title: {
-            fontWeight: 350,
-            string_id: "aiwindow-firstrun-memories-title",
+          style: "secondary",
+          flow: "row",
+          action: {
+            goBack: true,
+            navigate: true,
           },
-          subtitle: {
-            fontWeight: 320,
-            string_id: "aiwindow-firstrun-memories-subtitle",
-            width: "100%",
+        },
+        additional_button: {
+          label: {
+            string_id: "aiwindow-firstrun-next-button",
           },
-          primary_button: {
-            label: {
-              string_id: "aiwindow-firstrun-back-button",
-            },
-            style: "secondary",
-            flow: "row",
-            action: {
-              goBack: true,
-              navigate: true,
-            },
-          },
-          additional_button: {
-            label: {
-              string_id: "aiwindow-firstrun-next-button",
-            },
-            flow: "row",
-            action: {
-              type: "MULTI_ACTION",
-              collectSelect: true,
-              navigate: true,
-              data: {
-                actions: [],
-              },
+          flow: "row",
+          action: {
+            type: "MULTI_ACTION",
+            collectSelect: true,
+            navigate: true,
+            data: {
+              actions: [],
             },
           },
-          tiles: [
-            {
-              type: "confirmation-checklist",
-              data: {
-                inert: true,
-                items: [
-                  {
-                    icon: {
-                      background:
-                        "center / contain no-repeat url('chrome://browser/content/aiwindow/assets/new-chat.svg')",
-                      height: "20px",
-                      width: "20px",
-                    },
-                    text: {
-                      string_id:
-                        "aiwindow-firstrun-memories-conversation-title",
-                      fontWeight: "600",
-                    },
-                    subtext: {
-                      string_id: "aiwindow-firstrun-memories-conversation-body",
-                    },
-                  },
-                  {
-                    icon: {
-                      background:
-                        "center / contain no-repeat url('chrome://global/skin/icons/settings.svg')",
-                      height: "20px",
-                      width: "20px",
-                    },
-                    text: {
-                      string_id: "aiwindow-firstrun-memories-relevance-title",
-                      fontWeight: "600",
-                    },
-                    subtext: {
-                      string_id: "aiwindow-firstrun-memories-relevance-body",
-                    },
-                  },
-                  {
-                    icon: {
-                      background:
-                        "center / contain no-repeat url('chrome://global/skin/icons/security.svg')",
-                      height: "20px",
-                      width: "20px",
-                    },
-                    text: {
-                      string_id: "aiwindow-firstrun-memories-privacy-title",
-                      fontWeight: "600",
-                    },
-                    subtext: {
-                      string_id: "aiwindow-firstrun-memories-privacy-body",
-                    },
-                  },
-                ],
-              },
-            },
-            {
-              type: "multiselect",
-              label: {
-                string_id: "aiwindow-firstrun-memories-choose-label",
-              },
-              footer: {
-                unCheckAllLabel: {
-                  string_id: "aiwindow-firstrun-memories-no-create",
-                },
-                checkedLabel: {
-                  string_id: "aiwindow-firstrun-memories-update-settings",
-                },
-              },
-              data: [
+        },
+        tiles: [
+          {
+            type: "confirmation-checklist",
+            data: {
+              inert: true,
+              items: [
                 {
-                  id: MEMORIES_CHATS_CHECKBOX_ID,
-                  defaultValue: true,
-                  label: {
-                    string_id: "aiwindow-firstrun-memories-checkbox-chats",
+                  icon: {
+                    background:
+                      "center / contain no-repeat url('chrome://browser/content/aiwindow/assets/new-chat.svg')",
+                    height: "20px",
+                    width: "20px",
                   },
-                  action: {
-                    type: "SET_PREF",
-                    data: {
-                      pref: {
-                        name: MEMORIES_FROM_CONVERSATION_PREF,
-                        value: true,
-                      },
-                    },
+                  text: {
+                    string_id: "aiwindow-firstrun-memories-conversation-title",
+                    fontWeight: "600",
                   },
-                  uncheckedAction: {
-                    type: "SET_PREF",
-                    data: {
-                      pref: {
-                        name: MEMORIES_FROM_CONVERSATION_PREF,
-                        value: false,
-                      },
-                    },
+                  subtext: {
+                    string_id: "aiwindow-firstrun-memories-conversation-body",
                   },
                 },
                 {
-                  id: MEMORIES_BROWSING_CHECKBOX_ID,
-                  defaultValue: true,
-                  label: {
-                    string_id: "aiwindow-firstrun-memories-checkbox-browsing",
+                  icon: {
+                    background:
+                      "center / contain no-repeat url('chrome://global/skin/icons/settings.svg')",
+                    height: "20px",
+                    width: "20px",
                   },
-                  action: {
-                    type: "SET_PREF",
-                    data: {
-                      pref: {
-                        name: MEMORIES_FROM_HISTORY_PREF,
-                        value: true,
-                      },
-                    },
+                  text: {
+                    string_id: "aiwindow-firstrun-memories-relevance-title",
+                    fontWeight: "600",
                   },
-                  uncheckedAction: {
-                    type: "SET_PREF",
-                    data: {
-                      pref: {
-                        name: MEMORIES_FROM_HISTORY_PREF,
-                        value: false,
-                      },
-                    },
+                  subtext: {
+                    string_id: "aiwindow-firstrun-memories-relevance-body",
+                  },
+                },
+                {
+                  icon: {
+                    background:
+                      "center / contain no-repeat url('chrome://global/skin/icons/security.svg')",
+                    height: "20px",
+                    width: "20px",
+                  },
+                  text: {
+                    string_id: "aiwindow-firstrun-memories-privacy-title",
+                    fontWeight: "600",
+                  },
+                  subtext: {
+                    string_id: "aiwindow-firstrun-memories-privacy-body",
                   },
                 },
               ],
             },
-          ],
-        },
-      },
-      {
-        id: "AI_WINDOW_SET_DEFAULT",
-        force_hide_steps_indicator: true,
-        content: {
-          position: "center",
-          background: "transparent",
-          screen_style: {
-            width: "100%",
           },
-          title: {
-            fontWeight: 350,
-            string_id: "aiwindow-firstrun-default-title",
-          },
-          subtitle: {
-            fontWeight: 320,
-            string_id: "aiwindow-firstrun-default-subtitle",
-            width: "100%",
-          },
-          primary_button: {
+          {
+            type: "multiselect",
             label: {
-              string_id: "aiwindow-firstrun-back-button",
+              string_id: "aiwindow-firstrun-memories-choose-label",
             },
-            style: "secondary",
-            flow: "row",
-            action: {
-              goBack: true,
-              navigate: true,
-            },
-          },
-          additional_button: {
-            label: {
-              string_id: "aiwindow-firstrun-button",
-            },
-            flow: "row",
-            action: {
-              type: "MULTI_ACTION",
-              collectSelect: true,
-              navigate: true,
-              data: {
-                actions: [
-                  {
-                    type: "SET_PREF",
-                    data: {
-                      pref: {
-                        name: FIRST_RUN_COMPLETE_PREF,
-                        value: true,
-                      },
-                    },
-                  },
-                ],
+            footer: {
+              unCheckAllLabel: {
+                string_id: "aiwindow-firstrun-memories-no-create",
+              },
+              checkedLabel: {
+                string_id: "aiwindow-firstrun-memories-update-settings",
               },
             },
-          },
-          tiles: {
-            type: "multiselect",
             data: [
               {
-                id: SET_DEFAULT_CHECKBOX_ID,
+                id: MEMORIES_CHATS_CHECKBOX_ID,
                 defaultValue: true,
                 label: {
-                  string_id: "aiwindow-firstrun-default-checkbox-label",
-                },
-                description: {
-                  string_id: "aiwindow-firstrun-default-checkbox-description",
+                  string_id: "aiwindow-firstrun-memories-checkbox-chats",
                 },
                 action: {
                   type: "SET_PREF",
                   data: {
                     pref: {
-                      name: IS_DEFAULT_WINDOW_PREF,
+                      name: MEMORIES_FROM_CONVERSATION_PREF,
                       value: true,
                     },
                   },
@@ -513,7 +413,32 @@ function createAIWindowConfig(modelData) {
                   type: "SET_PREF",
                   data: {
                     pref: {
-                      name: IS_DEFAULT_WINDOW_PREF,
+                      name: MEMORIES_FROM_CONVERSATION_PREF,
+                      value: false,
+                    },
+                  },
+                },
+              },
+              {
+                id: MEMORIES_BROWSING_CHECKBOX_ID,
+                defaultValue: true,
+                label: {
+                  string_id: "aiwindow-firstrun-memories-checkbox-browsing",
+                },
+                action: {
+                  type: "SET_PREF",
+                  data: {
+                    pref: {
+                      name: MEMORIES_FROM_HISTORY_PREF,
+                      value: true,
+                    },
+                  },
+                },
+                uncheckedAction: {
+                  type: "SET_PREF",
+                  data: {
+                    pref: {
+                      name: MEMORIES_FROM_HISTORY_PREF,
                       value: false,
                     },
                   },
@@ -521,9 +446,161 @@ function createAIWindowConfig(modelData) {
               },
             ],
           },
+        ],
+      },
+    },
+    {
+      id: "AI_WINDOW_SET_DEFAULT",
+      force_hide_steps_indicator: true,
+      content: {
+        position: "center",
+        background: "transparent",
+        screen_style: {
+          width: "100%",
+        },
+        title: {
+          fontWeight: 350,
+          string_id: "aiwindow-firstrun-default-title",
+        },
+        subtitle: {
+          fontWeight: 320,
+          string_id: "aiwindow-firstrun-default-subtitle",
+          width: "100%",
+        },
+        primary_button: {
+          label: {
+            string_id: "aiwindow-firstrun-back-button",
+          },
+          style: "secondary",
+          flow: "row",
+          action: {
+            goBack: true,
+            navigate: true,
+          },
+        },
+        additional_button: {
+          label: {
+            string_id: "aiwindow-firstrun-button",
+          },
+          flow: "row",
+          action: {
+            type: "MULTI_ACTION",
+            collectSelect: true,
+            navigate: true,
+            data: {
+              actions: [
+                {
+                  type: "SET_PREF",
+                  data: {
+                    pref: {
+                      name: FIRST_RUN_COMPLETE_PREF,
+                      value: true,
+                    },
+                  },
+                },
+              ],
+            },
+          },
+        },
+        tiles: {
+          type: "multiselect",
+          data: [
+            {
+              id: SET_DEFAULT_CHECKBOX_ID,
+              defaultValue: true,
+              label: {
+                string_id: "aiwindow-firstrun-default-checkbox-label",
+              },
+              description: {
+                string_id: "aiwindow-firstrun-default-checkbox-description",
+              },
+              action: {
+                type: "SET_PREF",
+                data: {
+                  pref: {
+                    name: IS_DEFAULT_WINDOW_PREF,
+                    value: true,
+                  },
+                },
+              },
+              uncheckedAction: {
+                type: "SET_PREF",
+                data: {
+                  pref: {
+                    name: IS_DEFAULT_WINDOW_PREF,
+                    value: false,
+                  },
+                },
+              },
+            },
+          ],
         },
       },
-    ],
+    },
+  ];
+}
+
+/**
+ * Removes the hidden screens from the onboarding flow. When the original final
+ * screen is hidden, the new last screen's advance button becomes the Onboarding
+ * Complete CTA, so it is relabeled to the finish label and given the action that marks
+ * first run complete.
+ *
+ * @param {object[]} allScreens The full ordered list of onboarding screens.
+ * @param {Set<string>} hiddenScreenIds The screen ids that should be hidden.
+ * @returns {object[]} The screens that remain visible.
+ */
+function filterOnboardingScreens(allScreens, hiddenScreenIds) {
+  const screens = allScreens.filter(
+    screen =>
+      NON_REMOVABLE_SCREEN_IDS.has(screen.id) || !hiddenScreenIds.has(screen.id)
+  );
+
+  const lastVisible = screens.at(-1);
+  if (
+    lastVisible &&
+    lastVisible !== allScreens.at(-1) &&
+    lastVisible.content.additional_button
+  ) {
+    const button = lastVisible.content.additional_button;
+    button.label = { string_id: "aiwindow-firstrun-button" };
+
+    const actions = button.action?.data?.actions;
+    if (
+      Array.isArray(actions) &&
+      !actions.some(
+        action => action.data?.pref?.name === FIRST_RUN_COMPLETE_PREF
+      )
+    ) {
+      actions.push({
+        type: "SET_PREF",
+        data: { pref: { name: FIRST_RUN_COMPLETE_PREF, value: true } },
+      });
+    }
+  }
+
+  return screens;
+}
+
+function createAIWindowConfig(modelData) {
+  const promotedChoiceId = getPromotedChoiceId(modelData);
+  if (promotedChoiceId) {
+    Services.prefs.setStringPref(MODEL_PREF, promotedChoiceId);
+  }
+
+  const allScreens = getScreens(modelData, promotedChoiceId);
+  const hiddenScreenIds = getHiddenOnboardingScreenIds();
+  const screens = hiddenScreenIds.size
+    ? filterOnboardingScreens(allScreens, hiddenScreenIds)
+    : allScreens;
+
+  return {
+    id: "AI_WINDOW_WELCOME",
+    template: "spotlight",
+    transitions: true,
+    modal: "tab",
+    backdrop: "transparent",
+    screens,
   };
 }
 
