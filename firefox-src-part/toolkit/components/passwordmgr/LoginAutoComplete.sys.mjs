@@ -158,6 +158,7 @@ class LoginAutocompleteItem extends AutocompleteItem {
           : login.displayOrigin,
       secondaryAction: {
         type: "edit",
+        label: getLocalizedString("autocompleteEditLogin"),
         fillMessageName: "PasswordManager:OpenPreferences",
         fillMessageData: { loginGuid: login.guid, entryPoint: "Autocomplete" },
       },

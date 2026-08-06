@@ -5968,8 +5968,9 @@
 
       // Mute audio immediately to improve perceived speed of tab closure.
       if (!adoptedByTab && aTab.hasAttribute("soundplaying")) {
-        // Mute without persisting: a restored tab gets a fresh MediaController
-        // with mIsMuted=false, so undo-close-tab returns it to unmuted.
+        // Deliberately leave tab.muted alone: that attribute is what records a
+        // real mute and what session restore persists, so undo-close-tab
+        // returns the tab to unmuted.
         aTab.linkedBrowser.browsingContext?.mediaController?.mute();
       }
 

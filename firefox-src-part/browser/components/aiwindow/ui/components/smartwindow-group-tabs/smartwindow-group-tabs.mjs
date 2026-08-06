@@ -13,18 +13,21 @@ function colorVar(colorName) {
 
 /**
  * Card shown in the "Group my tabs" panel: the suggested groups the user can
- * create.
+ * create and, once some are created, a list of recent groups they can undo.
+ *
  */
 export class SmartwindowGroupTabsCard extends MozLitElement {
   static properties = {
     computing: { type: Boolean },
     suggestions: { attribute: false },
+    recent: { attribute: false },
   };
 
   constructor() {
     super();
     this.computing = false;
     this.suggestions = [];
+    this.recent = [];
   }
 
   createRenderRoot() {
@@ -79,12 +82,24 @@ export class SmartwindowGroupTabsCard extends MozLitElement {
     </button>`;
   }
 
+  #recentRow(entry) {
+    return html`<div class="swgt-recent-row">
+      <span
+        class="swgt-dot"
+        aria-hidden="true"
+        style="background:${colorVar(entry.color)}"
+      ></span>
+      <span class="swgt-row-label">${entry.label}</span>
+    </div>`;
+  }
+
   render() {
     const hasSuggestions = !this.computing && !!this.suggestions.length;
+    const hasRecent = !this.computing && !!this.recent.length;
     let message = null;
     if (this.computing) {
       message = "smartwindow-group-tabs-loading";
-    } else if (!hasSuggestions) {
+    } else if (!hasSuggestions && !hasRecent) {
       message = "smartwindow-group-tabs-empty";
     }
 
@@ -109,6 +124,24 @@ export class SmartwindowGroupTabsCard extends MozLitElement {
               data-l10n-id="smartwindow-group-tabs-suggested-heading"
             ></div>
             ${this.suggestions.map(s => this.#suggestionRow(s))}`
+        : nothing,
+      hasRecent
+        ? html`<div
+              class="swgt-section"
+              data-l10n-id="smartwindow-group-tabs-just-created-heading"
+            ></div>
+            ${this.recent.map(entry => this.#recentRow(entry))}
+            <button
+              type="button"
+              class="swgt-row swgt-ungroup"
+              @click=${() => this.#emit("ungroup")}
+            >
+              <span class="swgt-ungroup-icon" aria-hidden="true"></span>
+              <span
+                class="swgt-row-label"
+                data-l10n-id="smartwindow-group-tabs-ungroup"
+              ></span>
+            </button>`
         : nothing,
     ];
   }

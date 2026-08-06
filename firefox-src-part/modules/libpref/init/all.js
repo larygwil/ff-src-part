@@ -3670,6 +3670,8 @@ pref("browser.ml.minimumPhysicalMemory", 3);
 pref("browser.ml.checkForMemory", true);
 // Allowed overrides for various ml features
 pref("browser.ml.overridePipelineOptions", "{}");
+// How long the PageExtractor waits for a headless page load, in ms.
+pref("browser.ml.pageExtractor.headlessTimeoutMs", 15000);
 
 // When a user cancels this number of authentication dialogs coming from
 // a single web page in a row, all following authentication dialogs will

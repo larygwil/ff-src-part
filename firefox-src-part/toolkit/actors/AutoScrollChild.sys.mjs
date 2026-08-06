@@ -227,7 +227,6 @@ export class AutoScrollChild extends JSWindowActorChild {
         screenYDevPx: event.screenY * content.devicePixelRatio,
         scrollId: this._scrollId,
         presShellId,
-        browsingContext: this.browsingContext,
       }
     );
     if (!autoscrollEnabled) {

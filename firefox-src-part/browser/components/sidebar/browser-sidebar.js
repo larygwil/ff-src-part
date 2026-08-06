@@ -1042,7 +1042,10 @@ var SidebarController = {
       // Ensure CPM isn't shown.
       const cpmMenuItem = document.querySelector("#sidebar-switcher-megalist");
       this.lastOpenedId = this.DEFAULT_SIDEBAR_ID;
-      cpmMenuItem.hidden = true;
+      // The menu item can get removed or may not be created yet
+      if (cpmMenuItem) {
+        cpmMenuItem.hidden = true;
+      }
     }
     if (!this._sidebars.get(this.lastOpenedId)) {
       this.lastOpenedId = this.DEFAULT_SIDEBAR_ID;
@@ -1311,7 +1314,10 @@ var SidebarController = {
     if (!this.sidebarRevampEnabled) {
       const cpmMenuItem = document.querySelector("#sidebar-switcher-megalist");
       this.lastOpenedId = this.DEFAULT_SIDEBAR_ID;
-      cpmMenuItem.hidden = true;
+      // The menu item can get removed or may not be created yet
+      if (cpmMenuItem) {
+        cpmMenuItem.hidden = true;
+      }
     }
 
     return this.show(commandID, triggerNode);

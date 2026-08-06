@@ -1710,10 +1710,22 @@
   <string name="tab_group_three_dot_button_content_description">Altre opzioni</string>
   <!-- Text shown on the edit button for a tab group on the three dot menu -->
   <string name="tab_group_three_dot_menu_edit">Modifica</string>
+  <!-- Text shown on the ungroup button for a tab group on the three dot menu -->
+  <string name="tab_group_three_dot_menu_ungroup">Separa</string>
   <!-- Text shown on the delete button for a tab group on the three dot menu -->
   <string name="tab_group_three_dot_menu_delete">Elimina</string>
   <!-- Text shown on the close button for a tab group on the three dot menu -->
   <string name="tab_group_three_dot_menu_close">Chiudi</string>
+  <!-- Title for the Ungroup tab group confirmation dialog. -->
+  <string name="ungroup_tab_group_confirmation_dialog_title">Separare il gruppo di schede?</string>
+  <!-- Text shown in the body of the Ungroup tab group confirmation dialog. -->
+  <string name="ungroup_tab_group_confirmation_dialog_body">Le schede rimarranno aperte su questo dispositivo, ma il gruppo verrà eliminato.</string>
+  <!-- Text shown on the Don't Ask Again checkbox button in the Ungroup tab group confirmation dialog. -->
+  <string name="ungroup_tab_group_confirmation_dialog_dont_ask_again">Non chiedere di nuovo</string>
+  <!-- Text shown on the confirm button in the Ungroup tab group confirmation dialog. -->
+  <string name="ungroup_tab_group_confirmation_dialog_confirm">Separa</string>
+  <!-- Text shown on the cancel button in the Ungroup tab group confirmation dialog. -->
+  <string name="ungroup_tab_group_confirmation_dialog_cancel">Annulla</string>
   <!--
     Color labels for tab groups, used for accessibility and selection UI.
 
@@ -2415,6 +2427,10 @@
   <string name="sync_sign_in">Accedi per sincronizzare</string>
   <!-- An option from the share dialog to send link to all other sync devices -->
   <string name="sync_send_to_all">Invia a tutti i dispositivi</string>
+  <!-- Text displayed when no other sync devices are available for link sharing -->
+  <string name="sync_no_devices_available">Nessun dispositivo disponibile</string>
+  <!-- Text displayed when no other sync devices are available for link sharing. -->
+  <string name="sync_no_devices_available_description">Qui verranno mostrati tutti i dispositivi collegati e sincronizzati con questo account.</string>
   <!-- An option from the share dialog to reconnect to sync -->
   <string name="sync_reconnect">Riconnetti a Sync</string>
   <!-- Text displayed when sync is offline and cannot be accessed -->
@@ -2438,7 +2454,7 @@
   <!-- A message template for the shared link with a footer. %1$s is the shared link, %2$s is the app name (e.g. Firefox) and %3$s is a download link for the app. -->
   <string name="sent_from_firefox_template" tools:ignore="UnusedResources">%1$s \n\nInviato da %2$s 🦊 Prova il browser per dispositivi mobili: %3$s</string>
   <!-- A short message template for the shared link with a footer. %1$s is the shared link, %2$s is the app name (e.g. Firefox) and %3$s is a download link for the app. -->
-  <string name="sent_from_firefox_template_short" tools:ignore="UnusedResources">%1$s Inviato da %2$s 🦊 %3$s</string>
+  <string name="sent_from_firefox_template_short" tools:ignore="UnusedResources">%1$s\n\nInviato da %2$s 🦊 %3$s</string>
   <!--
     Notifications
 
@@ -3165,6 +3181,14 @@
   <!-- Snackbar (in-app pop-up notification) text shown when the previously selected browser VPN location is unavailable and the recommended location was used instead. -->
   <string name="ip_protection_location_unavailable_recommended_snackbar" tools:ignore="UnusedResources">La posizione VPN scelta non è disponibile. Connessione effettuata alla posizione consigliata.</string>
   <!-- Title for the card shown to the user when we are unable to fetch server locations -->
+  <string name="ip_protection_locations_unavailable_title">Posizioni non disponibili</string>
+  <!-- Description for the card shown to the user when we are unable to fetch server locations -->
+  <string name="ip_protection_locations_unavailable_description">Passata alla posizione consigliata.</string>
+  <!-- Title for the browser VPN location selection screen (displayed in the app bar) -->
+  <string name="ip_protection_locations_title">Scegli posizione VPN</string>
+  <!-- Content description for the browser VPN location selection screen top bar back button -->
+  <string name="ip_protection_locations_navigate_back_button_content_description">Torna indietro</string>
+  <!-- Title for the card shown to the user when we are unable to fetch server locations -->
   <string name="ip_protection_location_unavailable_title" tools:ignore="UnusedResources">La posizione precedente non è disponibile</string>
   <!-- Description for the card shown to the user when we are unable to fetch server locations -->
   <string name="ip_protection_location_unavailable_recommended_description" tools:ignore="UnusedResources">Connesso alla posizione consigliata.</string>
@@ -3315,7 +3339,7 @@
   <!-- Label for an address field (e.g. mailing address) used as part of the form autofill feature. the Eircode field, specific to Ireland is a unique postal code system that helps in precise location identification. -->
   <string name="addresses_eircode" tools:ignore="UnusedResources">Eircode</string>
   <!-- Label for an address field (e.g. mailing address) used as part of the form autofill feature. Used in cases we want to only display the word "Country" over "Country or Region". -->
-  <string name="addresses_country_only" tools:ignore="UnusedResources">Nazione</string>
+  <string name="addresses_country_only" tools:ignore="UnusedResources">Paese</string>
   <!-- The text for the "Save" button for saving an address -->
   <string name="addresses_save_button">Salva</string>
   <!-- The text for the "Cancel" button for cancelling adding, updating or deleting an address -->
@@ -3622,7 +3646,7 @@
   <!-- Label for the dropdown to select which language to translate from on the translations dialog when the page language is not supported. This selection is to allow the user to select another language, in case we automatically detected the page language incorrectly. -->
   <string name="translations_bottom_sheet_translate_from_unsupported_language">Prova un’altra lingua di origine</string>
   <!-- Button text on the translations dialog to dismiss the dialog and return to the browser. -->
-  <string name="translations_bottom_sheet_negative_button">Non ora</string>
+  <string name="translations_bottom_sheet_negative_button">Non adesso</string>
   <!-- Button text on the translations dialog to restore the translated website back to the original untranslated version. -->
   <string name="translations_bottom_sheet_negative_button_restore">Mostra originale</string>
   <!-- Accessibility announcement (not visible, for screen readers etc.) for the translations dialog after restore button was pressed that indicates the original untranslated page was loaded. -->

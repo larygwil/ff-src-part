@@ -4,6 +4,11 @@
 
 /* globals AdjustableTitle */
 
+const { ContainerEditor } = ChromeUtils.importESModule(
+  "chrome://browser/content/usercontext/ContainerEditor.mjs",
+  { global: "current" }
+);
+
 function setTitle() {
   let params = window.arguments[0] || {};
   let winElem = document.documentElement;
@@ -17,32 +22,22 @@ function setTitle() {
 }
 setTitle();
 
-let loadedResolvers = Promise.withResolvers();
-document.mozSubdialogReady = loadedResolvers.promise;
+window.addEventListener("DOMContentLoaded", () => {
+  AdjustableTitle.hide();
 
-window.addEventListener("DOMContentLoaded", async () => {
-  try {
-    AdjustableTitle.hide();
+  let editor = new ContainerEditor(
+    document.getElementById("containerEditorHost"),
+    window.arguments[0] || {}
+  );
+  editor.render();
 
-    let { ContainerEditor } =
-      await import("chrome://browser/content/usercontext/ContainerEditor.mjs");
+  let dialog = document.querySelector("dialog");
+  let acceptButton = dialog.getButton("accept");
+  let updateValidity = () => {
+    acceptButton.disabled = !editor.isValid;
+  };
+  editor.form.addEventListener("input", updateValidity);
+  updateValidity();
 
-    let editor = new ContainerEditor(
-      document.getElementById("containerEditorHost"),
-      window.arguments[0] || {}
-    );
-    editor.render();
-
-    let dialog = document.querySelector("dialog");
-    let acceptButton = dialog.getButton("accept");
-    let updateValidity = () => {
-      acceptButton.disabled = !editor.isValid;
-    };
-    editor.form.addEventListener("input", updateValidity);
-    updateValidity();
-
-    document.addEventListener("dialogaccept", () => editor.commit());
-  } finally {
-    loadedResolvers.resolve();
-  }
+  document.addEventListener("dialogaccept", () => editor.commit());
 });

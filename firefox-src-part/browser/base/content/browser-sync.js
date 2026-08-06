@@ -499,10 +499,8 @@ this.FxAMenuDeviceList = class FxAMenuDeviceList {
       SyncedTabs.syncTabs().catch(ex => {
         console.error(ex);
       });
-      this._updateDeviceList();
-    } else {
-      this.devicesList.hidden = true;
     }
+    this._updateDeviceList();
   }
 
   _updateDeviceList() {
@@ -519,7 +517,7 @@ this.FxAMenuDeviceList = class FxAMenuDeviceList {
 
     let clients;
     try {
-      clients = await SyncedTabs.getTabClients();
+      clients = await this._getMergedDeviceList();
     } catch (err) {
       console.error(err);
       return;
@@ -577,13 +575,74 @@ this.FxAMenuDeviceList = class FxAMenuDeviceList {
   }
 
   _getDeviceForClient(client) {
-    return (
-      fxAccounts.device.recentDeviceList &&
-      fxAccounts.device.recentDeviceList.find(
-        d =>
-          d.id === Weave.Service.clientsEngine.getClientFxaDeviceId(client.id)
-      )
-    );
+    let devices = fxAccounts.device.recentDeviceList;
+    if (!devices) {
+      return undefined;
+    }
+    // Real Sync clients are keyed by a Sync client id that maps to an FxA
+    // device id; the synthesized stand-ins built by _getMergedDeviceList are
+    // already keyed by the FxA device id, in which case getClientFxaDeviceId
+    // returns nothing and we fall back to the client id itself.
+    let fxaDeviceId =
+      Weave.Service.clientsEngine.getClientFxaDeviceId(client.id) || client.id;
+    return devices.find(d => d.id === fxaDeviceId);
+  }
+
+  /**
+   * Builds the list of devices to display. It is based on the full FxA account
+   * device list (`fxAccounts.device.recentDeviceList`). A device is shown when
+   * it either has a Sync tab-client record (so it can show recent tabs) or is
+   * compatible with Send Tab (so the user can still send a tab to it); devices
+   * with neither are omitted, as there is nothing to show or do for them.
+   * Devices that have a Sync tab-client record reuse it (and therefore keep
+   * their recent tabs); Send Tab-only devices get a lightweight stand-in with
+   * an empty tab list. Any Sync client that doesn't map to a current account
+   * device is still appended so the list never shows fewer devices than the
+   * tabs engine knows about (e.g. when the cached device list is stale or not
+   * yet fetched).
+   */
+  async _getMergedDeviceList() {
+    let clients = await SyncedTabs.getTabClients();
+    let devices = fxAccounts.device.recentDeviceList;
+    if (!devices) {
+      return clients;
+    }
+
+    let clientByFxaId = new Map();
+    for (let client of clients) {
+      let fxaDeviceId = Weave.Service.clientsEngine.getClientFxaDeviceId(
+        client.id
+      );
+      if (fxaDeviceId) {
+        clientByFxaId.set(fxaDeviceId, client);
+      }
+    }
+
+    let merged = [];
+    let matchedClients = new Set();
+    for (let device of devices) {
+      if (device.isCurrentDevice) {
+        continue;
+      }
+      let client = clientByFxaId.get(device.id);
+      if (client) {
+        matchedClients.add(client);
+        merged.push(client);
+      } else if (fxAccounts.commands.sendTab.isDeviceCompatible(device)) {
+        merged.push({
+          id: device.id,
+          name: device.name,
+          lastModified: device.lastAccessTime,
+          tabs: [],
+        });
+      }
+    }
+    for (let client of clients) {
+      if (!matchedClients.has(client)) {
+        merged.push(client);
+      }
+    }
+    return merged;
   }
 
   _createAllDevicesButton(clients) {
@@ -642,7 +701,17 @@ this.FxAMenuDeviceList = class FxAMenuDeviceList {
       })
     );
     btn.addEventListener("click", e => {
-      this._showDeviceRecentTabs(client, device, btn, e);
+      // Re-resolve the device at click time: the FxA device list is refreshed
+      // asynchronously, so it may not have been populated yet when this entry
+      // was created (e.g. on the first menu open after signing in). Resolving
+      // it now ensures the "Send Current Page to This Device" button is shown
+      // when the device is sendTab-capable, instead of only on a later open.
+      this._showDeviceRecentTabs(
+        client,
+        this._getDeviceForClient(client) ?? device,
+        btn,
+        e
+      );
     });
     return btn;
   }
@@ -769,16 +838,20 @@ this.FxAMenuDeviceList = class FxAMenuDeviceList {
       "#PanelUI-fxa-device-view-all-tabs"
     );
 
-    tabsList.hidden = !hasTabs;
-    noTabsLabel.hidden = hasTabs;
-    footerSeparator.hidden = !hasTabs;
-    viewAllBtn.hidden = !hasTabs;
-    this._configureViewAllTabsButton(viewAllBtn, client);
-
     let sendPageBtn = panelNode.querySelector(
       "#PanelUI-fxa-device-send-current-page"
     );
     let canSendTab = this._canSendTabToDevice(device);
+
+    tabsList.hidden = !hasTabs;
+    noTabsLabel.hidden = hasTabs;
+    viewAllBtn.hidden = !hasTabs;
+    this._configureViewAllTabsButton(viewAllBtn, client);
+    // The separator sits above the footer buttons, so keep it whenever the
+    // footer has a button below it - either the "view all" button (when there
+    // are tabs) or the "send current page" button (when we can send a tab).
+    footerSeparator.hidden = !hasTabs && !canSendTab;
+
     sendPageBtn.hidden = !canSendTab;
     if (canSendTab) {
       this._configureSendPageButton(sendPageBtn, device, anchor);

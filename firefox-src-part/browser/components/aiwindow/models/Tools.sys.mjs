@@ -907,6 +907,10 @@ export class GetPageContent {
           if (signal?.aborted) {
             return `Content from ${url_list[index]}:\n\n(Page read canceled after a timeout — answer using the results you have.)`;
           }
+          if (error?.name === "TimeoutError") {
+            lazy.console.log("[Tool] getPageContent timed out", error);
+            return `The page at ${url_list[index]} did not finish loading in time, so its content is unavailable. Do not retry it.`;
+          }
           console.error(error);
           return `Could not retrieve the content for the page: ${url_list[index]}`;
         }

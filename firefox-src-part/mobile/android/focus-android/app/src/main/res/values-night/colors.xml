@@ -2,7 +2,7 @@
 <!-- This Source Code Form is subject to the terms of the Mozilla Public
    - License, v. 2.0. If a copy of the MPL was not distributed with this
    - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <color name="colorPrimary">@color/photonInk60</color>
     <color name="colorSecondary">@color/photonInk05</color>
     <color name="primaryText">@color/photonLightGrey05</color>
@@ -90,8 +90,11 @@
     <!--Modals colors -->
     <color name="modal_background">@color/colorSecondary</color>
 
-    <!-- Override AC colors -->
+    <!-- Override AC colors. Those only referenced from android-components are marked so that the
+         UnusedResources check, which cannot see those references, does not report them as unused. -->
     <color name="mozac_ui_icons_fill">@color/primaryText</color>
+    <color name="mozac_additional_note_background" tools:ignore="UnusedResources">@color/colorPrimary</color>
+    <color name="mozac_additional_note_text_color" tools:ignore="UnusedResources">@color/secondaryText</color>
 
     <!-- Biometric screen colors -->
     <color name="biometric_show_button_background">#7542E5</color>

@@ -60,3 +60,10 @@
     visibility: visible;
   }
 }
+
+:host([subfocused]) .secondary-action {
+  visibility: visible;
+  outline: var(--focus-outline);
+  outline-offset: var(--focus-outline-offset);
+  border-radius: var(--button-border-radius);
+}

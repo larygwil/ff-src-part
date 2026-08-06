@@ -1101,18 +1101,22 @@ export class FeatureCallout {
       }
     }
 
+    const flip = ["none", "both", "slide"].includes(panel_position?.flip)
+      ? panel_position?.flip
+      : "slide";
+
     if (!this._container?.parentElement) {
       if (needsPanel) {
         let fragment = this.win.MozXULElement.parseXULToFragment(`<panel
             class="panel-no-padding"
             orient="vertical"
             noautofocus="true"
-            flip='${panel_position.flip ?? "slide"}'
+            flip='${flip}'
             type="arrow"
             consumeoutsideclicks="never"
             norolluponanchor="true"
             nonnative=""
-            position="${panel_position.panel_position_string}"
+            position="${panel_position?.panel_position_string}"
             ${hide_arrow ? "" : 'show-arrow=""'}
             ${autohide ? "" : 'noautohide="true"'}
             ${ignorekeys ? 'ignorekeys="true"' : ""}

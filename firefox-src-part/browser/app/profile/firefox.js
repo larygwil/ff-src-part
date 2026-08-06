@@ -2335,6 +2335,8 @@ pref("browser.smartwindow.autoTabGrouping.enabled", false);
 pref("browser.smartwindow.autoTabGrouping.maxGroups", 3);
 pref("browser.smartwindow.autoTabGrouping.minTabsPerGroup", 2);
 pref("browser.smartwindow.autoTabGrouping.minCandidateTabs", 4);
+pref("browser.smartwindow.autoTabGrouping.minCohesion", "0.1");
+pref("browser.smartwindow.autoTabGrouping.timeoutMs", 8000);
 pref("browser.smartwindow.autoTabGrouping.loglevel", "Warn");
 
 // Smart Window: Merino World Cup Soccer tool call (bug 2038266)
@@ -2767,6 +2769,11 @@ pref("browser.tabs.fadeOutUnloadedTabs", false);
 // Whether tabs can be "split" or displayed side by side at once.
 pref("browser.tabs.splitView.enabled", true);
 pref("browser.tabs.splitview.hasUsed", false);
+// Delay in milliseconds before the splitViewUsed ASRouter trigger fires after entering split view.
+pref("browser.tabs.splitview.trigger.delay_ms", 15000);
+// Number of distinct Split Views created, observed by the splitViewUsed
+// ASRouter trigger.
+pref("browser.tabs.splitview.trigger.createCount", 0);
 
 // Whether SVG favicons should be safely re-encoded using the moz-remote-image:// protocol.
 pref("browser.tabs.remoteSVGIconDecoding", true);

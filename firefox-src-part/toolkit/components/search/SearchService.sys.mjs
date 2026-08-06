@@ -1654,6 +1654,7 @@ export const SearchService = new (class SearchService {
     Glean.searchService.startupTime.stopAndAccumulate(timerId);
 
     this.#recordDefaultEngineTelemetryData();
+    this.#setPreviousUpdateTelemetry();
 
     Services.obs.notifyObservers(
       null,
@@ -3597,6 +3598,25 @@ export const SearchService = new (class SearchService {
   #previousEngineChangedEvent = { private: null, normal: null };
 
   /**
+   * Intended to be called after init is complete, to save a copy of the current
+   * default search engine data, for comparison when an ENGINE_UPDATE is next
+   * received.
+   */
+  #setPreviousUpdateTelemetry() {
+    this.#previousEngineChangedEvent.normal = this.#getUpdateTelemetryExtraArgs(
+      null,
+      this.defaultEngine,
+      null
+    );
+    // If the private mode default search engine is not enabled, then this will
+    // get the details of the normal engine. That is not an issue, as when the
+    // private mode is turned on, a CHANGE_REASON.USER reason will be sent out
+    // that will update this ahead of any ENGINE_UPDATE reasons.
+    this.#previousEngineChangedEvent.private =
+      this.#getUpdateTelemetryExtraArgs(null, this.defaultPrivateEngine, null);
+  }
+
+  /**
    * Determines if the current event record has the same details as the previous
    * one or not. This only matches against the `new_` fields because the
    * `previous_engine_id` may indeed have changed from an earlier event.
@@ -3614,20 +3634,18 @@ export const SearchService = new (class SearchService {
   }
 
   /**
-   * Records the telemetry event when the default engine has changed, and
-   * also updates the related non-event probes.
+   * Gets the relevant details for the Glean event probe for when the
+   * default engine is changed.
    *
-   * @param {boolean} isPrivate
-   *   True if this is a event about a private engine.
    * @param {SearchEngine} [previousEngine]
    *   The previously default search engine.
    * @param {SearchEngine} [newEngine]
    *   The new default search engine.
-   * @param {Values<typeof this.CHANGE_REASON>} changeReason
-   *   The reason for the default search engine change
+   * @param {Values<typeof this.CHANGE_REASON>} [changeReason]
+   *   The reason for the default search engine change.
+   * @returns {Parameters<typeof Glean.searchEngineDefault.changed.record>[0]}
    */
-  #updateTelemetryDueToDefaultEngineChange(
-    isPrivate,
+  #getUpdateTelemetryExtraArgs(
     previousEngine,
     newEngine,
     changeReason = this.CHANGE_REASON.UNKNOWN
@@ -3640,8 +3658,7 @@ export const SearchService = new (class SearchService {
     }
 
     let submissionURL = engineInfo?.submissionURL ?? "";
-    /** @type {Parameters<typeof Glean.searchEngineDefault.changed.record>[0]} */
-    let extraArgs = {
+    return {
       // In docshell tests, the previous engine does not exist, so we allow
       // for the previousEngine to be undefined.
       previous_engine_id: previousEngine?.telemetryId ?? "",
@@ -3652,6 +3669,32 @@ export const SearchService = new (class SearchService {
       new_submission_url: submissionURL.slice(0, 100),
       change_reason: changeReason,
     };
+  }
+
+  /**
+   * Records the telemetry event when the default engine has changed, and
+   * also updates the related non-event probes.
+   *
+   * @param {boolean} isPrivate
+   *   True if this is an event about a private engine.
+   * @param {SearchEngine} [previousEngine]
+   *   The previously default search engine.
+   * @param {SearchEngine} [newEngine]
+   *   The new default search engine.
+   * @param {Values<typeof this.CHANGE_REASON>} [changeReason]
+   *   The reason for the default search engine change.
+   */
+  #updateTelemetryDueToDefaultEngineChange(
+    isPrivate,
+    previousEngine,
+    newEngine,
+    changeReason = this.CHANGE_REASON.UNKNOWN
+  ) {
+    let extraArgs = this.#getUpdateTelemetryExtraArgs(
+      previousEngine,
+      newEngine,
+      changeReason
+    );
 
     let previousEventType = isPrivate ? "private" : "normal";
     let previousEvent = this.#previousEngineChangedEvent[previousEventType];
@@ -3669,7 +3712,6 @@ export const SearchService = new (class SearchService {
         Glean.searchEngineDefault.changed.record(extraArgs);
       }
     }
-
     this.#previousEngineChangedEvent[previousEventType] = extraArgs;
 
     this.#recordDefaultEngineTelemetryData();

@@ -41,6 +41,7 @@
       this.mPopupOpen = false;
       this._currentIndex = 0;
       this._disabledItemClicked = false;
+      this._secondaryActionFocused = false;
 
       this.setListeners();
     }
@@ -196,6 +197,16 @@
         selectedItem.selected = true;
       }
 
+      if (changed) {
+        this._secondaryActionFocused = false;
+        if (prevSelectedItem) {
+          prevSelectedItem.subfocused = false;
+        }
+        if (selectedItem) {
+          selectedItem.subfocused = false;
+        }
+      }
+
       if (changed && (selectedItem || prevSelectedItem)) {
         lazy.AutoCompleteParent.getCurrentActor()?.previewAutoCompleteEntry();
       }
@@ -337,6 +348,8 @@
     _invalidate() {
       // collapsed if no matches
       this.richlistbox.collapsed = this.matchCount == 0;
+
+      this._setSecondaryActionFocused(false);
 
       // Update the richlistbox height.
       if (this._adjustHeightRAFToken) {
@@ -500,6 +513,7 @@
             secondary: secondaryAction
               ? {
                   type: secondaryAction.type,
+                  label: secondaryAction.label,
                   action: () =>
                     lazy.AutoCompleteParent.getCurrentActor()?.selectAutoCompleteEntry(
                       true
@@ -561,6 +575,58 @@
       }
     }
 
+    get _selectedRowItem() {
+      return this.richlistbox.selectedItem?.querySelector(
+        "autocomplete-row-item"
+      );
+    }
+
+    _setSecondaryActionFocused(focused) {
+      this._secondaryActionFocused = focused;
+      const rowItem = this._selectedRowItem;
+      if (rowItem) {
+        rowItem.subfocused = focused;
+      }
+      if (focused && this.mPopupOpen && this.richlistbox.selectedItem) {
+        this.richlistbox.ensureElementIsVisible(this.richlistbox.selectedItem);
+        const label = rowItem?.actions?.secondary?.label;
+        if (label) {
+          window.A11yUtils?.announce({ raw: label });
+        }
+      }
+    }
+
+    navigateSecondaryAction(reverse) {
+      if (!this._selectedRowItem?.actions?.secondary) {
+        return false;
+      }
+
+      if (reverse) {
+        if (this._secondaryActionFocused) {
+          this._setSecondaryActionFocused(false);
+          return true;
+        }
+        return false;
+      }
+
+      if (this._secondaryActionFocused) {
+        this._setSecondaryActionFocused(false);
+        return false;
+      }
+      this._setSecondaryActionFocused(true);
+      return true;
+    }
+
+    maybeActivateSecondaryAction() {
+      if (!this._secondaryActionFocused) {
+        return false;
+      }
+      const rowItem = this._selectedRowItem;
+      rowItem?.activateSecondaryAction();
+      this._setSecondaryActionFocused(false);
+      return true;
+    }
+
     disconnectedCallback() {
       if (this.listEvents) {
         this.richlistbox.removeEventListener("mousedown", this.listEvents);
@@ -598,6 +664,7 @@
         this.input.controller.stopSearch();
 
         this.mPopupOpen = false;
+        this._setSecondaryActionFocused(false);
 
         // Reset the maxRows property to the cached "normal" value (if there's
         // any), and reset normalMaxRows so that we can detect whether it was set

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?><!-- This Source Code Form is subject to the terms of the Mozilla Public
    - License, v. 2.0. If a copy of the MPL was not distributed with this
    - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <color name="colorPrimary">@color/photonViolet05</color>
     <color name="colorSecondary">@color/photonLightGrey05</color>
     <color name="primaryText">@color/photonInk50</color>
@@ -88,8 +88,11 @@
     <!--Modals colors -->
     <color name="modal_background">@color/colorSecondary</color>
 
-    <!-- Override AC colors -->
+    <!-- Override AC colors. Those only referenced from android-components are marked so that the
+         UnusedResources check, which cannot see those references, does not report them as unused. -->
     <color name="mozac_ui_icons_fill">@color/primaryText</color>
+    <color name="mozac_additional_note_background" tools:ignore="UnusedResources">@color/colorPrimary</color>
+    <color name="mozac_additional_note_text_color" tools:ignore="UnusedResources">@color/secondaryText</color>
 
     <!-- CFR colors -->
     <color name="cfr_text_color">#FBFBFE</color>

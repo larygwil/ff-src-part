@@ -33,6 +33,8 @@ const METRIC_SOURCE = Object.freeze({
   MESSAGING: "messaging",
   // The ctrl-tab UI.
   CTRL_TAB: "ctrl_tab",
+  // The Smart Window "Group my tabs" suggestion panel.
+  SMART_WINDOW_GROUP_SUGGESTIONS: "smartwindow_group_suggestions",
   UNKNOWN: "unknown",
 });
 

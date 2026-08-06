@@ -30,6 +30,10 @@
   --swgt-card-bg: #ffffff;
   --swgt-divider: rgba(0, 0, 0, 0.09);
   --swgt-hover: rgba(120, 90, 220, 0.08);
+  /* Fixed horizontal content inset for headers, sections, and rows. Kept in px
+   * rather than a --space-* token because those are rem-based and resolve
+   * unpredictably under the panel's `font: menu`. */
+  --swgt-inline-padding: 20px;
   background: var(--swgt-card-bg);
   color: var(--swgt-text);
   border: var(--border-width) solid var(--swgt-divider);
@@ -98,8 +102,8 @@
   background: var(--swgt-hover);
 }
 
-.swgt-row:not(.swgt-create-all):not(.swgt-undo-last):hover,
-.swgt-row:not(.swgt-create-all):not(.swgt-undo-last).is-active {
+.swgt-row:not(.swgt-create-all):not(.swgt-ungroup):hover,
+.swgt-row:not(.swgt-create-all):not(.swgt-ungroup).is-active {
   padding-inline: calc(var(--swgt-row-padding-inline) + var(--space-small));
 }
 
@@ -244,4 +248,28 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.swgt-recent-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-medium);
+  padding-block: var(--space-small);
+  padding-inline: var(--swgt-inline-padding);
+}
+
+.swgt-ungroup {
+  color: var(--swgt-text-dim);
+  padding-inline: calc(var(--swgt-row-padding-inline) + var(--space-small));
+  margin-inline: calc(-1 * var(--space-small));
+  width: auto;
+  border-radius: 0;
+}
+
+.swgt-ungroup-icon {
+  width: var(--icon-size);
+  height: var(--icon-size);
+  flex: none;
+  background-color: currentColor;
+  mask: url("chrome://global/skin/icons/undo.svg") no-repeat center / var(--icon-size) var(--icon-size);
 }

@@ -459,7 +459,20 @@ export const MessageLoaderUtils = {
         );
       }
 
-      const enrollments = featureAPI.getAllEnrollments();
+      let enrollments = featureAPI.getAllEnrollments();
+      // Features that don't support coenrollment can have two "active"
+      // enrollments at a time, 1 rollout and 1 experiment. But experiments take
+      // precedence over rollouts, so if both are active, we only ingest the
+      // experiment's messages. Coenrolling features don't have this limitation,
+      // so for those we include all active enrollments.
+      if (!featureAPI.allowCoenrollment) {
+        if (enrollments.length > 1) {
+          enrollments = enrollments.filter(
+            enrollment => !enrollment.meta.isRollout
+          );
+        }
+      }
+
       // If this doesn't return anything at all, there's something wrong with
       // the feature itself (since it otherwise returns at least an empty array)
       if (!enrollments) {

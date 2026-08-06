@@ -1039,9 +1039,7 @@ export const AIWindow = {
         false
       );
       groupTabsButton.hidden =
-        isImmersiveView ||
-        !groupTabsEnabled ||
-        !lazy.AutoTabGroupingSuggestions.isAvailable;
+        !groupTabsEnabled || !lazy.AutoTabGroupingSuggestions.isAvailable;
     }
 
     // Set attr on the specific browser that has content to override color scheme

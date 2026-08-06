@@ -1704,10 +1704,22 @@
   <string name="tab_group_three_dot_button_content_description">옵션 더보기</string>
   <!-- Text shown on the edit button for a tab group on the three dot menu -->
   <string name="tab_group_three_dot_menu_edit">편집</string>
+  <!-- Text shown on the ungroup button for a tab group on the three dot menu -->
+  <string name="tab_group_three_dot_menu_ungroup">그룹 해제</string>
   <!-- Text shown on the delete button for a tab group on the three dot menu -->
   <string name="tab_group_three_dot_menu_delete">삭제</string>
   <!-- Text shown on the close button for a tab group on the three dot menu -->
   <string name="tab_group_three_dot_menu_close">닫기</string>
+  <!-- Title for the Ungroup tab group confirmation dialog. -->
+  <string name="ungroup_tab_group_confirmation_dialog_title">탭 그룹을 해제하시겠습니까?</string>
+  <!-- Text shown in the body of the Ungroup tab group confirmation dialog. -->
+  <string name="ungroup_tab_group_confirmation_dialog_body">이 기기에서 탭은 열린 상태로 유지되지만, 그룹은 삭제됩니다.</string>
+  <!-- Text shown on the Don't Ask Again checkbox button in the Ungroup tab group confirmation dialog. -->
+  <string name="ungroup_tab_group_confirmation_dialog_dont_ask_again">다시 묻지 않음</string>
+  <!-- Text shown on the confirm button in the Ungroup tab group confirmation dialog. -->
+  <string name="ungroup_tab_group_confirmation_dialog_confirm">그룹 해제</string>
+  <!-- Text shown on the cancel button in the Ungroup tab group confirmation dialog. -->
+  <string name="ungroup_tab_group_confirmation_dialog_cancel">취소</string>
   <!--
     Color labels for tab groups, used for accessibility and selection UI.
 
@@ -2408,6 +2420,10 @@
   <string name="sync_sign_in">Sync에 로그인</string>
   <!-- An option from the share dialog to send link to all other sync devices -->
   <string name="sync_send_to_all">모든 기기에 보내기</string>
+  <!-- Text displayed when no other sync devices are available for link sharing -->
+  <string name="sync_no_devices_available">기기 없음</string>
+  <!-- Text displayed when no other sync devices are available for link sharing. -->
+  <string name="sync_no_devices_available_description">이 계정에 로그인하고 동기화한 모든 기기가 여기에 나타납니다.</string>
   <!-- An option from the share dialog to reconnect to sync -->
   <string name="sync_reconnect">Sync에 다시 연결</string>
   <!-- Text displayed when sync is offline and cannot be accessed -->
@@ -3157,6 +3173,14 @@
   <!-- Snackbar (in-app pop-up notification) text shown when the previously selected browser VPN location is unavailable and the recommended location was used instead. -->
   <string name="ip_protection_location_unavailable_recommended_snackbar" tools:ignore="UnusedResources">선택한 VPN 위치를 사용할 수 없어, 추천 위치로 연결되었습니다.</string>
   <!-- Title for the card shown to the user when we are unable to fetch server locations -->
+  <string name="ip_protection_locations_unavailable_title">위치 정보를 사용할 수 없음</string>
+  <!-- Description for the card shown to the user when we are unable to fetch server locations -->
+  <string name="ip_protection_locations_unavailable_description">추천 위치로 전환되었습니다.</string>
+  <!-- Title for the browser VPN location selection screen (displayed in the app bar) -->
+  <string name="ip_protection_locations_title">VPN 위치 선택</string>
+  <!-- Content description for the browser VPN location selection screen top bar back button -->
+  <string name="ip_protection_locations_navigate_back_button_content_description">뒤로</string>
+  <!-- Title for the card shown to the user when we are unable to fetch server locations -->
   <string name="ip_protection_location_unavailable_title" tools:ignore="UnusedResources">이전 위치를 사용할 수 없음</string>
   <!-- Description for the card shown to the user when we are unable to fetch server locations -->
   <string name="ip_protection_location_unavailable_recommended_description" tools:ignore="UnusedResources">추천 위치로 연결되었습니다.</string>
@@ -3681,7 +3705,7 @@
   <!-- Toggle switch label that indicates that the browser should signal or indicate when a translation is possible for any page. -->
   <string name="translation_settings_offer_to_translate">가능하면 번역 제안</string>
   <!-- Toggle switch label that indicates that downloading files required for translating is permitted when using data saver mode in Android. -->
-  <string name="translation_settings_always_download">항상 데이터 절약 모드에서 언어 다운로드</string>
+  <string name="translation_settings_always_download">데이터 절약 모드에서 항상 언어 다운로드</string>
   <!-- Section header text that begins the section of a list of different options the user may select to adjust their translation preferences. -->
   <string name="translation_settings_translation_preference">번역 설정</string>
   <!-- Button text for the button that will take the user to the automatic translations settings dialog. On the automatic translations settings dialog, the user can set if translations should occur automatically for a given language. -->
@@ -3826,7 +3850,7 @@
   <!-- Additional information for the data saving mode warning dialog used by the translations feature. This text explains the reason a download is required for a translation. -->
   <string name="download_language_file_dialog_message_all_languages">개인 정보 보호를 위해 언어 일부분을 캐시에 다운로드합니다.</string>
   <!-- Checkbox label text on the data saving mode warning dialog used by the translations feature. This checkbox allows users to ignore the data usage warnings. -->
-  <string name="download_language_file_dialog_checkbox_text">항상 데이터 절약 모드에서 다운로드</string>
+  <string name="download_language_file_dialog_checkbox_text">데이터 절약 모드에서 항상 다운로드</string>
   <!-- Button text on the data saving mode warning dialog used by the translations feature to allow users to confirm they wish to continue and download the language file. -->
   <string name="download_language_file_dialog_positive_button_text">다운로드</string>
   <!-- Button text on the data saving mode warning dialog used by the translations feature to allow users to confirm they wish to continue and download the language file and perform a translation. -->
