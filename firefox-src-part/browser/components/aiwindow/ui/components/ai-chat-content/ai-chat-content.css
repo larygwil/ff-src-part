@@ -78,6 +78,65 @@
   }
 }
 
+/* Fullpage has its own top blur (.fullpage-top-blur), so drop the Nova 2px top
+   scroll-fade there; the bottom fade (::before) still applies. */
+:host([mode="fullpage"]) .chat-content-wrapper[overflowing]::after {
+  display: none;
+}
+
+/*
+ * Fullpage-only top blur.
+ */
+.fullpage-top-blur {
+  display: none;
+
+  :host([mode="fullpage"]) & {
+    @media (not (forced-colors)) {
+      display: block;
+      position: fixed;
+      inset-inline: 0;
+      /* Full-bleed, but capped just under WebRender's ~4096px device-pixel
+         limit: past this the backdrop-filter surface is too large and the blur
+         silently drops. 4000px clears every normal/4K display (edge-to-edge)
+         and only engages, centered, on 5K/ultrawide screens. */
+      max-width: 4000px;
+      margin-inline: auto;
+      height: 110px;
+      backdrop-filter: blur(5px);
+      background: linear-gradient(184deg, rgba(56, 42, 104, 0.05) 3.22%, rgba(76, 50, 148, 0.05) 127.79%);
+      /* Feather the blur out toward the bottom. */
+      mask: linear-gradient(var(--color-black) 30%, var(--color-black-alpha-60) 50%, transparent 70%);
+      pointer-events: none;
+    }
+  }
+}
+
+/*
+ * Fullpage-only top scrim.
+ */
+.fullpage-top-scrim {
+  display: none;
+
+  :host([mode="fullpage"]) & {
+    /* Nova only; non-nova uses button backgrounds instead of the scrim. */
+    @media -moz-pref("browser.nova.enabled") and (not (forced-colors)) {
+      --fullpage-scrim-bg: var(--ai-background-color, var(--background-color-canvas));
+      display: block;
+      position: fixed;
+      /* Paint in front of .fullpage-top-blur so the scrim sits above it */
+      z-index: 1;
+      /* Per design the scrim starts at the browser top, but the content frame
+         begins below the chrome, so shift it up by that gap; the overhang is
+         clipped. */
+      top: -55px;
+      inset-inline: 0;
+      height: 109px;
+      background: linear-gradient(to bottom, var(--fullpage-scrim-bg) 0, var(--fullpage-scrim-bg) 74%, rgb(from var(--fullpage-scrim-bg) r g b / 0) 100%);
+      pointer-events: none;
+    }
+  }
+}
+
 .chat-inner-wrapper {
   /*
    * Without this box-sizing, even a medium size chat-bubble-user flexes this

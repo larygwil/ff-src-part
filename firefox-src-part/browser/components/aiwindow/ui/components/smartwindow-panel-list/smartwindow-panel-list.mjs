@@ -5,6 +5,7 @@
 import {
   html,
   ifDefined,
+  nothing,
   repeat,
   styleMap,
 } from "chrome://global/content/vendor/lit.all.mjs";
@@ -50,6 +51,13 @@ export class SmartwindowPanelList extends MozLitElement {
     this.sidebarMode = false;
   }
 
+  get #hasCustomItems() {
+    const itemsHost = this.#panelList ?? this;
+    return [...itemsHost.children].some(
+      element => element.localName !== "panel-item"
+    );
+  }
+
   firstUpdated() {
     this.#panelList = this.shadowRoot.querySelector("panel-list");
     this.#panelList.addEventListener("shown", () => {
@@ -57,9 +65,19 @@ export class SmartwindowPanelList extends MozLitElement {
         this.#clampToViewport();
       }
     });
+    // Consumers may pass their own items as child elements.
+    this.#maybeMoveChildrenIntoPanel();
     if (this.alwaysOpen) {
       this.show();
     }
+  }
+
+  #maybeMoveChildrenIntoPanel() {
+    const custom = Array.from(this.children);
+    if (!custom.length) {
+      return;
+    }
+    this.#panelList.append(...custom);
   }
 
   #clampToViewport() {
@@ -125,9 +143,9 @@ export class SmartwindowPanelList extends MozLitElement {
     }
   }
 
-  async show() {
+  async show(triggeringEvent = null) {
     await this.updateComplete;
-    this.#panelList.show(null, this.#anchorElement);
+    this.#panelList.show(triggeringEvent, this.#anchorElement);
   }
 
   async hide() {
@@ -135,9 +153,9 @@ export class SmartwindowPanelList extends MozLitElement {
     this.#panelList.hide();
   }
 
-  async toggle() {
+  async toggle(triggeringEvent = null) {
     await this.updateComplete;
-    this.#panelList.toggle(null, this.#anchorElement);
+    this.#panelList.toggle(triggeringEvent, this.#anchorElement);
   }
 
   handlePanelClick(e) {
@@ -256,9 +274,15 @@ export class SmartwindowPanelList extends MozLitElement {
     );
   }
 
-  render() {
-    const isEmpty = this.#isEmpty();
+  #renderContent() {
+    // Custom items were moved into `panel-list`.
+    if (this.#hasCustomItems) {
+      return nothing;
+    }
+    return this.#isEmpty() ? this.#renderEmptyState() : this.#renderGroups();
+  }
 
+  render() {
     return html`
       <link
         rel="stylesheet"
@@ -269,7 +293,7 @@ export class SmartwindowPanelList extends MozLitElement {
         @click=${this.handlePanelClick}
         @keydown=${this.handleKeyDown}
       >
-        ${isEmpty ? this.#renderEmptyState() : this.#renderGroups()}
+        ${this.#renderContent()}
       </panel-list>
     `;
   }

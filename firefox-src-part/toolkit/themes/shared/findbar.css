@@ -76,7 +76,7 @@ xul|findbar {
   color: var(--input-text-color);
   min-height: 28px;
 
-  :root[lwtheme] & {
+  :root[lwtheme] &:not([status="notfound"], [flash="true"]) {
     background-color: var(--toolbar-field-background-color);
     color: var(--toolbar-field-text-color);
   }

@@ -454,9 +454,7 @@
 }
 
 #smartwindow-group-tabs-button-inner {
-  /* Zoom into the shared grid icon via an SVG view fragment so the squares read
-   * larger here, without altering the icon for its other consumers. */
-  list-style-image: url("chrome://browser/content/aiwindow/assets/icon-grid-view.svg#svgView(viewBox(3.5,3.5,17,17))");
+  list-style-image: url("chrome://browser/skin/grid-sparkle.svg");
 }
 
 #document-pip-return-to-opener-button {

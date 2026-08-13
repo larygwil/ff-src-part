@@ -129,6 +129,12 @@ export class AIChatContentParent extends JSWindowActorParent {
   #notifyContentReady() {
     const aiWindow = this.#getAIWindowElement();
     aiWindow?.onContentReady();
+    // Tell the content its mode (sidebar/fullpage) so mode-specific styling
+    // (e.g. the fullpage top blur) can apply. Sent over the actor rather than
+    // the load URL, which would break this actor's exact about: match.
+    if (aiWindow?.mode) {
+      this.sendAsyncMessage("AIChatContent:SetMode", { mode: aiWindow.mode });
+    }
   }
 
   #handleFooterActionFromChild(data) {

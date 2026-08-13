@@ -19,6 +19,7 @@ const FormFill_Config = {
   engineId: FEATURES[FORM_AUTOFILL_FEATURE_ID].engineId,
   backend: "best-onnx",
   modelId: "mozilla/tinybert-address-autofill",
+  numThreads: 2,
 };
 
 export class FormAutofillML {

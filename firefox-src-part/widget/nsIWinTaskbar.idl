@@ -197,4 +197,12 @@ interface nsIWinTaskbar : nsISupports
    *        IDI_CUSTOM_RETRO), or 0 to clear the override.
    */
   void setAllWindowIcons(in unsigned short aIconResourceId);
+
+  /**
+   * Force this install's taskbar buttons to redo their shortcut binding.
+   *
+   * Removing and re-adding each button (DeleteTab/AddTab) causes the shell to
+   * repeat the lookup using whatever shortcuts are visible at that moment.
+   */
+  void refreshTaskbarButtons();
 };

@@ -4012,12 +4012,19 @@ pref("extensions.formautofill.available", "detect");
 
 #if !defined(ANDROID)
 pref("extensions.formautofill.addresses.supported", "on");
-// Use ML for address form field detection.
-pref("extensions.formautofill.useml", true);
 #else
 pref("extensions.formautofill.addresses.supported", "detect");
+#endif
+
+// Use ML for address form field detection.
+#if defined(XP_WIN) || defined(XP_MACOSX)
+pref("extensions.formautofill.useml", true);
+#else
 pref("extensions.formautofill.useml", false);
 #endif
+// Set at runtime once we have asked the inference process whether the native
+// ONNX runtime is available. Until then we stay on the regex heuristics.
+pref("extensions.formautofill.useml.nativeOnnxAvailable", false);
 pref("extensions.formautofill.addresses.enabled", true);
 pref("extensions.formautofill.addresses.capture.enabled", true);
 #if defined(ANDROID)

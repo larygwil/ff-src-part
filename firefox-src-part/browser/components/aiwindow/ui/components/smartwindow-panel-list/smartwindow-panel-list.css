@@ -115,3 +115,39 @@ panel-item::part(label) {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* Style `ai-website-chip` to behave like a `panel-item`. */
+panel-list:has(ai-website-chip) {
+  padding-block: 0;
+}
+
+panel-list ai-website-chip {
+  box-sizing: border-box;
+  display: flex;
+  padding: var(--space-xsmall);
+  width: 100%;
+}
+
+panel-list ai-website-chip::part(chip) {
+  --background-color-hover: light-dark(color-mix(in srgb, var(--color-violet-50) 15%, transparent), var(--color-violet-110));
+  --background-color-box: transparent;
+
+  max-width: none;
+  min-width: 0;
+  width: 100%;
+}
+
+panel-list ai-website-chip::part(chip):hover {
+  --background-color-box: var(--background-color-hover);
+}
+
+panel-list ai-website-chip::part(chip):focus-visible {
+  outline: var(--focus-outline);
+  outline-offset: var(--focus-outline-inset);
+}
+
+@media -moz-pref("browser.nova.enabled") {
+  panel-list ai-website-chip::part(chip) {
+    --background-color-hover: light-dark(color-mix(in srgb, var(--color-violet-desaturated-10) 70%, transparent), var(--color-violet-desaturated-60));
+  }
+}

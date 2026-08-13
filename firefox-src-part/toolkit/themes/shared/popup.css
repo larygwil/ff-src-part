@@ -93,6 +93,13 @@
   &[orient="vertical"]::part(content) {
     flex-direction: column;
   }
+
+  /* A submenu is part of the same menu as its parent popup, so it must not
+   * widen a color scheme that the parent narrowed. */
+  menupopup,
+  panel {
+    color-scheme: inherit;
+  }
 }
 
 /* ::::: arrow panel ::::: */

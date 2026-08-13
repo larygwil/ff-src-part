@@ -14,6 +14,7 @@ const lazy = {};
 ChromeUtils.defineESModuleGetters(lazy, {
   AutoTabGrouping:
     "moz-src:///browser/components/aiwindow/ui/modules/AutoTabGrouping.sys.mjs",
+  URILoadingHelper: "resource:///modules/URILoadingHelper.sys.mjs",
 });
 
 const gFadingWindows = new WeakSet();
@@ -323,6 +324,29 @@ export const AIWindowUI = {
   },
 
   /**
+   * Reopens a conversation in a tab: loads the page it was last about (or the
+   * new tab page) and restores the conversation there once the browser exists.
+   *
+   * @param {Window} win
+   * @param {ChatConversation} conversation
+   * @param {string} [where="tab"] Destination, as for openTrustedLinkIn.
+   */
+  reopenConversationInTab(win, conversation, where = "tab") {
+    const mostRecentPage = conversation.getMostRecentPageVisited();
+    const url = mostRecentPage?.href ?? win.BROWSER_NEW_TAB_URL;
+    lazy.URILoadingHelper.openTrustedLinkIn(win, url, where, {
+      resolveOnContentBrowserCreated: async targetBrowser => {
+        if (url === win.BROWSER_NEW_TAB_URL) {
+          this.openInFullWindow(targetBrowser, conversation);
+        } else {
+          AIWindow.restoreTabConversation(targetBrowser, conversation);
+          this.openSidebar(targetBrowser.documentGlobal, conversation);
+        }
+      },
+    });
+  },
+
+  /**
    * Open the AI Window sidebar
    *
    * The slide is reserved for the Ask button, which opens via toggleSidebar; every
@@ -464,7 +488,7 @@ export const AIWindowUI = {
   },
 
   /**
-   * Toggle the "Group my tabs" panel anchored to its toolbar button.
+   * Toggle the "Organize Tabs" panel anchored to its toolbar button.
    *
    * @param {Window} win
    */

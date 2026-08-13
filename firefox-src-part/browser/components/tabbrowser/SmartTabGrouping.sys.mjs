@@ -13,6 +13,7 @@ import {
 } from "chrome://global/content/ml/NLPUtils.sys.mjs";
 
 import {
+  agglomerativeClusterCosine,
   computeCentroidFrom2DArray,
   computeRandScore,
   euclideanDistance,
@@ -54,6 +55,23 @@ XPCOMUtils.defineLazyPreferenceGetter(
   "browser.tabs.groups.smart.topicModelRevision"
 );
 
+// Test/Nimbus override to pick the clustering method, e.g. "AGGLOMERATIVE".
+XPCOMUtils.defineLazyPreferenceGetter(
+  lazy,
+  "clusterMethod",
+  "browser.tabs.groups.smart.clusterMethod",
+  ""
+);
+
+// AGGLOMERATIVE cosine-distance cutoff, as an int in thousandths (800 => 0.80).
+// 0 keeps the config default. Stored as an int since prefs have no float type.
+XPCOMUtils.defineLazyPreferenceGetter(
+  lazy,
+  "agglomerativeThresholdInt",
+  "browser.tabs.groups.smart.agglomerativeThresholdInt",
+  0
+);
+
 XPCOMUtils.defineLazyPreferenceGetter(
   lazy,
   "embeddingModelRevision",
@@ -72,6 +90,7 @@ const EMBED_TEXT_KEY = "combined_text";
 const MAX_COHESION_ITEMS = 20;
 export const CLUSTER_METHODS = {
   KMEANS: "KMEANS",
+  AGGLOMERATIVE: "AGGLOMERATIVE", // hierarchical, average-linkage cosine + threshold
 };
 
 // Methods for finding similar items for an existing cluster
@@ -139,8 +158,11 @@ export const SMART_TAB_GROUPING_CONFIG = {
   },
   clustering: {
     dimReductionMethod: null, // Not completed.
-    clusterImplementation: CLUSTER_METHODS.KMEANS,
+    clusterImplementation: CLUSTER_METHODS.AGGLOMERATIVE,
     clusteringTriesPerK: 3,
+    // AGGLOMERATIVE cosine-distance cutoff; lower = stricter (more, smaller
+    // groups), higher = more lenient (fewer, larger groups).
+    agglomerativeThreshold: 0.85,
     anchorMethod: ANCHOR_METHODS.FIXED,
     pregroupedHandlingMethod: PREGROUPED_HANDLING_METHODS.EXCLUDE,
     pregroupedSilhouetteBoost: 2, // Relative weight of the cluster's score and all other cluster's combined
@@ -246,6 +268,14 @@ export class SmartTabGroupingManager extends AIFeature {
   constructor(config) {
     super();
     this.config = config || structuredClone(SMART_TAB_GROUPING_CONFIG);
+    // Optional pref overrides for the clustering method and AGGLOMERATIVE tau.
+    const clustering = this.config.clustering;
+    if (lazy.clusterMethod in CLUSTER_METHODS) {
+      clustering.clusterImplementation = lazy.clusterMethod;
+    }
+    if (lazy.agglomerativeThresholdInt > 0) {
+      clustering.agglomerativeThreshold = lazy.agglomerativeThresholdInt / 1000;
+    }
   }
 
   /**
@@ -1267,6 +1297,28 @@ export class SmartTabGroupingManager extends AIFeature {
   }
 
   /**
+   * Clusters embeddings agglomeratively (average-linkage cosine). The number of
+   * groups emerges from `agglomerativeThreshold`, so there is no k-sweep.
+   *
+   * @param {object} params
+   * @param {object[]} params.tabs
+   * @param {number[][]} params.embeddings
+   * @returns {SmartTabGroupingResult}
+   */
+  _clusterEmbeddingsHAC({ tabs, embeddings }) {
+    const indices = agglomerativeClusterCosine(
+      embeddings,
+      this.config.clustering.agglomerativeThreshold
+    );
+    return new SmartTabGroupingResult({
+      indices,
+      tabs,
+      embeddings,
+      config: this.config,
+    });
+  }
+
+  /**
    * Generates clusters for a given list of tabs using precomputed embeddings or newly generated ones.
    *
    * @param {object[]} tabList - List of tab objects to be clustered.
@@ -1301,14 +1353,21 @@ export class SmartTabGroupingManager extends AIFeature {
 
     const NUM_RUNS = 1;
     for (let i = 0; i < NUM_RUNS; i++) {
-      const curResult = this._clusterEmbeddings({
-        tabs: tabList,
-        embeddings: this.docEmbeddings,
-        k: numClusters,
-        randomFunc: randFunc,
-        anchorIndices,
-        alreadyGroupedIndices,
-      });
+      const curResult =
+        this.config.clustering.clusterImplementation ===
+        CLUSTER_METHODS.AGGLOMERATIVE
+          ? this._clusterEmbeddingsHAC({
+              tabs: tabList,
+              embeddings: this.docEmbeddings,
+            })
+          : this._clusterEmbeddings({
+              tabs: tabList,
+              embeddings: this.docEmbeddings,
+              k: numClusters,
+              randomFunc: randFunc,
+              anchorIndices,
+              alreadyGroupedIndices,
+            });
       const distance = curResult.getCentroidInertia();
       if (distance < bestResultDistance) {
         bestResultDistance = distance;

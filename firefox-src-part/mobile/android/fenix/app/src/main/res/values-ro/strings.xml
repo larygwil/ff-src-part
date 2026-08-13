@@ -1044,6 +1044,8 @@
   <string name="customize_toggle_pocket_sponsored">Povești sponsorizate</string>
   <!-- Title for the opening wallpaper settings screen -->
   <string name="customize_wallpapers">Imagini de fundal</string>
+  <!-- Label for the menu item that opens the customize homepage settings screen. -->
+  <string name="browser_menu_customize_homepage">Personalizează pagina de start</string>
   <!-- Label for the menu item that opens the wallpaper settings screen. -->
   <string name="browser_menu_change_wallpaper">Schimbă imaginea de fundal</string>
   <!-- Title for the customize home screen section with sponsored shortcuts. -->
@@ -1716,6 +1718,8 @@
   <string name="tab_group_three_dot_button_content_description">Mai multe opțiuni</string>
   <!-- Text shown on the edit button for a tab group on the three dot menu -->
   <string name="tab_group_three_dot_menu_edit">Editează</string>
+  <!-- Text shown on the ungroup button for a tab group on the three dot menu -->
+  <string name="tab_group_three_dot_menu_ungroup">Degrupează</string>
   <!-- Text shown on the delete button for a tab group on the three dot menu -->
   <string name="tab_group_three_dot_menu_delete">Șterge</string>
   <!-- Text shown on the close button for a tab group on the three dot menu -->
@@ -2432,6 +2436,10 @@
   <string name="sync_sign_in">Intră în cont pentru sincronizare</string>
   <!-- An option from the share dialog to send link to all other sync devices -->
   <string name="sync_send_to_all">Trimite pe toate dispozitivele</string>
+  <!-- Text displayed when no other sync devices are available for link sharing -->
+  <string name="sync_no_devices_available">Nu sunt dispozitive disponibile</string>
+  <!-- Text displayed when no other sync devices are available for link sharing. -->
+  <string name="sync_no_devices_available_description">Aici vor apărea orice dispozitive pe care te-ai autentificat și sincronizate cu acest cont.</string>
   <!-- An option from the share dialog to reconnect to sync -->
   <string name="sync_reconnect">Reconectează-te la Sync</string>
   <!-- Text displayed when sync is offline and cannot be accessed -->
@@ -3005,7 +3013,7 @@
   <!-- Content description, used by tools like screenreaders, to go back and exit the edit login view. -->
   <string name="edit_login_navigate_back_button_content_description">Navighează înapoi</string>
   <!-- Content description, used by tools like screenreaders, to press on the edit login button. -->
-  <string name="edit_login_button_content_description">Editează autentificarea</string>
+  <string name="edit_login_button_content_description">Editează datele de autentificare</string>
   <!-- Content description, used by tools like screenreaders, to press on the add new login button. -->
   <string name="saved_logins_add_new_login_button_content_description">Adaugă date noi de autentificare</string>
   <!-- Content description, used by tools like screenreaders, to press on the clear search text button. -->
@@ -4767,6 +4775,16 @@
   <string name="lens_camera_mode_qr">Scanner QR</string>
   <!-- Toast shown when the user picks an image from the gallery in QR mode but no QR code is found in it -->
   <string name="lens_camera_qr_no_code_found">Nu s-a găsit niciun cod QR în imagine</string>
+  <!-- Title of the bottom sheet shown the first time the user opens the Google Lens camera screen -->
+  <string name="lens_opt_out_title">Găsește cu Google Lens</string>
+  <!-- Description of the bottom sheet shown the first time the user opens the Google Lens camera screen -->
+  <string name="lens_opt_out_description">Alege o imagine sau folosește camera pentru a obține rezultate cu Google Lens.</string>
+  <!-- Text of the link in the first-run Google Lens bottom sheet that opens the Search settings page -->
+  <string name="lens_opt_out_settings_link">Setări Google Lens</string>
+  <!-- Button in the first-run Google Lens bottom sheet that dismisses it and starts the camera -->
+  <string name="lens_opt_out_try_it_now_button">Încearcă acum</string>
+  <!-- Button in the first-run Google Lens bottom sheet that leaves Google Lens without using it -->
+  <string name="lens_opt_out_not_now_button">Nu acum</string>
   <!--
     Firefox Labs
 

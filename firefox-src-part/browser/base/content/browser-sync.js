@@ -336,7 +336,7 @@ this.SyncedTabsPanelList = class SyncedTabsPanelList {
   }
 
   _createSyncedTabElement(tabInfo, index, device, canCloseTabs) {
-    let tabContainer = document.createXULElement("hbox");
+    let tabContainer = document.createXULElement("toolbaritem");
     tabContainer.setAttribute(
       "class",
       "PanelUI-tabitem-container all-tabs-item"
@@ -345,6 +345,7 @@ this.SyncedTabsPanelList = class SyncedTabsPanelList {
     let item = document.createXULElement("toolbarbutton");
     let tooltipText = (tabInfo.title ? tabInfo.title + "\n" : "") + tabInfo.url;
     item.setAttribute("itemtype", "tab");
+    item.setAttribute("flex", "1");
     item.classList.add(
       "all-tabs-button",
       "subviewbutton",
@@ -731,19 +732,19 @@ this.FxAMenuDeviceList = class FxAMenuDeviceList {
       device && fxAccounts.commands.closeTab.isDeviceCompatible(device);
 
     for (let [index, tab] of recentTabs.entries()) {
-      let tabItem = this._createSyncedTabElement(tab, index, device);
-      tabsList.appendChild(tabItem);
-      // Force render() now (before adding close/undo children) so that
-      // toolbarbutton-icon and toolbarbutton-text are created even when the
-      // panelview is still in the template DocumentFragment and
-      // connectedCallback has not yet fired against the live document.
-      tabItem.render();
+      let tabContainer = this._createSyncedTabElement(tab, index, device);
+      tabsList.appendChild(tabContainer);
+      let item = tabContainer.querySelector(".all-tabs-button");
+      // Force render() now so that toolbarbutton-icon and toolbarbutton-text are
+      // created even when the panelview is still in the template DocumentFragment
+      // and connectedCallback has not yet fired against the live document.
+      item.render();
       if (canCloseTabs) {
         let closeBtn = this._createCloseTabElement(tab.url, device);
-        closeBtn.tab = tabItem;
+        closeBtn.tab = item;
         let undoBtn = this._createUndoCloseTabElement(tab.url, device);
-        undoBtn.tab = tabItem;
-        tabItem.append(closeBtn, undoBtn);
+        undoBtn.tab = item;
+        tabContainer.append(closeBtn, undoBtn);
       }
     }
   }
@@ -888,7 +889,7 @@ this.FxAMenuDeviceList = class FxAMenuDeviceList {
       list.appendChild(tabsList);
 
       let viewAllBtn = document.createXULElement("toolbarbutton");
-      viewAllBtn.classList.add("subviewbutton", "panel-subview-footer-button");
+      viewAllBtn.classList.add("subviewbutton");
       viewAllBtn.setAttribute("closemenu", "none");
       this._configureViewAllTabsButton(viewAllBtn, client);
       list.appendChild(viewAllBtn);
@@ -904,7 +905,7 @@ this.FxAMenuDeviceList = class FxAMenuDeviceList {
 
     if (this._canSendTabToDevice(device)) {
       let sendPageBtn = document.createXULElement("toolbarbutton");
-      sendPageBtn.classList.add("subviewbutton", "panel-subview-footer-button");
+      sendPageBtn.classList.add("subviewbutton");
       sendPageBtn.setAttribute(
         "data-l10n-id",
         "fxa-menu-device-send-current-page"
@@ -939,14 +940,14 @@ this.FxAMenuDeviceList = class FxAMenuDeviceList {
 
   _createSyncedTabElement(tabInfo, index, _device) {
     let tooltipText = (tabInfo.title ? tabInfo.title + "\n" : "") + tabInfo.url;
+    let tabContainer = document.createXULElement("toolbaritem");
+    tabContainer.setAttribute(
+      "class",
+      "PanelUI-tabitem-container all-tabs-item"
+    );
+
     let item = this._createTabToolbarButton(
-      [
-        "all-tabs-button",
-        "subviewbutton",
-        "subviewbutton-iconic",
-        "PanelUI-tabitem-container",
-        "all-tabs-item",
-      ],
+      ["all-tabs-button", "subviewbutton", "subviewbutton-iconic"],
       e => {
         let object = window.gSync._getEntryPointForElement(e.currentTarget);
         SyncedTabs.recordSyncedTabsTelemetry(object, "click", {
@@ -965,6 +966,7 @@ this.FxAMenuDeviceList = class FxAMenuDeviceList {
       }
     );
     item.setAttribute("itemtype", "tab");
+    item.setAttribute("flex", "1");
     item.setAttribute("targetURI", tabInfo.url);
     item.setAttribute(
       "label",
@@ -974,7 +976,8 @@ this.FxAMenuDeviceList = class FxAMenuDeviceList {
       item.setAttribute("image", tabInfo.icon);
     }
     item.setAttribute("tooltiptext", tooltipText);
-    return item;
+    tabContainer.appendChild(item);
+    return tabContainer;
   }
 
   _createCloseTabElement(url, device) {
@@ -983,23 +986,26 @@ this.FxAMenuDeviceList = class FxAMenuDeviceList {
       e => {
         e.stopPropagation();
 
-        let tabBtn = closeBtn.parentNode;
-        let tabList = tabBtn.parentNode;
+        let tabContainer = closeBtn.parentNode;
+        let tabList = tabContainer.parentNode;
 
-        let undoBtn = tabBtn.querySelector(".remote-tabs-undo-button");
+        let undoBtn = tabContainer.querySelector(".remote-tabs-undo-button");
 
         let prevClose = tabList.querySelector(
           ".remote-tabs-undo-button:not([hidden])"
         );
         if (prevClose) {
-          let prevTabBtn = prevClose.parentNode;
-          prevTabBtn.classList.add("tabitem-removed");
-          prevTabBtn.addEventListener("transitionend", () => {
-            prevTabBtn.remove();
+          let prevContainer = prevClose.parentNode;
+          prevContainer.classList.add("tabitem-removed");
+          prevContainer.addEventListener("transitionend", () => {
+            prevContainer.remove();
           });
         }
         closeBtn.hidden = true;
         undoBtn.hidden = false;
+        // The Undo button is a sibling of the tab button, so disabling the tab
+        // button no longer prunes Undo from the keyboard walker or the
+        // accessibility tree.
         if (closeBtn.tab) {
           closeBtn.tab.disabled = true;
         }

@@ -12,6 +12,8 @@ import "chrome://browser/content/aiwindow/components/smartwindow-promo.mjs";
 import "chrome://browser/content/aiwindow/components/smartwindow-topsites.mjs";
 // eslint-disable-next-line import/no-unassigned-import
 import "chrome://browser/content/aiwindow/components/kit-mention.mjs";
+// eslint-disable-next-line import/no-unassigned-import
+import "chrome://browser/content/aiwindow/components/smartwindow-history-menu.mjs";
 
 const { XPCOMUtils } = ChromeUtils.importESModule(
   "resource://gre/modules/XPCOMUtils.sys.mjs"
@@ -33,6 +35,8 @@ ChromeUtils.defineESModuleGetters(lazy, {
     "moz-src:///browser/components/aiwindow/models/TitleGeneration.sys.mjs",
   AIWindow:
     "moz-src:///browser/components/aiwindow/ui/modules/AIWindow.sys.mjs",
+  AIWindowUI:
+    "moz-src:///browser/components/aiwindow/ui/modules/AIWindowUI.sys.mjs",
   EMPTY_SMARTBAR_INPUT_STATE:
     "moz-src:///browser/components/aiwindow/ui/modules/AIWindowTabStatesManager.sys.mjs",
   FeedbackModal:
@@ -153,6 +157,16 @@ const TAB_FAVICON_CHAT =
 const PREF_CHAT_INTERACTION_COUNT = "browser.smartwindow.chat.interactionCount";
 const PREF_HIDE_TOP_SITES = "browser.smartwindow.hideTopSites";
 const MAX_INTERACTION_COUNT = 1000;
+const HISTORY_MENU_MAX_RECENT_CHATS = 6;
+
+// Events dispatched by <smartwindow-history-menu> and handled here.
+const HISTORY_MENU_EVENTS = [
+  "smartwindow-history-menu:new-chat",
+  "smartwindow-history-menu:open-chat",
+  "smartwindow-history-menu:view-all-chats",
+  "smartwindow-history-menu:open-settings",
+  "smartwindow-history-menu:request-recent-chats",
+];
 const MAX_SIDEBAR_STARTER_CACHE_KEYS = 20;
 const MAX_TOP_SITES = 8;
 
@@ -209,6 +223,7 @@ export class AIWindow extends MozLitElement {
     selectedModelId: { type: String, state: true },
     topSites: { type: Array, state: true },
     startersResolved: { type: Boolean, state: true },
+    recentChats: { type: Array, state: true },
   };
 
   #browser;
@@ -435,6 +450,7 @@ export class AIWindow extends MozLitElement {
     this.showStarters = false;
     this.topSites = [];
     this.startersResolved = false;
+    this.recentChats = [];
     this.showFooter = this.mode === MODE.FULLPAGE;
     this.promoMessage = null;
     this.showDisclaimer = this.mode !== MODE.FULLPAGE;
@@ -564,6 +580,9 @@ export class AIWindow extends MozLitElement {
       "aiwindow-input-model-select:open-settings",
       this.#handleOpenModelSettings
     );
+    for (const eventName of HISTORY_MENU_EVENTS) {
+      this.ownerDocument.addEventListener(eventName, this.#onHistoryMenuEvent);
+    }
 
     Services.prefs.addObserver(
       PREF_MODEL_CHOICE,
@@ -838,6 +857,12 @@ export class AIWindow extends MozLitElement {
       "aiwindow-input-model-select:open-settings",
       this.#handleOpenModelSettings
     );
+    for (const eventName of HISTORY_MENU_EVENTS) {
+      this.ownerDocument.removeEventListener(
+        eventName,
+        this.#onHistoryMenuEvent
+      );
+    }
     if (this.#smartbar) {
       this.#smartbar.removeEventListener(
         "aiwindow-memories-toggle:on-change",
@@ -2651,6 +2676,98 @@ export class AIWindow extends MozLitElement {
     this.#dispatchChromeEvent("ai-window:close-sidebar");
   }
 
+  /** Loads recent conversations for the history menu. */
+  async #refreshRecentChats() {
+    try {
+      const items = await lazy.AIWindow.chatStore.findRecentConversations(
+        HISTORY_MENU_MAX_RECENT_CHATS
+      );
+      this.recentChats = items.map(item => ({
+        id: item.id,
+        title: item.title,
+        pageUrl: item.pageUrl,
+      }));
+    } catch (e) {
+      lazy.log.error("Failed to load recent chats for history menu", e);
+      this.recentChats = [];
+    }
+  }
+
+  /**
+   * Opens a recent chat: switch to its tab if open, otherwise reopen it.
+   *
+   * @param {string} conversationId
+   */
+  async #onRecentChatSelected(conversationId) {
+    const conversation =
+      await lazy.AIWindow.chatStore.findConversationById(conversationId);
+    if (!conversation) {
+      return;
+    }
+
+    const win = this.#topChromeWindow;
+    if (!win) {
+      this.openConversation(conversation);
+      return;
+    }
+
+    const existingTab = Array.from(win.gBrowser.tabs).find(tab => {
+      const browser = tab.linkedBrowser;
+      return (
+        browser?.getAttribute("data-conversation-id") === conversationId &&
+        browser.currentURI &&
+        lazy.AIWindow.isAIWindowContentPage(browser.currentURI)
+      );
+    });
+
+    if (existingTab) {
+      win.gBrowser.selectedTab = existingTab;
+      return;
+    }
+
+    // Tab was closed: reopen it on the page it was about.
+    lazy.AIWindowUI.reopenConversationInTab(win, conversation);
+  }
+
+  /** Opens the Chats section of Firefox View. */
+  #onViewAllChatsSelected() {
+    this.#topChromeWindow?.FirefoxViewHandler.openTab("chats");
+  }
+
+  /** Opens the Smart Window preferences. */
+  #onSmartWindowSettingsSelected() {
+    this.#topChromeWindow?.openPreferences("personalizeSmartWindow");
+  }
+
+  // Handles action events from <smartwindow-history-menu>.
+  #onHistoryMenuEvent = event => {
+    switch (event.type) {
+      case "smartwindow-history-menu:new-chat":
+        this.onCreateNewChatClick();
+        break;
+      case "smartwindow-history-menu:open-chat":
+        this.#onRecentChatSelected(event.detail.conversationId);
+        break;
+      case "smartwindow-history-menu:view-all-chats":
+        this.#onViewAllChatsSelected();
+        break;
+      case "smartwindow-history-menu:open-settings":
+        this.#onSmartWindowSettingsSelected();
+        break;
+      case "smartwindow-history-menu:request-recent-chats":
+        this.#refreshRecentChats();
+        break;
+    }
+  };
+
+  // Renders the <smartwindow-history-menu> for the given mode.
+  #historyMenu(mode) {
+    return html`<smartwindow-history-menu
+      mode=${mode}
+      .recentChats=${this.recentChats}
+    ></smartwindow-history-menu>`;
+  }
+
   showSearchingIndicator(isSearching, searchQuery) {
     this.#dispatchMessageToChatContent({
       role: "loading",
@@ -2983,6 +3100,7 @@ export class AIWindow extends MozLitElement {
               iconsrc="chrome://browser/content/aiwindow/assets/new-chat.svg"
               @click=${this.onCreateNewChatClick}
             ></moz-button>
+            ${this.#historyMenu("sidebar")}
             <moz-button
               data-l10n-id="aiwindow-close-sidebar"
               data-l10n-attrs="tooltiptext,aria-label"
@@ -2997,14 +3115,7 @@ export class AIWindow extends MozLitElement {
         ? html`
             <smartwindow-heading></smartwindow-heading>
             <div class="chat-header fullpage-header">
-              <moz-button
-                data-l10n-id="aiwindow-new-chat"
-                data-l10n-attrs="tooltiptext,aria-label"
-                class="new-chat-icon-button"
-                type="ghost icon"
-                iconsrc="chrome://browser/content/aiwindow/assets/new-chat.svg"
-                @click=${this.onCreateNewChatClick}
-              ></moz-button>
+              ${this.#historyMenu("fullpage")}
             </div>
           `
         : ""}

@@ -322,3 +322,23 @@ button.chip {
   border-color: var(--chip-selected-border-color);
   color: var(--chip-selected-text-color);
 }
+
+:host([size="small"]) .chip {
+  --chip-border-radius: var(--border-radius-large);
+  --chip-border-radius-end-end: var(--border-radius-large);
+
+  font-size: var(--font-size-small);
+  gap: var(--space-xsmall);
+  padding: var(--space-xxsmall) var(--space-small);
+}
+
+:host([size="small"]) .chip-icon {
+  height: var(--size-item-xsmall);
+  width: var(--size-item-xsmall);
+}
+
+:host([size="small"]) .chip-label {
+  mask-image: none;
+  min-width: 0;
+  text-overflow: ellipsis;
+}

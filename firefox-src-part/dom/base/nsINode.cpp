@@ -2146,7 +2146,8 @@ void nsINode::InsertChildBefore(
     return;
   }
 
-  MOZ_ASSERT(!aKid->GetParentNode(), "Inserting node that already has parent");
+  MOZ_DIAGNOSTIC_ASSERT(!aKid->GetParentNode(),
+                        "Inserting node that already has parent");
   MOZ_ASSERT(!IsAttr());
 
   // The id-handling code, and in the future possibly other code, need to

@@ -632,6 +632,8 @@ export class MLEngineParent extends JSProcessActorParent {
 
   /**
    * Gets the configuration of the worker
+   *
+   * @returns {{ url: string, options: WorkerOptions }}
    */
   static getWorkerConfig() {
     return {
@@ -876,6 +878,15 @@ export class MLEngineParent extends JSProcessActorParent {
    */
   getStatusByEngineId() {
     return this.sendQuery("MLEngine:GetStatusByEngineId");
+  }
+
+  /**
+   * Resolves to true if the native ONNX runtime is available, otherwise false.
+   *
+   * @returns {Promise<boolean>}
+   */
+  requestIsNativeOnnxRuntimeAvailable() {
+    return this.sendQuery("MLEngine:RequestIsNativeOnnxRuntimeAvailable");
   }
 
   /**

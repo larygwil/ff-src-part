@@ -93,6 +93,9 @@ export class MLEngineChild extends JSProcessActorChild {
       case "MLEngine:GetStatusByEngineId": {
         return this.getStatusByEngineId();
       }
+      case "MLEngine:RequestIsNativeOnnxRuntimeAvailable": {
+        return this.requestIsNativeOnnxRuntimeAvailable();
+      }
       case "MLEngine:ForceShutdown": {
         for (const engineDispatcher of this.#engineDispatchers.values()) {
           await engineDispatcher.terminate(
@@ -200,6 +203,25 @@ export class MLEngineChild extends JSProcessActorChild {
    */
   getWorkerConfig() {
     return this.sendQuery("MLEngine:GetWorkerConfig");
+  }
+
+  /**
+   * Resolves to true if the native ONNX runtime is available, otherwise false.
+   *
+   * @returns {Promise<boolean>}
+   */
+  async requestIsNativeOnnxRuntimeAvailable() {
+    const workerConfig = await this.getWorkerConfig();
+    const worker = new lazy.BasePromiseWorker(
+      workerConfig.url,
+      workerConfig.options
+    );
+
+    try {
+      return await worker.post("isNativeOnnxRuntimeAvailable", []);
+    } finally {
+      worker.terminate();
+    }
   }
 
   /**

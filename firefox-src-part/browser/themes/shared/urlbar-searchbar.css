@@ -356,6 +356,18 @@ toolbar[inactive="true"] .urlbar,
   unicode-bidi: plaintext;
   text-align: match-parent;
 
+  /* Make the editable line box span the field's full inner height so clicking
+     anywhere in the field places the caret. The value equals the input's
+     available height so it fills the field without growing it. */
+  line-height: var(--urlbar-min-height);
+
+  /* Proton's input container has a border on each block edge (the border is
+     transparent, so invisible, but it still occupies layout space), so subtract
+     it to keep the line box within the field's inner height. */
+  @media not -moz-pref("browser.nova.enabled") {
+    line-height: calc(var(--urlbar-min-height) - 2 * var(--urlbar-input-container-border-width));
+  }
+
   /* Align URLs to the right in RTL mode. */
   &:-moz-locale-dir(rtl) {
     text-align: right !important;

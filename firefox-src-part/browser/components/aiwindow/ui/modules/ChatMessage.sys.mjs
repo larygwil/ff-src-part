@@ -317,15 +317,19 @@ export class UserRoleOpts {
 export class ChatMinimal {
   #id;
   #title;
+  #pageUrl;
 
   /**
    * @param {object} params
    * @param {string} params.convId
    * @param {string} params.title
+   * @param {?string} [params.pageUrl] - URL of the page the chat was about,
+   *   used to render a site favicon. Null for chats not tied to a page.
    */
-  constructor({ convId, title }) {
+  constructor({ convId, title, pageUrl = null }) {
     this.#id = convId;
     this.#title = title;
+    this.#pageUrl = pageUrl;
   }
 
   get id() {
@@ -334,6 +338,10 @@ export class ChatMinimal {
 
   get title() {
     return this.#title;
+  }
+
+  get pageUrl() {
+    return this.#pageUrl;
   }
 }
 

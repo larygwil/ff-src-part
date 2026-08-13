@@ -1153,6 +1153,11 @@ pref("browser.tabs.groups.smart.topicModelRevision", "latest");
 pref("browser.tabs.groups.smart.embeddingModelRevision", "latest");
 // value should be <= 1000 to be correctly converted (275 -> 0.275)
 pref("browser.tabs.groups.smart.nearestNeighborThresholdInt", 275);
+// Clustering method: KMEANS or AGGLOMERATIVE (hierarchical, average-linkage).
+pref("browser.tabs.groups.smart.clusterMethod", "AGGLOMERATIVE");
+// AGGLOMERATIVE cosine-distance cutoff in thousandths (825 -> 0.825). Lower is
+// stricter (more, smaller groups); higher is more lenient (fewer, larger).
+pref("browser.tabs.groups.smart.agglomerativeThresholdInt", 825);
 pref("browser.tabs.groups.smart.optin", false);
 
 pref("browser.tabs.dragDrop.createGroup.enabled", true);
@@ -2330,12 +2335,15 @@ pref("places.semanticHistory.smartwindow.featureGate", false);
 // TODO Bug 2053495: remove with mistral release pref
 pref("browser.smartwindow.mistralRelease", false);
 
+// Semantic distance threshold for Smart Window history search only.
+pref("places.semanticHistory.smartwindow.distanceThreshold", "0.6");
+
 // Smart Window: Auto Tab Grouping (bug 2054500).
-pref("browser.smartwindow.autoTabGrouping.enabled", false);
+pref("browser.smartwindow.autoTabGrouping.enabled", true);
 pref("browser.smartwindow.autoTabGrouping.maxGroups", 3);
 pref("browser.smartwindow.autoTabGrouping.minTabsPerGroup", 2);
 pref("browser.smartwindow.autoTabGrouping.minCandidateTabs", 4);
-pref("browser.smartwindow.autoTabGrouping.minCohesion", "0.1");
+pref("browser.smartwindow.autoTabGrouping.minCohesion", "0.15");
 pref("browser.smartwindow.autoTabGrouping.timeoutMs", 8000);
 pref("browser.smartwindow.autoTabGrouping.loglevel", "Warn");
 

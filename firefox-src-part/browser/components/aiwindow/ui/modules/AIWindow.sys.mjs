@@ -352,7 +352,7 @@ export const AIWindow = {
   },
 
   /**
-   * Initializes the toolbox button that opens the "Group my tabs" panel. The
+   * Initializes the toolbox button that opens the "Organize Tabs" panel. The
    * whole Auto Tab Grouping feature is gated behind a default-off pref.
    *
    * @param {Window} win

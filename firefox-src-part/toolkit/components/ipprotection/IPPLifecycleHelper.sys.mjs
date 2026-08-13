@@ -26,6 +26,7 @@ const FOREGROUND_TOPIC = "application-foreground";
  */
 export class IPPLifeCycleHelperClass {
   #observing = false;
+  #suspended = false;
 
   constructor() {
     this.handleEvent = this.#handleEvent.bind(this);
@@ -79,6 +80,15 @@ export class IPPLifeCycleHelperClass {
     Services.obs.removeObserver(this, BACKGROUND_TOPIC);
     Services.obs.removeObserver(this, FOREGROUND_TOPIC);
     this.#observing = false;
+    this.#suspended = false;
+  }
+
+  /**
+   * True while the device is asleep or the app is backgrounded, i.e. between a
+   * sleep/background notification and the following wake/foreground one.
+   */
+  get isSuspended() {
+    return this.#suspended;
   }
 
   observe(_subject, topic) {
@@ -95,6 +105,7 @@ export class IPPLifeCycleHelperClass {
   }
 
   #onSleep() {
+    this.#suspended = true;
     const channelFilter = lazy.IPPProxyManager.channelFilter();
     if (!channelFilter?.active) {
       return;
@@ -103,6 +114,7 @@ export class IPPLifeCycleHelperClass {
   }
 
   #onWake() {
+    this.#suspended = false;
     const channelFilter = lazy.IPPProxyManager.channelFilter();
     if (!channelFilter?.active) {
       return;

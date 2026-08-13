@@ -172,10 +172,24 @@ export const TOOL_RESULTS_SUBQUERY = `(
   ) t
 ) AS tool_results`;
 
+// page_url is the most recent real (non-empty, non-about:) page the chat was
+// about, so the history menu can show that page's favicon; it falls back to the
+// conversation's own page_url. substr avoids a LIKE clause, which mozStorage
+// rejects unless the pattern is a bound parameter.
 export const CONVERSATIONS_MOST_RECENT = `
-SELECT conv_id, title
-FROM conversation
-ORDER BY updated_date DESC
+SELECT c.conv_id, c.title,
+  COALESCE(
+    (SELECT m.page_url FROM message m
+     WHERE m.conv_id = c.conv_id
+       AND m.is_active_branch
+       AND m.page_url != ''
+       AND substr(m.page_url, 1, 6) != 'about:'
+     ORDER BY m.created_date DESC
+     LIMIT 1),
+    c.page_url
+  ) AS page_url
+FROM conversation c
+ORDER BY c.updated_date DESC
 LIMIT :limit;
 `;
 

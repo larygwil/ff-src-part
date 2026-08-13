@@ -192,6 +192,7 @@ export let StartupOSIntegration = {
       }
       safeCall(() => this.ensurePrivateBrowsingShortcutExists());
       safeCall(() => lazy.CustomIconManager.ensureAppliedOrRevert());
+      safeCall(() => lazy.CustomIconManager.ensureShortcutInPerUserStartMenu());
     }
   },
 

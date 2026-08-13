@@ -402,6 +402,7 @@ class ChatStore {
       return new ChatMinimal({
         convId: row.getResultByName("conv_id"),
         title: row.getResultByName("title"),
+        pageUrl: row.getResultByName("page_url"),
       });
     });
   }

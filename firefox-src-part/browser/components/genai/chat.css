@@ -134,6 +134,7 @@ browser {
   inset: 0;
   overflow: auto;
   position: absolute;
+  z-index: 2;
 
   .onboardingContainer {
     height: unset;
@@ -278,10 +279,46 @@ browser {
   }
 }
 
-#summarize-btn-container {
+#footer {
   border-top: 1px solid var(--border-color);
-  padding: var(--space-large);
+
+  &.promo-active {
+    --promo-background: linear-gradient(
+      180deg,
+      light-dark(color-mix(in srgb, var(--color-violet-10) 20%, transparent), color-mix(in srgb, var(--color-violet-70) 20%, transparent)) 0%,
+      light-dark(color-mix(in srgb, var(--color-orange-10) 20%, transparent), color-mix(in srgb, var(--color-orange-70) 20%, transparent)) 100%
+    );
+    --promo-mask:
+      linear-gradient(to right, transparent 0%, black 45%, black 55%, transparent 100%),
+      linear-gradient(to bottom, transparent 0%, black 45%, black 55%, transparent 100%);
+    overflow: hidden;
+    padding: var(--space-large);
+    position: relative;
+
+    &::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      background: var(--promo-background);
+      mask-image: var(--promo-mask);
+      pointer-events: none;
+    }
+
+    #summarize-btn-container {
+      padding: 0;
+      padding-block-start: var(--space-large);
+
+      .badge {
+        inset-inline-start: -5px;
+      }
+    }
+  }
+}
+
+#summarize-btn-container {
   position: relative;
+  padding: var(--space-large);
 
   .badge {
     --badge-background-color-new: var(--color-green-40);
@@ -291,7 +328,7 @@ browser {
     border-radius: var(--border-radius-small);
     color: var(--button-text-color-primary-hover);
     font-size: var(--font-size-small);
-    left: 10px;
+    inset-inline-start: 10px;
     padding: var(--space-xxsmall) var(--space-small);
     position: absolute;
     text-align: center;

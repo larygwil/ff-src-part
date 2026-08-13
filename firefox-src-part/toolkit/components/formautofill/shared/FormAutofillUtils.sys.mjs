@@ -35,6 +35,8 @@ const CREDITCARDS_COLLECTION_NAME = "creditCards";
 const AUTOFILL_CREDITCARDS_OS_AUTH_LOCKED_PREF =
   FormAutofill.AUTOFILL_CREDITCARDS_OS_AUTH_LOCKED_PREF;
 const AUTOFILL_ML_SUCCESS_PREF = "extensions.formautofill.useml.successful";
+const AUTOFILL_ML_NATIVE_ONNX_PREF =
+  "extensions.formautofill.useml.nativeOnnxAvailable";
 const MANAGE_ADDRESSES_L10N_IDS = [
   "autofill-add-address-title",
   "autofill-manage-addresses-title",
@@ -198,14 +200,35 @@ FormAutofillUtils = {
     return Array.from(element.querySelectorAll(types.join(",")));
   },
 
-  get useMLInference() {
+  /**
+   * Whether the ML autofill feature is turned on. This says nothing about
+   * whether inference can actually run; use `useMLInference` to decide whether
+   * to rely on ML results.
+   */
+  get isMLAutofillEnabled() {
     return (
       AppConstants.platform !== "android" && FormAutofillUtils.enableMLAutofill
     );
   },
 
+  /**
+   * Whether ML inference should be used to classify fields. On top of the
+   * feature being enabled, this requires that we have confirmed the native ONNX
+   * runtime is available.
+   */
+  get useMLInference() {
+    return (
+      FormAutofillUtils.isMLAutofillEnabled &&
+      FormAutofillUtils.isNativeOnnxRuntimeAvailable
+    );
+  },
+
   setMLUsedAlready() {
     Services.prefs.setBoolPref(AUTOFILL_ML_SUCCESS_PREF, true);
+  },
+
+  setNativeOnnxRuntimeAvailable(available) {
+    Services.prefs.setBoolPref(AUTOFILL_ML_NATIVE_ONNX_PREF, available);
   },
 
   /**
@@ -1544,5 +1567,12 @@ XPCOMUtils.defineLazyPreferenceGetter(
   FormAutofillUtils,
   "isMLUsedAlready",
   AUTOFILL_ML_SUCCESS_PREF,
+  false
+);
+
+XPCOMUtils.defineLazyPreferenceGetter(
+  FormAutofillUtils,
+  "isNativeOnnxRuntimeAvailable",
+  AUTOFILL_ML_NATIVE_ONNX_PREF,
   false
 );

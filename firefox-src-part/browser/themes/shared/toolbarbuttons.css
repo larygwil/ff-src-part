@@ -71,10 +71,6 @@
   --smartwindow-ask-btn-inline-start-padding: 4px;
   --smartwindow-ask-btn-text-icon-gap: 6px;
 
-  /* Group-tabs button purple state (pressed / panel open) */
-  --smartwindow-group-tabs-btn-bg-active: var(--color-violet-20);
-  --smartwindow-group-tabs-btn-border-color-active: var(--color-violet-50);
-  --smartwindow-group-tabs-btn-icon-fill-active: var(--color-violet-60);
   --smartwindow-toggle-shadow-color: light-dark(
     color-mix(in srgb, var(--color-violet-60) 20%, transparent),
     color-mix(in srgb, var(--color-violet-40) 20%, transparent)
@@ -750,22 +746,11 @@ toolbar[keyNav]:not([collapsed], [customizing]) toolbartabstop,
 /* Smart Window auto tab grouping button */
 #smartwindow-group-tabs-button {
   align-items: center;
-  padding-inline: var(--toolbar-padding-inline);
 }
 
 #smartwindow-group-tabs-button-inner {
   -moz-user-focus: normal;
   align-self: center;
-  background-color: var(--button-background-color);
-  border: var(--border-width) solid var(--border-color);
-  border-radius: var(--border-radius-medium);
-  height: var(--size-item-medium);
-  width: var(--size-item-large);
-  /* Suppress the default round icon background so hover/press show the purple
-   * pill state below instead of a gray circle over the icon. */
-  --toolbarbutton-background-color-hover: transparent;
-  --toolbarbutton-background-color-active: transparent;
-  --toolbarbutton-border-radius: var(--border-radius-medium);
 
   &:focus-visible {
     outline: var(--focus-outline);
@@ -777,23 +762,10 @@ toolbar[keyNav]:not([collapsed], [customizing]) toolbartabstop,
 
   & > .toolbarbutton-icon {
     -moz-context-properties: fill, fill-opacity;
-    border-radius: 0;
-    height: var(--size-item-small);
-    width: var(--size-item-small);
-    --toolbarbutton-padding-inner: 0;
   }
 
-  /* Purple state while pressed and, via aria-expanded, for as long as the panel
-   * stays open. Uses the same violet family as the Ask button. */
-  @media not (forced-colors) {
-    &:is([aria-expanded="true"], :hover:active) {
-      background-color: var(--smartwindow-group-tabs-btn-bg-active);
-      border-color: var(--smartwindow-group-tabs-btn-border-color-active);
-
-      > .toolbarbutton-icon {
-        fill: var(--smartwindow-group-tabs-btn-icon-fill-active);
-      }
-    }
+  &[aria-expanded="true"] > .toolbarbutton-icon {
+    background-color: var(--toolbarbutton-background-color-active);
   }
 }
 

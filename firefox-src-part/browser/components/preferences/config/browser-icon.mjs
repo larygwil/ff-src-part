@@ -125,6 +125,7 @@ function watchUnlockState(emitChange) {
 document.addEventListener("paneshown", event => {
   if (event.detail?.category === "paneBrowserIcon") {
     refreshUnlockState();
+    lazy.CustomIconManager.refreshTaskbarButtons();
   }
 });
 

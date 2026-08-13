@@ -55,14 +55,12 @@ ChromeUtils.defineLazyGetter(lazy, "log", () => {
   });
 });
 
-const isXpcshell = Services.env.exists("XPCSHELL_TEST_PROFILE_DIR");
+// Testing escapes in this file must key on Cu.isInAutomation.
 
-// On Nightly under a test harness, ignore real system/user policies so a
-// developer's local policies.json or registry entries don't leak into tests.
-// Restricted to Nightly so release builds never expose a way to bypass
-// enterprise policies via a test env var.
+// On Nightly in automation, ignore real system/user policies so a developer's
+// local policies.json or registry entries don't leak into tests.
 function shouldIgnoreLocalPolicies() {
-  return AppConstants.NIGHTLY_BUILD && (Cu.isInAutomation || isXpcshell);
+  return AppConstants.NIGHTLY_BUILD && Cu.isInAutomation;
 }
 
 // We're only testing for empty objects, not
@@ -699,7 +697,7 @@ class JSONPoliciesProvider extends PoliciesProvider {
     // work as expected.
     if (
       alternatePath &&
-      (Cu.isInAutomation || AppConstants.NIGHTLY_BUILD || isXpcshell) &&
+      (Cu.isInAutomation || AppConstants.NIGHTLY_BUILD) &&
       (!configFile || !configFile.exists())
     ) {
       if (alternatePath.startsWith(MAGIC_TEST_ROOT_PREFIX)) {
@@ -771,7 +769,7 @@ class WindowsGPOPoliciesProvider extends PoliciesProvider {
     // user policies first and then replace them if necessary.
     this._readData(wrk, wrk.ROOT_KEY_CURRENT_USER);
     // We don't access machine policies in testing
-    if (!Cu.isInAutomation && !isXpcshell) {
+    if (!Cu.isInAutomation) {
       this._readData(wrk, wrk.ROOT_KEY_LOCAL_MACHINE);
     }
   }
@@ -779,7 +777,7 @@ class WindowsGPOPoliciesProvider extends PoliciesProvider {
   _readData(wrk, root) {
     try {
       let regLocation = "SOFTWARE\\Policies";
-      if (Cu.isInAutomation || isXpcshell) {
+      if (Cu.isInAutomation) {
         let altLocation = Services.prefs.getStringPref(PREF_ALTERNATE_GPO, "");
         if (altLocation) {
           regLocation = altLocation;

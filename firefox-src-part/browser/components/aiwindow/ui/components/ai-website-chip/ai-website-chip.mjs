@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { html } from "chrome://global/content/vendor/lit.all.mjs";
+import { html, ifDefined } from "chrome://global/content/vendor/lit.all.mjs";
 import { MozLitElement } from "chrome://global/content/lit-utils.mjs";
 
 /**
@@ -19,18 +19,28 @@ import { MozLitElement } from "chrome://global/content/lit-utils.mjs";
  *   - hover (non-removable): favicon + text (identical to default)
  *
  * @property {string} type - Type of chip: "in-line" or "context-chip"
+ * @property {"default" | "small"} size - Chip size
  * @property {string} label - The text content of the chip
  * @property {string} iconSrc - Favicon or icon URL
  * @property {string} href - URL for the link (used with context-chip type)
  * @property {boolean} removable - Whether the chip shows a remove button on hover (default false)
+ * @property {string} itemRole - ARIA role for the inner element
  */
 export class AIWebsiteChip extends MozLitElement {
+  // Forward focus to the inner element for keyboard navigation.
+  static shadowRootOptions = {
+    ...MozLitElement.shadowRootOptions,
+    delegatesFocus: true,
+  };
+
   static properties = {
     type: { type: String, reflect: true },
+    size: { type: String, reflect: true },
     label: { type: String },
     iconSrc: { type: String },
     href: { type: String },
     removable: { type: Boolean },
+    itemRole: { type: String },
   };
 
   #parentHost = null;
@@ -38,10 +48,12 @@ export class AIWebsiteChip extends MozLitElement {
   constructor() {
     super();
     this.type = "in-line";
+    this.size = "default";
     this.label = "";
     this.iconSrc = "";
     this.href = "";
     this.removable = false;
+    this.itemRole = "";
   }
 
   connectedCallback() {
@@ -169,6 +181,8 @@ export class AIWebsiteChip extends MozLitElement {
     const chipElement = this.href
       ? html`<a
           class="chip"
+          part="chip"
+          role=${ifDefined(this.itemRole || undefined)}
           ?data-removable=${isRemovable}
           href=${this.href}
           @click=${this.#handleAnchorClick}
@@ -177,6 +191,8 @@ export class AIWebsiteChip extends MozLitElement {
         </a>`
       : html`<button
           class="chip"
+          part="chip"
+          role=${ifDefined(this.itemRole || undefined)}
           ?data-empty=${isEmpty}
           ?data-removable=${isRemovable}
           @click=${this.#handleClick}
