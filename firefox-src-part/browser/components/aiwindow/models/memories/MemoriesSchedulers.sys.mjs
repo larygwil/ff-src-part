@@ -103,6 +103,9 @@ export class MemoriesSchedulers {
    */
   static maybeRunAndSchedule() {
     if (!MemoriesSchedulers.#anySourceEnabled()) {
+      lazy.console.debug(
+        "Memory scheduler not started: no valid memory source"
+      );
       return null;
     }
     if (!this.#instance) {

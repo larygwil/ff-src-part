@@ -408,6 +408,12 @@
           max-width: 0;
           overflow: hidden;
           box-sizing: border-box;
+          /* Also zero the padding so max-width: 0 can reach a true 0 width;
+             otherwise the leading digit shows as a sliver through the padding
+             band. !important is required because the first-visit intro
+             animation holds the padding, and animations outrank normal
+             declarations in the cascade. */
+          padding: 0 !important;
         }
       }
       @media (prefers-reduced-motion: reduce) {
@@ -434,17 +440,6 @@
           #trust-icon-tracker-count-shortform {
             min-width: 0;
           }
-        }
-      }
-      /* Same-site navigation: show the count in its final state, no animation. */
-      &:not(.first-visit).same-site-nav {
-        #trust-icon-tracker-count-shortform-wrapper {
-          animation-name: none;
-          grid-template-columns: 1fr;
-          opacity: 1;
-          padding-block: var(--space-xxsmall);
-          padding-inline: var(--space-xsmall);
-          visibility: visible;
         }
       }
       /* On a site's first visit, we first show "x trackers blocked" (the long form) for a few seconds,

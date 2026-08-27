@@ -183,6 +183,12 @@ class TrustPanel {
 
   #lastEvent = null;
 
+  // The browser element that was active during the last updateIdentity() call.
+  // Used to distinguish a real same-site navigation within one tab from a tab
+  // switch to another tab on the same domain, so the tracker count from the
+  // previous tab is not incorrectly inherited.
+  #lastBrowser = null;
+
   // Monotonic tag for #updateBlockerView runs so a stale (slower) run can't
   // overwrite a fresher one's result. See the method for details.
   #blockerViewUpdateId = 0;
@@ -376,7 +382,9 @@ class TrustPanel {
       triggerEvent: opts.event,
     });
 
-    const applicableBreaches = await this.#getApplicableBreaches(this.#host);
+    const applicableBreaches = await this.#getApplicableBreaches(
+      this.#asciiHost
+    );
     const [hasMonitorAccountOrStoredPasswords, blockedTrackersCount] =
       await Promise.all([
         this.#hasMonitorAccountOrStoredPasswords(),
@@ -470,13 +478,16 @@ class TrustPanel {
   }
 
   /**
-   * Called when the top-level document finishes loading. If the scanning shield
-   * is still up (no tracker was blocked during the load), resolve it now to the
-   * final secure/insecure state. A tracker blocked later still increments the
-   * count via #updateToolbarTrackerCount.
+   * Called when the top-level document finishes loading. It does two things:
+   * 1. Update the tracker count to the most recent number. This is necessary
+   *    because `onContentBlockingEvent` only gets called when a particular
+   *    category of trackers is first blocked (e.g. fingerprinters), not for
+   *    every blocked origin, leaving the count incomplete.
+   * 2. Set `this.#blockersChecked` and call `#updateUrlBarIcon`, to ensure
+   *    the scanning state gets resolved to the final secure/insecure state.
    */
   async onNavigationComplete() {
-    if (!this.#enabled || !this.#uri || this.#blockersChecked) {
+    if (!this.#enabled || !this.#uri) {
       return;
     }
     if (
@@ -485,15 +496,15 @@ class TrustPanel {
     ) {
       return;
     }
-    // Resolve the count first: if a tracker was blocked it already set
-    // #blockersChecked, so we only fall through to the plain check when none was.
     const uri = this.#uri;
     await this.#updateToolbarTrackerCount();
-    if (this.#uri !== uri || this.#blockersChecked) {
+    if (this.#uri !== uri) {
       return;
     }
-    this.#blockersChecked = true;
-    this.#updateUrlbarIcon();
+    if (!this.#blockersChecked) {
+      this.#blockersChecked = true;
+      this.#updateUrlbarIcon();
+    }
   }
 
   updateIdentity(state, uri) {
@@ -506,8 +517,14 @@ class TrustPanel {
     } catch (ex) {
       this.#uriHasHost = false;
     }
-    // Compute before overwriting #uri below.
-    this.#sameSiteNavigation = this.#isSameSite(uri, this.#uri);
+
+    const browser = gBrowser.selectedBrowser;
+    this.#sameSiteNavigation =
+      // If the user visits the same site in different tabs, then switches between those tabs,
+      // that results in two `updateIdentity` calls with the same site, but that should not
+      // be considered a same-site navigation:
+      browser === this.#lastBrowser && this.#isSameSite(uri, this.#uri);
+    this.#lastBrowser = browser;
 
     this.#state = state;
     this.#uri = uri;
@@ -518,14 +535,13 @@ class TrustPanel {
     this.#qwacStatusPromise = null;
     this.#pageExtensionPolicy = WebExtensionPolicy.getByURI(uri);
     this.#breachedStatus = null;
+    // Don't show the "scanning" icon while navigating between different pages on the same site:
     if (this.#sameSiteNavigation) {
-      // Keep the count, but clear first-visit so it renders statically.
-      this.#isFirstVisit = false;
-    } else {
-      this.#trackerCount = null;
-      this.#trackerCountPromise = null;
-      this.#isFirstVisit = false;
+      this.#blockersChecked = true;
     }
+    this.#trackerCount = null;
+    this.#trackerCountPromise = null;
+    this.#isFirstVisit = false;
     // #blockersChecked is reset in resetIconForNavigation, not here, so tab
     // switches and re-fired security changes don't re-enter scanning.
     this.#updateUrlbarIcon();
@@ -551,7 +567,7 @@ class TrustPanel {
     const capturedUri = uri;
     const [applicableBreaches, hasMonitorAccountOrStoredPasswords] =
       await Promise.all([
-        this.#getApplicableBreaches(this.#host),
+        this.#getApplicableBreaches(this.#asciiHost),
         this.#hasMonitorAccountOrStoredPasswords(),
       ]);
 
@@ -619,26 +635,23 @@ class TrustPanel {
       targetClasses = new Set(["scanning"]);
     }
 
-    // Suppresses the reveal animation so the pill stays static across a
-    // same-site navigation.
-    if (this.#sameSiteNavigation && !targetClasses.has("scanning")) {
-      targetClasses.add("same-site-nav");
-    }
-
     // A breach supersedes scanning: resolve so the shield doesn't mask it.
     if (targetClasses.has("breached")) {
       this.#blockersChecked = true;
     }
 
+    const browser = gBrowser.selectedBrowser;
     // Handle the breach animation guard (restart only on fresh URI).
     if (targetClasses.has("breached")) {
-      let browser = gBrowser.selectedBrowser;
       if (browser.lastAnimatedBreachURI !== this.#uri?.spec) {
         // This is a fresh visit: trigger the animation.
         targetClasses.add("breach-animating");
         browser.lastAnimatedBreachURI = this.#uri?.spec;
         // Logic will re-add breached, and since it's the first time for
         // breach-animating, the CSS animation will play.
+      } else if (icon.classList.contains("breach-animating")) {
+        // Don't interrupt animations that are already running for this URL:
+        targetClasses.add("breach-animating");
       }
     }
 
@@ -646,6 +659,17 @@ class TrustPanel {
     // the target set — keeping targetClasses the single source of truth with no
     // separate member to maintain. (chickletShown is re-toggled below.)
     let appliedIconClasses = [...icon.classList];
+
+    if (
+      targetClasses.has("has-blocked-trackers") &&
+      browser.lastTrackerCountShownURI !== this.#uri?.spec
+    ) {
+      browser.lastTrackerCountShownURI = this.#uri?.spec;
+      Glean.trustpanel.trackerCountShown.record({
+        first_visit: targetClasses.has("first-visit"),
+      });
+    }
+
     for (let cls of appliedIconClasses) {
       if (!targetClasses.has(cls)) {
         icon.classList.remove(cls);
@@ -681,7 +705,9 @@ class TrustPanel {
       "trustpanel-breach-alert-section"
     );
 
-    const applicableBreaches = await this.#getApplicableBreaches(this.#host);
+    const applicableBreaches = await this.#getApplicableBreaches(
+      this.#asciiHost
+    );
     const hasMonitorAccountOrStoredPasswords =
       await this.#hasMonitorAccountOrStoredPasswords();
     const breachedStatus = getBreachedStatus({
@@ -713,12 +739,12 @@ class TrustPanel {
       this.#trackingProtectionEnabled
         ? "trustpanel-etp-toggle-on"
         : "trustpanel-etp-toggle-off",
-      { host: this.#host }
+      { host: this.#displayHost }
     );
 
     let hostElement = document.getElementById("trustpanel-popup-host");
-    hostElement.setAttribute("value", this.#host);
-    hostElement.setAttribute("tooltiptext", this.#host);
+    hostElement.setAttribute("value", this.#displayHost);
+    hostElement.setAttribute("tooltiptext", this.#displayHost);
 
     document.l10n.setAttributes(
       document.getElementById("trustpanel-etp-label"),
@@ -774,6 +800,10 @@ class TrustPanel {
       !ContentBlockingAllowList.canHandle(window.gBrowser.selectedBrowser)
     );
 
+    // Ensure the toolbar tracker count is fully up-to-date and aligns with the
+    // trust panel's count:
+    void this.#updateToolbarTrackerCount();
+
     await this.#updateBlockerView();
   }
 
@@ -781,16 +811,20 @@ class TrustPanel {
     if (this.#trackerCountPromise) {
       return this.#trackerCountPromise;
     }
-    this.#trackerCountPromise = (async () => {
+    const p = (async () => {
       let count = this.#fetchSmartBlocked().length;
       for (let blocker of Object.values(this.#blockers)) {
-        if (blocker.isBlocking(this.#lastEvent)) {
-          count += await blocker.getBlockerCount();
-        }
+        count += await blocker.getBlockerCount();
       }
       return count;
     })();
-    return this.#trackerCountPromise;
+    this.#trackerCountPromise = p;
+    p.finally(() => {
+      if (this.#trackerCountPromise === p) {
+        this.#trackerCountPromise = null;
+      }
+    });
+    return p;
   }
 
   async #markFirstVisit() {
@@ -822,8 +856,13 @@ class TrustPanel {
     }
     // Also treat as a first visit if the tracker count has never been shown,
     // so the user gets the long-form UI even on a return visit.
+    const browser = gBrowser.selectedBrowser;
     this.#isFirstVisit =
-      rows.length === 0 || !UrlbarPrefs.get("trackerCountShown");
+      (rows.length === 0 || !UrlbarPrefs.get("trackerCountShown")) &&
+      browser.lastFirstVisitURI !== uri.spec;
+    if (this.#isFirstVisit) {
+      browser.lastFirstVisitURI = uri.spec;
+    }
     this.#updateUrlbarIcon();
   }
 
@@ -846,11 +885,6 @@ class TrustPanel {
       return;
     }
 
-    // On a same-site navigation, keep the last positive count until the new page
-    // reports its own, so the pill doesn't flash "0" mid-load.
-    if (this.#sameSiteNavigation && count === 0 && this.#trackerCount > 0) {
-      count = this.#trackerCount;
-    }
     this.#trackerCount = count;
     // A blocked tracker resolves the scanning shield straight into the reveal.
     if (count > 0) {
@@ -961,7 +995,7 @@ class TrustPanel {
     document.l10n.setAttributes(
       document.getElementById("trustpanel-securityInformationView"),
       "trustpanel-site-information-header",
-      { host: this.#host }
+      { host: this.#displayHost }
     );
 
     let connection = this.#connectionState();
@@ -1005,7 +1039,7 @@ class TrustPanel {
     document.l10n.setAttributes(
       document.getElementById("trustpanel-blockerView"),
       "trustpanel-blocker-header",
-      { host: this.#host }
+      { host: this.#displayHost }
     );
     await this.#updateBlockerView();
     document
@@ -1055,7 +1089,7 @@ class TrustPanel {
     document.l10n.setAttributes(
       document.getElementById("trustpanel-clearcookiesView"),
       "trustpanel-clear-cookies-header",
-      { host: this.#host }
+      { host: this.#displayHost }
     );
     document
       .getElementById("trustpanel-popup-multiView")
@@ -1317,16 +1351,30 @@ class TrustPanel {
     );
   }
 
-  // Using a getter rather than a method reduces call-site noise (this.#host vs
-  // this.#host()) and avoids churn when the implementation changes. Semantically,
+  // Using a getter rather than a method reduces call-site noise (this.#displayHost vs
+  // this.#displayHost()) and avoids churn when the implementation changes. Semantically,
   // this behaves like a property derived from #uri, so a getter is the right fit.
-  get #host() {
+  get #displayHost() {
     if (!this.#uri) {
       return null;
     }
     return BrowserUtils.formatURIForDisplay(this.#uri, {
       onlyBaseDomain: true,
     });
+  }
+
+  // #displayHost is a display string (IDN hosts are shown decoded, and it can carry a
+  // port), so it must not be compared against stored data. This is the host in
+  // its ASCII form, for matching against e.g. the breach list.
+  get #asciiHost() {
+    if (!this.#uri) {
+      return null;
+    }
+    try {
+      return this.#uri.asciiHost;
+    } catch (ex) {
+      return null;
+    }
   }
 
   get #isEV() {

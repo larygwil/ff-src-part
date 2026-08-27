@@ -56,6 +56,8 @@ ChromeUtils.defineLazyGetter(lazy, "console", () =>
   })
 );
 
+const RESUME_ACTIVITY_SUPPORTED_LOCALES = ["en"];
+
 let _savedLoadPromptDescriptor = null;
 export function _setLoadPromptForTesting(fn) {
   if (fn !== null) {
@@ -745,11 +747,17 @@ async function generateUncachedResumeActivityConversationStarters() {
     }
 
     const urlsByHash = await lazy.resolveUrlsForMemories(
-      memoriesWithPlaceHashes
+      memoriesWithPlaceHashes,
+      { filterBySummary: true }
     );
-    const memoriesWithUrlsAndTitles = memoriesWithPlaceHashes.map(memory =>
-      attachUrlsToMemory(memory, urlsByHash, MAX_NUM_URLS_PER_MEMORY)
-    );
+    const memoriesWithUrlsAndTitles = memoriesWithPlaceHashes
+      .map(memory =>
+        attachUrlsToMemory(memory, urlsByHash, MAX_NUM_URLS_PER_MEMORY)
+      )
+      .filter(s => !!s.urls.length);
+    if (!memoriesWithUrlsAndTitles.length) {
+      return [];
+    }
 
     // Load prompts and build the conversation for inference
     const conversation = await lazy.buildConversation(
@@ -824,14 +832,28 @@ async function generateUncachedResumeActivityConversationStarters() {
   }
 }
 
+function isResumeActivityLocaleSupported() {
+  const appLocale = Services.locale.appLocaleAsBCP47.toLowerCase();
+  return RESUME_ACTIVITY_SUPPORTED_LOCALES.some(
+    locale => appLocale === locale || appLocale.startsWith(`${locale}-`)
+  );
+}
+
 /**
  * Generates conversation starter prompts for suggestions to resume activity based
  * on user memories and associated browsing history.
+ *
+ * Only supported for English app locales; returns an empty list otherwise.
  *
  * @returns {Promise<Array<object>>} Array of objects containing memory and
  *   content with headline, status, and previewTabs
  */
 export async function generateResumeActivityConversationStarters() {
+  // Return an empty array for unsupported locales
+  if (!isResumeActivityLocaleSupported()) {
+    return [];
+  }
+
   const watermark = await MemoriesManager.getLastSessionMemoryTimestamp();
   const cached = _getCachedResumeActivity(watermark);
   if (cached !== undefined) {

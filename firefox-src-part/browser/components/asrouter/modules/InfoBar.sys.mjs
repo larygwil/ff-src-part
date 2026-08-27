@@ -207,7 +207,7 @@ class InfoBarNotification {
         eventCallback: this.infobarCallback,
         style: content.style || {},
       },
-      content.buttons.map(b => this.formatButtonConfig(b)),
+      content.buttons.map((b, i) => this.formatButtonConfig(b, i)),
       true, // Disables clickjacking protections
       content.dismissable
     );
@@ -320,8 +320,13 @@ class InfoBarNotification {
     return frag;
   }
 
-  formatButtonConfig(button) {
-    let btnConfig = { callback: this.buttonCallback, ...button };
+  /**
+   * @param {object} button - The button config from the message content.
+   * @param {number} index - The button's position in `content.buttons`, used to
+   *   identify the button in telemetry when it has no `id`.
+   */
+  formatButtonConfig(button, index) {
+    let btnConfig = { callback: this.buttonCallback, ...button, index };
     // notificationbox will set correct data-l10n-id attributes if passed in
     // using the l10n-id key. Otherwise the `button.label` text is used.
     if (button.label.string_id) {
@@ -378,7 +383,7 @@ class InfoBarNotification {
    * Callback fired when a button in the infobar is clicked.
    *
    * @param {Element} notificationBox - The `<notification-message>` element representing the infobar.
-   * @param {object} btnDescription - An object describing the button, includes the label, the action with an optional dismiss property, and primary button styling.
+   * @param {object} btnDescription - An object describing the button, includes the label, the action with an optional dismiss property, primary button styling, and the optional `id` and generated `index` used to identify the button in telemetry.
    * @param {Element} target - The <button> DOM element that was clicked.
    * @returns {boolean} `true` to keep the infobar open, `false` to dismiss it.
    */
@@ -391,7 +396,9 @@ class InfoBarNotification {
     let eventName = isPrimary
       ? "CLICK_PRIMARY_BUTTON"
       : "CLICK_SECONDARY_BUTTON";
-    this.sendUserEventTelemetry(eventName);
+    this.sendUserEventTelemetry(eventName, {
+      source: btnDescription.id ?? `button_${btnDescription.index}`,
+    });
 
     // Prevents infobar dismissal when dismiss is explicitly set to `false`
     return btnDescription.action?.dismiss === false;
@@ -421,7 +428,11 @@ class InfoBarNotification {
         InfoBar._activeInfobar = null;
       }
     } else if (this.notification) {
-      this.sendUserEventTelemetry("DISMISSED");
+      // "dismissed" is the X button; anything else reaching here (e.g.
+      // "disconnected") is a teardown the user did not ask for.
+      this.sendUserEventTelemetry("DISMISSED", {
+        source: eventType === "dismissed" ? "dismiss_button" : eventType,
+      });
       if (eventType === "dismissed" && this.message.content.dismiss_action) {
         this.dispatchUserAction(
           this.message.content.dismiss_action,
@@ -525,10 +536,17 @@ class InfoBarNotification {
     }
   }
 
-  sendUserEventTelemetry(event) {
+  /**
+   * @param {string} event - The event name, e.g. "IMPRESSION".
+   * @param {object} [eventContext] - Extra context echoed into the
+   *   messaging-system ping. A `source` key is additionally recorded on its own
+   *   `messaging_system.event_source` metric.
+   */
+  sendUserEventTelemetry(event, eventContext) {
     const ping = {
       message_id: this.message.id,
       event,
+      ...(eventContext ? { event_context: eventContext } : {}),
     };
     this._dispatch({
       type: "INFOBAR_TELEMETRY",

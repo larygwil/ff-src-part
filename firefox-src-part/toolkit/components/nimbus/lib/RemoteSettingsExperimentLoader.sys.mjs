@@ -314,9 +314,10 @@ export class RemoteSettingsExperimentLoader {
         this.#shutdownBlocker
       );
 
-      this.setTimer();
-
       this._enabled = true;
+
+      // The timer must be set *after* we are enabled, otherwise it is a no-op.
+      this.setTimer();
     }
 
     await this.updateRecipes("enabled", { forceSync });

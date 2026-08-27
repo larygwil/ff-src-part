@@ -1324,7 +1324,9 @@ export class SmartTabGroupingManager extends AIFeature {
       this.docEmbeddings = precomputedEmbeddings;
     } else {
       this.docEmbeddings = await this._generateEmbeddings(
-        structuredData.map(a => a[EMBED_TEXT_KEY])
+        structuredData.map(a =>
+          SmartTabGroupingManager.preprocessText(a[EMBED_TEXT_KEY])
+        )
       );
     }
     let bestResultCluster;
@@ -1382,8 +1384,9 @@ export class SmartTabGroupingManager extends AIFeature {
   /**
    * Utility function that loads all required engines for Smart Tab Grouping and any dependent models
    *
-   * @param {(progress: { percentage: number }) => void} progressCallback callback function to call.
+   * @param {(progress: { percentage: number }) => void} [progressCallback] callback function to call.
    * Callback passes a dict with percentage indicating best effort 0.0-100.0 progress in model download.
+   * Optional: callers that don't surface progress can omit it.
    */
   async preloadAllModels(progressCallback) {
     let previousProgress = -1;
@@ -1413,7 +1416,7 @@ export class SmartTabGroupingManager extends AIFeature {
           Math.abs(previousProgress - progress) > UPDATE_THRESHOLD_PERCENTAGE
         ) {
           // Update only once changes are above a threshold to avoid throttling the UI with events.
-          progressCallback({
+          progressCallback?.({
             percentage: progress,
           });
           previousProgress = progress;

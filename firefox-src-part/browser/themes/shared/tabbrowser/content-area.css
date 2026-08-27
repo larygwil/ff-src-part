@@ -827,6 +827,12 @@ split-view-footer {
 
 #selection-shortcut-action-panel {
   --panel-subview-body-padding: 0;
+
+  &[ime-hiding] {
+    opacity: 0;
+    pointer-events: none;
+    -moz-window-shadow: none;
+  }
 }
 
 #ai-action-button {

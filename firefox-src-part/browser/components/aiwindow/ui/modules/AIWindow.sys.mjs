@@ -28,6 +28,7 @@ const PREF_MEMORIES_HISTORY =
 const PREF_SEMANTIC_HISTORY_SMARTWINDOW_FEATURE_GATE =
   "places.semanticHistory.smartwindow.featureGate";
 const PREF_AUTO_TAB_GROUPING = "browser.smartwindow.autoTabGrouping.enabled";
+const PREF_FIRSTRUN_HAS_COMPLETED = "browser.smartwindow.firstrun.hasCompleted";
 
 const lazy = {};
 ChromeUtils.defineESModuleGetters(lazy, {
@@ -73,7 +74,10 @@ ChromeUtils.defineESModuleGetters(lazy, {
 XPCOMUtils.defineLazyPreferenceGetter(
   lazy,
   "hasFirstrunCompleted",
-  "browser.smartwindow.firstrun.hasCompleted"
+  PREF_FIRSTRUN_HAS_COMPLETED,
+  false,
+  (_pref, _previous, hasCompleted) =>
+    hasCompleted && AIWindow._startSchedulers()
 );
 
 /**
@@ -128,10 +132,7 @@ export const AIWindow = {
       // window initialized first (e.g. on startup), the first AI window
       // would never start the memories schedulers. Defer until delayed startup
       // so MemoriesManager sees this window as ready before starting the schedulers.
-      win.delayedStartupPromise.then(() => {
-        lazy.MemoriesSchedulers.maybeRunAndSchedule();
-        lazy.TelemetryScheduler.maybeInit();
-      });
+      win.delayedStartupPromise.then(() => this._startSchedulers());
     }
 
     if (this._initialized) {
@@ -151,6 +152,11 @@ export const AIWindow = {
     lazy.NimbusFeatures.smartWindow.onUpdate(this.onNimbusUpdate);
     this._initialized = true;
     this._updateSwitcherWidgetRegistration();
+  },
+
+  _startSchedulers() {
+    lazy.MemoriesSchedulers.maybeRunAndSchedule();
+    lazy.TelemetryScheduler.maybeInit();
   },
 
   handlePlacesEvents(events) {
@@ -354,8 +360,9 @@ export const AIWindow = {
   },
 
   /**
-   * Initializes the toolbox button that opens the "Organize Tabs" panel. The
-   * whole Auto Tab Grouping feature is gated behind a default-off pref.
+   * Initializes the toolbox button that opens the "Organize Tabs" panel, and
+   * starts fetching the models it needs once it is shown. The whole Auto Tab
+   * Grouping feature is gated behind a default-off pref.
    *
    * @param {Window} win
    */
@@ -370,6 +377,9 @@ export const AIWindow = {
       this.isAIWindowActive(win) &&
       lazy.AutoTabGroupingSuggestions.isAvailable
     );
+    if (!button.hidden) {
+      lazy.AutoTabGroupingSuggestions.preloadModels();
+    }
   },
 
   get isDefaultWindow() {
@@ -811,8 +821,7 @@ export const AIWindow = {
             ?.openSidebarForReturningUser();
         }
 
-        lazy.MemoriesSchedulers.maybeRunAndSchedule();
-        lazy.TelemetryScheduler.maybeInit();
+        this._startSchedulers();
 
         this._markActiveStart(win);
         this.recordOpenWindowTelemetry(trigger, win);

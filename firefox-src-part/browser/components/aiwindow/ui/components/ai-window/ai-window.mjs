@@ -1757,6 +1757,15 @@ export class AIWindow extends MozLitElement {
           window: this.#topChromeWindow,
         })
       ) {
+        // This command typically renders the monitor chat UI,
+        // However in the full page the command will be blocked by a warning
+        // but we need to update the chat as if communication has started
+        if (
+          this.mode === MODE.FULLPAGE &&
+          !this.classList.contains("chat-active")
+        ) {
+          this.#initActiveChatlayout();
+        }
         return;
       }
 
@@ -2253,6 +2262,12 @@ export class AIWindow extends MozLitElement {
       this.#smartbar.inputField.showPlaceholderAnimation =
         this.mode === MODE.FULLPAGE;
     }
+  }
+
+  #initActiveChatlayout() {
+    this.showStarters = false;
+    this.showFooter = false;
+    this.#setBrowserContainerActiveState(true);
   }
 
   /**

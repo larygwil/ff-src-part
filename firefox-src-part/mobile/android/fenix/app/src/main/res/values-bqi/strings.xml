@@ -1131,6 +1131,8 @@
   <string name="extension_process_crash_dialog_retry_button_text" tools:ignore="UnusedResources">قپ ریت سی ره وندن دووارته وردنی یل</string>
   <!-- Button text on the extension crash dialog to prompt the user to continue with all extensions disabled. -->
   <string name="extension_process_crash_dialog_disable_extensions_button_text">رئڌن وا پؽش وا وردنی یل قیر فعال</string>
+  <!-- Text shown in the snackbar action button that lets the user retry an add-on operation that just failed. -->
+  <string name="addon_failure_retry_action">قپ ریت دووارته</string>
   <!--
     Account Preferences
 
@@ -1304,6 +1306,11 @@
   <string name="preference_light_theme">رۊشن</string>
   <!-- Preference for using dark theme -->
   <string name="preference_dark_theme">تاریک</string>
+  <!--
+    Preference for using the OLED theme. For localization, this can be translated as "True Black", "Maximum Darkness",
+    or "Full dark" if needed.
+  -->
+  <string name="preference_oled_theme">تاریک ترین</string>
   <!-- Preference for using using dark or light theme automatically set by battery -->
   <string name="preference_auto_battery_theme">سامووݩ وابیڌه و دست زفت کوݩ قوبه</string>
   <!-- Preference for using following device theme -->
@@ -1450,6 +1457,8 @@
   <string name="preferences_inactive_tabs">جا گورو بلگه یل قڌیمی و بشن قیر فعال</string>
   <!-- Title of inactive tabs preference -->
   <string name="preferences_inactive_tabs_title">بلگه یلی ک بیشتر ز دو هفته ننیشتینه، و بشن قیر فعال جا گورو ابۊن.</string>
+  <!-- Title for the preference to enable or disable the tab groups feature -->
+  <string name="preferences_tab_groups_feature">فعال کردن بونکۊ یل بلگه</string>
   <!--
     Privacy report
 
@@ -1694,6 +1703,14 @@
   <string name="ungroup_tab_group_confirmation_dialog_confirm">لقو بونکۊ</string>
   <!-- Text shown on the cancel button in the Ungroup tab group confirmation dialog. -->
   <string name="ungroup_tab_group_confirmation_dialog_cancel">لقو</string>
+  <!-- Custom accessibility action to reorder a tab up rather than dragging. -->
+  <string name="custom_accessibility_action_reorder_tab_up">جاگورو بلگه و روء</string>
+  <!-- Custom accessibility action to reorder a tab left rather than dragging. -->
+  <string name="custom_accessibility_action_reorder_tab_left">جاگورو بلگه و چپ</string>
+  <!-- Custom accessibility action to reorder a tab right rather than dragging. -->
+  <string name="custom_accessibility_action_reorder_tab_right">جاگورو بلگه و راست</string>
+  <!-- Custom accessibility action to reorder a tab down rather than dragging. -->
+  <string name="custom_accessibility_action_reorder_tab_down">جاگورو بلگه و لم</string>
   <!--
     Color labels for tab groups, used for accessibility and selection UI.
 
@@ -2744,11 +2761,11 @@
   <!-- Summary displayed for "Default Protection" option under "DNS over HTTPS". %1$s is the name of the application (e.g. Fenix). -->
   <string name="preference_doh_default_protection_summary">%1$s سلا دستسه ک چ مجالی DNS ٱمن ن سی زفت وابیڌن هریم سیخومی ایسا و کار بره.</string>
   <!-- Bullet point 1 for "Default Protection" information page under "DNS over HTTPS" -->
-  <string name="preference_doh_default_protection_info_1">و کار گرؽڌن جۊر کوݩ پسند بیڌه ایسا</string>
+  <string name="preference_doh_default_protection_info_1">و کار گرؽڌن جۊر کوننده پسند بیڌه ایسا</string>
   <!-- Bullet point 2 for "Default Protection" information page under "DNS over HTTPS" -->
-  <string name="preference_doh_default_protection_info_2">ٱر موشکلی وا جۊر کوݩ DNS ٱمن هڌه، DNS پؽش فرز خوتووݩ ن و کار بگیرین</string>
+  <string name="preference_doh_default_protection_info_2">ٱر موشکلی وا جۊر کوننده DNS ٱمن هڌه، DNS پؽش فرز خوتووݩ ن و کار بگیرین</string>
   <!-- Bullet point 3 for "Default Protection" information page under "DNS over HTTPS". %1$s is replaced by a link using `preference_doh_learn_more` at text ("Learn More"). -->
-  <string name="preference_doh_default_protection_info_3">و کار گرؽڌن جۊر کوݩ مهلی ٱر ک بۊ. %1$s</string>
+  <string name="preference_doh_default_protection_info_3">و کار گرؽڌن جۊر کوننده مهلی ٱر ک بۊ. %1$s</string>
   <!-- Bullet point 4 for "Default Protection" information page under "DNS over HTTPS" -->
   <string name="preference_doh_default_protection_info_4">کۊر من مجالی ک وی پی ان، کونتورول والدین یا سیاستا سازمۊوی فعال بۊن</string>
   <!-- Bullet point 5 for "Default Protection" information page under "DNS over HTTPS". %1$s is the name of the application (e.g. Fenix). %2$s is replaced by a link using `preference_doh_learn_more` at text ("Learn More"). -->
@@ -2758,7 +2775,7 @@
   <!-- Summary displayed for "Increased Protection" option under "DNS over HTTPS" -->
   <string name="preference_doh_increased_protection_summary">ایسا اگۊین ک چ مجالی DNS ٱمن و کار روه وو جۊر کونسه پسند اکۊنین.</string>
   <!-- Bullet point 1 for "Increased Protection" information page under "DNS over HTTPS" -->
-  <string name="preference_doh_increased_protection_info_1">و کار گرؽڌن جۊر کوݩ پسند بیڌه ایسا</string>
+  <string name="preference_doh_increased_protection_info_1">و کار گرؽڌن جۊر کوننده پسند بیڌه ایسا</string>
   <!-- Bullet point 2 for "Increased Protection" information page under "DNS over HTTPS" -->
   <string name="preference_doh_increased_protection_info_2">تینا ٱر موشکلی وا جۊر کوݩ DNS ٱمن هڌه، DNS پؽش فرز خوتووݩ ن و کار بگیرین</string>
   <!-- Title displayed for "Max Protection" option under "DNS over HTTPS" -->
@@ -2766,7 +2783,7 @@
   <!-- Summary displayed for "Max Protection" option under "DNS over HTTPS". %1$s is the name of the application (e.g. Fenix). -->
   <string name="preference_doh_max_protection_summary">%1$s هی و عونوان DNS ٱمن و کار روه. پؽش ز یوکه DNS سیستوم و کار روه، و ایسا ی هوشتار اختار ٱمنیتی داڌه ابۊ.</string>
   <!-- Bullet point 1 for "Max Protection" information page under "DNS over HTTPS" -->
-  <string name="preference_doh_max_protection_info_1">تینا و کار گرؽڌن جۊر کوݩ پسند بیڌه</string>
+  <string name="preference_doh_max_protection_info_1">تینا و کار گرؽڌن جۊر کوننده پسند بیڌه</string>
   <!-- Bullet point 2 for "Max Protection" information page under "DNS over HTTPS" -->
   <string name="preference_doh_max_protection_info_2">ٱر DNS ٱمن من دسرس نبی، هی اختار بڌه</string>
   <!-- Bullet point 3 for "Max Protection" information page under "DNS over HTTPS" -->
@@ -2776,15 +2793,15 @@
   <!-- Summary displayed for "Off" option under "DNS over HTTPS" -->
   <string name="preference_doh_off_summary">موبدل DNS پؽش فرز خوته و کار بگر</string>
   <!-- Text displayed above provider dropdown under "DNS over HTTPS" -->
-  <string name="preference_doh_choose_provider">پسند جۊر کوݩ</string>
+  <string name="preference_doh_choose_provider">پسند جۊر کوننده</string>
   <!-- Text displayed for "Default provider" under "DNS over HTTPS" providers -->
   <string name="preference_doh_provider_default">(پؽش فرز)</string>
   <!-- Text displayed for "Custom" under "DNS over HTTPS" providers -->
   <string name="preference_doh_provider_custom">سفارشی</string>
   <!-- Text displayed for "Custom provider" dialog under "DNS over HTTPS" -->
-  <string name="preference_doh_provider_custom_dialog_title">جۊر کوݩ سفارشی</string>
+  <string name="preference_doh_provider_custom_dialog_title">جۊر کوننده سفارشی</string>
   <!-- Text displayed above provider textfield under "DNS over HTTPS" -->
-  <string name="preference_doh_provider_custom_dialog_textfield">جۊر کوݩ</string>
+  <string name="preference_doh_provider_custom_dialog_textfield">جۊر کوننده</string>
   <!-- Error text displayed for provider textfield under "DNS over HTTPS" if the URL does not start with "https://" or its scheme is not "https" -->
   <string name="preference_doh_provider_custom_dialog_error_https">نشۊوی وا، وا «‪https://‬» شۊرۊ بۊ</string>
   <!-- Error text displayed for provider textfield under "DNS over HTTPS" if the URL is invalid -->
@@ -3052,6 +3069,10 @@
   <string name="ip_protection_toolbar_pill_label">VPN رۊشن</string>
   <!-- Accessibility description for the browser VPN pill in the address bar when the VPN has been activated -->
   <string name="ip_protection_toolbar_pill_description">VPN فعال هڌ.</string>
+  <!-- Label shown next to the browser protection icon in the address bar when the browser VPN turns off -->
+  <string name="ip_protection_toolbar_pill_label_off">VPN کۊر</string>
+  <!-- Accessibility description for the browser VPN pill in the address bar when the VPN has turned off -->
+  <string name="ip_protection_toolbar_pill_description_off">VPN کۊر هڌ.</string>
   <!-- Label for the button that starts the browser VPN authentication or authorization flow on the settings screen -->
   <string name="ip_protection_get_started">ناهاڌن پا کار</string>
   <!-- Label for the "connecting" state of the button that starts the browser VPN authentication or authorization flow on the settings screen -->
@@ -3101,6 +3122,8 @@
   <string name="ip_protection_location_picker_title" tools:ignore="UnusedResources">پسند جاگه VPN</string>
   <!-- Description for what it means to use the Recommended setting and let the app automatically pick the best server location. -->
   <string name="ip_protection_location_fastest_description" tools:ignore="BrandUsage">Firefox زل ترین جاگه ن اجۊره</string>
+  <!-- Description for an unavailable VPN location in the location list. -->
+  <string name="ip_protection_location_unavailable_description">مووجۊد نؽ</string>
   <!-- Error message shown when the selected browser VPN location is unavailable. -->
   <string name="ip_protection_location_unavailable" tools:ignore="UnusedResources">جاگه من دسرس نؽ. جاگه دیری ن پسند کۊنین.</string>
   <!-- Snackbar (in-app pop-up notification) text shown when the previously selected browser VPN location is unavailable and the recommended location was used instead. -->
@@ -4739,4 +4762,16 @@
   <string name="firefox_labs_website_isolation_title" tools:ignore="UnusedResources">سوا کردن وبگه</string>
   <!-- Description of the Firefox Labs Sandboxing experiment. -->
   <string name="firefox_labs_website_isolation_description" tools:ignore="UnusedResources">ی مانع ازافی منجا وبگه یل ک سی زفت وابیڌن داده یل ایسا من بلگه یل موختلف هیاری اده. گاشڌ ری عملکرد پایداری، سازگاری وبگه وو بارت زفت کردن ویرگار گشتن تئسیر بنه.</string>
+  <!--
+    PDF viewer toolbar and buttons
+
+    Content description for accessibility (used by screen readers): Description for the button that triggers the start of a signature workflow on the PDF displayed on the screen.
+  -->
+  <string name="pdf_tools_sign_content_description">امزا کردن PDF</string>
+  <!-- Content description for accessibility (used by screen readers): Description of the button that downloads the PDF displayed on the screen to the user's device. -->
+  <string name="pdf_tools_download_content_description">دانلود PDF</string>
+  <!-- Content description for accessibility (used by screen readers): Description for the button that opens the printing dialogue window for the PDF displayed on the screen. -->
+  <string name="pdf_tools_print_content_description">چاپ PDF</string>
+  <!-- Content description for accessibility (used by screen readers): Description for the button that opens the sharing options for the PDF being displayed on the screen. -->
+  <string name="pdf_tools_share_content_description">یک رسۊوی PDF</string>
 </resources>

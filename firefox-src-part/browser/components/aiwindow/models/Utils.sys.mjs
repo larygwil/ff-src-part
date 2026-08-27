@@ -93,6 +93,7 @@ export const MODEL_FEATURES = Object.freeze({
   CHAT: "chat",
   SMART_FORM_FILL: "smart-form-fill",
   TITLE_GENERATION: "title-generation",
+  TAB_GROUP_NAMING: "tab-group-naming",
   CONVERSATION_STARTERS_SIDEBAR_SYSTEM: "conversation-starters-sidebar-system",
   CONVERSATION_SUGGESTIONS_SIDEBAR_STARTER:
     "conversation-suggestions-sidebar-starter",
@@ -143,6 +144,7 @@ export const PURPOSES = Object.freeze({
   CHAT: "chat",
   SMART_FORM_FILL: "smart-form-fill",
   TITLE_GENERATION: "title-generation",
+  TAB_GROUP_NAMING: "auto-tab-grouping",
   CONVERSATION_STARTERS_SIDEBAR: "convo-starters-sidebar",
   MEMORY_GENERATION: "memory-generation",
   // agents
@@ -165,6 +167,7 @@ export const FEATURE_MAJOR_VERSIONS = Object.freeze({
   },
   [MODEL_FEATURES.SMART_FORM_FILL]: 1,
   [MODEL_FEATURES.TITLE_GENERATION]: 1,
+  [MODEL_FEATURES.TAB_GROUP_NAMING]: 1,
   [MODEL_FEATURES.CONVERSATION_STARTERS_SIDEBAR_SYSTEM]: 1,
   [MODEL_FEATURES.CONVERSATION_SUGGESTIONS_SIDEBAR_STARTER]: 3,
   [MODEL_FEATURES.CONVERSATION_SUGGESTIONS_FOLLOWUP]: 1,
