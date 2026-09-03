@@ -148,9 +148,10 @@
 
 /* ::::: tabbrowser ::::: */
 
-.tab-label,
-.tab-group-label {
-  margin-block: 1px 0;
+@media not -moz-pref("browser.nova.enabled") {
+  .tab-group-label {
+    margin-block: 1px 0;
+  }
 }
 
 .tabbrowser-tab:not(:hover) > .tab-stack > .tab-content > .tab-icon-image:not([selected], [multiselected]) {

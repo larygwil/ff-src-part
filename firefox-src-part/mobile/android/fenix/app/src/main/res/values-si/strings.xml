@@ -77,8 +77,6 @@
   <string name="open_in_app_cfr_positive_button_text">සැකසුම් වෙත යන්න</string>
   <!-- Text for the negative action button -->
   <string name="open_in_app_cfr_negative_button_text">ඉවතලන්න</string>
-  <!-- Private browsing erase action "contextual feature recommendation" (CFR) -->
-
   <!-- Text for the info dialog when camera permissions have been denied but user tries to access a camera feature. -->
   <string name="camera_permissions_needed_message">රූගතයට ප්‍රවේශය අවශ්‍යයි. ඇන්ඩ්‍රොයිඩ් සැකසුම් වෙත ගොස්, අවසර මත තට්ටු කර ඉඩ දෙන්න තට්ටු කරන්න.</string>
   <!-- Text for the positive action button to go to Android Settings to grant permissions. -->
@@ -305,10 +303,6 @@
   <string name="onboarding_term_of_service_line_two_link_text">රහස්‍යතා දැන්වීම</string>
   <!-- Used as text for the link in onboarding_term_of_service_line_three. -->
   <string name="onboarding_term_of_service_line_three_link_text">කළමනාකරණය</string>
-  <!-- ==== Project "Nova" onboarding strings ==== -->
-
-  <!-- ==== End of Project "Nova" onboarding strings ==== -->
-
   <!--
     Search Widget
 
@@ -378,8 +372,6 @@
   <string name="preferences_add_private_browsing_shortcut">පෞද්. පිරික්සුම් කෙටිමඟක් යොදන්න</string>
   <!-- Preference for enabling "HTTPS-Only" mode -->
   <string name="preferences_https_only_title">HTTPS-පමණි ප්‍රකාරය</string>
-  <!-- Preference for removing cookie/consent banners from sites automatically in private mode. See reduce_cookie_banner_summary for additional context. -->
-  <string name="preferences_cookie_banner_reduction_private_mode">පෞද්. පිරික්සීමෙහි දත්තකඩ පතාක අවහිරය</string>
   <!-- Description of the preference to enable "HTTPS-Only" mode. -->
   <string name="preferences_https_only_summary">ඉහළ ආරක්‍ෂාවක් සඳහා HTTPS සංකේතන කෙටුම්පත භාවිතයෙන් අඩවි වෙත ස්වයංක්‍රීයව සම්බන්ධ වීමට තැත් කරයි.</string>
   <!-- Summary of https only preference if https only is set to off -->
@@ -1491,12 +1483,8 @@
   <string name="add_to_homescreen_cancel">අවලංගු</string>
   <!-- Add button text for the Add to Homescreen dialog -->
   <string name="add_to_homescreen_add">එකතු</string>
-  <!-- Continue to website button text for the first-time Add to Homescreen dialog -->
-  <string name="add_to_homescreen_continue">අඩවියට යන්න</string>
   <!-- Placeholder text for the TextView in the Add to Homescreen dialog -->
   <string name="add_to_homescreen_text_placeholder">කෙටිමඟ නාමය</string>
-  <!-- Describes the add to homescreen functionality -->
-  <string name="add_to_homescreen_description_2">ඔබට ක්‍ෂණික ප්‍රවේශයක් ලබා ගැනීමට සහ යෙදුමක වැනි අත්දැකීමක් සමඟින් වේගයෙන් පිරික්සීමට මෙම අඩවිය ඔබගේ උපාංගයේ මුල් තිරයට පහසුවෙන් එක් කළ හැකිය.</string>
   <!-- Preference for managing the settings for logins and passwords in Fenix -->
   <string name="preferences_passwords_logins_and_passwords_2">මුරපද</string>
   <!-- Preference for managing the saving of logins and passwords in Fenix -->
@@ -1877,8 +1865,6 @@
   <string name="a11y_action_label_expand">විහිදුවීම</string>
   <!-- Action label for links to a website containing documentation about a wallpaper collection. Talkback will append this to say "Double tap to open link to learn more about this collection". -->
   <string name="a11y_action_label_wallpaper_collection_learn_more">මෙම එකතුව ගැන තව දැන ගැනීමට සබැඳිය අරින්න</string>
-  <!-- Translations feature -->
-
   <!-- Text that links to additional information about the Firefox translations feature. -->
   <string name="translations_bottom_sheet_info_message_learn_more">තව දැනගන්න</string>
   <!-- Label for the dropdown to select which language to translate from on the translations dialog. Usually the translate from language selected will be the same as the page language. -->
@@ -2099,11 +2085,4 @@
     Text shown as a label or tag to indicate a feature or area is still undergoing active development. Note that here "Beta" should not be translated, as it is used as an icon styled element.
   -->
   <string name="beta_feature">බීටා</string>
-  <!-- TextField Design System Component -->
-
-  <!-- ==== Terms of use pop up prompt ==== -->
-
-  <!-- ==== Experiment strings. ==== -->
-
-  <!-- ==== End of Terms of use popup prompt. ==== -->
 </resources>

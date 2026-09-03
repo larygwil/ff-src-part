@@ -31,6 +31,8 @@
   <string name="history_search_hint">Riwayat pencarian</string>
   <!-- Placeholder text shown in search bar when using bookmarks search -->
   <string name="bookmark_search_hint">Cari markah</string>
+  <!-- Content description for the toolbar back button while searching bookmarks -->
+  <string name="bookmark_close_search_description">Kembali dan tutup pencarian</string>
   <!-- Placeholder text shown in search bar when using tabs search -->
   <string name="tab_search_hint">Cari tab</string>
   <!-- Placeholder text shown in the search bar when using application search engines -->
@@ -104,8 +106,6 @@
   <string name="open_in_app_cfr_positive_button_text">Buka pengaturan</string>
   <!-- Text for the negative action button -->
   <string name="open_in_app_cfr_negative_button_text">Tutup</string>
-  <!-- Private browsing erase action "contextual feature recommendation" (CFR) -->
-
   <!-- Text for the info dialog when camera permissions have been denied but user tries to access a camera feature. -->
   <string name="camera_permissions_needed_message">Akses kamera diperlukan. Buka pengaturan Android, ketuk izin, dan ketuk izinkan.</string>
   <!-- Text for the positive action button to go to Android Settings to grant permissions. -->
@@ -541,8 +541,6 @@
   <string name="onboarding_marketing_body_1" tools:ignore="BrandUsage,UnusedResources">Bagikan bagaimana Anda menemukan Firefox, dan bahwa Anda menggunakannya, dengan mitra pemasaran Mozilla. Data ini tidak pernah dijual.</string>
   <!-- Marketing onboarding page button label variant. Button to confirm choice and start browsing. -->
   <string name="onboarding_marketing_positive_button_1" tools:ignore="UnusedResources">Setuju dan mulai menjelajah</string>
-  <!-- ==== Project "Nova" onboarding strings ==== -->
-
   <!-- "Continue" onboarding button. -->
   <string name="nova_onboarding_continue_button">Lanjutkan</string>
   <!-- "Continue browsing" onboarding button. -->
@@ -612,7 +610,7 @@
   -->
   <string name="nova_onboarding_marketing_body" tools:ignore="BrandUsage,UnusedResources">Bagikan bagaimana Anda menemukan Firefox, dan bahwa Anda menggunakannya, dengan mitra pemasaran Mozilla. Data ini tidak pernah dijual. %1$s</string>
   <!-- Marketing onboarding body. 'Firefox' and 'Mozilla' are intentionally hardcoded. -->
-  <string name="nova_onboarding_marketing_body_2" tools:ignore="BrandUsage">Bagikan bagaimana Anda menemukan Firefox, dan bahwa Anda menggunakannya, dengan mitra pemasaran Mozilla. Data ini tidak pernah dijual.</string>
+  <string name="nova_onboarding_marketing_body_2" tools:ignore="BrandUsage,UnusedResources">Bagikan bagaimana Anda menemukan Firefox, dan bahwa Anda menggunakannya, dengan mitra pemasaran Mozilla. Data ini tidak pernah dijual.</string>
   <!-- Marketing onboarding body. 'Firefox' and 'Mozilla' are intentionally hardcoded. -->
   <string name="nova_onboarding_marketing_body_3" tools:ignore="BrandUsage,UnusedResources">Anda dapat membantu kami menjangkau lebih banyak orang dengan mengizinkan Mozilla untuk menginformasikan saluran tempat kami mempromosikan Firefox bahwa Anda adalah pengguna Firefox.</string>
   <!--
@@ -684,8 +682,8 @@
   <string name="nova_onboarding_customize_prompt_positive_button" tools:ignore="UnusedResources">Mulai ubahsuai</string>
   <!-- App icon onboarding title. -->
   <string name="nova_onboarding_app_icon_prompt_title" tools:ignore="UnusedResources">Pilih ikon aplikasi kustom</string>
-  <!-- ==== End of Project "Nova" onboarding strings ==== -->
-
+  <!-- App icon onboarding body. -->
+  <string name="nova_onboarding_app_icon_prompt_body" tools:ignore="UnusedResources">Berikan sentuhan pribadi pada layar beranda Anda.</string>
   <!--
     Widget Picker
 
@@ -714,8 +712,12 @@
   <string name="preferences_category_general">Umum</string>
   <!-- Preference category for all links about Fenix -->
   <string name="preferences_category_about">Tentang</string>
+  <!-- Preference category for settings related to changing the default search engine -->
+  <string name="preferences_category_select_default_search_engine_2">Mesin pencari baku penjelajahan normal</string>
   <!-- Preference category for settings related to changing the private browsing search engine -->
   <string name="preferences_category_select_private_search_engine">Mesin pencari bawaan penjelajahan pribadi</string>
+  <!-- Option to set the private browsing mode to use the normal default search engine -->
+  <string name="search_engine_use_default">Gunakan mesin pencari yang sama seperti penjelajahan normal</string>
   <!-- Preference for settings related to managing search shortcuts for the quick search menu -->
   <string name="preferences_manage_search_shortcuts_2">Kelola mesin pencari alternatif</string>
   <!-- Summary for preference for settings related to managing search shortcuts for the quick search menu -->
@@ -769,8 +771,6 @@
   <string name="preferences_pbm_lock_screen_title">Gunakan kunci layar untuk menyembunyikan tab dalam penjelajahan pribadi</string>
   <!-- Informs the user how to access the tabs when "Use screen lock to hide tabs in private browsing" is enabled -->
   <string name="preferences_pbm_lock_screen_summary_3">Lihat tab dengan sidik jari, PIN, atau face unlock Anda. Mengaktifkan ini juga mencegah tangkapan layar dan berbagi.</string>
-  <!-- Preference for removing cookie/consent banners from sites automatically in private mode. See reduce_cookie_banner_summary for additional context. -->
-  <string name="preferences_cookie_banner_reduction_private_mode">Pemblokir Spanduk Kuki dalam penjelajahan pribadi</string>
   <!-- Description of the preference to enable "HTTPS-Only" mode. -->
   <string name="preferences_https_only_summary">Secara otomatis mencoba terhubung ke situs menggunakan protokol enkripsi HTTPS untuk meningkatkan keamanan.</string>
   <!-- Summary of https only preference if https only is set to off -->
@@ -815,6 +815,8 @@
   <string name="preferences_toolbar_shortcut">Pintasan bilah alat</string>
   <!-- Preference for gestures based actions -->
   <string name="preferences_toolbar_select_shortcut">Pilih pintasan</string>
+  <!-- Title of a menu option allowing to change the shortcut button shown in the toolbar -->
+  <string name="toolbar_shortcut_menu_edit_option">Edit pintasan</string>
   <!-- Preference for gestures based actions -->
   <string name="preferences_gestures">Gestur</string>
   <!-- Preference for settings related to visual options -->
@@ -869,6 +871,8 @@
   <string name="preferences_show_nonsponsored_suggestions">Saran dari %1$s</string>
   <!-- Summary for preference to show Firefox Suggest search suggestions for web content -->
   <string name="preferences_show_nonsponsored_suggestions_summary">Dapatkan rekomendasi dari web yang terkait dengan pencarian Anda</string>
+  <!-- Preference title for switch preference to show search optimization cards -->
+  <string name="preferences_show_search_optimization_cards" tools:ignore="BrandUsage">Dapatkan saran dari Mozilla saat Anda mengetik</string>
   <!-- Preference for link sharing -->
   <string name="preferences_link_sharing">Berbagi tautan</string>
   <!-- Title for the link sharing toggle. %1$s is replaced by the brand name (e.g. Firefox). -->
@@ -898,8 +902,12 @@
   <string name="preference_downloads_folder_permission_lost" tools:ignore="UnusedResources">Anda tidak memiliki izin untuk menggunakan folder ini. Coba pilih yang lain.</string>
   <!-- Preference title for choosing an app to handle downloads -->
   <string name="preferences_choose_app_for_downloads">Kelola unduhan dengan aplikasi lain</string>
+  <!-- Preference category for deleting or removing downloads -->
+  <string name="preferences_category_delete_or_remove_downloads">Hapus atau singkirkan unduhan</string>
   <string name="preferences_downloads_delete_from_device">Hapus dari perangkat</string>
+  <string name="preferences_downloads_delete_from_device_description">Berkas dihapus dari perangkat Anda dan disingkirkan dari riwayat unduhan</string>
   <string name="preferences_downloads_remove_from_download_history">Hapus dari riwayat unduhan</string>
+  <string name="preferences_downloads_remove_from_download_history_description">Berkas dihapus dari riwayat unduhan Anda, tetapi masih tersimpan di perangkat Anda</string>
   <string name="preferences_downloads_ask_when_to_delete_files">Tanya sebelum hapus berkas</string>
   <!-- Preference for downloads -->
   <string name="preferences_downloads_2">Pengaturan Unduhan</string>
@@ -917,6 +925,12 @@
   <string name="notifications_allowed_summary">Diizinkan</string>
   <!-- Summary for notification preference indicating notifications are not allowed -->
   <string name="notifications_not_allowed_summary">Tidak diizinkan</string>
+  <!-- Preference for local network access / nearby devices in Android 17 -->
+  <string name="preferences_local_network_access">Akses Jaringan Lokal / Perangkat di Sekitar</string>
+  <!-- Summary for local network access preference indicating access is allowed -->
+  <string name="local_network_access_allowed_summary">Diizinkan</string>
+  <!-- Summary for local network access preference indicating access is not allowed -->
+  <string name="local_network_access_not_allowed_summary">Tidak diizinkan</string>
   <!--
     Add-on Permissions
 
@@ -976,12 +990,10 @@
   <string name="customize_toggle_pocket_sponsored">Konten bersponsor</string>
   <!-- Title for the opening wallpaper settings screen -->
   <string name="customize_wallpapers">Wallpaper</string>
-  <!-- Label for the menu item that opens the wallpaper settings screen. -->
-  <string name="browser_menu_change_wallpaper">Ubah gambar latar</string>
+  <!-- Label for the menu item that opens the customize homepage settings screen. -->
+  <string name="browser_menu_customize_homepage">Sesuaikan laman beranda</string>
   <!-- Title for the customize home screen section with sponsored shortcuts. -->
   <string name="customize_toggle_contile">Pintasan bersponsor</string>
-  <!-- Title for the customize home screen section that toggles the Homepage sports widget. -->
-  <string name="customize_toggle_world_cup">Piala Dunia</string>
   <!--
     Wallpapers
 
@@ -1106,6 +1118,8 @@
   <string name="extension_process_crash_dialog_retry_button_text" tools:ignore="UnusedResources">Cobalah memulai ulang ekstensi</string>
   <!-- Button text on the extension crash dialog to prompt the user to continue with all extensions disabled. -->
   <string name="extension_process_crash_dialog_disable_extensions_button_text">Lanjutkan dengan ekstensi yang dinonaktifkan</string>
+  <!-- Text shown in the snackbar action button that lets the user retry an add-on operation that just failed. -->
+  <string name="addon_failure_retry_action">Coba Lagi</string>
   <!--
     Account Preferences
 
@@ -1279,6 +1293,11 @@
   <string name="preference_light_theme">Terang</string>
   <!-- Preference for using dark theme -->
   <string name="preference_dark_theme">Gelap</string>
+  <!--
+    Preference for using the OLED theme. For localization, this can be translated as "True Black", "Maximum Darkness",
+    or "Full dark" if needed.
+  -->
+  <string name="preference_oled_theme">Paling Gelap</string>
   <!-- Preference for using using dark or light theme automatically set by battery -->
   <string name="preference_auto_battery_theme">Diatur oleh Penghemat Baterai</string>
   <!-- Preference for using following device theme -->
@@ -1425,6 +1444,16 @@
   <string name="preferences_inactive_tabs">Pindahkan tab lama menjadi nonaktif</string>
   <!-- Title of inactive tabs preference -->
   <string name="preferences_inactive_tabs_title">Tab yang belum Anda lihat selama dua minggu dipindahkan ke bagian nonaktif.</string>
+  <!-- Title for the preference to enable or disable the tab groups feature -->
+  <string name="preferences_tab_groups_feature">Aktifkan Grup Tab</string>
+  <!--
+    Privacy report
+
+    Category header of a preference that allows a user to enable or disable the privacy report feature
+  -->
+  <string name="preferences_privacy_report">Laporan privasi</string>
+  <!-- Title of the privacy report preference that allows a user to enable or disable the feature -->
+  <string name="preferences_privacy_report_title">Aktifkan laporan privasi</string>
   <!--
     Studies
 
@@ -1542,6 +1571,14 @@
   <string name="pwa_site_controls_title_private">%1$s (Mode Privat)</string>
   <!-- Content description (not visible, for screen readers etc.) for the button to open the Tab Search feature to search through tabs. -->
   <string name="tab_manager_open_tab_search">Buka pencarian tab</string>
+  <!-- Title for introducing tab groups via an onboarding card shown in the tab manager. -->
+  <string name="tab_group_onboarding_item_title">Buat grup tab</string>
+  <!-- Description for tab groups onboarding shown in the tab manager when in grid view. -->
+  <string name="tab_group_onboarding_grid_item_description">Seret satu tab ke tab lainnya untuk mengelompokkannya.</string>
+  <!-- Description for tab groups onboarding shown in the tab manager when in list view. -->
+  <string name="tab_group_onboarding_list_item_description">Pilih beberapa tab untuk membuat grup.</string>
+  <!-- Content description (accessibility label) for button to dismiss the tab group onboarding item. -->
+  <string name="tab_group_onboarding_item_dismiss_content_description">Tutup pengenalan grup tab</string>
   <!--
     Tab Group
 
@@ -1558,12 +1595,46 @@
   <string name="create_tab_group_form_default_name">Grup %d</string>
   <!-- Label for the tab group name field in the bottom sheet to create or edit a tab group. -->
   <string name="create_tab_group_name_label">Nama grup tab</string>
+  <!-- Text shown on the cancel button in the Delete tab group confirmation dialog. -->
+  <string name="delete_tab_group_confirmation_dialog_cancel">Batal</string>
   <!-- Title for the Close last tab and delete tab group confirmation dialog. -->
   <string name="close_tab_and_delete_group_confirmation_dialog_title">Tutup tab dan hapus grup?</string>
   <!-- Text shown in the body of the Close last tab and delete tab group confirmation dialog. -->
   <string name="close_tab_and_delete_group_confirmation_dialog_body">Ini akan menghapus grup secara permanen.</string>
   <!-- Text shown on the confirm button in the Close last tab and delete tab group confirmation dialog. -->
   <string name="close_tab_and_delete_group_confirmation_dialog_confirm">Hapus grup</string>
+  <!-- Text shown on the cancel button in the Close last tab and delete tab group confirmation dialog. -->
+  <string name="close_tab_and_delete_group_confirmation_dialog_cancel">Batal</string>
+  <!-- Content description for the three dot button next to a tab group" -->
+  <string name="tab_group_three_dot_button_content_description">Opsi lainnya</string>
+  <!-- Text shown on the edit button for a tab group on the three dot menu -->
+  <string name="tab_group_three_dot_menu_edit">Sunting</string>
+  <!-- Text shown on the ungroup button for a tab group on the three dot menu -->
+  <string name="tab_group_three_dot_menu_ungroup">Pisahkan grup</string>
+  <!-- Text shown on the delete button for a tab group on the three dot menu -->
+  <string name="tab_group_three_dot_menu_delete">Hapus</string>
+  <!-- Text shown on the share button for a tab group on the three dot menu -->
+  <string name="tab_group_three_dot_menu_share">Bagikan</string>
+  <!-- Text shown on the close button for a tab group on the three dot menu -->
+  <string name="tab_group_three_dot_menu_close">Tutup</string>
+  <!-- Title for the Ungroup tab group confirmation dialog. -->
+  <string name="ungroup_tab_group_confirmation_dialog_title">Pisahkan grup tab?</string>
+  <!-- Text shown in the body of the Ungroup tab group confirmation dialog. -->
+  <string name="ungroup_tab_group_confirmation_dialog_body">Tab akan tetap terbuka di perangkat ini, tetapi grup akan dihapus.</string>
+  <!-- Text shown on the Don't Ask Again checkbox button in the Ungroup tab group confirmation dialog. -->
+  <string name="ungroup_tab_group_confirmation_dialog_dont_ask_again">Jangan tanyakan lagi</string>
+  <!-- Text shown on the confirm button in the Ungroup tab group confirmation dialog. -->
+  <string name="ungroup_tab_group_confirmation_dialog_confirm">Pisahkan grup</string>
+  <!-- Text shown on the cancel button in the Ungroup tab group confirmation dialog. -->
+  <string name="ungroup_tab_group_confirmation_dialog_cancel">Batal</string>
+  <!-- Custom accessibility action to reorder a tab up rather than dragging. -->
+  <string name="custom_accessibility_action_reorder_tab_up">Pindahkan tab ke atas</string>
+  <!-- Custom accessibility action to reorder a tab left rather than dragging. -->
+  <string name="custom_accessibility_action_reorder_tab_left">Pindahkan tab ke kiri</string>
+  <!-- Custom accessibility action to reorder a tab right rather than dragging. -->
+  <string name="custom_accessibility_action_reorder_tab_right">Pindahkan tab ke kanan</string>
+  <!-- Custom accessibility action to reorder a tab down rather than dragging. -->
+  <string name="custom_accessibility_action_reorder_tab_down">Pindahkan tab ke bawah</string>
   <!--
     Color labels for tab groups, used for accessibility and selection UI.
 
@@ -1576,6 +1647,16 @@
   <string name="tab_group_color_red">Merah</string>
   <!-- Tab group color: Pink -->
   <string name="tab_group_color_pink">Merah Muda</string>
+  <!-- Tab group color: Purple -->
+  <string name="tab_group_color_purple">Ungu</string>
+  <!-- Tab group color: Blue -->
+  <string name="tab_group_color_blue">Biru</string>
+  <!-- Tab group color: Cyan -->
+  <string name="tab_group_color_cyan">Sian</string>
+  <!-- Tab group color: Green -->
+  <string name="tab_group_color_green">Hijau</string>
+  <!-- Tab group color: Grey -->
+  <string name="tab_group_color_grey">Abu-abu</string>
   <!--
     History
 
@@ -1814,8 +1895,6 @@
   <string name="webcompat_reporter_preview_report">Pratinjau Laporan</string>
   <!-- The title shown at the top of the WebCompat Report preview panel. This appears after the user taps the “Preview” button before sending a report. -->
   <string name="webcompat_reporter_preview_bottom_sheet_header">Pratinjauan Laporan</string>
-  <!-- Label for the “Send” button shown in the WebCompat Report preview panel, which the user taps to submit the report. -->
-  <string name="webcompat_reporter_preview_bottom_sheet_send">Kirim</string>
   <!-- Text shown on the save button for the Edit URL confirmation dialog in the WebCompatReporter. -->
   <string name="webcompat_reporter_edit_url_dialog_save">Simpan</string>
   <!-- Text shown on the dismiss button for the Edit URL confirmation dialog in the WebCompatReporter. -->
@@ -1991,6 +2070,8 @@
   <string name="bookmark_select_folder_new_folder_button_title">Folder baru</string>
   <!-- Bookmark snackbar message for moving a single item. %1$s is the title of the item being moved and %2$s is the new parent folder of the bookmark -->
   <string name="bookmark_moved_single_item">Dipindahkan %1$s ke %2$s</string>
+  <!-- Additional text for bookmark search page when there are no results. -->
+  <string name="bookmark_no_search_results_additional_text">Coba pencarian lain!</string>
   <!--
     Site Permissions
 
@@ -2156,6 +2237,24 @@
   <string name="menu_print">Cetak</string>
   <!-- Sub-header in the dialog to share a link to another sync device -->
   <string name="share_device_subheader">Kirim ke peranti</string>
+  <!-- Content description for the drag handle that dismisses the Send to Device bottom sheet -->
+  <string name="send_to_devices_bottom_sheet_close_content_description">Tutup Kirim ke Perangkat</string>
+  <!-- Text for the QR code action in the native share sheet -->
+  <string name="share_qr_code">Kode QR</string>
+  <!-- Title shown in the QR code display screen -->
+  <string name="qr_code_display_title">Kode QR</string>
+  <!-- Content description for the close button in the QR code display screen -->
+  <string name="qr_code_display_close">Tutup</string>
+  <!-- Heading on the QR code display screen -->
+  <string name="qr_code_display_share_nearby">Bagikan tautan di sekitar</string>
+  <!-- Body text on the QR code display screen instructing the user to have others scan the code -->
+  <string name="qr_code_display_instructions">Untuk membagikan tautan ini dengan orang-orang di sekitar, minta mereka memindai kode QR di bawah ini.</string>
+  <!-- Label for the download button on the QR code display screen -->
+  <string name="qr_code_display_download">Unduh</string>
+  <!-- Toast shown when the QR code is successfully saved to Downloads -->
+  <string name="qr_code_download_success">Kode QR disimpan ke Unduhan</string>
+  <!-- Toast shown when saving the QR code to Downloads fails -->
+  <string name="qr_code_download_failure">Gagal menyimpan Kode QR</string>
   <!-- Sub-header in the dialog to share a link to an app from the full list -->
   <string name="share_link_all_apps_subheader">Semua tindakan</string>
   <!-- Sub-header in the dialog to share a link to an app from the most-recent sorted list -->
@@ -2168,6 +2267,8 @@
   <string name="sync_sign_in">Masuk ke Sync</string>
   <!-- An option from the share dialog to send link to all other sync devices -->
   <string name="sync_send_to_all">Kirim ke semua peranti</string>
+  <!-- Text displayed when no other sync devices are available for link sharing -->
+  <string name="sync_no_devices_available">Tidak ada perangkat yang tersedia</string>
   <!-- An option from the share dialog to reconnect to sync -->
   <string name="sync_reconnect">Sambungkan ulang ke Sync</string>
   <!-- Text displayed when sync is offline and cannot be accessed -->
@@ -2623,12 +2724,8 @@
   <string name="add_to_homescreen_cancel">Batal</string>
   <!-- Add button text for the Add to Homescreen dialog -->
   <string name="add_to_homescreen_add">Tambah</string>
-  <!-- Continue to website button text for the first-time Add to Homescreen dialog -->
-  <string name="add_to_homescreen_continue">Lanjutkan ke situs web</string>
   <!-- Placeholder text for the TextView in the Add to Homescreen dialog -->
   <string name="add_to_homescreen_text_placeholder">Nama pintasan</string>
-  <!-- Describes the add to homescreen functionality -->
-  <string name="add_to_homescreen_description_2">Anda dapat dengan mudah menambahkan situs web ini ke layar Beranda perangkat Anda untuk mendapatkan akses instan dan penjelajahan lebih cepat seperti menggunakan aplikasi.</string>
   <!-- Preference for managing the settings for logins and passwords in Fenix -->
   <string name="preferences_passwords_logins_and_passwords_2">Sandi</string>
   <!-- Preference for managing the saving of logins and passwords in Fenix -->
@@ -3161,8 +3258,6 @@
   <string name="a11y_action_label_expand">bentangkan</string>
   <!-- Action label for links to a website containing documentation about a wallpaper collection. Talkback will append this to say "Double tap to open link to learn more about this collection". -->
   <string name="a11y_action_label_wallpaper_collection_learn_more">buka tautan untuk mempelajari lebih lanjut tentang koleksi ini</string>
-  <!-- Translations feature -->
-
   <!--
     Translation request dialog
 
@@ -3731,8 +3826,6 @@
   <string name="certificate_warning_push_notification_pnw2_message" tools:ignore="UnusedResources">Perbarui sebelum 14 Maret untuk tetap menggunakan pengaya dan fitur lainnya.</string>
   <!-- Push notification message about old Firefox version -->
   <string name="certificate_warning_push_notification_pnw3_message" tools:ignore="UnusedResources">Beberapa fitur tidak lagi berfungsi besok.</string>
-  <!-- TextField Design System Component -->
-
   <!--
     Setup checklist feature
 
@@ -3891,8 +3984,6 @@
   <string name="settings_search_no_results_message">Mungkin mencoba pencarian lain?</string>
   <!-- Content Description for the button to open Settings Search (to search through settings). -->
   <string name="settings_search_button_content_description">Tombol pencarian pengaturan</string>
-  <!-- ==== Terms of use pop up prompt ==== -->
-
   <!-- Title for the pop up prompt -->
   <string name="terms_of_use_prompt_title">Kami punya pembaruan</string>
   <!--
@@ -3917,8 +4008,6 @@
   <string name="terms_of_use_prompt_accept">Terima</string>
   <!-- Label for a button to postpone accepting the terms of use -->
   <string name="terms_of_use_prompt_postpone">Ingatkan saya nanti</string>
-  <!-- ==== Experiment strings. ==== -->
-
   <!-- A title for the popup prompt. -->
   <string name="terms_of_use_prompt_title_option_a" tools:ignore="UnusedResources">Syarat Penggunaan</string>
   <!--
@@ -3933,8 +4022,6 @@
   <string name="terms_of_use_prompt_body_line_two_alternative" tools:ignore="UnusedResources">Anda dapat mempelajari lebih lanjut %1$s.</string>
   <!-- Link text for terms_of_use_prompt_body_line_two_alternative that links to a site with more information about the Terms of Use -->
   <string name="terms_of_use_prompt_body_line_two_alternative_link" tools:ignore="UnusedResources">di sini</string>
-  <!-- ==== End of Terms of use popup prompt. ==== -->
-
   <!--
     Privacy notice homepage banner
 

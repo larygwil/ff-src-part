@@ -647,6 +647,10 @@ class TrustPanel {
         // This is a fresh visit: trigger the animation.
         targetClasses.add("breach-animating");
         browser.lastAnimatedBreachURI = this.#uri?.spec;
+
+        Glean.trustpanel.breachAlertShieldAnimated.record({
+          breach_status: this.#breachedStatus,
+        });
         // Logic will re-add breached, and since it's the first time for
         // breach-animating, the CSS animation will play.
       } else if (icon.classList.contains("breach-animating")) {

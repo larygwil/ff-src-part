@@ -53,8 +53,6 @@
   <string name="open_in_app_cfr_positive_button_text">Idź do sztalōnkōw</string>
   <!-- Text for the negative action button -->
   <string name="open_in_app_cfr_negative_button_text">Ôdkoż</string>
-  <!-- Private browsing erase action "contextual feature recommendation" (CFR) -->
-
   <!-- Text for the info dialog when camera permissions have been denied but user tries to access a camera feature. -->
   <string name="camera_permissions_needed_message">Trza dostympu do kamery. Idź do sztalōnkōw Androida, tyknij \"dozwolyństwa\" i tyknij \"zgoda\".</string>
   <!-- Text for the positive action button to go to Android Settings to grant permissions. -->
@@ -215,10 +213,6 @@
     Content description (not visible, for screen readers etc.): Close button for the home onboarding dialog
   -->
   <string name="onboarding_home_content_description_close_button">Zawrzij</string>
-  <!-- ==== Project "Nova" onboarding strings ==== -->
-
-  <!-- ==== End of Project "Nova" onboarding strings ==== -->
-
   <!--
     Search Widget
 
@@ -1190,12 +1184,8 @@
   <string name="add_to_homescreen_cancel">Pociep</string>
   <!-- Add button text for the Add to Homescreen dialog -->
   <string name="add_to_homescreen_add">Przidej</string>
-  <!-- Continue to website button text for the first-time Add to Homescreen dialog -->
-  <string name="add_to_homescreen_continue">Idź dalij do stōny</string>
   <!-- Placeholder text for the TextView in the Add to Homescreen dialog -->
   <string name="add_to_homescreen_text_placeholder">Miano ôd skrōtu</string>
-  <!-- Describes the add to homescreen functionality -->
-  <string name="add_to_homescreen_description_2">Idzie leko przidać ta strōna na dōmowy ekran swojij masziny, coby mieć snadny dostymp i gibcyj przeglōndać internet choby bez aplikacyjo.</string>
   <!-- Preference for managing the settings for logins and passwords in Fenix -->
   <string name="preferences_passwords_logins_and_passwords_2">Hasła</string>
   <!-- Preference option for asking to save passwords in Fenix -->
@@ -1220,19 +1210,10 @@
   <string name="credit_cards_biometric_prompt_message">Ôdblokuj, żeby wejzdrzeć na spamiyntane karty</string>
   <!-- The page title for adding new password. -->
   <string name="add_login_2">Przidej hasło</string>
-  <!-- Translations feature -->
-
   <!--
     Translation settings dialog
 
     Title of the translation settings dialog that allows a user to set their preferred translation settings.
   -->
   <string name="translation_settings_toolbar_title">Przekłady</string>
-  <!-- TextField Design System Component -->
-
-  <!-- ==== Terms of use pop up prompt ==== -->
-
-  <!-- ==== Experiment strings. ==== -->
-
-  <!-- ==== End of Terms of use popup prompt. ==== -->
 </resources>

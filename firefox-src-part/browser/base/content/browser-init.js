@@ -171,9 +171,6 @@ var gBrowserInit = {
       if (extraOptions.hasKey("aiwindow-immersive-view")) {
         document.documentElement.setAttribute("aiwindow-immersive-view", true);
       }
-      if (extraOptions.hasKey("aiwindow-new-window")) {
-        document.documentElement.setAttribute("aiwindow-new-window", true);
-      }
     }
 
     // Run menubar initialization first, to avoid CustomTitlebar code picking
@@ -403,6 +400,7 @@ var gBrowserInit = {
 
     if (!PrivateBrowsingUtils.enabled) {
       document.getElementById("Tools:PrivateBrowsing").hidden = true;
+      document.getElementById("menu_newPrivateWindow").hidden = true;
       // Setting disabled doesn't disable the shortcut, so we just remove
       // the keybinding.
       document.getElementById("key_privatebrowsing").remove();

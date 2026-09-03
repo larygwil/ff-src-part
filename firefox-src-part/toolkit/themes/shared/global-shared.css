@@ -78,7 +78,6 @@ h3 {
 @media -moz-pref("widget.macos.native-popovers") and (-moz-platform: macos) {
   panel:not([nonnative]) {
     background-color: transparent;
-    --panel-background: transparent;
     --panel-box-shadow: none;
     --panel-border-color: transparent;
     --panel-box-shadow-margin: 0px;

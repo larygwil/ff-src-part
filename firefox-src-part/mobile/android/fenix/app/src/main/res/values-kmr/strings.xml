@@ -81,8 +81,6 @@
   <string name="open_in_app_cfr_positive_button_text">Here sazkariyan</string>
   <!-- Text for the negative action button -->
   <string name="open_in_app_cfr_negative_button_text">Bigire</string>
-  <!-- Private browsing erase action "contextual feature recommendation" (CFR) -->
-
   <!-- Text for the info dialog when camera permissions have been denied but user tries to access a camera feature. -->
   <string name="camera_permissions_needed_message">Gihîna li kamerayê hewce ye. Here sazkariyên Androidê ji beşa destûran, destûrê bide.</string>
   <!-- Text for the positive action button to go to Android Settings to grant permissions. -->
@@ -354,10 +352,6 @@
   <string name="onboarding_marketing_title_1" tools:ignore="UnusedResources">Tiştekî dawî</string>
   <!-- Marketing onboarding page button label variant. Button to confirm choice and start browsing. -->
   <string name="onboarding_marketing_positive_button_1" tools:ignore="UnusedResources">Piştrast bike û dest bi gerê bike</string>
-  <!-- ==== Project "Nova" onboarding strings ==== -->
-
-  <!-- ==== End of Project "Nova" onboarding strings ==== -->
-
   <!--
     Widget Picker
 
@@ -1586,12 +1580,8 @@
   <string name="add_to_homescreen_cancel">Betal bike</string>
   <!-- Add button text for the Add to Homescreen dialog -->
   <string name="add_to_homescreen_add">Tevlî bike</string>
-  <!-- Continue to website button text for the first-time Add to Homescreen dialog -->
-  <string name="add_to_homescreen_continue">Li malperê berdewam bike</string>
   <!-- Placeholder text for the TextView in the Add to Homescreen dialog -->
   <string name="add_to_homescreen_text_placeholder">Navê kurterêyê</string>
-  <!-- Describes the add to homescreen functionality -->
-  <string name="add_to_homescreen_description_2">Tu dikarî vê malperê bi hêsanî li ekrana Destpêkê ya cîhaza xwe zêde bikî ku ji wir zûtir bigihîjî wê û wê wekî sepanekê bi kar bînî.</string>
   <!-- Preference for managing the settings for logins and passwords in Fenix -->
   <string name="preferences_passwords_logins_and_passwords_2">Şîfre</string>
   <!-- Preference option for asking to save passwords in Fenix -->
@@ -1920,8 +1910,6 @@
   <string name="a11y_action_label_expand">fireh bike</string>
   <!-- Action label for links to a website containing documentation about a wallpaper collection. Talkback will append this to say "Double tap to open link to learn more about this collection". -->
   <string name="a11y_action_label_wallpaper_collection_learn_more">ji bo derbarê vê koleksiyonê de bêtir bizanî, girêdankê veke</string>
-  <!-- Translations feature -->
-
   <!--
     Translation request dialog
 
@@ -2191,11 +2179,4 @@
     Text shown as a label or tag to indicate a feature or area is still undergoing active development. Note that here "Beta" should not be translated, as it is used as an icon styled element.
   -->
   <string name="beta_feature">BETA</string>
-  <!-- TextField Design System Component -->
-
-  <!-- ==== Terms of use pop up prompt ==== -->
-
-  <!-- ==== Experiment strings. ==== -->
-
-  <!-- ==== End of Terms of use popup prompt. ==== -->
 </resources>
