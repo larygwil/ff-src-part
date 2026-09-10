@@ -148,6 +148,12 @@
   <!--
     Recent Tabs
 
+    Header text on the homescreen for continuing to browse the most recent browser tab
+  -->
+  <string name="recent_tabs_header_2">Kontynuuj</string>
+  <!--
+    Recent Tabs
+
     Header text for jumping back into the recent tab in the home screen
   -->
   <string name="recent_tabs_header">Wskocz z\u00a0powrotem</string>
@@ -508,7 +514,7 @@
   -->
   <string name="onboarding_redesign_tou_body_three" tools:ignore="BrandUsage,UnusedResources">Aby pomóc w\u00a0ulepszaniu przeglądarki, Firefox wysyła dane diagnostyczne i\u00a0o\u00a0interakcjach do Mozilli. %1$s</string>
   <!-- Used as text for the link in onboarding_redesign_tou_body_three. -->
-  <string name="onboarding_redesign_tou_body_three_link_text" tools:ignore="UnusedResources">Zarządzaj ustawieniami</string>
+  <string name="onboarding_redesign_tou_body_three_link_text" tools:ignore="UnusedResources">Ustawienia</string>
   <!-- Terms of use (ToU) onboarding page continue button label. -->
   <string name="onboarding_redesign_tou_agree_and_continue_button_label" tools:ignore="UnusedResources">Kontynuuj</string>
   <!-- Onboarding header for the toolbar selection card. -->
@@ -573,7 +579,7 @@
   -->
   <string name="nova_onboarding_tou_body_line_3" tools:ignore="BrandUsage">Aby pomóc w\u00a0ulepszaniu przeglądarki, Firefox wysyła dane diagnostyczne i\u00a0o\u00a0interakcjach do Mozilli. %1$s</string>
   <!-- Terms of use (ToU) onboarding body line three link text for nova_onboarding_tou_body_line_3. -->
-  <string name="nova_onboarding_tou_body_line_3_link_text">Zarządzaj ustawieniami</string>
+  <string name="nova_onboarding_tou_body_line_3_link_text">Ustawienia</string>
   <!-- "Set to default" onboarding title. -->
   <string name="nova_onboarding_set_to_default_title" tools:ignore="UnusedResources">Pożegnaj się z\u00a0koszmarnymi elementami śledzącymi</string>
   <!-- "Set to default" onboarding title. -->
@@ -884,7 +890,7 @@
   <!-- Snackbar message shown when user shares a link -->
   <string name="link_shared_snackbar_message">Udostępniono odnośnik</string>
   <!-- Snackbar action label shown when user shares a link -->
-  <string name="link_shared_snackbar_action">Zarządzaj ustawieniami</string>
+  <string name="link_shared_snackbar_action">Ustawienia</string>
   <!-- Preference for open links in third party apps -->
   <string name="preferences_open_links_in_apps">Otwieranie odnośników w\u00a0aplikacjach</string>
   <!-- Preference for open links in third party apps always open in apps option -->
@@ -977,6 +983,8 @@
     Title for the customize home screen section with privacy report.
   -->
   <string name="customize_toggle_privacy_report">Informacja o\u00a0prywatności</string>
+  <!-- Title for a customize home screen section. Continue is a section that displays the most recent browser tab, so users can continue browsing where they left off. -->
+  <string name="customize_toggle_continue">Kontynuuj</string>
   <!-- Header text for jumping back into the recent tab in customize the home screen -->
   <string name="customize_toggle_jump_back_in">Wskocz z\u00a0powrotem</string>
   <!-- Title for the customize home screen section with bookmarks. -->
@@ -2401,6 +2409,20 @@
   <string name="sent_from_firefox_template" tools:ignore="UnusedResources">%1$s\n\nWysłano z przeglądarki %2$s 🦊 Wypróbuj ją na telefonie: %3$s</string>
   <!-- A short message template for the shared link with a footer. %1$s is the shared link, %2$s is the app name (e.g. Firefox) and %3$s is a download link for the app. -->
   <string name="sent_from_firefox_template_short" tools:ignore="UnusedResources">%1$s\n\nWysłano z przeglądarki %2$s 🦊 %3$s</string>
+  <!-- Send tab to synced devices: Authentication error title - Message asking the user to re-authenticate -->
+  <string name="sync_send_tab_error_auth_title">Zaloguj się z powrotem, aby przesyłać karty między urządzeniami</string>
+  <!-- Send tab to synced devices: Authentication error button - Allows user to re-authenticate -->
+  <string name="sync_send_tab_error_auth_button">Zaloguj się</string>
+  <!-- Send tab to synced devices: Authentication error button - Allows user to remove the currently connected account -->
+  <string name="sync_send_tab_error_auth_remove_account">Usuń konto</string>
+  <!-- Send tab to synced devices: Empty state title - Displayed when the user has no synced devices -->
+  <string name="sync_send_tab_empty_state_title">Brak połączonych urządzeń</string>
+  <!-- Send tab to synced devices: Empty state message - Displayed when the user has no synced devices -->
+  <string name="sync_send_tab_empty_state_description" tools:ignore="BrandUsage">Aby wysłać kartę, zaloguj się w Firefoksie na co najmniej jednym innym urządzeniu.</string>
+  <!-- Send tab to synced devices: Connectivity Error title -->
+  <string name="sync_send_tab_error_connection_title">Sprawdź połączenie z Internetem</string>
+  <!-- Send tab to synced devices: Connectivity Error message - Suggested user action after internet connection has been established -->
+  <string name="sync_send_tab_error_connection_text">Następnie ponownie spróbuj wysłać kartę.</string>
   <!--
     Notifications
 
@@ -2408,7 +2430,7 @@
   -->
   <string name="notification_pbm_delete_text_2">Zamknij prywatne karty</string>
   <!-- Text shown in the notification that pops up to remind the user that a private browsing session is active for Android 14+ -->
-  <string name="notification_erase_title_android_14">Czy zamknąć prywatne karty?</string>
+  <string name="notification_erase_title_android_14">Zamknąć prywatne karty?</string>
   <string name="notification_erase_text_android_14">Stuknij lub przeciągnij to powiadomienie, aby zamknąć prywatne karty.</string>
   <!-- Name of the marketing notification channel. Displayed in the "App notifications" system settings for the app -->
   <string name="notification_marketing_channel_name">Marketing</string>
@@ -2422,6 +2444,18 @@
     The app name is in the text, due to limitations with localizing Nimbus experiments
   -->
   <string name="nimbus_notification_default_browser_text" tools:ignore="BrandUsage,UnusedResources">Ustaw Firefoksa jako domyślną przeglądarkę</string>
+  <!--
+    Privacy report notification
+
+    Name of the weekly privacy report notification channel. Displayed in the "App notifications" system settings for the app.
+  -->
+  <string name="notification_privacy_report_channel_name">Informacja o prywatności</string>
+  <!-- Description of the weekly privacy report notification channel. Displayed in the "App notifications" system settings for the app. %1$s is the app name (e.g. Firefox) -->
+  <string name="notification_privacy_report_channel_description">%1$s informuje, ile elementów śledzących zostało zablokowanych podczas przeglądania Internetu.</string>
+  <!-- Body text for the weekly privacy report notification for when trackers have been blocked. %1$s is the app name (e.g. Firefox) -->
+  <string name="notification_privacy_report_body_has_trackers">Nie przerywaj przeglądania. %1$s nie przerwie blokowania.</string>
+  <!-- Headline text of the weekly privacy report notification for when no trackers have been blocked. %1$s is the app name (e.g. Firefox) -->
+  <string name="notification_privacy_report_headline_no_trackers">%1$s blokuje elementy śledzące podczas przeglądania Internetu. Zobaczysz je tutaj.</string>
   <!--
     Survey
 
@@ -3029,6 +3063,8 @@
   <string name="ip_protection_menu_paused">Wstrzymano</string>
   <!-- Badge label shown in the menu item when the browser VPN has an error -->
   <string name="ip_protection_menu_error">Błąd</string>
+  <!-- Badge label shown in the VPN menu item when the user is eligible for the feature but needs to authenticate / authorize to enable it -->
+  <string name="ip_protection_menu_try_vpn_cta">Wypróbuj bezpłatnie</string>
   <!-- Badge label shown in the menu item when the user is eligible to use the browser VPN but should authenticate or authorize it first. -->
   <string name="ip_protection_menu_auth_required">Wypróbuj</string>
   <!-- Content description for the chevron button that opens the browser VPN settings screen -->
@@ -3077,6 +3113,8 @@
   <string name="ip_protection_onboarding_not_now_button">Nie teraz</string>
   <!-- Snackbar (in-app pop-up notification) text to signal the browser VPN connection error -->
   <string name="ip_protection_connection_error_snackbar">Nie można połączyć z\u00a0siecią VPN. Spróbuj ponownie za kilka minut.</string>
+  <!-- Snackbar (in-app pop-up notification) text to signal the VPN location has been reset due to the previously selected VPN location being no longer available. -->
+  <string name="ip_protection_location_selection_reset_snackbar">Wybrane położenie VPN jest niedostępne. Przełączono do zalecanego położenia.</string>
   <!--
     Snackbar (in-app pop-up notification) text to signal the browser VPN has reached the monthly data limit.
     %1$d is the total monthly allowance in GB (for example "50").
@@ -4531,4 +4569,18 @@
   <string name="pdf_tools_print_content_description">Drukuj plik PDF</string>
   <!-- Content description for accessibility (used by screen readers): Description for the button that opens the sharing options for the PDF being displayed on the screen. -->
   <string name="pdf_tools_share_content_description">Udostępnij plik PDF</string>
+  <!--
+    PDF viewer add a signature dialog
+
+    The title of the dialog for adding a signature to a PDF.
+  -->
+  <string name="pdf_tools_signature_title">Dodanie podpisu</string>
+  <!-- Content description for accessibility (used by screen readers): Description for the button that closes the dialog for adding a signature to a PDF. -->
+  <string name="pdf_tools_signature_close_content_description">Zamknij panel dodawania podpisu do pliku PDF</string>
+  <!-- The placeholder text shown in the empty text input field where users can enter the signature they wish to add to a PDF. -->
+  <string name="pdf_tools_signature_placeholder">Wprowadź podpis</string>
+  <!-- The text for the button that erases the text the user entered in the "add a signature" field. -->
+  <string name="pdf_tools_signature_clear_button">Wyczyść</string>
+  <!-- The text for the button that adds the signature the user has typed to the PDF. -->
+  <string name="pdf_tools_signature_add_button">Dodaj</string>
 </resources>

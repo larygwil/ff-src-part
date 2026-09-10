@@ -878,6 +878,14 @@ export const PREFS_CONFIG = new Map([
     },
   ],
   [
+    "newtabWallpapers.visibilityGroups",
+    {
+      title:
+        "Comma-separated wallpaper visibility groups the user is opted into",
+      value: "",
+    },
+  ],
+  [
     "newtabAdSize.leaderboard",
     {
       title: "Boolean flag to turn the leaderboard ad size on and off",

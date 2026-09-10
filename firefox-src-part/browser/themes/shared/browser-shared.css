@@ -74,7 +74,7 @@ body {
     direction: rtl;
   }
 
-  &:not([chromehidden~="toolbar"]) {
+  &:not([popup-window]) {
     /* stylelint-disable-next-line stylelint-plugin-mozilla/use-design-tokens */
     min-width: var(--window-min-width);
     /* stylelint-disable-next-line stylelint-plugin-mozilla/use-design-tokens */
@@ -93,7 +93,7 @@ body {
     }
   }
 
-  &[taskbartab]:not([chromehidden~="toolbar"]) {
+  &[taskbartab]:not([popup-window]) {
     /* This size prevents toolbar contents from overlapping or overflowing. */
     /* stylelint-disable-next-line stylelint-plugin-mozilla/use-design-tokens */
     min-width: 804px;
@@ -456,7 +456,7 @@ body {
 /* Hide the TabsToolbar/nav-bar titlebar controls if the menubar is permanently shown.
  * (That is, if the menu bar doesn't autohide, and we're not in a fullscreen or
  * popup window.) */
-:root:not([chromehidden~="menubar"], [inFullscreen])
+:root:not([popup-window], [inFullscreen], [taskbartab])
   #toolbar-menubar:not([autohide], [collapsed])
   ~ :is(#TabsToolbar, #nav-bar)
   > :is(.titlebar-buttonbox-container, .titlebar-spacer) {
@@ -481,6 +481,14 @@ body {
   :root:not([customtitlebar], [sizemode="fullscreen"]) & {
     display: none;
   }
+}
+
+/* Popup windows hide all of the browser chrome. Taskbar tabs hide the same
+ * thing except for the navigation buttons, which have their own allowlist in
+ * toolbarbuttons.css */
+:root[popup-window] :is(#toolbar-menubar, #PersonalToolbar, .chromeclass-toolbar-additional, .chromeclass-extrachrome),
+:root[taskbartab] :is(#toolbar-menubar, #PersonalToolbar, .chromeclass-extrachrome) {
+  display: none;
 }
 
 /* Menu bar */
@@ -550,6 +558,10 @@ body {
 
   :root[sessionrestored][lwtheme] & {
     transition: var(--ext-theme-background-transition);
+  }
+
+  :root:is([web-extension-popup-window], [chromeless-window]) & {
+    display: none;
   }
 }
 

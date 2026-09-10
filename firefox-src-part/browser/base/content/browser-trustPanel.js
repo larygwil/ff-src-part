@@ -596,7 +596,9 @@ class TrustPanel {
       document.getElementById("trust-icon-container"),
       document.getElementById("identity-icon-box"),
     ];
-    return anchors.find(element => element.checkVisibility());
+    return anchors.find(element =>
+      element.checkVisibility(PopupNotifications.CHECK_VISIBILITY_OPTIONS)
+    );
   }
 
   #updateUrlbarIcon() {

@@ -692,9 +692,7 @@ BrowserGlue.prototype = {
       return;
     }
 
-    let browserWindowFeatures =
-      "chrome,all,dialog=no,extrachrome,menubar,resizable,scrollbars,status," +
-      "location,toolbar,personalbar";
+    let browserWindowFeatures = "chrome,all,dialog=no,resizable,toolbar";
     // This needs to be set when opening the window to ensure that the AppUserModelID
     // is set correctly on Windows. Without it, initial launches with `-private-window`
     // will show up under the regular Firefox taskbar icon first, and then switch

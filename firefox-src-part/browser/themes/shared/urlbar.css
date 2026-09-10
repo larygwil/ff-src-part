@@ -528,7 +528,7 @@ toolbar[inactive="true"] .urlbar,
   }
 }
 
-:root[chromehidden~="toolbar"] #urlbar-container {
+:root[popup-window] #urlbar-container {
   /* Remove excess space between the address bar and the menu button in popups. */
   padding-inline-end: 0;
 }
@@ -646,7 +646,7 @@ toolbar[inactive="true"] .urlbar,
 }
 
 /* Allow shrinking the urlbar on popup windows */
-:root[chromehidden~="toolbar"] :is(#urlbar-container, #wrapper-urlbar-container) {
+:root[popup-window] :is(#urlbar-container, #wrapper-urlbar-container) {
   flex-shrink: 1;
   min-width: 0;
 }

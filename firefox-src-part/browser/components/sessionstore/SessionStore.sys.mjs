@@ -69,14 +69,9 @@ const WINDOW_ATTRIBUTES = ["width", "height", "screenX", "screenY", "sizemode"];
 
 const CHROME_FLAGS_MAP = [
   [Ci.nsIWebBrowserChrome.CHROME_TITLEBAR, "titlebar"],
-  [Ci.nsIWebBrowserChrome.CHROME_WINDOW_CLOSE, "close"],
   [Ci.nsIWebBrowserChrome.CHROME_TOOLBAR, "toolbar"],
-  [Ci.nsIWebBrowserChrome.CHROME_LOCATIONBAR, "location"],
-  [Ci.nsIWebBrowserChrome.CHROME_PERSONAL_TOOLBAR, "personalbar"],
-  [Ci.nsIWebBrowserChrome.CHROME_MENUBAR, "menubar"],
   [Ci.nsIWebBrowserChrome.CHROME_WINDOW_RESIZE, "resizable"],
   [Ci.nsIWebBrowserChrome.CHROME_WINDOW_MINIMIZE, "minimizable"],
-  [Ci.nsIWebBrowserChrome.CHROME_SCROLLBARS, "", "scrollbars=0"],
   [Ci.nsIWebBrowserChrome.CHROME_PRIVATE_WINDOW, "private"],
   [Ci.nsIWebBrowserChrome.CHROME_NON_PRIVATE_WINDOW, "non-private"],
   // Do not inherit remoteness and fissionness from the previous session.
@@ -86,26 +81,15 @@ const CHROME_FLAGS_MAP = [
   //[Ci.nsIWebBrowserChrome.CHROME_SUPPRESS_ANIMATION, "suppressanimation"],
   [Ci.nsIWebBrowserChrome.CHROME_ALWAYS_ON_TOP, "alwaysontop"],
   //[Ci.nsIWebBrowserChrome.CHROME_OPENAS_CHROME, "chrome", "chrome=0"],
-  [Ci.nsIWebBrowserChrome.CHROME_EXTRA, "extrachrome"],
   [Ci.nsIWebBrowserChrome.CHROME_CENTER_SCREEN, "centerscreen"],
   [Ci.nsIWebBrowserChrome.CHROME_DEPENDENT, "dependent"],
   [Ci.nsIWebBrowserChrome.CHROME_MODAL, "modal"],
   [Ci.nsIWebBrowserChrome.CHROME_OPENAS_DIALOG, "dialog", "dialog=0"],
 ];
 
-// Hideable window features to (re)store
-// Restored in restoreWindowFeatures()
-const WINDOW_HIDEABLE_FEATURES = [
-  "menubar",
-  "toolbar",
-  "locationbar",
-  "personalbar",
-  "scrollbars",
-];
-
-const WINDOW_OPEN_FEATURES_MAP = {
-  locationbar: "location",
-};
+// Hideable window features to restore
+// TODO(bug 2065234): This could just be an "is popup" bit now.
+const WINDOW_HIDEABLE_FEATURES = ["toolbar"];
 
 // These are tab events that we listen to.
 const TAB_EVENTS = [
@@ -6249,7 +6233,6 @@ class _SessionStore {
    *        Object containing session data for the window
    */
   #restoreWindowFeatures(aWindow, aWinData, aOptions = {}) {
-    var hidden = aWinData.hidden ? aWinData.hidden.split(",") : [];
     var isTaskbarTab =
       aWindow.document.documentElement.hasAttribute("taskbartab");
 
@@ -6276,12 +6259,6 @@ class _SessionStore {
       lazy.AIWindow.toggleAIWindow(aWindow, shouldBeAIWindow, trigger);
     } else if (shouldBeAIWindow) {
       lazy.AIWindow.recordOpenWindowTelemetry(trigger);
-    }
-
-    if (!isTaskbarTab) {
-      WINDOW_HIDEABLE_FEATURES.forEach(function (aItem) {
-        aWindow[aItem].visible = !hidden.includes(aItem);
-      });
     }
 
     if (aWinData.isPopup) {
@@ -6731,7 +6708,7 @@ class _SessionStore {
         features.push("resizable");
         WINDOW_HIDEABLE_FEATURES.forEach(aFeature => {
           if (!hidden.includes(aFeature)) {
-            features.push(WINDOW_OPEN_FEATURES_MAP[aFeature] || aFeature);
+            features.push(aFeature);
           }
         });
       }

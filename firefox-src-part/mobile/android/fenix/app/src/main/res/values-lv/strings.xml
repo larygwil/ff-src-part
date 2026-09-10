@@ -7,6 +7,8 @@
 -->
 
 <resources xmlns:tools="http://schemas.android.com/tools">
+  <!-- Content description for the toolbar back button while searching bookmarks -->
+  <string name="bookmark_close_search_description">Doties atpakaļ un aizvērt meklēšanu</string>
   <!-- Label of button in create collection dialog for creating a new collection -->
   <string name="tab_tray_add_new_collection">Pievienot jaunu krājumu</string>
   <!--
@@ -69,6 +71,8 @@
   <string name="toolbar_shortcut_menu_edit_option">Labot īsceļu</string>
   <!-- Preference for settings related to visual options -->
   <string name="preferences_customize">Pielāgot</string>
+  <!-- Preference for open links in third party apps always open in apps option -->
+  <string name="preferences_open_links_in_apps_always">Vienmēr</string>
   <!-- Preference title for choosing an app to handle downloads -->
   <string name="preferences_choose_app_for_downloads">Pārvaldīt lejupielādes ar citu lietotni</string>
   <!-- Preference category for deleting or removing downloads -->
@@ -187,6 +191,8 @@
   <string name="preference_option_autoplay_blocked3">Liegt skaņu un video</string>
   <!-- Label for site specific setting that indicates that all video and audio autoplay is blocked -->
   <string name="quick_setting_option_autoplay_blocked">Liegt skaņu un video</string>
+  <!-- Preference for altering the default browsing mode. When enabled, the desktop site will always be requested. -->
+  <string name="preference_feature_desktop_mode_default">Vienmēr pieprasīt vietnes darbvirsmas versiju</string>
   <!-- Button to add new collection for the "select collection" step of the collection creator -->
   <string name="create_collection_add_new_collection">Pievienot jaunu krājumu</string>
   <!-- Toast shown when the QR code is successfully saved to Downloads -->
@@ -195,6 +201,20 @@
   <string name="sync_offline">Bezsaistē</string>
   <!-- Confirmation dialog button -->
   <string name="sync_confirmation_button">Sapratu</string>
+  <!-- Send tab to synced devices: Authentication error title - Message asking the user to re-authenticate -->
+  <string name="sync_send_tab_error_auth_title">Piesakies atkal, lai sūtītu cilnes starp ierīcēm</string>
+  <!-- Send tab to synced devices: Authentication error button - Allows user to re-authenticate -->
+  <string name="sync_send_tab_error_auth_button">Pieteikties</string>
+  <!-- Send tab to synced devices: Authentication error button - Allows user to remove the currently connected account -->
+  <string name="sync_send_tab_error_auth_remove_account">Noņemt kontu</string>
+  <!-- Send tab to synced devices: Empty state title - Displayed when the user has no synced devices -->
+  <string name="sync_send_tab_empty_state_title">Nav savienota neviena ierīce</string>
+  <!-- Send tab to synced devices: Empty state message - Displayed when the user has no synced devices -->
+  <string name="sync_send_tab_empty_state_description" tools:ignore="BrandUsage">Lai nosūtītu cilni, jāpiesakās Firefox vismaz vienā citā ierīcē.</string>
+  <!-- Send tab to synced devices: Connectivity Error title -->
+  <string name="sync_send_tab_error_connection_title">Jāpārbauda savienojums ar internetu</string>
+  <!-- Send tab to synced devices: Connectivity Error message - Suggested user action after internet connection has been established -->
+  <string name="sync_send_tab_error_connection_text">Tad cilni jāmēģina nosūtīt atkārtoti.</string>
   <!--
     Text shown in the notification that pops up to remind the user to set fenix as default browser.
     The app name is in the text, due to limitations with localizing Nimbus experiments
@@ -246,6 +266,8 @@
   <string name="preferences_email_masks_suggest_learn_more">Uzzināt vairāk</string>
   <!-- Link text that opens additional information about the browser VPN -->
   <string name="ip_protection_learn_more">Uzzināt vairāk</string>
+  <!-- Badge label shown in the menu item when the browser VPN has an error -->
+  <string name="ip_protection_menu_error">Kļūda</string>
   <!-- Badge label shown in the VPN menu item when the user is eligible for the feature but needs to authenticate / authorize to enable it -->
   <string name="ip_protection_menu_try_vpn_cta">Izmēģini bez maksas</string>
   <!-- Label shown next to the browser protection icon in the address bar when the browser VPN turns off -->
@@ -314,6 +336,12 @@
   <string name="translation_error_could_not_translate_warning_text">Tulkošanas laikā radās sarežģījums. Lūgums mēģināt vēlreiz.</string>
   <!-- The title of the warning card informs the user that the list of languages cannot be loaded. -->
   <string name="translation_error_could_not_load_languages_warning_text">Nevarēja ielādēt valodas. Jāpārbauda savienojums ar internetu un jāmēģina vēlreiz.</string>
+  <!--
+    Unified Trust Panel
+
+    Title text for the protection panel banner when the site is not secure.
+  -->
+  <string name="protection_panel_banner_not_secure_title">Šajā vietnē jāuzmanās</string>
   <!-- The button text to add tabs to the active tab group in the tab creation tool. -->
   <string name="debug_drawer_tab_tools_tab_creation_tool_button_text_active">Pievienot izmantotajām cilnēm</string>
   <!-- The button text to add tabs to the inactive tab group in the tab creation tool. -->

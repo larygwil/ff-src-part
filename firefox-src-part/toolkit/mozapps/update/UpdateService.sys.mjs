@@ -3291,8 +3291,7 @@ export class UpdateService {
               "pending-elevate. Showing Update elevation dialog."
           );
           let uri = "chrome://mozapps/content/update/updateElevation.xhtml";
-          let features =
-            "chrome,centerscreen,resizable=no,titlebar,toolbar=no,dialog=no";
+          let features = "chrome,centerscreen,resizable=no,titlebar,dialog=no";
 
           // The following timeout is intended to make the elevation dialog
           // appear on top of any browser windows after startup. In the past,
