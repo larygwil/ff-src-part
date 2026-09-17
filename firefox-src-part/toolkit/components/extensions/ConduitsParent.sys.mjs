@@ -24,7 +24,7 @@
  * @property {string[]} [query]
  * @property {string[]} [cast]
  *
- * @property {*} [actor]
+ * @property {any} [actor]
  * @property {boolean} [verified]
  * @property {string} [url]
  * @property {number} [frameId]

@@ -309,9 +309,7 @@ const ParamPreferenceCache = {
     let branchFetcher = AppConstants.NIGHTLY_BUILD
       ? "getBranch"
       : "getDefaultBranch";
-    this.branch = Services.prefs[branchFetcher](
-      lazy.SearchUtils.BROWSER_SEARCH_PREF + "param."
-    );
+    this.branch = Services.prefs[branchFetcher]("browser.search.param.");
     this.cache = new Map();
     this.nimbusCache = new Map();
     for (let prefName of this.branch.getChildList("")) {
@@ -720,10 +718,12 @@ export class ConfigSearchEngine extends SearchEngine {
       ],
     ]);
     if (this.id == "google") {
-      partnerCodeMap.set("errorpage", {
-        partnerCode: "",
-        telemetryId: "google-com-nocodes",
-      });
+      for (let sapSource of ["errorpage", "newtab_search_widget"]) {
+        partnerCodeMap.set(sapSource, {
+          partnerCode: "",
+          telemetryId: "google-com-nocodes",
+        });
+      }
     }
 
     let engineURL = new EngineURL({

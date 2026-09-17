@@ -15,8 +15,12 @@
 
 #if defined(ANDROID)
 
-  // Editing PDFs is not supported on mobile
+// Enabled for testing signatures bug 2061833 will turn it on for release when ready
+#ifdef NIGHTLY_BUILD
+  pref("pdfjs.annotationEditorMode", 0);
+#else
   pref("pdfjs.annotationEditorMode", -1);
+#endif
 
   pref("pdfjs.capCanvasAreaFactor", 100);
 

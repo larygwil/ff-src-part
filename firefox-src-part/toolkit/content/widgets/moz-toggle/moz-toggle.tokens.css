@@ -30,7 +30,7 @@
     --toggle-dot-transform-x: calc(var(--toggle-width) - 2 * var(--toggle-dot-margin) - 2px - var(--toggle-dot-width));
     --toggle-dot-width: var(--toggle-dot-height);
     --toggle-height: var(--size-item-small);
-    --toggle-inset: calc(-1 * var(--dimension-2));
+    --toggle-inset: -2px;
     --toggle-opacity-disabled: var(--button-opacity-disabled);
     --toggle-width: var(--size-item-large);
   }
@@ -61,10 +61,27 @@
       --toggle-border-color: var(--border-color-interactive);
       --toggle-border-color-hover: var(--border-color-interactive-hover);
       --toggle-border-color-active: var(--border-color-interactive-active);
-      --toggle-dot-background-color: var(--toggle-border-color);
       --toggle-dot-background-color-hover: var(--toggle-border-color-hover);
       --toggle-dot-background-color-active: var(--toggle-border-color-active);
       --toggle-dot-background-color-on-pressed: var(--background-color-box);
+    }
+
+    @layer tokens-forced-colors-nova {
+      @media (forced-colors) {
+        --toggle-background-color: SelectedItemText;
+        --toggle-background-color-hover: SelectedItemText;
+        --toggle-background-color-active: SelectedItemText;
+        --toggle-background-color-pressed: ButtonText;
+        --toggle-background-color-pressed-hover: SelectedItem;
+        --toggle-background-color-pressed-active: SelectedItem;
+        --toggle-border-color: ButtonText;
+        --toggle-border-color-hover: SelectedItem;
+        --toggle-border-color-active: ButtonText;
+        --toggle-dot-background-color: ButtonText;
+        --toggle-dot-background-color-hover: SelectedItem;
+        --toggle-dot-background-color-active: SelectedItem;
+        --toggle-dot-background-color-on-pressed: ButtonText;
+      }
     }
   }
 }

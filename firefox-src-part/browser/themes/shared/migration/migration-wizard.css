@@ -38,6 +38,7 @@ div[name="page-loading"] > .buttons > button {
 
 .loading-block {
   background-color: var(--button-background-color);
+  color: var(--button-text-color);
   border-radius: var(--border-radius-small);
   opacity: 0.4;
   margin-block-start: 16px;

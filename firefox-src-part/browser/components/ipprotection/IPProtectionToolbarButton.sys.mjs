@@ -36,6 +36,13 @@ XPCOMUtils.defineLazyPreferenceGetter(
 
 XPCOMUtils.defineLazyPreferenceGetter(
   lazy,
+  "siteInclusionsFeaturePref",
+  "browser.ipProtection.features.siteInclusions",
+  false
+);
+
+XPCOMUtils.defineLazyPreferenceGetter(
+  lazy,
   "siteExceptionsHintsPref",
   "browser.ipProtection.siteExceptionsHintsEnabled",
   true
@@ -70,6 +77,7 @@ export class IPProtectionToolbarButton {
     "network-error",
     "error",
     "excluded",
+    "included",
     "paused",
   ];
 
@@ -93,6 +101,17 @@ export class IPProtectionToolbarButton {
    */
   get isExceptionsFeatureEnabled() {
     return lazy.siteExceptionsFeaturePref;
+  }
+
+  /**
+   * Gets the value of the pref
+   * browser.ipProtection.features.siteInclusions.
+   *
+   * @returns {boolean}
+   *  True if site inclusions support is enabled, false otherwise.
+   */
+  get isInclusionsFeatureEnabled() {
+    return lazy.siteInclusionsFeaturePref;
   }
 
   /**
@@ -269,7 +288,10 @@ export class IPProtectionToolbarButton {
       lazy.IPPExceptionsManager.canManage(principal) &&
       lazy.IPPExceptionsManager.getPrincipalRule(principal) ===
         lazy.IPPPrincipalRules.EXCLUDED;
-
+    //TODO: Add hasInclusion function to exceptions manager, replace false with commented out call to hasInclusion - Bug 2066802
+    let isIncluded =
+      !!principal && lazy.IPPExceptionsManager.canManage(principal) && false;
+    //  lazy.IPPExceptionsManager.hasInclusion(principal);
     let isActive = lazy.IPPProxyManager.state === lazy.IPPProxyStates.ACTIVE;
     let isPaused = lazy.IPPProxyManager.state === lazy.IPPProxyStates.PAUSED;
 
@@ -304,6 +326,7 @@ export class IPProtectionToolbarButton {
       isError,
       isNetworkError,
       isExcluded,
+      isIncluded,
       isPaused,
     });
 
@@ -409,6 +432,7 @@ export class IPProtectionToolbarButton {
       isActive: false,
       isError: false,
       isExcluded: false,
+      isIncluded: false,
       isPaused: false,
       isNetworkError: false,
     }
@@ -423,6 +447,7 @@ export class IPProtectionToolbarButton {
     let isNetworkError = status.isNetworkError;
     let isError = status.isError && !isNetworkError;
     let isExcluded = status.isExcluded && this.isExceptionsFeatureEnabled;
+    let isIncluded = status.isIncluded && this.isInclusionsFeatureEnabled;
     let isPaused = status.isPaused;
     let l10nId =
       isError || isNetworkError
@@ -434,6 +459,7 @@ export class IPProtectionToolbarButton {
       "ipprotection-network-error",
       "ipprotection-error",
       "ipprotection-excluded",
+      "ipprotection-included",
       "ipprotection-paused"
     );
 
@@ -445,6 +471,8 @@ export class IPProtectionToolbarButton {
       toolbaritem.classList.add("ipprotection-paused");
     } else if (isExcluded && isActive) {
       toolbaritem.classList.add("ipprotection-excluded");
+    } else if (isIncluded && !isActive) {
+      toolbaritem.classList.add("ipprotection-included");
     } else if (isActive) {
       toolbaritem.classList.add("ipprotection-on");
     }

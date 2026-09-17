@@ -159,7 +159,7 @@ html|textarea {
 /* adapted from toolkit/themes/shared/menulist.css */
 html|select:where(:not([size], [multiple])) {
   --select-image-spacing: var(--space-small);
-  --select-padding-inline-end: calc(var(--select-image-spacing) * 2 + var(--dimension-12)); /* padding plus image width */
+  --select-padding-inline-end: calc(var(--select-image-spacing) * 2 + var(--icon-size-xsmall));
 
   appearance: none;
   padding: var(--space-small) var(--space-large);

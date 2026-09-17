@@ -13,6 +13,10 @@
   --urlbarView-small-font-size: 0.85em;
 
   --urlbarView-results-padding: 7px;
+  /* The view's own margin, which urlbar.css also derives the joint
+     background's outsets from. */
+  --urlbarView-margin-block: 0px;
+  --urlbarView-margin-inline: var(--urlbarView-results-padding);
   --urlbarView-row-gutter: var(--space-xxsmall);
   --urlbarview-row-padding-block: 6px;
   --urlbarView-row-padding-inline: var(--urlbar-icon-padding);
@@ -60,7 +64,7 @@
   --urlbarView-separator-char: "•" / "—";
   --urlbarView-separator-margin-inline: 0.6em;
 
-  &:-moz-locale-dir(rtl) {
+  &:dir(rtl) {
     --urlbarView-action-slide-in-distance: -200px;
   }
 
@@ -91,13 +95,8 @@
   display: none;
   text-shadow: none;
   overflow: clip;
-  margin-inline: var(--urlbarView-results-padding);
-  width: calc(100% - 2 * var(--urlbarView-results-padding));
-
-  .urlbar[breakout][open] > & {
-    display: flex;
-    flex-direction: column;
-  }
+  margin-inline: var(--urlbarView-margin-inline);
+  width: calc(100% - 2 * var(--urlbarView-margin-inline));
 
   /* When hosted in content, let the view scroll when there's limited space
      below the input due to small viewport size or page scroll position. */
@@ -107,6 +106,7 @@
     > .urlbarView-body-outer {
       min-height: 0;
       overflow-y: auto;
+      scrollbar-width: thin;
     }
   }
 
@@ -257,10 +257,10 @@
 
       /* urlbarView-url is forced to be LTR for RTL locales, so set the padding based on
          the browser's directionality. */
-      &:-moz-locale-dir(ltr) {
+      &:dir(ltr) {
         margin-left: var(--urlbarView-second-line-indent);
       }
-      &:-moz-locale-dir(rtl) {
+      &:dir(rtl) {
         margin-right: var(--urlbarView-second-line-indent);
       }
     }
@@ -310,17 +310,21 @@
   mask-image: linear-gradient(to left, transparent, black 2em);
 }
 
-.urlbarView-overflowable[overflow]:not(.urlbarView-title[is-url]):-moz-locale-dir(rtl) {
+/* Titles that are not URLs carry dir="auto", so anchor on the view, whose
+   direction is the one the row is laid out in. */
+.urlbarView:dir(rtl) .urlbarView-overflowable[overflow]:not(.urlbarView-title[is-url]) {
   mask-image: linear-gradient(to right, transparent, black 2em);
 }
 
-.urlbarView-title[is-url]:-moz-locale-dir(rtl),
-.urlbarView-url:-moz-locale-dir(rtl) {
+/* An [is-url] title carries no dir attribute, and the view sets dir="auto" on
+   the other titles alone, so both of these take the row's direction. */
+.urlbarView-title[is-url]:dir(rtl),
+.urlbarView-url:dir(rtl) {
   direction: ltr !important;
 }
 
-.urlbarView-url:-moz-locale-dir(rtl),
-.urlbarView-explanation:-moz-locale-dir(rtl) {
+.urlbarView-url:dir(rtl),
+.urlbarView-explanation:dir(rtl) {
   /* .urlbarView-url can grow due to `flex-grow: 1`, so without `text-align:
      right`, the URL text would be left-aligned within .urlbarView-url for RTL
      due to the `direction: ltr` rule.  .urlbarView-title does not have this
@@ -386,6 +390,7 @@
       display: flex;
       position: absolute;
       background-color: var(--button-background-color);
+      color: var(--button-text-color);
       justify-content: center;
       align-items: center;
       border-radius: var(--border-radius-circle);
@@ -464,6 +469,7 @@
 .urlbarView-button-result-menu {
   background-image: url("chrome://global/skin/icons/more.svg");
   background-color: var(--button-background-color);
+  color: var(--button-text-color);
 
   .urlbarView-results:not([disable-resultmenu-autohide])
     > .urlbarView-row:not(:hover, [selected], [descendant-selected])
@@ -490,7 +496,7 @@
       background-position-x: right 4px;
       font-size: var(--urlbarView-small-font-size);
 
-      &:-moz-locale-dir(rtl) {
+      &:dir(rtl) {
         background-position-x: left 4px;
       }
     }
@@ -525,6 +531,7 @@
 
   &:not(:hover, [aria-expanded="true"]) {
     background-color: var(--button-background-color);
+    color: var(--button-text-color);
   }
 
   &:is([selected], [primary]) {
@@ -826,7 +833,7 @@
         border-block-start: 1px solid var(--border-color-deemphasized);
       }
 
-      &:-moz-locale-dir(rtl) {
+      &:dir(rtl) {
         background-position-x: right 4px;
       }
     }
@@ -1307,6 +1314,7 @@
 
   @media not (prefers-contrast) {
     background-color: color-mix(in srgb, var(--button-background-color) 30%, transparent);
+    color: var(--button-text-color);
   }
 
   > .urlbarView-row-inner {
@@ -1622,7 +1630,7 @@
       fill: var(--airline-color, currentColor);
       stroke: var(--airline-color, currentColor);
 
-      &:-moz-locale-dir(rtl) {
+      &:dir(rtl) {
         /* Flip the background image, an in-progress flight path, and then flip the
            inner foreground image, an airline logo, so it's oriented correctly. */
         transform: scaleX(-1);

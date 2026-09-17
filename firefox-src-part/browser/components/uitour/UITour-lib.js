@@ -745,6 +745,24 @@ if (typeof Mozilla == "undefined") {
   };
 
   /**
+   * Set the New Tab Page wallpaper. Enables the wallpaper feature if it is
+   * currently off. The wallpaper is identified by its id (title) from the
+   * `newtab-wallpapers-v2` Remote Settings collection, e.g. 'moon', a
+   * 'solid-color-picker-#RRGGBB' value, or 'custom'. Passing an empty string
+   * clears the wallpaper.
+   *
+   * @param {string} wallpaper - Wallpaper id to set
+   * @since 157
+   * @example
+   * Mozilla.UITour.setNewtabWallpaper('moon');
+   */
+  Mozilla.UITour.setNewtabWallpaper = function (wallpaper) {
+    _sendEvent("setNewtabWallpaper", {
+      wallpaper,
+    });
+  };
+
+  /**
    * Sets a key+value pair as a treatment tag for recording in FHR.
    *
    * @param {string} name - tag name for the treatment
