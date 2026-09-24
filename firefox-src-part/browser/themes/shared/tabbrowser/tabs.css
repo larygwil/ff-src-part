@@ -704,17 +704,19 @@ tab-split-view-wrapper[dragtarget] {
       --audio-overlay-extra-background: transparent;
       background-color: var(--lwt-accent-color);
       -moz-context-properties: fill;
-      fill: var(--tab-text-color-selected);
+      fill: currentColor;
       color-scheme: var(--tab-selected-color-scheme);
       border-radius: var(--border-radius-circle);
       border: var(--border-width) solid var(--button-border-color);
-
       background-image: image(var(--audio-overlay-extra-background)), image(var(--toolbox-background-color));
+      color: var(--toolbox-text-color);
       &:-moz-window-inactive {
         background-image: image(var(--audio-overlay-extra-background)), image(var(--toolbox-background-color-inactive));
+        color: var(--toolbox-text-color-inactive);
       }
       &[selected] {
         background-image: image(var(--audio-overlay-extra-background)), image(var(--tab-background-color-selected)), image(var(--toolbox-background-color));
+        color: var(--tab-text-color-selected);
       }
       &[selected]:-moz-window-inactive {
         background-image:
@@ -724,6 +726,13 @@ tab-split-view-wrapper[dragtarget] {
       &:hover {
         --audio-overlay-extra-background: var(--button-background-color-ghost-hover);
 
+        /* In forced colors mode, --audio-overlay-extra-background is opaque, so
+         * foreground needs to match. Same for the other media queries below */
+        /* stylelint-disable-next-line max-nesting-depth */
+        @media (forced-colors) {
+          color: var(--button-text-color-ghost-hover);
+        }
+
         /* stylelint-disable-next-line max-nesting-depth */
         @media -moz-pref("browser.nova.enabled") {
           border-color: var(--button-border-color-hover);
@@ -732,6 +741,10 @@ tab-split-view-wrapper[dragtarget] {
 
       &:hover:active {
         --audio-overlay-extra-background: var(--button-background-color-ghost-active);
+        /* stylelint-disable-next-line max-nesting-depth */
+        @media (forced-colors) {
+          color: var(--button-text-color-ghost-active);
+        }
 
         /* stylelint-disable-next-line max-nesting-depth */
         @media -moz-pref("browser.nova.enabled") {
@@ -783,8 +796,9 @@ tab-split-view-wrapper[dragtarget] {
         --audio-overlay-extra-background: transparent;
         background-color: var(--lwt-accent-color);
         background-image: image(var(--audio-overlay-extra-background)), image(var(--toolbox-background-color));
+        color: var(--tab-text-color-selected);
+        fill: currentColor;
         -moz-context-properties: fill;
-        fill: var(--tab-text-color-selected);
         color-scheme: var(--tab-selected-color-scheme);
         border-radius: var(--border-radius-circle);
         border: var(--border-width) solid var(--button-background-color-ghost);
@@ -804,6 +818,12 @@ tab-split-view-wrapper[dragtarget] {
 
         &:hover {
           --audio-overlay-extra-background: var(--button-background-color-ghost-hover);
+          /* In forced colors mode, --audio-overlay-extra-background is opaque, so
+           * foreground needs to match it. Same for the other media queries below */
+          /* stylelint-disable-next-line max-nesting-depth */
+          @media (forced-colors) {
+            color: var(--button-background-color-ghost);
+          }
 
           /* stylelint-disable-next-line max-nesting-depth */
           @media -moz-pref("browser.nova.enabled") {
@@ -813,6 +833,11 @@ tab-split-view-wrapper[dragtarget] {
 
         &:hover:active {
           --audio-overlay-extra-background: var(--button-background-color-ghost-active);
+
+          /* stylelint-disable-next-line max-nesting-depth */
+          @media (forced-colors) {
+            color: var(--button-background-color-ghost-active);
+          }
 
           /* stylelint-disable-next-line max-nesting-depth */
           @media -moz-pref("browser.nova.enabled") {
@@ -2915,6 +2940,7 @@ tab-group {
       background-color: var(--lwt-accent-color);
       background-image: image(var(--close-button-extra-background)), image(var(--tab-background-color-selected)), image(var(--toolbox-background-color));
       color-scheme: var(--tab-selected-color-scheme);
+      color: var(--tab-text-color-selected);
       outline-color: var(--tab-close-button-border-color);
       box-shadow: var(--tab-box-shadow-selected);
       border-radius: var(--border-radius-circle);
@@ -2923,6 +2949,12 @@ tab-group {
       inset: auto;
       top: -3px;
       inset-inline-start: 2px;
+
+      /* In forced colors mode, --close-button-extra-background is opaque, so
+       * foreground needs to match it. Same for the other media queries below */
+      @media (forced-colors) {
+        color: var(--tab-close-button-text-color);
+      }
 
       /* Nova: 16px button with a 12px icon box, matching .tab-icon-overlay. */
       @media -moz-pref("browser.nova.enabled") {
@@ -2940,11 +2972,17 @@ tab-group {
       &:hover {
         --close-button-extra-background: var(--tab-close-button-background-color-hover);
         outline-color: var(--tab-close-button-border-color-hover);
+        @media (forced-colors) {
+          color: var(--tab-close-button-text-color-hover);
+        }
       }
 
       &:hover:active {
         --close-button-extra-background: var(--tab-close-button-background-color-active);
         outline-color: var(--tab-close-button-border-color-active);
+        @media (forced-colors) {
+          color: var(--tab-close-button-text-color-active);
+        }
       }
 
       .tabbrowser-tab:hover & {
@@ -3092,8 +3130,10 @@ toolbar:not(#TabsToolbar) #firefox-view-button {
 #alltabs-button {
   list-style-image: url("chrome://browser/skin/search-tabs.svg");
 
-  #TabsToolbar & {
-    list-style-image: url("chrome://global/skin/icons/arrow-down.svg");
+  @media not (-moz-platform: linux) {
+    #TabsToolbar & {
+      list-style-image: url("chrome://global/skin/icons/arrow-down.svg");
+    }
   }
 
   #tabbrowser-tabs[hiddensoundplaying] ~ & > .toolbarbutton-badge-stack > .toolbarbutton-badge {

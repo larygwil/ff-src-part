@@ -50,3 +50,8 @@ pref("pdfjs.enableOptimizedPartialRendering", true);
 // variable of the `pdfjs` Nimbus feature. The viewer also short-circuits its
 // own toolbar button when this is false (web/app_options.js).
 pref("pdfjs.enableSignatureVerification", false);
+
+#ifdef MOZ_THUNDERBIRD
+  // Work-around until bug 2070962 is resolved.
+  pref("pdfjs.enableSelectionRendering", false);
+#endif

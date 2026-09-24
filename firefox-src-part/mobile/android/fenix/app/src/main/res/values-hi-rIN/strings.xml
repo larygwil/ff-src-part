@@ -288,7 +288,7 @@
   <!-- Browser menu badge text for summarization feature -->
   <string name="browser_menu_summarize_page_badge">नया</string>
   <!-- Browser menu label for navigating to the Web Compat Reporter feature, which provides users the ability to send bug reports for broken sites. -->
-  <string name="browser_menu_webcompat_reporter_2">साइट खराब होने की रिपोर्ट करें</string>
+  <string name="browser_menu_webcompat_reporter_2">खराब साइट की रिपोर्ट करें</string>
   <!-- Browser menu label that is displayed when the current page has been translated by the translation feature. -->
   <string name="browser_menu_translated">अनुवाद हुआ है</string>
   <!-- Browser menu label for the print feature -->
@@ -710,7 +710,7 @@
   <!-- Preference category for general settings -->
   <string name="preferences_category_general">सामान्य</string>
   <!-- Preference category for all links about Fenix -->
-  <string name="preferences_category_about">हमारे बारे में</string>
+  <string name="preferences_category_about">परिचय</string>
   <!-- Preference category for settings related to changing the default search engine -->
   <string name="preferences_category_select_default_search_engine_2">नॉर्मल ब्राउज़िंग में डिफ़ॉल्ट सर्च इंजन</string>
   <!-- Preference category for settings related to changing the private browsing search engine -->
@@ -769,7 +769,7 @@
   <!-- Preference title for using the screen lock to hide tabs in private browsing -->
   <string name="preferences_pbm_lock_screen_title">प्राइवेट ब्राउज़िंग में, टैब छिपाने के लिए स्क्रीन लॉक का इस्तेमाल करें।</string>
   <!-- Informs the user how to access the tabs when "Use screen lock to hide tabs in private browsing" is enabled -->
-  <string name="preferences_pbm_lock_screen_summary_3">अपने फ़िंगरप्रिंट, पिन या फ़ेस-अनलॉक सुविधा का इस्तेमाल करके टैब देखें। इसे चालू करने से, स्क्रीन कैप्चर और शेयरिंग से भी बचा जा सकता है।</string>
+  <string name="preferences_pbm_lock_screen_summary_3">अपने फ़िंगरप्रिंट, पिन या फ़ेस-अनलॉक सुविधा का इस्तेमाल करके टैब देखें। इसे चालू करने से स्क्रीन कैप्चर और शेयरिंग पर भी रोक लग जाती है।</string>
   <!-- Description of the preference to enable "HTTPS-Only" mode. -->
   <string name="preferences_https_only_summary">और ज़्यादा सुरक्षा के लिए, HTTPS एन्क्रिप्शन प्रोटोकॉल इस्तेमाल करने वाली साइटों से अपने आप कनेक्ट करने की कोशिश करता है।</string>
   <!-- Summary of https only preference if https only is set to off -->
@@ -951,7 +951,7 @@
   <!-- The title of the optional permissions section from addon's permissions screen. -->
   <string name="addons_permissions_heading_optional_permissions">वैकल्पिक अनुमतियां:</string>
   <!-- The title of the required data collection permissions section from addon's permissions screen. -->
-  <string name="addons_permissions_heading_required_data_collection">यह डेटा इकट्ठा करना ज़रूरी है:</string>
+  <string name="addons_permissions_heading_required_data_collection">ज़रूरी अनुमतियां:</string>
   <!-- The title of the optional data collection permissions section from addon's permissions screen. -->
   <string name="addons_permissions_heading_optional_data_collection">वैकल्पिक डेटा संग्रह:</string>
   <!--
@@ -1140,7 +1140,7 @@
   <!-- Preference for syncing passwords -->
   <string name="preferences_sync_logins_2">पासवर्ड</string>
   <!-- Preference for syncing tabs -->
-  <string name="preferences_sync_tabs_2">टैब खोलें</string>
+  <string name="preferences_sync_tabs_2">खुले हुए टैब</string>
   <!-- Preference for signing out -->
   <string name="preferences_sign_out">साइन आउट करें</string>
   <!-- Preference displays and allows changing current FxA device name -->
@@ -1411,6 +1411,8 @@
   <string name="preference_auto_close_tabs" tools:ignore="UnusedResources">खुले टैब को अपने आप बंद करें</string>
   <!-- Content description (not visible, for screen readers etc.): Close tab button -->
   <string name="tab_manager_close_tabs">बंद करें</string>
+  <!-- Content description for the media playback indicator in the tabs tray. -->
+  <string name="tab_indicator_media_playing">मीडिया प्ले हो रहा है</string>
   <!--
     Opening screen
 
@@ -1946,7 +1948,7 @@
 
     The title of the Web Compat Reporter feature. This is displayed in the top app bar.
   -->
-  <string name="webcompat_reporter_screen_title">साइट खराब होने की रिपोर्ट करें</string>
+  <string name="webcompat_reporter_screen_title">खराब साइट की रिपोर्ट करें</string>
   <!-- The description of the Web Compat Reporter feature, which has a "learn more" button text for navigating to a SUMO link to learn more about reporting a broken site. %1$s is the name of the app (for example "Firefox") and %2$s is the learn more button. -->
   <string name="webcompat_reporter_description_3">आपकी रिपोर्ट से, हमें %1$s में मौजूद समस्याओं को समझने और उनका समाधान करने में मदद मिलती है, ताकि यह सभी के लिए बेहतर हो सके। %2$s</string>
   <!-- The button text for navigating to the SUMO link to learn more about reporting a broken site. -->
@@ -1992,7 +1994,7 @@
   -->
   <string name="webcompat_reporter_reason_load">साइट लोड नहीं हो रही है</string>
   <!-- Broken site reason text for can’t pay, check out or shop -->
-  <string name="webcompat_reporter_reason_checkout">पेमेंट, चेकआउट या खरीदारी हो पा रही है</string>
+  <string name="webcompat_reporter_reason_checkout">पेमेंट, चेकआउट या खरीदारी नहीं हो पा रही है</string>
   <!-- Broken site reason text for site is slow -->
   <string name="webcompat_reporter_reason_slow2">साइट धीमी है</string>
   <!-- Broken site reason text for video isn’t playing or loading -->
@@ -2215,7 +2217,7 @@
   <!-- Preference for altering the EME access for all websites -->
   <string name="preference_phone_feature_media_key_system_access">DRM-कंट्रोल्ड कंटेंट</string>
   <!-- Label that indicates that a permission must be asked always -->
-  <string name="preference_option_phone_feature_ask_to_allow">अनुमति देने के लिए पूछें</string>
+  <string name="preference_option_phone_feature_ask_to_allow">अनुमति मांगें</string>
   <!-- Label that indicates that a permission must be blocked -->
   <string name="preference_option_phone_feature_blocked">ब्लॉक किया गया</string>
   <!-- Label that indicates that a permission must be allowed -->
@@ -2225,7 +2227,7 @@
   <!-- Preference for showing a list of websites that the default configurations won't apply to them -->
   <string name="preference_exceptions">अपवाद</string>
   <!-- Summary of tracking protection preference if tracking protection is set to off -->
-  <string name="tracking_protection_off">बंद करें</string>
+  <string name="tracking_protection_off">बंद</string>
   <!-- Summary of tracking protection preference if tracking protection is set to standard -->
   <string name="tracking_protection_standard">स्टैंडर्ड</string>
   <!-- Summary of tracking protection preference if tracking protection is set to strict -->
@@ -2251,15 +2253,15 @@
   <!-- Summary of delete browsing data on quit preference if it is set to on -->
   <string name="delete_browsing_data_quit_on">ऑन</string>
   <!-- Summary of delete browsing data on quit preference if it is set to off -->
-  <string name="delete_browsing_data_quit_off">ऑफ़</string>
+  <string name="delete_browsing_data_quit_off">बंद</string>
   <!-- Summary of studies preference if it is set to on -->
   <string name="studies_on">ऑन</string>
   <!-- Summary of studies data on quit preference if it is set to off -->
-  <string name="studies_off">ऑफ़</string>
+  <string name="studies_off">बंद</string>
   <!-- Toggle if desktop site is turned on -->
   <string name="browser_feature_desktop_site_on">ऑन</string>
   <!-- Toggle if desktop site is turned off -->
-  <string name="browser_feature_desktop_site_off">ऑफ़</string>
+  <string name="browser_feature_desktop_site_off">बंद</string>
   <!-- Category header of a preference that allows a user to alter settings related to web permissions. -->
   <string name="preferences_category_permissions">अनुमतियां</string>
   <!-- Category header of a preference that allows a user to alter settings related to web content. -->
@@ -2364,7 +2366,7 @@
   <!-- Toast shown after copying link to clipboard -->
   <string name="toast_copy_link_to_clipboard">क्लिपबोर्ड में कॉपी हो गया</string>
   <!-- An option from the share dialog to sign into sync -->
-  <string name="sync_sign_in">सिंक करने के लिए साइन इन करें</string>
+  <string name="sync_sign_in">सिंक में साइन इन करें</string>
   <!-- An option from the share dialog to send link to all other sync devices -->
   <string name="sync_send_to_all">सभी डिवाइसों को भेजें</string>
   <!-- Text displayed when no other sync devices are available for link sharing -->
@@ -2376,7 +2378,7 @@
   <!-- Text displayed when sync is offline and cannot be accessed -->
   <string name="sync_offline">ऑफ़लाइन</string>
   <!-- An option to connect additional devices -->
-  <string name="sync_connect_device">अन्य डिवाइस जोड़ें</string>
+  <string name="sync_connect_device">अन्य डिवाइस कनेक्ट करें</string>
   <!-- The dialog text shown when additional devices are not available -->
   <string name="sync_connect_device_dialog" tools:ignore="BrandUsage">टैब भेजने के लिए, कम से कम एक और डिवाइस पर Firefox में साइन इन करें।</string>
   <!-- Confirmation dialog button -->
@@ -2392,11 +2394,11 @@
   <!-- Text for the button to connect another device -->
   <string name="sync_add_new_device_connect_button">अन्य डिवाइस कनेक्ट करें…</string>
   <!-- A message template for the shared link with a footer. %1$s is the shared link, %2$s is the app name (e.g. Firefox) and %3$s is a download link for the app. -->
-  <string name="sent_from_firefox_template" tools:ignore="UnusedResources">%1$s %2$s ने भेजा है 🦊 मोबाइल ब्राउज़र आज़माएं: %3$s</string>
+  <string name="sent_from_firefox_template" tools:ignore="UnusedResources">%1$s\n\n%2$s से भेजा गया 🦊 मोबाइल ब्राउज़र आज़माएं: %3$s</string>
   <!-- A short message template for the shared link with a footer. %1$s is the shared link, %2$s is the app name (e.g. Firefox) and %3$s is a download link for the app. -->
-  <string name="sent_from_firefox_template_short" tools:ignore="UnusedResources">%1$s %2$s 🦊 ने भेजा है %3$s</string>
+  <string name="sent_from_firefox_template_short" tools:ignore="UnusedResources">%1$s\n\n%2$s से भेजा गया है 🦊 %3$s</string>
   <!-- Send tab to synced devices: Authentication error title - Message asking the user to re-authenticate -->
-  <string name="sync_send_tab_error_auth_title">सिंक किए गए डिवाइसों के बीच टैब भेजने के लिए, फिर से साइन इन करें</string>
+  <string name="sync_send_tab_error_auth_title">डिवाइसों के बीच टैब भेजने के लिए फिर से साइन इन करें</string>
   <!-- Send tab to synced devices: Authentication error button - Allows user to re-authenticate -->
   <string name="sync_send_tab_error_auth_button">साइन इन करें</string>
   <!-- Send tab to synced devices: Authentication error button - Allows user to remove the currently connected account -->
@@ -2499,7 +2501,7 @@
   <!-- Title for the Delete browsing data preference -->
   <string name="preferences_delete_browsing_data">ब्राउज़िंग डेटा डिलीट करें</string>
   <!-- Title for the tabs item in Delete browsing data -->
-  <string name="preferences_delete_browsing_data_tabs_title_2">टैब खोलें</string>
+  <string name="preferences_delete_browsing_data_tabs_title_2">खुले हुए टैब</string>
   <!-- Subtitle for the tabs item in Delete browsing data, %d is the number of open tabs -->
   <string name="preferences_delete_browsing_data_tabs_subtitle">%d टैब</string>
   <!--
@@ -2874,7 +2876,7 @@
   <!-- Preference for managing the saving of logins and passwords in Fenix -->
   <string name="preferences_passwords_save_logins_2">पासवर्ड सेव करें</string>
   <!-- Preference option for asking to save passwords in Fenix -->
-  <string name="preferences_passwords_save_logins_ask_to_save">सेव करने के लिए पूछें</string>
+  <string name="preferences_passwords_save_logins_ask_to_save">सेव करने से पहले पूछें</string>
   <!-- Preference option for never saving passwords in Fenix -->
   <string name="preferences_passwords_save_logins_never_save">कभी भी सेव न करें</string>
   <!-- Preference for autofilling saved logins in Firefox (in web content), %1$s will be replaced with the app name -->
@@ -2980,7 +2982,7 @@
   <!-- Saved logins sorting strategy menu item -by last used- (if selected, it will sort saved logins by last used) -->
   <string name="saved_logins_sort_strategy_last_used">पिछली बार इस्तेमाल हुए</string>
   <!-- Content description (not visible, for screen readers etc.) -->
-  <string name="saved_logins_menu_dropdown_chevron_icon_content_description_2">पासवर्ड मेन्यू सॉर्ट करें</string>
+  <string name="saved_logins_menu_dropdown_chevron_icon_content_description_2">पासवर्ड सॉर्ट करने का मेन्यू</string>
   <!-- Label for button to import passwords from file. -->
   <string name="passwords_import_menu_button">फ़ाइल से इंपोर्ट करें</string>
   <!--
@@ -3009,6 +3011,8 @@
   <string name="preferences_ip_protection_title_2">बिल्ट-इन VPN</string>
   <!-- Label for the BETA badge for the browser VPN entry in the settings list -->
   <string name="preferences_ip_protection_beta_badge_label">BETA</string>
+  <!-- Title for the browser VPN settings screen (displayed in the app bar) -->
+  <string name="ip_protection_settings_title">बिल्ट-इन VPN</string>
   <!-- Title for the browser VPN settings screen (displayed in the app bar) -->
   <string name="ip_protection_title">VPN</string>
   <!-- Label for the browser VPN toggle on the settings screen -->
@@ -3250,7 +3254,7 @@
   <!-- Label for an address field (e.g. mailing address) used as part of the form autofill feature. This specific field is used for addresses in Iran, Mexico. -->
   <string name="addresses_neighborhood" tools:ignore="UnusedResources">इलाका</string>
   <!-- Label for an address field (e.g. mailing address) used as part of the form autofill feature. The Village or Township field, specific to Malaysia is crucial for addresses in rural areas. -->
-  <string name="addresses_village_township" tools:ignore="UnusedResources">गांव या शहर</string>
+  <string name="addresses_village_township" tools:ignore="UnusedResources">गांव या कस्बा</string>
   <!-- Label for an address field (e.g. mailing address) used as part of the form autofill feature. The Island field, used in places like the Cayman Islands and the Bahamas if an address is located on a specific island. -->
   <string name="addresses_island" tools:ignore="UnusedResources">द्वीप</string>
   <!-- Label for an address field (e.g. mailing address) used as part of the form autofill feature. The Townland field, specific to Ireland is a specific type of land division used in rural areas. -->
@@ -3258,7 +3262,7 @@
   <!-- Label for an address field (e.g. mailing address) used as part of the form autofill feature. This specific field is used as secondary address information (below the country level, e.g. county) in Honk Kong, Sudan, Syria, Türkiye, and as sublocality (civil entity below a locality, e.g. district) in Korea. -->
   <string name="addresses_district" tools:ignore="UnusedResources">ज़िला</string>
   <!-- Label for an address field (e.g. mailing address) used as part of the form autofill feature. Used in the United Kingdom, Norway and Sweden -->
-  <string name="addresses_post_town" tools:ignore="UnusedResources">पोस्ट सिटी</string>
+  <string name="addresses_post_town" tools:ignore="UnusedResources">पोस्ट टाउन</string>
   <!-- Label for an address field (e.g. mailing address) used as part of the form autofill feature. This specific field is used as a tertiary address information (below the state level, e.g. Tasmania in Australia -->
   <string name="addresses_suburb" tools:ignore="UnusedResources">उपनगर</string>
   <!-- Label for an address field (e.g. mailing address) used as part of the form autofill feature. This specific field is crucial for addressing in regions where county lines play a key role in postal services. -->
@@ -3384,7 +3388,7 @@
   <!-- This is the hint text that is shown inline on the hostname field of the create new login page. 'https://www.example.com' intentionally hardcoded here -->
   <string name="add_login_hostname_hint_text">https://www.example.com</string>
   <!-- This is an error message shown below the hostname field of the add login page when a hostname does not contain http or https. -->
-  <string name="add_login_hostname_invalid_text_3">वेब एड्रेस में \"https://\" या \"http://\" ज़रूर होना चाहिए</string>
+  <string name="add_login_hostname_invalid_text_3">वेब एड्रेस में “https://” या “http://” ज़रूर होना चाहिए</string>
   <!-- This is an error message shown below the hostname field of the add login page when a hostname is invalid. -->
   <string name="add_login_hostname_invalid_text_2">सही होस्टनेम ज़रूरी है</string>
   <!--
@@ -3653,7 +3657,7 @@
   <!-- Toggle switch label that indicates that the browser should signal or indicate when a translation is possible for any page. -->
   <string name="translation_settings_offer_to_translate">संभव होने पर अनुवाद करने की पेशकश करें</string>
   <!-- Toggle switch label that indicates that downloading files required for translating is permitted when using data saver mode in Android. -->
-  <string name="translation_settings_always_download">भाषाओं को हमेशा डेटा सेविंग मोड में डाउनलोड करें</string>
+  <string name="translation_settings_always_download">डेटा सेविंग मोड में भी भाषाएं हमेशा डाउनलोड करें</string>
   <!-- Section header text that begins the section of a list of different options the user may select to adjust their translation preferences. -->
   <string name="translation_settings_translation_preference">अनुवाद की प्राथमिकताएं</string>
   <!-- Button text for the button that will take the user to the automatic translations settings dialog. On the automatic translations settings dialog, the user can set if translations should occur automatically for a given language. -->
@@ -3943,7 +3947,7 @@
   -->
   <string name="connection_security_panel_issued_to">%s को जारी किया गया</string>
   <!-- Text for the connection security panel when the site uses a QWAC. -->
-  <string name="connection_security_panel_qualified_certificate">रेगुलेशन (EU) 2024/1183 में दी गई जानकारी के अनुसार, योग्य है।</string>
+  <string name="connection_security_panel_qualified_certificate">रेगुलेशन (EU) 2024/1183 में दी गई जानकारी के अनुसार योग्य है।</string>
   <!--
     Debug drawer
 
@@ -4029,7 +4033,7 @@
   <!-- Option for likert scale -->
   <string name="likert_scale_option_5" tools:ignore="UnusedResources">बहुत असंतुष्ट</string>
   <!-- Option for likert scale -->
-  <string name="likert_scale_option_6" tools:ignore="UnusedResources">मैंने इसका इस्तेमाल नहीं किया है</string>
+  <string name="likert_scale_option_6" tools:ignore="UnusedResources">मैं इसका इस्तेमाल नहीं करता/करती</string>
   <!-- Option for likert scale. Note: The word "Firefox" should NOT be translated. -->
   <string name="likert_scale_option_7" tools:ignore="BrandUsage,UnusedResources">मैं Firefox पर सर्च का इस्तेमाल नहीं करता/करती</string>
   <!-- Option for likert scale -->
@@ -4067,7 +4071,7 @@
   -->
   <string name="microsurvey_uninstall_survey_title">आपकी फ़ीडबैक मायने रखती है। आप इसे अनइंस्टॉल क्यों कर रहे हैं?</string>
   <!-- Uninstall survey answer option -->
-  <string name="uninstall_survey_option_1_v2">यह धीमा है और भरोसेमंद नहीं है</string>
+  <string name="uninstall_survey_option_1_v2">यह धीमा है या भरोसेमंद नहीं है</string>
   <!-- Uninstall survey answer option -->
   <string name="uninstall_survey_option_2_v2">वेबसाइटें ठीक से काम नहीं कर रही थीं</string>
   <!-- Uninstall survey answer option -->
@@ -4341,7 +4345,7 @@
   <!-- Label for a preference shown when the device supports screen lock (e.g., PIN, pattern, or password) but the user has not set one up. -->
   <string name="pbm_authentication_lock_device_feature_disabled">टैब छिपाने के लिए स्क्रीन लॉक सेट करें</string>
   <!-- Title text for the contextual feature recommendation (CFR) suggesting the user enable a screen lock to protect private tabs -->
-  <string name="private_tab_cfr_title">प्राइवेट टैब छिपाने के लिए स्क्रीन लॉक इस्तेमाल करें?</string>
+  <string name="private_tab_cfr_title">प्राइवेट टैब छिपाने के लिए स्क्रीन लॉक इस्तेमाल करना है?</string>
   <!-- Negative button text for the contextual feature recommendation (CFR) dismissing the screen lock suggestion -->
   <string name="private_tab_cfr_negative">जी नहीं</string>
   <!-- Positive button text for the contextual feature recommendation (CFR) enabling screen lock for private tabs -->
@@ -4357,7 +4361,7 @@
   <!-- Label for a button positively rating the user's experience with the app -->
   <string name="review_prompt_positive_button">बहुत अच्छा है!</string>
   <!-- Title for a prompt asking the user to rate the app on Google Play Store. %1$s is the name of the app (for example "Firefox"). -->
-  <string name="review_prompt_rate_header">%1$s को पसंद करने के लिए धन्यवाद। कृपया रेटिंग देकर अपनी पसंद जताएं?</string>
+  <string name="review_prompt_rate_header">%1$s को पसंद करने के लिए धन्यवाद। क्या आपके पास रेटिंग देकर अपनी पसंद जताने के लिए एक पल है?</string>
   <!-- Label for a button proceeding to rate the app on Google Play Store. %1$s is the name of the app (for example "Firefox"). -->
   <string name="review_prompt_rate_button">%1$s को Play Store पर रेटिंग दें</string>
   <!-- Title for a prompt asking the user send us feedback. %1$s is the name of the app (for example "Firefox"). -->
@@ -4369,7 +4373,7 @@
 
     Title of Settings Search. "Search" is a verb here
   -->
-  <string name="settings_search_title">सर्च सेटिंग</string>
+  <string name="settings_search_title">सेटिंग सर्च करें</string>
   <!-- Content description (not visible, for screen readers etc.) for the button to clear the search field for settings search -->
   <string name="content_description_settings_search_clear_search">सर्च मिटाएं</string>
   <!-- Content description (not visible, for screen readers etc.) for the button to navigate back to the Settings page from the Settings Search screen. -->
@@ -4471,7 +4475,7 @@
   <!-- Title for the Google Lens Search Settings page feature toggle -->
   <string name="search_settings_google_lens_title">Google Lens सर्च चालू करें</string>
   <!-- Description for the Google Lens Search Settings page feature toggle -->
-  <string name="search_settings_google_lens_description">विज़ुअल सर्च के लिए, Google को इमेज और फ़ोटो भेजें।</string>
+  <string name="search_settings_google_lens_description">विज़ुअल सर्च के लिए, Google को इमेज और फ़ोटो भेजता है।</string>
   <!-- Caption shown under the Google Lens toggle clarifying when the feature is available -->
   <string name="preferences_google_lens_availability_caption">फ़ीचर तभी उपलब्ध होगा जब ऊपर Google को चालू किया गया हो और ब्राउज़ करते समय वह आपका एक्टिव सर्च इंजन हो।</string>
   <!-- Content description for the Google Lens half of the camera mode toggle -->

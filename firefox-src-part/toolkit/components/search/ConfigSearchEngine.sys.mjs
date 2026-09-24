@@ -718,12 +718,16 @@ export class ConfigSearchEngine extends SearchEngine {
       ],
     ]);
     if (this.id == "google") {
-      for (let sapSource of ["errorpage", "newtab_search_widget"]) {
+      for (let sapSource of ["errorpage"]) {
         partnerCodeMap.set(sapSource, {
           partnerCode: "",
           telemetryId: "google-com-nocodes",
         });
       }
+      partnerCodeMap.set("newtab_search_widget", {
+        partnerCode: "firefox-b-exp1",
+        telemetryId: "google-b-exp1",
+      });
     }
 
     let engineURL = new EngineURL({

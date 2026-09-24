@@ -98,18 +98,6 @@
   margin-inline: var(--urlbarView-margin-inline);
   width: calc(100% - 2 * var(--urlbarView-margin-inline));
 
-  /* When hosted in content, let the view scroll when there's limited space
-     below the input due to small viewport size or page scroll position. */
-  .urlbar[in-page] > & {
-    min-height: 0;
-
-    > .urlbarView-body-outer {
-      min-height: 0;
-      overflow-y: auto;
-      scrollbar-width: thin;
-    }
-  }
-
   /* The gap under the input sits outside the scrollport, so a row scrolling
      past it doesn't paint over the input's border edge. */
   .urlbar[in-page]:not([noresults]) > & {
@@ -119,6 +107,13 @@
       padding-block-start: 0;
     }
   }
+}
+
+.urlbarView-body-outer,
+.urlbarView-body-inner {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .urlbarView-body-inner {
@@ -134,6 +129,12 @@
   padding-block: calc(var(--urlbarView-results-padding) - var(--urlbarView-row-gutter));
   white-space: nowrap;
 
+  /* Let the view scroll when there's limited space below the input due to
+     small viewport size or page scroll position. */
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
+
   /* Vertically center the one-offs when no results are present. */
   .urlbar[noresults] > .urlbarView > .urlbarView-body-outer > .urlbarView-body-inner > & {
     padding-block: 0;
@@ -142,6 +143,11 @@
 
 .urlbarView-row {
   --urlbarView-second-line-indent: calc(var(--urlbarView-icon-margin-start) + var(--urlbarView-icon-margin-end) + var(--urlbarview-favicon-size));
+
+  /* The row is the containing block for everything positioned within it,
+     including the favicon's type badge. The view scrolls, so a containing
+     block outside the scrollport would leave those boxes behind. */
+  position: relative;
 
   /* Align icons that are smaller than the default rich suggestion icon size
     (28px) with default-size rich suggestion icons. */
@@ -576,7 +582,6 @@
 /* Row label (a.k.a. group label) */
 
 .urlbarView-row[label] {
-  position: relative;
   /* `margin-block-start` controls how far the main part of the row is from the
      main part of the previous row. */
   margin-block-start: var(--urlbarView-labeled-row-margin-top);
@@ -618,7 +623,6 @@
 /* Feedback acknowledgment */
 
 .urlbarView-row[feedback-acknowledgment] {
-  position: relative;
   padding-bottom: 1.94em;
 
   &::after {

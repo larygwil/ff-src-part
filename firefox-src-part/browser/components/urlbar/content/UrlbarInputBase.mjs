@@ -6069,7 +6069,10 @@ ${
 
     event.dataTransfer.setData("text/x-moz-url", `${href}\n${title}`);
     event.dataTransfer.setData("text/plain", href);
-    event.dataTransfer.setData("text/html", `<a href="${href}">${title}</a>`);
+    event.dataTransfer.setData(
+      "text/html",
+      `<a href="${UrlbarShared.escapeHtmlEntities(href)}">${UrlbarShared.escapeHtmlEntities(title)}</a>`
+    );
     event.dataTransfer.effectAllowed = "copyLink";
     event.stopPropagation();
   }

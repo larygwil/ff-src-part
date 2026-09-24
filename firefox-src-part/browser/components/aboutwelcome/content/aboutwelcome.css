@@ -1689,6 +1689,12 @@ html {
 .onboardingContainer:has([pos=center-large][fullscreen]) migration-wizard::part(import-primary), .onboardingContainer:has([pos=center-large][fullscreen]) migration-wizard::part(continue-primary) {
   width: 100%;
 }
+.onboardingContainer:has([pos=center-large][fullscreen]) #content-tiles-container .content-tile.has-header button.tile-header.link-style {
+  margin-block-end: 6px;
+}
+.onboardingContainer:has([pos=center-large][fullscreen]) #content-tiles-container .content-tile.has-header button.tile-header.link-style:focus-visible {
+  border-radius: var(--border-radius-small);
+}
 .onboardingContainer .section-main {
   display: flex;
   flex-direction: column;

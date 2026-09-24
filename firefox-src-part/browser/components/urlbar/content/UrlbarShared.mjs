@@ -1816,6 +1816,21 @@ export const UrlbarShared = {
     }
     return this.__firstDayOfWeek;
   },
+
+  /**
+   * Escapes a string for safe interpolation into an HTML document.
+   *
+   * @param {string} s
+   * @returns {string}
+   */
+  escapeHtmlEntities(s) {
+    return (s || "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  },
 };
 
 /**

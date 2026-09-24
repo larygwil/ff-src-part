@@ -61,27 +61,10 @@
       --toggle-border-color: var(--border-color-interactive);
       --toggle-border-color-hover: var(--border-color-interactive-hover);
       --toggle-border-color-active: var(--border-color-interactive-active);
+      --toggle-dot-background-color: var(--toggle-border-color);
       --toggle-dot-background-color-hover: var(--toggle-border-color-hover);
       --toggle-dot-background-color-active: var(--toggle-border-color-active);
       --toggle-dot-background-color-on-pressed: var(--background-color-box);
-    }
-
-    @layer tokens-forced-colors-nova {
-      @media (forced-colors) {
-        --toggle-background-color: SelectedItemText;
-        --toggle-background-color-hover: SelectedItemText;
-        --toggle-background-color-active: SelectedItemText;
-        --toggle-background-color-pressed: ButtonText;
-        --toggle-background-color-pressed-hover: SelectedItem;
-        --toggle-background-color-pressed-active: SelectedItem;
-        --toggle-border-color: ButtonText;
-        --toggle-border-color-hover: SelectedItem;
-        --toggle-border-color-active: ButtonText;
-        --toggle-dot-background-color: ButtonText;
-        --toggle-dot-background-color-hover: SelectedItem;
-        --toggle-dot-background-color-active: SelectedItem;
-        --toggle-dot-background-color-on-pressed: ButtonText;
-      }
     }
   }
 }

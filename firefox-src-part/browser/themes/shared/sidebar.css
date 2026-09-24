@@ -567,7 +567,7 @@ sidebar-main,
 /* History Menu */
 #sidebar-history-clear,
 #sidebar-history-sort-by-heading {
-  padding: var(--menuitem-padding);
+  padding: var(--menuitem-padding-block) var(--menuitem-padding-inline);
   &::before {
     content: unset;
   }

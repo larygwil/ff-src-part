@@ -3722,8 +3722,6 @@ pref("browser.ipProtection.hasSeenFeature", false);
 // when it never hid the feature. The gate stops applying as soon as the browser
 // is updated to a different major version.
 pref("browser.ipProtection.l10nGateVersion", 0);
-// Pref to track if user has opened the VPN panel since location controls were introduced
-pref("browser.ipProtection.openedPanelWithLocation", false);
 // Pref to enable support for site exceptions
 pref("browser.ipProtection.features.siteExceptions", true);
 // Pref to enable support for site inclusions

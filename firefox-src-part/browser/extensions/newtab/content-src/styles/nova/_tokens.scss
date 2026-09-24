@@ -55,6 +55,8 @@
   --button-background-color-destructive-hover: light-dark(var(--color-red-60), var(--color-red-20));
   --button-background-color-destructive-active: light-dark(var(--color-red-70), var(--color-red-10));
   --button-background-color-ghost: var(--button-background-color);
+  --button-background-color-ghost-hover: var(--button-background-color-hover);
+  --button-background-color-ghost-active: var(--button-background-color-active);
   --button-background-color-ghost-selected: var(--button-background-color-selected);
   --button-background-color-menu: var(--button-background-color-ghost);
   --button-background-color-muted: light-dark(var(--color-gray-20), var(--color-gray-55));
@@ -252,6 +254,7 @@
   --icon-size-xlarge: var(--size-item-large);
 
   /** info-bar **/
+  --info-bar-border-color: light-dark(var(--color-violet-desaturated-20), var(--color-gray-60));
   --info-bar-margin-block-end: 0;
 
   /** input **/
@@ -274,6 +277,9 @@
   --popup-border-color: var(--border-color-deemphasized);
   --popup-border-radius: var(--border-radius-xlarge);
 
+  /** sidebar **/
+  --sidebar-border-color: var(--chrome-content-separator-color);
+
   /** table **/
 
   /* TODO Bug 1821203 - Gray use needs to be consolidated */
@@ -285,7 +291,7 @@
   --text-color-error: light-dark(var(--color-red-50), var(--color-red-20));
 
   /** toolbar **/
-  --toolbar-background-color: var(--background-color-box);
+  --toolbar-background-color: light-dark(rgba(255, 255, 255, 40%), rgba(0, 0, 0, 20%));
   --toolbar-field-background-color: var(--toolbar-background-color);
   --toolbar-field-background-color-focus: var(--background-color-box);
   --toolbar-field-border-color: light-dark(var(--color-gray-20), var(--color-gray-60));
@@ -305,6 +311,7 @@
   --toolbarbutton-outline-offset: -1px;
 
   /** toolbox **/
+  --toolbox-background-color: light-dark(var(--color-white), var(--color-gray-70));
   --toolbox-background-color-gradient-leading: light-dark(var(--color-violet-10), var(--color-violet-desaturated-70));
   --toolbox-background-color-gradient-trailing: light-dark(var(--color-orange-10), var(--color-orange-70));
   --toolbox-background-color-inactive: transparent;

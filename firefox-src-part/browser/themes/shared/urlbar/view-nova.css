@@ -110,18 +110,6 @@
   text-shadow: none;
   overflow: clip;
 
-  /* When hosted in content, let the view scroll when there's limited space
-     below the input due to small viewport size or page scroll position. */
-  .urlbar[in-page] > & {
-    min-height: 0;
-
-    > .urlbarView-body-outer {
-      min-height: 0;
-      overflow-y: auto;
-      scrollbar-width: thin;
-    }
-  }
-
   /* The gap under the input sits outside the scrollport, so a row scrolling
      past it doesn't paint over the input's border edge. */
   :where(.urlbar:not([noresults])) > & {
@@ -133,9 +121,22 @@
   }
 }
 
+.urlbarView-body-outer,
+.urlbarView-body-inner {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
 .urlbarView-results {
   white-space: nowrap;
   container-type: inline-size;
+
+  /* Let the view scroll when there's limited space below the input due to
+     small viewport size or page scroll position. */
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
 }
 
 /* Row structure */
@@ -157,6 +158,11 @@
   padding: var(--urlbarView-row-gutter);
   border-radius: var(--urlbarView-row-border-radius);
   background-clip: content-box;
+
+  /* The row is the containing block for everything positioned within it,
+     including the favicon's type badge. The view scrolls, so a containing
+     block outside the scrollport would leave those boxes behind. */
+  position: relative;
 
   /* Must hide the overflowing rows while the view is updating */
   &[hidden] {
@@ -604,7 +610,6 @@
 /* Row label (a.k.a. group label) */
 
 .urlbarView-row[label] {
-  position: relative;
   /* `margin-block-start` controls how far the main part of the row is from the
      main part of the previous row. */
   margin-block-start: var(--urlbarView-labeled-row-margin-top);
@@ -647,7 +652,6 @@
 /* Feedback acknowledgment */
 
 .urlbarView-row[feedback-acknowledgment] {
-  position: relative;
   padding-bottom: 1.94em;
 
   &::after {

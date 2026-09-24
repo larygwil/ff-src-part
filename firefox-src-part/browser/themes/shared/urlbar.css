@@ -150,6 +150,10 @@
   --urlbar-input-growth-open-block: 0px;
   --urlbar-searchmode-switcher-panel-list-min-width: 17em;
 
+  @media (prefers-contrast) {
+    --urlbar-background-border-open: var(--urlbar-input-container-border-width) solid var(--toolbar-field-border-color);
+  }
+
   @media not -moz-pref("browser.nova.enabled") {
     --urlbar-background-border: var(--urlbar-input-container-border-width) solid var(--toolbar-field-border-color);
     --urlbar-background-border-open: var(--urlbar-input-container-border-width) solid var(--panel-border-color);
@@ -250,15 +254,30 @@ toolbar[inactive="true"] .urlbar,
   }
 }
 
-/* In a page the bar takes its height from the embedder and is taller than in a
-   chrome window, leaving the buttons a uniform inset on all four sides. The
-   size derivation repeats the one on the root because that one runs where the
-   padding still has its chrome value. */
 .urlbar[in-page] {
+  /* In a page the input takes its height from the embedder and is taller than in
+     a chrome window, leaving the buttons a uniform inset on all four sides. The
+     size derivation repeats the one on the root because that one runs where the
+     padding still has its chrome value. */
   --urlbar-container-padding-block: 0px;
   --urlbar-input-container-padding: 10px;
   --urlbar-basic-component-size: calc(var(--urlbar-height) - 2 * var(--urlbar-input-container-padding));
   --urlbarview-border-radius: calc(var(--urlbar-height) / 2);
+
+  /* When the input isn't in a toolbar, it can't use a background that may have
+     significant transparency since it counts on the toolbar background behind
+     it. */
+  --urlbar-background-color: var(--input-text-background-color);
+  --urlbar-background-color-focus: var(--input-text-background-color);
+  --toolbar-field-text-color: var(--input-text-color);
+  --toolbar-field-text-color-focus: var(--input-text-color);
+  --toolbar-field-border-color: var(--input-text-border-color);
+
+  /* The selected row's background and text have to stay a pair, so both come
+     from the list item tokens. The action text follows the input. */
+  --urlbarview-background-color-selected: var(--background-color-list-item-hover);
+  --urlbarview-text-color-selected: var(--text-color-list-item-hover);
+  --urlbarview-text-color-action: var(--input-text-color);
 }
 
 .urlbar-background {
@@ -306,7 +325,7 @@ toolbar[inactive="true"] .urlbar,
   }
 
   .urlbar[open] > & {
-    @media (-moz-platform: macos) and (prefers-contrast) {
+    @media (not -moz-pref("browser.nova.enabled")) and (-moz-platform: macos) and (prefers-contrast) {
       /* The "increase contrast" preference on macOS draws a 1px black line around
          panels, including the separate search bar. Since the Urlbar is not
          implemented as a panel, it does not get this outline. This outline rule
@@ -520,6 +539,10 @@ toolbar[inactive="true"] .urlbar,
 }
 
 .urlbarView {
+  /* The max-height below has to bound the border box, which the view's block
+     padding is part of. */
+  box-sizing: border-box;
+
   &:popover-open {
     display: flex;
     flex-direction: column;
@@ -534,13 +557,7 @@ toolbar[inactive="true"] .urlbar,
     /* The view clips its rows, and the joint background and its shadow reach
        past it. */
     overflow-clip-margin: var(--urlbar-joint-background-shadow-margin);
-  }
 
-  /* In a page the viewport clips the top layer, where a chrome panel may
-     extend past the window, so the view takes the space below the input and
-     scrolls within it, bounded by a screenful so a long page doesn't give it
-     one and by the margin the joint background needs past the border box. */
-  .urlbar[in-page] > &:popover-open {
     max-height: min(calc(100% - var(--urlbarView-joint-background-outset-block)), 100vh);
   }
 }

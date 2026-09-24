@@ -9106,25 +9106,6 @@ export class Tabbrowser {
         });
         aEvent.preventDefault();
         return;
-      case lazy.ShortcutUtils.MOVE_TAB_TO_START:
-      case lazy.ShortcutUtils.MOVE_TAB_TO_END: {
-        let userIsInputtingText =
-          this.documentGlobal.windowUtils.IMEStatus !=
-          Ci.nsIDOMWindowUtils.IME_STATUS_DISABLED;
-        if (aEvent.defaultPrevented || userIsInputtingText) {
-          return;
-        }
-        if (
-          lazy.ShortcutUtils.getSystemActionForEvent(aEvent) ==
-          lazy.ShortcutUtils.MOVE_TAB_TO_START
-        ) {
-          this.moveTabToStart();
-        } else {
-          this.moveTabToEnd();
-        }
-        aEvent.preventDefault();
-        return;
-      }
       case lazy.ShortcutUtils.CLOSE_TAB:
         if (this.multiSelectedTabsCount) {
           this.removeMultiSelectedTabs({

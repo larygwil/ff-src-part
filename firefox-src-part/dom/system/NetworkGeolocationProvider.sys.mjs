@@ -220,6 +220,7 @@ export function NetworkGeolocationProvider() {
   this.wifiService = null;
   this.timer = null;
   this.started = false;
+  this._shutdownController = null;
   // Current repeating-timer interval; grows on failure (up to _backoffMaxMs),
   // resets to _wifiMonitorTimeout on a new request or a success.
   this._currentTimerInterval = null;
@@ -245,6 +246,10 @@ NetworkGeolocationProvider.prototype = {
     if (this.timer) {
       this.timer.cancel();
       this.timer = null;
+    }
+    // A request that settles after shutdown() must not re-arm the timer.
+    if (!this.started) {
+      return;
     }
     if (this._currentTimerInterval == null) {
       this._currentTimerInterval = this._wifiMonitorTimeout;
@@ -288,6 +293,7 @@ NetworkGeolocationProvider.prototype = {
     }
 
     this.started = true;
+    this._shutdownController = new AbortController();
 
     if (this.isWifiScanningEnabled) {
       if (this.wifiService) {
@@ -329,6 +335,8 @@ NetworkGeolocationProvider.prototype = {
       this.wifiService.stopWatching(this);
       this.wifiService = null;
     }
+
+    this._shutdownController.abort();
 
     this.listener = null;
     this.started = false;
@@ -485,7 +493,10 @@ NetworkGeolocationProvider.prototype = {
       method: "POST",
       headers: { "Content-Type": "application/json; charset=UTF-8" },
       credentials: "omit",
-      signal: fetchController.signal,
+      signal: AbortSignal.any([
+        fetchController.signal,
+        this._shutdownController.signal,
+      ]),
     };
 
     if (wifiData) {

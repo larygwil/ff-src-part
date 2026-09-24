@@ -246,6 +246,13 @@ class TrustPanel {
     return UrlbarPrefs.get("trustPanel.featureGate");
   }
 
+  get #trackerCountEnabled() {
+    return (
+      UrlbarPrefs.get("trackerCountFeatureGate") &&
+      UrlbarPrefs.get("trackerCount.enabled")
+    );
+  }
+
   handleProtectionsButtonEvent(event) {
     event.stopPropagation();
     if (
@@ -461,10 +468,7 @@ class TrustPanel {
       return;
     }
     this.#blockersChecked = false;
-    if (
-      !UrlbarPrefs.get("trackerCountFeatureGate") ||
-      !UrlbarPrefs.get("trackerCount.enabled")
-    ) {
+    if (!this.#trackerCountEnabled) {
       return;
     }
     // Set the shield directly: #uri isn't set this early, so #updateUrlbarIcon
@@ -489,10 +493,7 @@ class TrustPanel {
     if (!this.#enabled || !this.#uri) {
       return;
     }
-    if (
-      !UrlbarPrefs.get("trackerCountFeatureGate") ||
-      !UrlbarPrefs.get("trackerCount.enabled")
-    ) {
+    if (!this.#trackerCountEnabled) {
       return;
     }
     const uri = this.#uri;
@@ -622,7 +623,7 @@ class TrustPanel {
       targetClasses.add("first-visit");
     }
     // Added after "first-visit" so the tracker-count pill animation stays in sync.
-    if (this.#computeTrackerCount() > 0) {
+    if (this.#trackerCountEnabled && this.#computeTrackerCount() > 0) {
       targetClasses.add("has-blocked-trackers");
     }
 
@@ -634,8 +635,7 @@ class TrustPanel {
       targetClasses.has("secure") &&
       !targetClasses.has("breached") &&
       !targetClasses.has("warning") &&
-      UrlbarPrefs.get("trackerCountFeatureGate") &&
-      UrlbarPrefs.get("trackerCount.enabled")
+      this.#trackerCountEnabled
     ) {
       targetClasses = new Set(["scanning"]);
     }
@@ -867,10 +867,7 @@ class TrustPanel {
   }
 
   async #updateToolbarTrackerCount() {
-    if (
-      !UrlbarPrefs.get("trackerCountFeatureGate") ||
-      !UrlbarPrefs.get("trackerCount.enabled")
-    ) {
+    if (!this.#trackerCountEnabled) {
       return;
     }
     const uri = this.#uri;

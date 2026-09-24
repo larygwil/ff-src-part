@@ -613,6 +613,14 @@ html {
         width: 100%
       }
     }
+
+    #content-tiles-container .content-tile.has-header button.tile-header.link-style {
+      margin-block-end: 6px;
+
+      &:focus-visible {
+        border-radius: var(--border-radius-small);
+      }
+    }
   }
 
   .section-main {
