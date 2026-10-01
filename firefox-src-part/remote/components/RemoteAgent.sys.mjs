@@ -329,7 +329,7 @@ class RemoteAgentParentProcess {
             reject();
           }
         },
-        { interval: 250, timeout: 5000 }
+        { interval: 250, timeout: 5000, throws: null }
       );
 
       if (!this.#server._socket) {
