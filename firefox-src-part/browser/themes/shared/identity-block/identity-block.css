@@ -12,7 +12,13 @@
 }
 
 #identity-box {
-  column-gap: var(--urlbar-component-gap);
+  margin-inline-start: calc(-1 * var(--urlbar-component-gap));
+
+  > #identity-icon-box,
+  > #identity-permission-box,
+  > #notification-popup-box {
+    margin-inline-start: var(--urlbar-component-gap);
+  }
 
   &[pageproxystate="invalid"] {
     pointer-events: none;
@@ -327,17 +333,9 @@
     display: none;
   }
 
-  #identity-box {
-    /* Keep displaying the moz-extension or chrome UI chicklet */
-    &[pageproxystate="valid"]:not(.chromeUI, .extensionPage) {
-      /* The box is usually empty in this state, so drop the gaps the input
-         container would otherwise put on either side of it. */
-      margin-inline: calc(-1 * var(--urlbar-component-gap));
-
-      #identity-icon-box {
-        display: none;
-      }
-    }
+  /* Keep displaying the moz-extension or chrome UI chicklet */
+  #identity-box[pageproxystate="valid"]:not(.chromeUI, .extensionPage) > #identity-icon-box {
+    display: none;
   }
 
   #trust-icon-container {

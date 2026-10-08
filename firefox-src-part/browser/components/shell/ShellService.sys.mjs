@@ -189,6 +189,19 @@ let ShellServiceInternal = {
   },
 
   /**
+   * Asynchronously determines whether Firefox is the default browser.
+   *
+   * Provides the async API for Newtab code tested against Beta and Release
+   * builds by trainhop CI. This compatibility implementation still performs
+   * the check synchronously. The replacement that calls the native
+   * asynchronous C++ implementation has already landed on main and will reach
+   * Beta and Release through the normal release cycle.
+   */
+  async isDefaultBrowserAsync(startupCheck, forAllTypes) {
+    return this.isDefaultBrowser(startupCheck, forAllTypes);
+  },
+
+  /**
    * Check if UserChoice is impossible.
    *
    * Separated for easy stubbing in tests.

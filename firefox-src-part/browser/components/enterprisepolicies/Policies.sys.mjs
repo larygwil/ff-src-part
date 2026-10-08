@@ -1217,6 +1217,8 @@ export var Policies = {
       if (param) {
         lazy.PoliciesUtils.setAndLockPref("devtools.policy.disabled", true);
         lazy.PoliciesUtils.setAndLockPref("devtools.chrome.enabled", false);
+        // Covers Marionette and the Remote Agent.
+        lazy.PoliciesUtils.setAndLockPref("remote.policy.disabled", true);
 
         manager.disallowFeature("devtools");
         lazy.blockAboutPage(manager, "about:debugging");

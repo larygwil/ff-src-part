@@ -27,6 +27,7 @@ export class SidebarPanelSwitcher extends MozLitElement {
 
   static queries = {
     button: ".switcher-button",
+    panelItems: { all: "panel-item" },
     panelList: "panel-list",
   };
 
