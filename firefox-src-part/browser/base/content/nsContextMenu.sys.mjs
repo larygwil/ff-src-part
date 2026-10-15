@@ -631,13 +631,13 @@ export class nsContextMenu {
 
     initBackForwardMenuItemTooltip(
       "context-back",
-      "main-context-menu-back-2",
+      "main-context-menu-back-3",
       "goBackKb"
     );
 
     initBackForwardMenuItemTooltip(
       "context-forward",
-      "main-context-menu-forward-2",
+      "main-context-menu-forward-3",
       "goForwardKb"
     );
   }
@@ -1442,7 +1442,8 @@ export class nsContextMenu {
   }
 
   initPasswordControlItems() {
-    let shouldShow = this.onPassword;
+    let shouldShow =
+      this.onPassword && Services.policies.isAllowed("passwordReveal");
     if (shouldShow) {
       let revealPassword = this.document.getElementById(
         "context-reveal-password"

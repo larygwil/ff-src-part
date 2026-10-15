@@ -313,8 +313,6 @@
   <string name="browser_menu_default_banner_title">Elige %1$s como predeterminado</string>
   <!-- Label text within the set as default banner -->
   <string name="browser_menu_default_banner_subtitle_2">Rápido, privado y hecho a tu medida.</string>
-  <!-- Content description (not visible, for screen readers etc.) for the button that dismisses the set as default banner in the menu -->
-  <string name="browser_menu_default_banner_dismiss_promotion">Descartar promoción</string>
   <!-- Content description (not visible, for screen readers etc.) for recommended extensions in main menu -->
   <string name="browser_menu_recommended_extensions_content_description">Más información</string>
   <!--
@@ -1272,8 +1270,6 @@
   <string name="preference_simple_toolbar">Simple</string>
   <!-- Preference for using expanded toolbar -->
   <string name="preference_expanded_toolbar">Expandido</string>
-  <!-- Preference description indicating the toolbar location preference is disabled when the tab strip is enabled -->
-  <string name="preference_toolbar_pref_disabled_explanation">La barra de direcciones debe estar en la parte superior cuando se muestra la barra de pestañas.</string>
   <!-- New tab shortcut in toolbar customization -->
   <string name="toolbar_customize_shortcut_new_tab">Abrir una nueva pestaña</string>
   <!-- Share shortcut in toolbar customization -->
@@ -1405,8 +1401,6 @@
     Title of preference for tabs management
   -->
   <string name="preferences_tabs">Pestañas</string>
-  <!-- Title of preference that allows a user to specify the tab view -->
-  <string name="preferences_tab_view">Vista de pestaña</string>
   <!-- Option for a list tab view -->
   <string name="tab_view_list">Lista</string>
   <!-- Option for a grid tab view -->
@@ -1453,16 +1447,8 @@
   <string name="opening_screen_last_tab_summary">Abrir en la última pestaña</string>
   <!-- Summary for homepage preference indicating opening the homepage when re-opening the app after four hours of inactivity -->
   <string name="opening_screen_after_four_hours_of_inactivity_summary">Abrir en la página de inicio después de cuatro horas</string>
-  <!--
-    Inactive tabs
-
-    Category header of a preference that allows a user to enable or disable the inactive tabs feature
-  -->
-  <string name="preferences_inactive_tabs">Mover pestañas antiguas a inactivas</string>
   <!-- Summary of the preference that allows a user to enable or disable the inactive tabs feature. -->
   <string name="preferences_inactive_tabs_title">Las pestañas que no has visto durante dos semanas se mueven a la sección inactiva.</string>
-  <!-- Title for the preference to enable or disable the tab groups feature -->
-  <string name="preferences_tab_groups_feature">Habilitar grupos de pestañas</string>
   <!--
     Privacy report
 
@@ -2538,7 +2524,7 @@
   <!-- Title for the Delete browsing data on quit preference -->
   <string name="preferences_delete_browsing_data_on_quit">Eliminar datos de navegación al salir</string>
   <!-- Summary for the Delete browsing data on quit preference. "Quit" translation should match delete_browsing_data_on_quit_action translation. -->
-  <string name="preference_summary_delete_browsing_data_on_quit_2">Eliminar automáticamente los datos de navegación cuando selecciones \"Salir\" en el menú principal</string>
+  <string name="preference_summary_delete_browsing_data_on_quit_2">Eliminar automáticamente los datos de navegación cuando selecciones “Salir” en el menú principal</string>
   <!-- Title text of a delete browsing data dialog. -->
   <string name="delete_history_prompt_title">Rango de tiempo a eliminar</string>
   <!-- Body text of a delete browsing data dialog. -->
@@ -2667,7 +2653,7 @@
   <!-- Preference for enhanced tracking protection for the custom protection settings -->
   <string name="preference_enhanced_tracking_protection_custom">Personalizado</string>
   <!-- Preference description for enhanced tracking protection for the strict protection settings -->
-  <string name="preference_enhanced_tracking_protection_custom_description_2">Elige qué rastreadores y secuencias de comandos bloquear</string>
+  <string name="preference_enhanced_tracking_protection_custom_description_2">Elige qué rastreadores y secuencias de comandos bloquear.</string>
   <!-- Accessibility text for the Strict protection information icon -->
   <string name="preference_enhanced_tracking_protection_custom_info_button">Esto es lo que está bloqueado por la protección de rastreo estándar</string>
   <!--
@@ -3390,7 +3376,7 @@
   <!-- This is the hint text that is shown inline on the hostname field of the create new login page. 'https://www.example.com' intentionally hardcoded here -->
   <string name="add_login_hostname_hint_text">https://www.example.com</string>
   <!-- This is an error message shown below the hostname field of the add login page when a hostname does not contain http or https. -->
-  <string name="add_login_hostname_invalid_text_3">La dirección web debe contener \"https://\" o \"http://\"</string>
+  <string name="add_login_hostname_invalid_text_3">La dirección web debe contener “https://” o “http://”</string>
   <!-- This is an error message shown below the hostname field of the add login page when a hostname is invalid. -->
   <string name="add_login_hostname_invalid_text_2">Se requiere nombre de servidor válido</string>
   <!--
@@ -3681,7 +3667,7 @@
   -->
   <string name="automatic_translation_toolbar_title_preference">Traducción automática</string>
   <!-- Screen header presenting the automatic translation preference feature. It will appear under the toolbar. -->
-  <string name="automatic_translation_header_preference">Selecciona un idioma para administrar las preferencias de ”siempre traducir“ y ”nunca traducir“.</string>
+  <string name="automatic_translation_header_preference">Selecciona un idioma para administrar las preferencias de “siempre traducir” y “nunca traducir”.</string>
   <!-- The title of the warning card informs the user that the system could not load languages for translation settings. -->
   <string name="automatic_translation_error_warning_text">No se han podido cargar los idiomas. Inténtalo de nuevo más tarde.</string>
   <!--
@@ -3745,7 +3731,7 @@
   -->
   <string name="download_languages_language_item_preference">%1$s (%2$s)</string>
   <!-- The subhead of the download language preference screen will appear above the items that were not downloaded. -->
-  <string name="download_language_header_preference">Descargar Idiomas</string>
+  <string name="download_language_header_preference">Descargar idiomas</string>
   <!-- All languages list item. When the user presses this item, they can download all languages. -->
   <string name="download_language_all_languages_item_preference">Todos los idiomas</string>
   <!-- All languages list item. When the user presses this item, they can delete all languages that were downloaded. -->
@@ -4017,7 +4003,7 @@
   -->
   <string name="micro_survey_survey_header_2">Por favor, completa la encuesta</string>
   <!-- The privacy notice link -->
-  <string name="micro_survey_privacy_notice_2">Aviso de Privacidad</string>
+  <string name="micro_survey_privacy_notice_2">Aviso de privacidad</string>
   <!-- The submit button label text -->
   <string name="micro_survey_submit_button_label">Enviar</string>
   <!-- The survey completion header -->
