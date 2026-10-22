@@ -313,6 +313,8 @@
   <string name="browser_menu_default_banner_title">Nastaviť %1$s ako predvolený</string>
   <!-- Label text within the set as default banner -->
   <string name="browser_menu_default_banner_subtitle_2">Rýchly, súkromný a vytvorený pre vás.</string>
+  <!-- Content description (not visible, for screen readers etc.) for the button that dismisses the set as default banner in the menu -->
+  <string name="browser_menu_default_banner_dismiss_promotion">Zavrieť propagáciu</string>
   <!-- Content description (not visible, for screen readers etc.) for recommended extensions in main menu -->
   <string name="browser_menu_recommended_extensions_content_description">Ďalšie informácie</string>
   <!--
@@ -709,6 +711,14 @@
   <string name="search_widget_text_long">Hľadať na webe</string>
   <!-- Content description (not visible, for screen readers etc.): Voice search -->
   <string name="search_widget_voice">Hlasové vyhľadávanie</string>
+  <!-- Content description (not visible, for screen readers etc.): Button in the search widget that starts a search in a private tab -->
+  <string name="search_widget_private_search">Súkromné vyhľadávanie</string>
+  <!-- Widget description in the widget picker screen for the search bar widget that includes buttons for private search and for voice search -->
+  <string name="search_bar_widget_description">Vyhľadávací panel so súkromným a hlasovým vyhľadávaním</string>
+  <!-- Widget description in the widget picker screen for the search bar widget that includes buttons for image search, private search and voice search -->
+  <string name="search_bar_with_lens_widget_description">Vyhľadávací panel s vyhľadávaním podľa obrázka, súkromným a hlasovým vyhľadávaním</string>
+  <!-- Widget description in the widget picker screen for the compact search bar widget -->
+  <string name="compact_search_bar_widget_description">Kompaktný vyhľadávací panel</string>
   <!--
     Preferences
 
@@ -841,7 +851,7 @@
   <!-- Preference for translations -->
   <string name="preferences_translations">Preklady</string>
   <!-- Preference for data collection -->
-  <string name="preferences_data_collection">Zber údajov</string>
+  <string name="preferences_data_collection">Zhromažďovanie údajov</string>
   <!-- Preference for developers -->
   <string name="preferences_remote_debugging">Vzdialené ladenie cez USB</string>
   <!-- Preference title for switch preference to show search suggestions -->
@@ -1000,7 +1010,7 @@
   <!-- Title for the customize home screen section with Pocket. -->
   <string name="customize_toggle_pocket_3">Príbehy</string>
   <!-- Title for the customize home screen section with sponsored Pocket stories. -->
-  <string name="customize_toggle_pocket_sponsored">Sponzorované príbehy</string>
+  <string name="customize_toggle_pocket_sponsored">Sponzorované články</string>
   <!-- Title for the opening wallpaper settings screen -->
   <string name="customize_wallpapers">Tapety</string>
   <!-- Label for the menu item that opens the customize homepage settings screen. -->
@@ -1704,6 +1714,11 @@
   <string name="close_tab_and_delete_group_confirmation_dialog_cancel">Zrušiť</string>
   <!-- Content description for the three dot button next to a tab group" -->
   <string name="tab_group_three_dot_button_content_description">Ďalšie možnosti</string>
+  <!--
+    Content description for the Expand button on the contracted menu for a tab group:
+    when tapped, tabs are displayed in an expanded grid or list view, taking up the full screen.
+  -->
+  <string name="tab_groups_strip_expand_group_content_description">Rozbaliť karty na celú obrazovku</string>
   <!-- Text shown on the edit button for a tab group on the three dot menu -->
   <string name="tab_group_three_dot_menu_edit">Upraviť</string>
   <!-- Text shown on the ungroup button for a tab group on the three dot menu -->
@@ -2747,7 +2762,7 @@
   <!-- Category of trackers (cross-site tracking cookies) that can be blocked by Enhanced Tracking Protection -->
   <string name="etp_cookies_title_2">Cookies tretích strán</string>
   <!-- Description of cross-site tracking cookies that can be blocked by Enhanced Tracking Protection -->
-  <string name="etp_cookies_description">Blokuje cookies, ktoré používajú reklamné siete a firmy na zber údajov z mnohých stránok.</string>
+  <string name="etp_cookies_description">Blokuje súbory cookie, ktoré reklamné siete a analytické spoločnosti používajú na zhromažďovanie údajov o prehliadaní na mnohých webových stránkach.</string>
   <!-- Description of cross-site tracking cookies that can be blocked by Enhanced Tracking Protection -->
   <string name="etp_cookies_description_2">Úplná ochrana súborov cookie izoluje súbory cookie na webe, na ktorom sa nachádzate, takže sledovacie prvky, ako sú reklamné siete, ich nemôžu použiť na to, aby vás sledovali na iných weboch.</string>
   <!-- Category of trackers (cryptominers) that can be blocked by Enhanced Tracking Protection -->

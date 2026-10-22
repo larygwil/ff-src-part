@@ -1379,7 +1379,7 @@ class FirefoxEventBus extends EventBus {
 
 class BaseDownloadManager {
   #openBlobUrls = new WeakMap();
-  _triggerDownload(blobUrl, originalUrl, filename, isAttachment = false) {
+  _triggerDownload(blobUrl, originalUrl, filename, isAttachment = false, isModified = false) {
     throw new Error("Not implemented: _triggerDownload");
   }
   _getOpenDataUrl(blobUrl, filename, dest = null) {
@@ -1411,11 +1411,11 @@ class BaseDownloadManager {
     this.downloadData(data, filename, contentType);
     return false;
   }
-  download(data, url, filename) {
+  download(data, url, filename, isModified = false) {
     const blobUrl = data ? URL.createObjectURL(new Blob([data], {
       type: "application/pdf"
     })) : null;
-    this._triggerDownload(blobUrl, url, filename);
+    this._triggerDownload(blobUrl, url, filename, false, isModified);
   }
 }
 
@@ -1651,12 +1651,13 @@ class FirefoxCom {
   }
 }
 class DownloadManager extends BaseDownloadManager {
-  _triggerDownload(blobUrl, originalUrl, filename, isAttachment = false) {
+  _triggerDownload(blobUrl, originalUrl, filename, isAttachment = false, isModified = false) {
     FirefoxCom.request("download", {
       blobUrl,
       originalUrl,
       filename,
-      isAttachment
+      isAttachment,
+      isModified
     });
   }
   _getOpenDataUrl(blobUrl, filename, dest = null) {
@@ -10817,6 +10818,7 @@ const PDFViewerApplication = {
   baseUrl: "",
   mlManager: null,
   _downloadUrl: "",
+  _isMergedDocument: false,
   _eventBusAC: null,
   _windowAC: null,
   _globalAbortController: new AbortController(),
@@ -11418,6 +11420,7 @@ const PDFViewerApplication = {
     this.url = "";
     this.baseUrl = "";
     this._downloadUrl = "";
+    this._isMergedDocument = false;
     this.documentInfo = null;
     this.metadata = null;
     this._contentDispositionFilename = null;
@@ -11491,7 +11494,7 @@ const PDFViewerApplication = {
     try {
       data = await (this.pdfDocument ? this.pdfDocument.getData() : this.pdfLoadingTask.getData());
     } catch {}
-    this.downloadManager.download(data, this._downloadUrl, this._docFilename);
+    this.downloadManager.download(data, this._downloadUrl, this._docFilename, this._isMergedDocument);
   },
   async save() {
     if (!this.downloadManager) {
@@ -11504,7 +11507,7 @@ const PDFViewerApplication = {
     await this.pdfScriptingManager.dispatchWillSave();
     try {
       const data = await this.pdfDocument.saveDocument(this.externalServices.printToPDF);
-      this.downloadManager.download(data, this._downloadUrl, this._docFilename);
+      this.downloadManager.download(data, this._downloadUrl, this._docFilename, true);
     } catch (reason) {
       console.error(`Error when saving the document:`, reason);
       await this.download();
@@ -12239,7 +12242,7 @@ const PDFViewerApplication = {
       console.error("Something wrong happened when saving the edited PDF.\nPlease file a bug.");
       return;
     }
-    this.downloadManager.download(modifiedPdfBytes, this._downloadUrl, this._docFilename);
+    this.downloadManager.download(modifiedPdfBytes, this._downloadUrl, this._docFilename, true);
   },
   async onSaveAndLoad({
     data: {
@@ -12256,10 +12259,13 @@ const PDFViewerApplication = {
       return;
     }
     this._mergedDocumentNeedsSaving = true;
-    this.open({
+    const downloadUrl = this._downloadUrl;
+    await this.open({
       data: modifiedPdfBytes,
       filename: this._docFilename
     });
+    this._downloadUrl = downloadUrl;
+    this._isMergedDocument = true;
   },
   _accumulateTicks(ticks, prop) {
     if (this[prop] > 0 && ticks < 0 || this[prop] < 0 && ticks > 0) {
