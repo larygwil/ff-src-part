@@ -77,7 +77,11 @@
   <string name="about_content" tools:ignore="BrandUsage">%1$s ojapókuri Mozilla.</string>
   <!-- Private Browsing -->
   <string name="private_browsing_common_myths">Mombe’ugua’u kundahára ñemi rehegua</string>
-  <!-- Text to be announced by the accessibility service to inform the user that the private browsing mode is currently active. -->
+  <!--
+    Private Browsing
+
+    Text to be announced by the accessibility service to inform the user that the private browsing mode is currently active.
+  -->
   <string name="private_browsing_a11y_session_announcement">Tembiapo kundaha ñemíme</string>
   <!--
     True Private Browsing Mode
@@ -181,8 +185,10 @@
   <!--
     Browser Fragment
 
-    Content description (not visible, for screen readers etc.): Navigate backward (browsing history)
+    Label for popup button that appears when long-pressing the main menu. Tapping it allows the user to customize the main menu layout.
   -->
+  <string name="customize_menu">Emboava poravoha</string>
+  <!-- Content description (not visible, for screen readers etc.): Navigate backward (browsing history) -->
   <string name="browser_menu_back">Tapykue</string>
   <!-- Content description (not visible, for screen readers etc.): Navigate forward (browsing history) -->
   <string name="browser_menu_forward">Tenonde</string>
@@ -313,8 +319,6 @@
   <string name="browser_menu_default_banner_title">Ejapo %1$s-gui ijypyguáva</string>
   <!-- Label text within the set as default banner -->
   <string name="browser_menu_default_banner_subtitle_2">Ipya’e, hekoñemi ha nemba’erãva.</string>
-  <!-- Content description (not visible, for screen readers etc.) for the button that dismisses the set as default banner in the menu -->
-  <string name="browser_menu_default_banner_dismiss_promotion">Emboyke ñemoherakuã</string>
   <!-- Content description (not visible, for screen readers etc.) for recommended extensions in main menu -->
   <string name="browser_menu_recommended_extensions_content_description">Maranduve</string>
   <!--
@@ -723,7 +727,11 @@
     Title for the settings page
   -->
   <string name="settings">Ñemboheko</string>
-  <!-- Preference category for general settings -->
+  <!--
+    Preferences
+
+    Preference category for general settings
+  -->
   <string name="preferences_category_general">Tuichakue</string>
   <!-- Preference category for all links about Fenix -->
   <string name="preferences_category_about">Péva rehegua</string>
@@ -4589,6 +4597,12 @@
   <string name="firefox_labs_website_isolation_title" tools:ignore="UnusedResources">Ñanduti rogue momombyry</string>
   <!-- Description of the Firefox Labs Sandboxing experiment. -->
   <string name="firefox_labs_website_isolation_description" tools:ignore="UnusedResources">Peteĩ jokohave ñanduti rogue pa’ũme oipytyvõva omo’ã hag̃ua ne mba’ekuaarãita tendayke apytépe. Omombegue ne rembiapo, tekopyta, tendaita jokupyty ha mba’éicha oñeñongatu ñeikundaha rembiasakue.</string>
+  <!--
+    PDF viewer toolbar and buttons
+
+    Content description for accessibility (used by screen readers): Description for the button that triggers the start of a signature workflow on the PDF displayed on the screen.
+  -->
+  <string name="pdf_tools_sign_content_description_2">Embojuaju teraguapy</string>
   <!--
     PDF viewer toolbar and buttons
 

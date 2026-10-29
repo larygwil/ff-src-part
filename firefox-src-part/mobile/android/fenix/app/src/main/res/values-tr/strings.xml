@@ -77,7 +77,11 @@
   <string name="about_content" tools:ignore="BrandUsage">%1$s bir Mozilla ürünüdür.</string>
   <!-- Private Browsing -->
   <string name="private_browsing_common_myths">Gizli gezinti ile ilgili yaygın efsaneler</string>
-  <!-- Text to be announced by the accessibility service to inform the user that the private browsing mode is currently active. -->
+  <!--
+    Private Browsing
+
+    Text to be announced by the accessibility service to inform the user that the private browsing mode is currently active.
+  -->
   <string name="private_browsing_a11y_session_announcement">Gizli gezinti oturumu</string>
   <!--
     True Private Browsing Mode
@@ -181,8 +185,10 @@
   <!--
     Browser Fragment
 
-    Content description (not visible, for screen readers etc.): Navigate backward (browsing history)
+    Label for popup button that appears when long-pressing the main menu. Tapping it allows the user to customize the main menu layout.
   -->
+  <string name="customize_menu">Menüyü özelleştir</string>
+  <!-- Content description (not visible, for screen readers etc.): Navigate backward (browsing history) -->
   <string name="browser_menu_back">Geri</string>
   <!-- Content description (not visible, for screen readers etc.): Navigate forward (browsing history) -->
   <string name="browser_menu_forward">İleri</string>
@@ -313,8 +319,6 @@
   <string name="browser_menu_default_banner_title">%1$s uygulamasını varsayılan tarayıcınız yapın</string>
   <!-- Label text within the set as default banner -->
   <string name="browser_menu_default_banner_subtitle_2">Hızlı, gizli ve sizin için geliştirildi.</string>
-  <!-- Content description (not visible, for screen readers etc.) for the button that dismisses the set as default banner in the menu -->
-  <string name="browser_menu_default_banner_dismiss_promotion">Tanıtımı kapat</string>
   <!-- Content description (not visible, for screen readers etc.) for recommended extensions in main menu -->
   <string name="browser_menu_recommended_extensions_content_description">Daha fazla bilgi al</string>
   <!--
@@ -723,7 +727,11 @@
     Title for the settings page
   -->
   <string name="settings">Ayarlar</string>
-  <!-- Preference category for general settings -->
+  <!--
+    Preferences
+
+    Preference category for general settings
+  -->
   <string name="preferences_category_general">Genel</string>
   <!-- Preference category for all links about Fenix -->
   <string name="preferences_category_about">Hakkında</string>
@@ -4589,6 +4597,12 @@
   <string name="firefox_labs_website_isolation_title" tools:ignore="UnusedResources">Web sitesi izolasyonu</string>
   <!-- Description of the Firefox Labs Sandboxing experiment. -->
   <string name="firefox_labs_website_isolation_description" tools:ignore="UnusedResources">Sekmeden sekmeye sızabilecek verilerinizi koruyan, web sitelerinin arasına yerleşen ek bir güvenlik katmanı. Performansı, kararlılığı, site uyumluluğunu ve gezinti geçmişinin kaydedilme biçimini etkileyebilir.</string>
+  <!--
+    PDF viewer toolbar and buttons
+
+    Content description for accessibility (used by screen readers): Description for the button that triggers the start of a signature workflow on the PDF displayed on the screen.
+  -->
+  <string name="pdf_tools_sign_content_description_2">İmza ekle</string>
   <!--
     PDF viewer toolbar and buttons
 

@@ -77,7 +77,11 @@
   <string name="about_content" tools:ignore="BrandUsage">%1$s er lavet af Mozilla.</string>
   <!-- Private Browsing -->
   <string name="private_browsing_common_myths">Udbredte myter om privat browsing</string>
-  <!-- Text to be announced by the accessibility service to inform the user that the private browsing mode is currently active. -->
+  <!--
+    Private Browsing
+
+    Text to be announced by the accessibility service to inform the user that the private browsing mode is currently active.
+  -->
   <string name="private_browsing_a11y_session_announcement">Privat browsing-session</string>
   <!--
     True Private Browsing Mode
@@ -178,11 +182,7 @@
   <string name="recently_visited_menu_item_remove">Fjern</string>
   <!-- Content description for the button which navigates the user to show all of their history. -->
   <string name="past_explorations_show_all_content_description_2">Vis hele historikken</string>
-  <!--
-    Browser Fragment
-
-    Content description (not visible, for screen readers etc.): Navigate backward (browsing history)
-  -->
+  <!-- Content description (not visible, for screen readers etc.): Navigate backward (browsing history) -->
   <string name="browser_menu_back">Tilbage</string>
   <!-- Content description (not visible, for screen readers etc.): Navigate forward (browsing history) -->
   <string name="browser_menu_forward">Fremad</string>
@@ -313,8 +313,6 @@
   <string name="browser_menu_default_banner_title">Gør %1$s til din standard-browser</string>
   <!-- Label text within the set as default banner -->
   <string name="browser_menu_default_banner_subtitle_2">Hurtigt, privat og lavet til dig.</string>
-  <!-- Content description (not visible, for screen readers etc.) for the button that dismisses the set as default banner in the menu -->
-  <string name="browser_menu_default_banner_dismiss_promotion">Afvis promovering</string>
   <!-- Content description (not visible, for screen readers etc.) for recommended extensions in main menu -->
   <string name="browser_menu_recommended_extensions_content_description">Mere information</string>
   <!--
@@ -723,7 +721,11 @@
     Title for the settings page
   -->
   <string name="settings">Indstillinger</string>
-  <!-- Preference category for general settings -->
+  <!--
+    Preferences
+
+    Preference category for general settings
+  -->
   <string name="preferences_category_general">Generelt</string>
   <!-- Preference category for all links about Fenix -->
   <string name="preferences_category_about">Om</string>

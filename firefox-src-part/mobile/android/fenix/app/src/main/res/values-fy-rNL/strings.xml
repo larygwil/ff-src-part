@@ -77,7 +77,11 @@
   <string name="about_content" tools:ignore="BrandUsage">%1$s is makke troch Mozilla.</string>
   <!-- Private Browsing -->
   <string name="private_browsing_common_myths">Faaks hearde myten oer priveenavigaasje</string>
-  <!-- Text to be announced by the accessibility service to inform the user that the private browsing mode is currently active. -->
+  <!--
+    Private Browsing
+
+    Text to be announced by the accessibility service to inform the user that the private browsing mode is currently active.
+  -->
   <string name="private_browsing_a11y_session_announcement">Priveenavigaasjesesje</string>
   <!--
     True Private Browsing Mode
@@ -181,8 +185,10 @@
   <!--
     Browser Fragment
 
-    Content description (not visible, for screen readers etc.): Navigate backward (browsing history)
+    Label for popup button that appears when long-pressing the main menu. Tapping it allows the user to customize the main menu layout.
   -->
+  <string name="customize_menu">Menu oanpasse</string>
+  <!-- Content description (not visible, for screen readers etc.): Navigate backward (browsing history) -->
   <string name="browser_menu_back">Tebek</string>
   <!-- Content description (not visible, for screen readers etc.): Navigate forward (browsing history) -->
   <string name="browser_menu_forward">Foarút</string>
@@ -313,8 +319,6 @@
   <string name="browser_menu_default_banner_title">Meitsje %1$s jo standert</string>
   <!-- Label text within the set as default banner -->
   <string name="browser_menu_default_banner_subtitle_2">Fluch, privee, en makke foar jo.</string>
-  <!-- Content description (not visible, for screen readers etc.) for the button that dismisses the set as default banner in the menu -->
-  <string name="browser_menu_default_banner_dismiss_promotion">Promoasje slute</string>
   <!-- Content description (not visible, for screen readers etc.) for recommended extensions in main menu -->
   <string name="browser_menu_recommended_extensions_content_description">Mear ynfo</string>
   <!--
@@ -723,7 +727,11 @@
     Title for the settings page
   -->
   <string name="settings">Ynstellingen</string>
-  <!-- Preference category for general settings -->
+  <!--
+    Preferences
+
+    Preference category for general settings
+  -->
   <string name="preferences_category_general">Algemien</string>
   <!-- Preference category for all links about Fenix -->
   <string name="preferences_category_about">Oer</string>
@@ -4589,6 +4597,12 @@
   <string name="firefox_labs_website_isolation_title" tools:ignore="UnusedResources">Website-isolaasje</string>
   <!-- Description of the Firefox Labs Sandboxing experiment. -->
   <string name="firefox_labs_website_isolation_description" tools:ignore="UnusedResources">In ekstra barriêre tusken websites dy’t helpt om jo gegevens tusken ferskate ljepblêden te beskermjen. Kin ynfloed hawwe op prestaasjes, stabiliteit, websitekompatibiliteit en hoe’t navigaasjeskiednis bewarre wurdt.</string>
+  <!--
+    PDF viewer toolbar and buttons
+
+    Content description for accessibility (used by screen readers): Description for the button that triggers the start of a signature workflow on the PDF displayed on the screen.
+  -->
+  <string name="pdf_tools_sign_content_description_2">In ûndertekening tafoegje</string>
   <!--
     PDF viewer toolbar and buttons
 

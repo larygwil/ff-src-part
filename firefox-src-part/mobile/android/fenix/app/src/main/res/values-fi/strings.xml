@@ -77,7 +77,11 @@
   <string name="about_content" tools:ignore="BrandUsage">%1$s on Mozillan tuote.</string>
   <!-- Private Browsing -->
   <string name="private_browsing_common_myths">Yleiset myytit yksityisestä selaamisesta</string>
-  <!-- Text to be announced by the accessibility service to inform the user that the private browsing mode is currently active. -->
+  <!--
+    Private Browsing
+
+    Text to be announced by the accessibility service to inform the user that the private browsing mode is currently active.
+  -->
   <string name="private_browsing_a11y_session_announcement">Yksityinen selausistunto</string>
   <!--
     True Private Browsing Mode
@@ -181,8 +185,10 @@
   <!--
     Browser Fragment
 
-    Content description (not visible, for screen readers etc.): Navigate backward (browsing history)
+    Label for popup button that appears when long-pressing the main menu. Tapping it allows the user to customize the main menu layout.
   -->
+  <string name="customize_menu">Mukauta valikkoa</string>
+  <!-- Content description (not visible, for screen readers etc.): Navigate backward (browsing history) -->
   <string name="browser_menu_back">Taaksepäin</string>
   <!-- Content description (not visible, for screen readers etc.): Navigate forward (browsing history) -->
   <string name="browser_menu_forward">Eteenpäin</string>
@@ -313,8 +319,6 @@
   <string name="browser_menu_default_banner_title">Aseta %1$s oletukseksi</string>
   <!-- Label text within the set as default banner -->
   <string name="browser_menu_default_banner_subtitle_2">Nopea, yksityinen ja sinua varten tehty.</string>
-  <!-- Content description (not visible, for screen readers etc.) for the button that dismisses the set as default banner in the menu -->
-  <string name="browser_menu_default_banner_dismiss_promotion">Hylkää mainos</string>
   <!-- Content description (not visible, for screen readers etc.) for recommended extensions in main menu -->
   <string name="browser_menu_recommended_extensions_content_description">Lisätietoja</string>
   <!--
@@ -723,7 +727,11 @@
     Title for the settings page
   -->
   <string name="settings">Asetukset</string>
-  <!-- Preference category for general settings -->
+  <!--
+    Preferences
+
+    Preference category for general settings
+  -->
   <string name="preferences_category_general">Yleiset</string>
   <!-- Preference category for all links about Fenix -->
   <string name="preferences_category_about">Tietoja</string>
@@ -4589,6 +4597,12 @@
   <string name="firefox_labs_website_isolation_title" tools:ignore="UnusedResources">Verkkosivuston eristäminen</string>
   <!-- Description of the Firefox Labs Sandboxing experiment. -->
   <string name="firefox_labs_website_isolation_description" tools:ignore="UnusedResources">Lisäeste verkkosivustojen välillä, joka auttaa suojaamaan tietojasi eri välilehdillä. Saattaa vaikuttaa suorituskykyyn, vakauteen, verkkosivustojen yhteensopivuuteen ja selaushistorian tallentamiseen.</string>
+  <!--
+    PDF viewer toolbar and buttons
+
+    Content description for accessibility (used by screen readers): Description for the button that triggers the start of a signature workflow on the PDF displayed on the screen.
+  -->
+  <string name="pdf_tools_sign_content_description_2">Lisää allekirjoitus</string>
   <!--
     PDF viewer toolbar and buttons
 

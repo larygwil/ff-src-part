@@ -1841,9 +1841,7 @@ class nsIFrame : public nsQueryFrame {
    * which return a baseline from GetBaseline which is not useful for
    * caret positioning.
    */
-  virtual nscoord GetCaretBaseline() const {
-    return GetLogicalBaseline(GetWritingMode());
-  }
+  virtual nscoord GetCaretBaseline() const;
 
   // Gets a caret baseline suitable for the frame if the frame doesn't have one.
   nscoord GetFontMetricsDerivedCaretBaseline() const;

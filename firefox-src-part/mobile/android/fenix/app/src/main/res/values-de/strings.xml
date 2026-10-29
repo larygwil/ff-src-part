@@ -77,7 +77,11 @@
   <string name="about_content" tools:ignore="BrandUsage">%1$s wird von Mozilla hergestellt.</string>
   <!-- Private Browsing -->
   <string name="private_browsing_common_myths">Häufige Missverständnisse über das Surfen im Privaten Modus</string>
-  <!-- Text to be announced by the accessibility service to inform the user that the private browsing mode is currently active. -->
+  <!--
+    Private Browsing
+
+    Text to be announced by the accessibility service to inform the user that the private browsing mode is currently active.
+  -->
   <string name="private_browsing_a11y_session_announcement">Private Surf-Sitzung</string>
   <!--
     True Private Browsing Mode
@@ -181,8 +185,10 @@
   <!--
     Browser Fragment
 
-    Content description (not visible, for screen readers etc.): Navigate backward (browsing history)
+    Label for popup button that appears when long-pressing the main menu. Tapping it allows the user to customize the main menu layout.
   -->
+  <string name="customize_menu">Menü anpassen</string>
+  <!-- Content description (not visible, for screen readers etc.): Navigate backward (browsing history) -->
   <string name="browser_menu_back">Zurück</string>
   <!-- Content description (not visible, for screen readers etc.): Navigate forward (browsing history) -->
   <string name="browser_menu_forward">Vor</string>
@@ -313,8 +319,6 @@
   <string name="browser_menu_default_banner_title">%1$s als Standard festlegen</string>
   <!-- Label text within the set as default banner -->
   <string name="browser_menu_default_banner_subtitle_2">Schnell, privat und für Sie gemacht.</string>
-  <!-- Content description (not visible, for screen readers etc.) for the button that dismisses the set as default banner in the menu -->
-  <string name="browser_menu_default_banner_dismiss_promotion">Werbung schließen</string>
   <!-- Content description (not visible, for screen readers etc.) for recommended extensions in main menu -->
   <string name="browser_menu_recommended_extensions_content_description">Weitere Informationen</string>
   <!--
@@ -723,7 +727,11 @@
     Title for the settings page
   -->
   <string name="settings">Einstellungen</string>
-  <!-- Preference category for general settings -->
+  <!--
+    Preferences
+
+    Preference category for general settings
+  -->
   <string name="preferences_category_general">Allgemein</string>
   <!-- Preference category for all links about Fenix -->
   <string name="preferences_category_about">Über</string>
@@ -4589,6 +4597,12 @@
   <string name="firefox_labs_website_isolation_title" tools:ignore="UnusedResources">Website-Isolierung</string>
   <!-- Description of the Firefox Labs Sandboxing experiment. -->
   <string name="firefox_labs_website_isolation_description" tools:ignore="UnusedResources">Eine zusätzliche Barriere zwischen Websites, die Ihre Daten über Tabs hinweg schützt. Kann die Leistung, Stabilität, Website-Kompatibilität und die Speicherung der Surf-Chronik beeinträchtigen.</string>
+  <!--
+    PDF viewer toolbar and buttons
+
+    Content description for accessibility (used by screen readers): Description for the button that triggers the start of a signature workflow on the PDF displayed on the screen.
+  -->
+  <string name="pdf_tools_sign_content_description_2">Signatur hinzufügen</string>
   <!--
     PDF viewer toolbar and buttons
 

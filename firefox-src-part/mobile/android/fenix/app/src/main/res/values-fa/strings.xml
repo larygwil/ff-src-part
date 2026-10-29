@@ -77,7 +77,11 @@
   <string name="about_content" tools:ignore="BrandUsage">%1$s توسط موزیلا تولید شده است.</string>
   <!-- Private Browsing -->
   <string name="private_browsing_common_myths">باورهای نادرست و رایج دربارهٔ مرور خصوصی</string>
-  <!-- Text to be announced by the accessibility service to inform the user that the private browsing mode is currently active. -->
+  <!--
+    Private Browsing
+
+    Text to be announced by the accessibility service to inform the user that the private browsing mode is currently active.
+  -->
   <string name="private_browsing_a11y_session_announcement">نشست مرور ناشناس</string>
   <!--
     True Private Browsing Mode
@@ -181,8 +185,10 @@
   <!--
     Browser Fragment
 
-    Content description (not visible, for screen readers etc.): Navigate backward (browsing history)
+    Label for popup button that appears when long-pressing the main menu. Tapping it allows the user to customize the main menu layout.
   -->
+  <string name="customize_menu">سفارشی‌سازی منو</string>
+  <!-- Content description (not visible, for screen readers etc.): Navigate backward (browsing history) -->
   <string name="browser_menu_back">عقب</string>
   <!-- Content description (not visible, for screen readers etc.): Navigate forward (browsing history) -->
   <string name="browser_menu_forward">جلو</string>
@@ -713,7 +719,11 @@
     Title for the settings page
   -->
   <string name="settings">تنظیمات</string>
-  <!-- Preference category for general settings -->
+  <!--
+    Preferences
+
+    Preference category for general settings
+  -->
   <string name="preferences_category_general">عمومی</string>
   <!-- Preference category for all links about Fenix -->
   <string name="preferences_category_about">درباره</string>
@@ -4574,6 +4584,12 @@
   <string name="firefox_labs_website_isolation_title" tools:ignore="UnusedResources">جداسازی وب‌سایت‌ها</string>
   <!-- Description of the Firefox Labs Sandboxing experiment. -->
   <string name="firefox_labs_website_isolation_description" tools:ignore="UnusedResources">یک سد محافظتی اضافی میان وب‌سایت‌ها که به محافظت از داده‌های شما در میان زبانه‌ها کمک می‌کند. ممکن است بر عملکرد، پایداری، سازگاری وب‌سایت‌ها و نحوهٔ ذخیرهٔ تاریخچهٔ وب‌گردی تأثیر بگذارد.</string>
+  <!--
+    PDF viewer toolbar and buttons
+
+    Content description for accessibility (used by screen readers): Description for the button that triggers the start of a signature workflow on the PDF displayed on the screen.
+  -->
+  <string name="pdf_tools_sign_content_description_2">افزودن امضا</string>
   <!--
     PDF viewer toolbar and buttons
 

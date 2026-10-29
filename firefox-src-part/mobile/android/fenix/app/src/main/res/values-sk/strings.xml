@@ -77,7 +77,11 @@
   <string name="about_content" tools:ignore="BrandUsage">%1$s vyvíja Mozilla.</string>
   <!-- Private Browsing -->
   <string name="private_browsing_common_myths">Časté mýty o súkromnom prehliadaní</string>
-  <!-- Text to be announced by the accessibility service to inform the user that the private browsing mode is currently active. -->
+  <!--
+    Private Browsing
+
+    Text to be announced by the accessibility service to inform the user that the private browsing mode is currently active.
+  -->
   <string name="private_browsing_a11y_session_announcement">Súkromné prehliadanie</string>
   <!--
     True Private Browsing Mode
@@ -107,7 +111,7 @@
   <!-- Text for the negative action button -->
   <string name="open_in_app_cfr_negative_button_text">Zavrieť</string>
   <!-- Text for the info dialog when camera permissions have been denied but user tries to access a camera feature. -->
-  <string name="camera_permissions_needed_message">Vyžaduje sa prístup ku fotoaparátu. Prejdite do nastavení Androidu a udeľte aplikácii dané povolenie.</string>
+  <string name="camera_permissions_needed_message">Vyžaduje sa prístup ku fotoaparátu. Prejdite do nastavení Androidu a udeľte aplikácii dané oprávnenie.</string>
   <!-- Text for the positive action button to go to Android Settings to grant permissions. -->
   <string name="camera_permissions_needed_positive_button_text">Prejsť do nastavení</string>
   <!-- Text for the negative action button to dismiss the dialog. -->
@@ -181,8 +185,10 @@
   <!--
     Browser Fragment
 
-    Content description (not visible, for screen readers etc.): Navigate backward (browsing history)
+    Label for popup button that appears when long-pressing the main menu. Tapping it allows the user to customize the main menu layout.
   -->
+  <string name="customize_menu">Upraviť ponuku</string>
+  <!-- Content description (not visible, for screen readers etc.): Navigate backward (browsing history) -->
   <string name="browser_menu_back">Naspäť</string>
   <!-- Content description (not visible, for screen readers etc.): Navigate forward (browsing history) -->
   <string name="browser_menu_forward">Dopredu</string>
@@ -218,11 +224,11 @@
   <!-- Browser menu toggle that requests a desktop site -->
   <string name="browser_menu_desktop_site">Verzia pre počítače</string>
   <!-- Browser menu toggle that adds a shortcut to the site on the device home screen. -->
-  <string name="browser_menu_add_to_homescreen">Pridať na úvodnú obrazovku</string>
+  <string name="browser_menu_add_to_homescreen">Pridať na domovskú obrazovku</string>
   <!-- Browser menu toggle that adds a PWA of the site on the device home screen. -->
-  <string name="browser_menu_add_app_to_homescreen">Pridať aplikáciu na Úvodnú obrazovku</string>
+  <string name="browser_menu_add_app_to_homescreen">Pridať aplikáciu na domovskú obrazovku</string>
   <!-- Text for notifying users that Xiaomi devices require additional permissions to add to home screen -->
-  <string name="browser_menu_add_to_homescreen_xiaomi">Zariadenia Xiaomi môžu potrebovať dodatočné povolenia na pridávanie skratiek na domovskú obrazovku. Skontrolujte svoje nastavenia.</string>
+  <string name="browser_menu_add_to_homescreen_xiaomi">Zariadenia Xiaomi môžu potrebovať dodatočné oprávnenia na pridávanie skratiek na domovskú obrazovku. Skontrolujte svoje nastavenia.</string>
   <!-- Content description (not visible, for screen readers etc.) for the Resync tabs button -->
   <string name="resync_button_content_description">Synchronizovať znova</string>
   <!-- Browser menu button that opens the find in page menu -->
@@ -313,8 +319,6 @@
   <string name="browser_menu_default_banner_title">Nastaviť %1$s ako predvolený</string>
   <!-- Label text within the set as default banner -->
   <string name="browser_menu_default_banner_subtitle_2">Rýchly, súkromný a vytvorený pre vás.</string>
-  <!-- Content description (not visible, for screen readers etc.) for the button that dismisses the set as default banner in the menu -->
-  <string name="browser_menu_default_banner_dismiss_promotion">Zavrieť propagáciu</string>
   <!-- Content description (not visible, for screen readers etc.) for recommended extensions in main menu -->
   <string name="browser_menu_recommended_extensions_content_description">Ďalšie informácie</string>
   <!--
@@ -354,7 +358,7 @@
 
     Title for the AI controls settings screen
   -->
-  <string name="preferences_ai_controls">Nastavenia AI</string>
+  <string name="preferences_ai_controls">Nastavenia umelej inteligencie</string>
   <!-- Headline text for the AI controls banner. %s is the name of the app (for example "Firefox"). -->
   <string name="ai_controls_banner_headline">Vo %se máte vždy na výber</string>
   <!-- Supporting text for the AI controls banner. %s is a learn more link using ai_controls_learn_more as text. -->
@@ -362,7 +366,7 @@
   <!-- Link text for learning more about AI controls -->
   <string name="ai_controls_learn_more">Ďalšie informácie</string>
   <!-- Title for the block AI enhancements toggle -->
-  <string name="ai_controls_block_ai_title">Blokovať vylepšenia pomocou AI</string>
+  <string name="ai_controls_block_ai_title">Blokovať funkcie využívajúce umelú inteligenciu</string>
   <!-- Description for the block AI enhancements toggle. %s is the name of the app (for example "Firefox"). -->
   <string name="ai_controls_block_ai_description">Blokovanie znamená, že vo %se neuvidíte nové ani aktuálne vylepšenia pomocou umelej inteligencie, ani vyskakovacie okná o nich.</string>
   <!-- Link text to see what AI enhancements are and aren’t included -->
@@ -422,14 +426,14 @@
   <!-- Search engine suggestion description text -->
   <string name="search_engine_suggestions_description">Vyhľadať na webe priamo z panela s adresou</string>
   <!-- Menu option in the search selector menu to open the search settings -->
-  <string name="search_settings_menu_item">Hľadať v nastaveniach</string>
+  <string name="search_settings_menu_item">Nastavenia vyhľadávania</string>
   <!-- Header text for the search selector menu -->
   <string name="search_header_menu_item_2">Tentokrát hľadať v:</string>
   <!--
     Content description (not visible, for screen readers etc.): Search engine icon.
     %s is the search engine name (for example: DuckDuckGo).
   -->
-  <string name="search_engine_icon_content_description_1">Vyhľadávací modul: %s</string>
+  <string name="search_engine_icon_content_description_1">Vyhľadávač: %s</string>
   <!--
     Content description (not visible, for screen readers etc.) of the search engine selector from the search toolbar.
     %s is the search engine name (for example: DuckDuckGo).
@@ -451,17 +455,17 @@
   <!-- Title for the privacy preferences dialog shown during onboarding. Note: The word "Firefox" should NOT be translated. -->
   <string name="onboarding_preferences_dialog_title" tools:ignore="BrandUsage">Pomôžte nám zlepšiť Firefox</string>
   <!-- Title for the crash reporting option in the privacy preferences dialog shown during onboarding. -->
-  <string name="onboarding_preferences_dialog_crash_reporting_title">Automaticky odosielať správy o zlyhaní</string>
+  <string name="onboarding_preferences_dialog_crash_reporting_title">Automaticky odosielať hlásenia o zlyhaní</string>
   <!-- Description for the crash reporting option in the privacy preferences dialog shown during onboarding. -->
-  <string name="onboarding_preferences_dialog_crash_reporting_description">Správy o zlyhaní nám umožňujú diagnostikovať a opraviť problémy s prehliadačom. Hlásenia môžu obsahovať osobné alebo citlivé údaje.</string>
+  <string name="onboarding_preferences_dialog_crash_reporting_description">Hlásenia o zlyhaní nám umožňujú diagnostikovať a opraviť problémy s prehliadačom. Hlásenia môžu obsahovať osobné alebo citlivé údaje.</string>
   <!-- Learn more link for the crash reporting option in the privacy preferences dialog shown during onboarding. -->
   <string name="onboarding_preferences_dialog_crash_reporting_learn_more_2">Ďalšie informácie</string>
   <!-- Title for the startup crash page. %s is the name of the app (for example "Firefox") -->
   <string name="startup_crash_title">%s sa musí reštartovať</string>
   <!-- Body text for the startup crash page. %s is the name of the app (for example "Firefox") -->
-  <string name="startup_crash_body">Pri otváraní %su sa vyskytol problém.\n\nOdoslanie hlásenia o zlyhaní nám pomáha diagnostikovať a opraviť problémy s prehliadačom. Hlásenia môžu obsahovať osobné alebo citlivé údaje.</string>
+  <string name="startup_crash_body">Pri otváraní prehliadača %s sa vyskytol problém.\n\nOdoslanie hlásenia o zlyhaní nám pomáha diagnostikovať a opraviť problémy s prehliadačom. Hlásenia môžu obsahovať osobné alebo citlivé údaje.</string>
   <!-- Button text to submit a startup crash report -->
-  <string name="startup_crash_positive">Odoslať správu o zlyhaní</string>
+  <string name="startup_crash_positive">Odoslať hlásenie o zlyhaní</string>
   <!-- Button text to continue and not send a startup crash report -->
   <string name="startup_crash_negative">Nie, ďakujem</string>
   <!-- Button text to reopen firefox after the crash is processed %s is the name of the app (for example "Firefox") -->
@@ -725,7 +729,11 @@
     Title for the settings page
   -->
   <string name="settings">Nastavenia</string>
-  <!-- Preference category for general settings -->
+  <!--
+    Preferences
+
+    Preference category for general settings
+  -->
   <string name="preferences_category_general">Všeobecné</string>
   <!-- Preference category for all links about Fenix -->
   <string name="preferences_category_about">O aplikácii</string>
@@ -746,7 +754,7 @@
   <!-- Preference for settings related to Search -->
   <string name="preferences_search">Vyhľadávanie</string>
   <!-- Preference for settings related to Search engines -->
-  <string name="preferences_search_engines">Vyhľadávacie moduly</string>
+  <string name="preferences_search_engines">Vyhľadávače</string>
   <!-- Settings item to add a search widget on the device's homescreen. -->
   <string name="preferences_add_search_widget_from_settings">Miniaplikácia na domovskú obrazovku</string>
   <!-- Preference for settings related to Search engines suggestions -->
@@ -920,7 +928,7 @@
     Message shown as the summary of the download location preference when the
     app has lost the permission to access a previously selected custom folder.
   -->
-  <string name="preference_downloads_folder_permission_lost" tools:ignore="UnusedResources">Nemáte povolenie na používanie tohto priečinka. Skúste vybrať iný.</string>
+  <string name="preference_downloads_folder_permission_lost" tools:ignore="UnusedResources">Nemáte oprávnenie na používanie tohto priečinka. Skúste vybrať iný.</string>
   <!-- Preference title for choosing an app to handle downloads -->
   <string name="preferences_choose_app_for_downloads">Spravovať sťahovania pomocou inej aplikácie</string>
   <!-- Message shown when no app is available to let the user pick a download folder. -->
@@ -961,9 +969,9 @@
   -->
   <string name="addons_permissions_allow_for_all_sites">Povoliť pre všetky stránky</string>
   <!-- The subtitle for the allow for all sites preference toggle -->
-  <string name="addons_permissions_allow_for_all_sites_subtitle">Ak tomuto rozšíreniu dôverujete, môžete mu udeliť povolenie pre každú webovú stránku.</string>
+  <string name="addons_permissions_allow_for_all_sites_subtitle">Ak tomuto rozšíreniu dôverujete, môžete mu udeliť oprávnenie pre každú webovú stránku.</string>
   <!-- The text shown when an extension does not require permissions -->
-  <string name="addons_does_not_require_permissions">Toto rozšírenie nevyžaduje žiadne povolenia.</string>
+  <string name="addons_does_not_require_permissions">Toto rozšírenie nevyžaduje žiadne oprávnenia.</string>
   <!-- The description of data collection permissions listed in the addon's permissions screen.  %1$s is a formatted list of permissions. -->
   <string name="addons_permissions_required_data_collection_description_2">Vývojár uvádza, že toto rozšírenie zhromažďuje: %1$s</string>
   <!-- The description of the "none" data collection permission, when the extension doesn't collect anything according to the developer. -->
@@ -971,7 +979,7 @@
   <!-- The title of the required permissions section from addon's permissions screen. -->
   <string name="addons_permissions_heading_required_permissions">Požadované oprávnenia:</string>
   <!-- The title of the optional permissions section from addon's permissions screen. -->
-  <string name="addons_permissions_heading_optional_permissions">Voliteľné povolenia:</string>
+  <string name="addons_permissions_heading_optional_permissions">Voliteľné oprávnenia:</string>
   <!-- The title of the required data collection permissions section from addon's permissions screen. -->
   <string name="addons_permissions_heading_required_data_collection">Požadovaný zber údajov:</string>
   <!-- The title of the optional data collection permissions section from addon's permissions screen. -->
@@ -1240,19 +1248,19 @@
   <!-- Preference description for marketing data collection. Note: The words "Firefox" should NOT be translated -->
   <string name="preferences_usage_data_description_1" tools:ignore="BrandUsage">Údaje o vašom zariadení, konfigurácii hardvéru a používaní nám pomáhajú zlepšovať funkcie, výkon a stabilitu Firefoxu.</string>
   <!-- Preference switch for daily usage ping data collection -->
-  <string name="preferences_daily_usage_ping_title">Ping denného používania</string>
+  <string name="preferences_daily_usage_ping_title">Denný signál o používaní</string>
   <string name="preferences_daily_usage_ping_description" tools:ignore="BrandUsage">Toto pomáha spoločnosti Mozilla odhadnúť počet aktívnych používateľov.</string>
-  <string name="preferences_daily_usage_ping_learn_more">Ďalšie informácie o pingu denného používania</string>
+  <string name="preferences_daily_usage_ping_learn_more">Ďalšie informácie o dennom signáli o používaní</string>
   <!-- Title for the crash reporting option in the privacy preferences dialog shown during onboarding. -->
   <string name="crash_reporting_snack_bar_message">Hlásenie odoslané</string>
   <!-- Text for sumo link to learn more about crash reports in data collection screen -->
-  <string name="preferences_crashes_learn_more">Ďalšie informácie o správach o zlyhaní</string>
+  <string name="preferences_crashes_learn_more">Ďalšie informácie o hláseniach o zlyhaní</string>
   <!-- Title Headers for data collection settings screen -->
-  <string name="crash_reports_data_category">Správy o zlyhaní</string>
+  <string name="crash_reports_data_category">Hlásenia o zlyhaní</string>
   <string name="usage_data_category">Údaje o používaní</string>
   <string name="studies_data_category">Štúdie</string>
   <string name="technical_data_category">Technické údaje</string>
-  <string name="crash_reporting_description">Správy o zlyhaní nám umožňujú diagnostikovať a opraviť problémy s prehliadačom. Hlásenia môžu obsahovať osobné alebo citlivé údaje.</string>
+  <string name="crash_reporting_description">Hlásenia o zlyhaní nám umožňujú diagnostikovať a opraviť problémy s prehliadačom. Hlásenia môžu obsahovať osobné alebo citlivé údaje.</string>
   <!-- Section title for campaign measurement in data collections screen -->
   <string name="preferences_marketing_data_title">Meranie kampane</string>
   <!-- Preference switch for campaign measurement data (marketing data) collection -->
@@ -2065,7 +2073,7 @@
   -->
   <string name="tab_crash_title_2">Ospravedlňujeme sa. %1$s nedokáže načítať túto stránku.</string>
   <!-- Send crash report checkbox text on the tab crash page -->
-  <string name="tab_crash_send_report" tools:ignore="BrandUsage">Odoslať správu o zlyhaní Mozille</string>
+  <string name="tab_crash_send_report" tools:ignore="BrandUsage">Odoslať hlásenie o zlyhaní Mozille</string>
   <!-- Close tab button text on the tab crash page -->
   <string name="tab_crash_close">Zavrieť kartu</string>
   <!-- Restore tab button text on the tab crash page -->
@@ -2073,11 +2081,11 @@
   <!-- Unsubmitted crash dialog title, %s is the name of the app (for example "Firefox"). -->
   <string name="unsubmitted_crash_dialog_title_2">%s zlyhal. Odoslať hlásenie?</string>
   <!-- Single unsubmitted crash matching remote settings. %1$s is the name of the app (for example "Firefox"). -->
-  <string name="unsubmitted_crash_requested_by_devs_dialog_title">Máte neodoslanú správu o zlyhaní súvisiacu s vyšetrovanými zlyhaniami. Jej odoslanie nám pomôže vylepšiť %1$s. Zatvorením tohto upozornenia sa táto správa ignoruje.</string>
+  <string name="unsubmitted_crash_requested_by_devs_dialog_title">Máte neodoslané hlásenie o zlyhaní súvisiace s vyšetrovanými zlyhaniami. Jeho odoslanie nám pomôže vylepšiť %1$s. Zatvorením tohto upozornenia sa toto hlásenie ignoruje.</string>
   <!-- Multiple unsubmitted crashes matching remote settings. %1$d is the number of unsent crash reports, %2$s is the name of the app (for example "Firefox"). -->
   <string name="unsubmitted_crashes_requested_by_devs_dialog_title">Máte neodoslané hlásenia o zlyhaní (%1$d) súvisiace s vyšetrovanými zlyhaniami. Ich odoslaním nám pomôžete vylepšiť %2$s. Zatvorením tohto upozornenia sa tieto hlásenia ignorujú.</string>
   <!-- Unsubmitted crash dialog checkbox label for automatically sending reports in the future -->
-  <string name="unsubmitted_crash_dialog_checkbox_label">Automaticky odosielať správy o zlyhaní</string>
+  <string name="unsubmitted_crash_dialog_checkbox_label">Automaticky odosielať hlásenia o zlyhaní</string>
   <!-- Unsubmitted crash dialog negative button to dismiss the dialog -->
   <string name="unsubmitted_crash_dialog_negative_button">Zavrieť</string>
   <!-- Unsubmitted crash dialog negative button to dismiss the dialog -->
@@ -2087,9 +2095,9 @@
   <!-- Unsubmitted crash dialog positive button to submit crash report -->
   <string name="unsubmitted_crash_dialog_positive_button_2">ODOSLAŤ</string>
   <!-- Unsubmitted crash dialog positive button to submit crash report -->
-  <string name="unsubmitted_crash_dialog_positive_button">Odoslať správu o zlyhaní</string>
+  <string name="unsubmitted_crash_dialog_positive_button">Odoslať hlásenie o zlyhaní</string>
   <!-- Body text for crash report dialog. %s is the link text in the annotated string (ie. "Learn More") -->
-  <string name="unsubmitted_crash_dialog_body">Správy o zlyhaní nám pomáhajú diagnostikovať a opraviť problémy s prehliadačom. Hlásenia môžu obsahovať osobné alebo citlivé údaje. %s</string>
+  <string name="unsubmitted_crash_dialog_body">Hlásenia o zlyhaní nám pomáhajú diagnostikovať a opraviť problémy s prehliadačom. Hlásenia môžu obsahovať osobné alebo citlivé údaje. %s</string>
   <string name="unsubmitted_crash_dialog_learn_more">Ďalšie informácie</string>
   <!-- Unsubmitted crash dialog button to open a web page with more details on the feature and privacy policy -->
   <string name="unsubmitted_crash_requested_by_devs_learn_more">Ďalšie informácie</string>
@@ -2230,19 +2238,19 @@
   <!-- Label that indicates that this option it the recommended one -->
   <string name="phone_feature_recommended">Odporúčané</string>
   <!-- Button label for clearing all the information of site permissions -->
-  <string name="clear_permissions">Odstrániť povolenia</string>
+  <string name="clear_permissions">Odstrániť oprávnenia</string>
   <!-- Text for the OK button on Clear permissions dialog -->
   <string name="clear_permissions_positive">OK</string>
   <!-- Text for the cancel button on Clear permissions dialog -->
   <string name="clear_permissions_negative">Zrušiť</string>
   <!-- Button label for clearing a site permission -->
-  <string name="clear_permission">Odstrániť povolenie</string>
+  <string name="clear_permission">Odstrániť oprávnenie</string>
   <!-- Text for the OK button on Clear permission dialog -->
   <string name="clear_permission_positive">OK</string>
   <!-- Text for the cancel button on Clear permission dialog -->
   <string name="clear_permission_negative">Zrušiť</string>
   <!-- Button label for clearing all the information on all sites -->
-  <string name="clear_permissions_on_all_sites">Odstrániť povolenia pre všetky stránky</string>
+  <string name="clear_permissions_on_all_sites">Odstrániť oprávnenia na všetkých stránkach</string>
   <!-- Preference for altering video and audio autoplay for all websites -->
   <string name="preference_browser_feature_autoplay">Automatické prehrávanie</string>
   <!-- Preference for local device access for all websites -->
@@ -2310,7 +2318,7 @@
   <!-- Toggle if desktop site is turned off -->
   <string name="browser_feature_desktop_site_off">Vypnuté</string>
   <!-- Category header of a preference that allows a user to alter settings related to web permissions. -->
-  <string name="preferences_category_permissions">Povolenia</string>
+  <string name="preferences_category_permissions">Oprávnenia</string>
   <!-- Category header of a preference that allows a user to alter settings related to web content. -->
   <string name="preferences_category_content">Obsah</string>
   <!-- Preference for altering the default browsing mode. When enabled, the desktop site will always be requested. -->
@@ -2923,7 +2931,7 @@
   <!-- Snackbar message shown after an URL has been copied to clipboard. -->
   <string name="browser_toolbar_url_copied_to_clipboard_snackbar">Adresa bola skopírovaná do schránky</string>
   <!-- Title text for the Add To Homescreen dialog -->
-  <string name="add_to_homescreen_title">Pridať na úvodnú obrazovku</string>
+  <string name="add_to_homescreen_title">Pridať na domovskú obrazovku</string>
   <!-- Cancel button text for the Add to Homescreen dialog -->
   <string name="add_to_homescreen_cancel">Zrušiť</string>
   <!-- Add button text for the Add to Homescreen dialog -->
@@ -3399,17 +3407,17 @@
   <!-- First step for the allowing a permission -->
   <string name="phone_feature_blocked_step_settings">1. Prejdite do nastavení Androidu</string>
   <!-- Second step for the allowing a permission -->
-  <string name="phone_feature_blocked_step_permissions"><![CDATA[2. Ťuknite na <b>Povolenia</b>]]></string>
+  <string name="phone_feature_blocked_step_permissions"><![CDATA[2. Ťuknite na <b>Oprávnenia</b>]]></string>
   <!-- Third step for the allowing a permission (%1$s is the permission name, for example "Camera"). -->
   <string name="phone_feature_blocked_step_feature"><![CDATA[3. Prepnite prepínač <b>%1$s</b> do polohy ZAPNUTÉ]]></string>
   <!-- Label to clear site data -->
   <string name="clear_site_data">Vymazať cookies a údaje stránky</string>
   <!-- Confirmation message for a dialog confirming if the user wants to delete all the permissions for all sites -->
-  <string name="confirm_clear_permissions_on_all_sites">Naozaj chcete odstrániť všetky povolenia pre všetky stránky?</string>
+  <string name="confirm_clear_permissions_on_all_sites">Naozaj chcete odstrániť všetky oprávnenia pre všetky stránky?</string>
   <!-- Confirmation message for a dialog confirming if the user wants to delete all the permissions for a site -->
-  <string name="confirm_clear_permissions_site">Naozaj chcete odstrániť všetky povolenia pre túto stránku?</string>
+  <string name="confirm_clear_permissions_site">Naozaj chcete odstrániť všetky oprávnenia pre túto stránku?</string>
   <!-- Confirmation message for a dialog confirming if the user wants to set default value a permission for a site -->
-  <string name="confirm_clear_permission_site">Naozaj chcete odstrániť toto povolenie pre túto stránku?</string>
+  <string name="confirm_clear_permission_site">Naozaj chcete odstrániť toto oprávnenie pre túto stránku?</string>
   <!-- label shown when there are not site exceptions to show in the site exception settings -->
   <string name="no_site_exceptions">Žiadne výnimky</string>
   <!-- Browser menu button that adds a shortcut to the home fragment -->
@@ -3919,7 +3927,7 @@
   <!-- Link text to navigate to privacy and security settings from the protection panel. -->
   <string name="protection_panel_privacy_and_security_settings_2">Nastavenia ochrany súkromia</string>
   <!-- Title text for the protection panel permissions section. -->
-  <string name="protection_panel_permissions_title">Povolenia</string>
+  <string name="protection_panel_permissions_title">Oprávnenia</string>
   <plurals name="trackers_blocked_panel_total_num_trackers_blocked_2">
     <!--
       Text for displaying the total number of trackers blocked in the trackers blocked panel.
@@ -4374,7 +4382,7 @@
   <!-- The title of the explore extensions task for the setup checklist -->
   <string name="setup_checklist_task_explore_extensions">Pozrite si ďalšie rozšírenia</string>
   <!-- The title of the search widget task for the setup checklist -->
-  <string name="setup_checklist_task_search_widget_2">Preskúmať vyhľadávací widget</string>
+  <string name="setup_checklist_task_search_widget_2">Preskúmajte vyhľadávaciu miniaplikáciu</string>
   <!--
     ===== Setup checklist feature: Group titles =====
 
@@ -4619,6 +4627,12 @@
   <string name="firefox_labs_website_isolation_title" tools:ignore="UnusedResources">Izolácia webových stránok</string>
   <!-- Description of the Firefox Labs Sandboxing experiment. -->
   <string name="firefox_labs_website_isolation_description" tools:ignore="UnusedResources">Dodatočná bariéra medzi webovými stránkami, ktorá pomáha chrániť vaše údaje naprieč kartami. Môže ovplyvniť výkon, stabilitu, kompatibilitu webových stránok a spôsob ukladania histórie prehliadania.</string>
+  <!--
+    PDF viewer toolbar and buttons
+
+    Content description for accessibility (used by screen readers): Description for the button that triggers the start of a signature workflow on the PDF displayed on the screen.
+  -->
+  <string name="pdf_tools_sign_content_description_2">Pridať podpis</string>
   <!--
     PDF viewer toolbar and buttons
 
