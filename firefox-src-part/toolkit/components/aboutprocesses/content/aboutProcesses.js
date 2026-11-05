@@ -1776,12 +1776,15 @@ class ProcessesController {
         childRow = childRow.nextSibling
       ) {
         childRow.classList.add("killing");
-        const win = childRow.win;
+        let win = childRow.win;
         if (win) {
           this._view._killedRecently.push({ pid: win.outerWindowId });
-          win.tab?.tabbrowser?.discardBrowser(win.tab.tab, {
-            forceDiscard: true,
-          });
+          if (win.tab && win.tab.tabbrowser) {
+            win.tab.tabbrowser.discardBrowser(
+              win.tab.tab,
+              /* aForceDiscard = */ true
+            );
+          }
         }
       }
 

@@ -965,7 +965,7 @@ let JSWINDOWACTORS = {
       },
     },
     matches: ["about:studies*"],
-    safeForUntrustedWebProcess: true,
+    remoteTypes: ["privilegedabout"],
   },
 
   SmartFormFill: {

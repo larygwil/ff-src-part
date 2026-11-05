@@ -862,9 +862,7 @@ this.tabs = class extends ExtensionAPIPersistent {
             )
           );
           for (let nativeTab of nativeTabs) {
-            nativeTab.documentGlobal.gBrowser.discardBrowser(nativeTab, {
-              renderDiscarded: true,
-            });
+            nativeTab.documentGlobal.gBrowser.discardBrowser(nativeTab);
           }
         },
 
